@@ -4,6 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* --- EXISTING VARIABLES --- */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -41,7 +42,18 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  
+  /* --- NEW ADDITIONS FOR EVENT PAGE --- */
+  /* Fonts */
+  --font-display: var(--font-space-grotesk), "sans-serif";
+  --font-body: var(--font-noto-sans), "sans-serif";
+
+  /* Custom Colors (Hex codes mapped directly for the new page) */
+  --color-background-light: #f5f7f8;
+  --color-background-dark: #101b22;
+  --color-surface-dark: #182934;
+  --color-surface-darker: #13212b;
+  --color-text-secondary: #90b2cb;
 }
 
 :root {
