@@ -162,27 +162,39 @@
 }
 
 /* --- CUSTOM DARK SCROLLBARS --- */
-@layer utilities {
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px; /* Width of the vertical scrollbar */
-    height: 8px; /* Height of the horizontal scrollbar */
+@layer base {
+  /* This targets the Main Browser Window Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: #0b1219; /* Dark background matching your app */
+  ::-webkit-scrollbar-track {
+    background: #0b1219; /* Matches your app background */
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #2c3e50; /* The draggable part (dark grey-blue) */
-    border-radius: 4px; /* Rounded corners */
-    border: 2px solid #0b1219; /* Creates a "padding" effect around the thumb */
+  ::-webkit-scrollbar-thumb {
+    background: #334155; /* Dark Slate */
+    border-radius: 4px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #4a6f8a; /* Lighter color when you hover over it */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569; /* Lighter on hover */
+  }
+
+  /* Firefox Support */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #0b1219;
   }
 }
 
+/* Optional: Keep this if you want a specific "invisible track" version for internal lists */
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent; 
+  }
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;
