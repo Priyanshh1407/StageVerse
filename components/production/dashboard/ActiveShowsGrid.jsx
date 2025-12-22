@@ -150,7 +150,7 @@ function ShowCard({ show }) {
                 <div className="flex items-center gap-2 mt-auto pt-2">
                     {/* Active: Go to Studio | Archived: Read Only */}
                     <Link
-                        href={`/production/patch-studio/${show.id}`}
+                        href={`/patch-studio/${show.id}`}
                         className={`flex-1 h-9 flex items-center justify-center gap-2 text-sm font-bold rounded transition-colors ${isArchived
                                 ? 'bg-[#27272A] text-gray-400 hover:text-white'
                                 : 'bg-blue-600 hover:bg-blue-500 text-white'

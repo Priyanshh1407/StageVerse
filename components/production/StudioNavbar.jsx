@@ -31,11 +31,11 @@ export default function StudioNavbar() {
   };
 
   const navItems = [
-    { label: 'Dashboard', href: '/production/dashboard', isActive: (path) => path.includes('/production/dashboard') },
-    { label: 'Patch Sheet', href: '/production/patch-sheet/101', isActive: (path) => path.includes('/patch-sheet') },
-    { label: 'Patch Studio', href: '/production/patch-studio/101', isActive: (path) => path.includes('/patch-studio') },
-    { label: 'Logistics', href: '/production/logistics/101', isActive: (path) => path.includes('/logistics') },
-    { label: 'Live Show', href: '/production/live/101', isActive: (path) => path.includes('/live') },
+    { label: 'Dashboard', href: '/prod-dashboard', isActive: (path) => path.includes('/production/dashboard') },
+    { label: 'Patch Sheet', href: '/patch-sheet/101', isActive: (path) => path.includes('/patch-sheet') },
+    { label: 'Patch Studio', href: '/patch-studio/101', isActive: (path) => path.includes('/patch-studio') },
+    { label: 'Logistics', href: '/logistics/101', isActive: (path) => path.includes('/logistics') },
+    { label: 'Live Show', href: '/live/101', isActive: (path) => path.includes('/live') },
   ];
 
   return (
