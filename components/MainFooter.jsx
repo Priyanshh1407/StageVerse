@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Twitter, Facebook, Instagram, Youtube, Sparkles, BarChart3 } from "lucide-react";
 
-const Footer = ({ isLoggedIn = false }) => {
+const MainFooter = ({ isLoggedIn = false }) => {
   // --- CONFIGURATION ---
   
   const publicLinks = [
@@ -106,4 +106,4 @@ const Footer = ({ isLoggedIn = false }) => {
   );
 };
 
-export default Footer;
+export default MainFooter;

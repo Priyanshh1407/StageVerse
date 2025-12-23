@@ -1,56 +1,106 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Chrome, AlertTriangle } from 'lucide-react';
+import { Mail, Lock, Chrome, AlertTriangle, ArrowLeft } from 'lucide-react';
 
-const page = () => {
+// --- 1. MOCK DATABASE (Only stores Role, NOT Path) ---
+const MOCK_DB_USERS = [
+  { email: 'fan@stageverse.com', password: 'password123', role: 'fan' },
+  { email: 'organizer@stageverse.com', password: 'password123', role: 'organizer' },
+  { email: 'crew@stageverse.com', password: 'password123', role: 'crew' },
+  { email: 'artist@stageverse.com', password: 'password123', role: 'artist' }
+];
+
+// --- 2. CONFIGURATION: Role-to-URL Mapping ---
+// This acts as the "Traffic Cop" logic
+const ROLE_PATHS = {
+  fan: '/dashboard/fan',
+  organizer: '/dashboard/organizer',
+  crew: '/dashboard/crew',
+  artist: '/artist/dashboard', // Note: Artist path is unique
+  admin: '/admin/overview'     // Easy to add new roles later
+};
+
+const LoginPage = () => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
-  // This state controls the warning. It starts empty (hidden).
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); // Clear previous errors
+    setError('');
+    setIsLoading(true);
 
-    // --- 1. SIMULATED VALIDATION LOGIC ---
-    // In a real app, this would also happen on the backend
+    // Validation
+    if (!email.includes('@') || password.length < 6) {
+      setError('Invalid credentials format.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Simulate Network Request
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // --- 3. LOGIN LOGIC ---
     
-    if (!email.includes('@')) {
-      setError('CRITICAL_ERR: Invalid_Email_Format (Missing "@" symbol).');
-      return;
-    }
+    // A. Find user in DB
+    const user = MOCK_DB_USERS.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+    );
 
-    if (password.length < 6) {
-      setError('SECURITY_WARNING: Password_Length_Low (< 6 chars).');
-      return;
-    }
+    if (user) {
+      // B. Get the Role from the User Object
+      const userRole = user.role; 
 
-    // If valid:
-    console.log('Login successful:', email);
-    // Proceed to redirect...
+      // C. Look up the Path using the Mapping Object
+      const destination = ROLE_PATHS[userRole];
+
+      // D. Safety Check: Does a path exist for this role?
+      if (destination) {
+        console.log(`User is a ${userRole}, redirecting to: ${destination}`);
+        router.push(destination);
+      } else {
+        // Fallback if role is undefined in your app
+        console.error('Role not mapped to a route!');
+        router.push('/'); 
+      }
+    } else {
+      setError('Invalid email or password.');
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-black font-sans">
-      {/* --- BACKGROUND --- */}
+    <div className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black font-sans">
+      
+      {/* HOME BUTTON */}
+      <Link 
+        href="/" 
+        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/70 hover:text-white hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300 group"
+      >
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium hidden sm:inline">Home</span>
+      </Link>
+
+      {/* BACKGROUND */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[url('/images/hero.jpg')] bg-cover bg-center opacity-50" />
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50" />
         <div className="absolute inset-0 bg-black/60" />
         <div className="absolute top-[-20%] left-[-20%] w-[500px] h-[500px] bg-pink-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
         <div className="absolute bottom-[-20%] right-[-20%] w-[500px] h-[500px] bg-cyan-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
       </div>
 
-      {/* --- LOGIN CARD --- */}
+      {/* LOGIN CARD */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative z-10 w-[90%] max-w-4xl aspect-video flex flex-col items-center justify-center p-8 sm:p-12 md:p-16 m-4"
+        className="relative z-10 w-[90%] max-w-lg flex flex-col items-center justify-center p-6 sm:p-12 md:p-16"
       >
-        {/* Glassmorphism Background */}
         <div 
           className="absolute inset-0 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-cyan-500/50"
           style={{
@@ -58,9 +108,8 @@ const page = () => {
           }}
         />
         
-        <div className="relative z-20 flex flex-col items-center w-full max-w-lg">
+        <div className="relative z-20 flex flex-col items-center w-full">
           
-          {/* Logo */}
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.6)]">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
@@ -71,9 +120,7 @@ const page = () => {
             <span className="text-3xl font-bold text-white tracking-widest drop-shadow-md">StageVerse</span>
           </div>
 
-          {/* DYNAMIC ERROR WARNING */}
-          {/* We use AnimatePresence so the warning pops in smoothly */}
-          <div className="h-8 mb-4 w-full flex justify-center">
+          <div className="h-8 mb-2 w-full flex justify-center">
             <AnimatePresence>
               {error && (
                 <motion.div
@@ -89,22 +136,20 @@ const page = () => {
             </AnimatePresence>
           </div>
 
-          {/* Headline */}
-          <h2 className="text-4xl font-bold text-white mb-8 text-center drop-shadow-lg">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6 sm:mb-8 text-center drop-shadow-lg">
             Log in to your account
           </h2>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="w-full space-y-6">
+          <form onSubmit={handleSubmit} className="w-full space-y-4 sm:space-y-6">
             
             <InputField 
-              type="text" // Changed to 'text' to prevent browser default tooltips, letting our custom warning show instead
+              type="text" 
               placeholder="Email Address" 
               icon={Mail}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                if (error) setError(''); // Clear error when user starts typing
+                if (error) setError(''); 
               }}
             />
 
@@ -121,16 +166,16 @@ const page = () => {
 
             <button
               type="submit"
-              className="w-full py-4 rounded-xl text-white font-bold text-xl tracking-wider uppercase transition-all duration-300 
+              disabled={isLoading}
+              className="w-full py-3 sm:py-4 rounded-xl text-white font-bold text-lg sm:text-xl tracking-wider uppercase transition-all duration-300 
                          bg-gradient-to-r from-cyan-500 to-blue-600 
                          hover:from-cyan-400 hover:to-blue-500
                          hover:shadow-[0_0_30px_rgba(6,182,212,0.6)]
-                         active:scale-[0.98]"
+                         active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Login
+              {isLoading ? 'Verifying...' : 'Login'}
             </button>
 
-            {/* Divider */}
             <div className="relative flex items-center py-2">
               <div className="flex-grow border-t border-white/10"></div>
               <span className="flex-shrink mx-4 text-gray-400 text-sm">or</span>
@@ -139,7 +184,7 @@ const page = () => {
 
             <button
               type="button"
-              className="w-full py-4 rounded-xl text-white font-medium flex items-center justify-center gap-3 transition-all duration-300
+              className="w-full py-3 sm:py-4 rounded-xl text-white font-medium flex items-center justify-center gap-3 transition-all duration-300
                          bg-white/5 border border-white/10 backdrop-blur-md
                          hover:bg-white/10 hover:border-cyan-500/30
                          hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]"
@@ -149,7 +194,7 @@ const page = () => {
             </button>
           </form>
 
-          <p className="mt-8 text-gray-400 text-sm">
+          <p className="mt-6 sm:mt-8 text-gray-400 text-sm">
             Don't have an account?{' '}
             <Link href="/signup" className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors">
               Signup
@@ -168,16 +213,15 @@ const InputField = ({ type, placeholder, icon: Icon, value, onChange }) => (
     </div>
     <input
       type={type}
-      className="block w-full pl-12 pr-4 py-4 bg-black/50 border border-white/10 rounded-xl 
-                 text-white text-lg placeholder-gray-500 backdrop-blur-sm
-                 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50
-                 transition-all duration-300"
+      className="block w-full pl-12 pr-4 py-3 sm:py-4 bg-black/50 border border-white/10 rounded-xl 
+               text-white text-lg placeholder-gray-500 backdrop-blur-sm
+               focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50
+               transition-all duration-300"
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      // Removed 'required' so our custom JS validation can trigger instead of browser defaults
     />
   </div>
 );
 
-export default page;
+export default LoginPage;

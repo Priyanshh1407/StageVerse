@@ -1,9 +1,14 @@
 'use client';
-import React, { useState } from 'react';
-import { Users, Calendar, Wrench, Power, Settings2, Sliders, Zap, Sun } from 'lucide-react';
-import { ConcertLights } from '@/components/ConcertLights';
 
-const Hero = () => {
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation'; // 1. Import useRouter
+import { Users, Calendar, Wrench, Power, Settings2, Sun, Zap, Music } from 'lucide-react';
+// Assuming you have this component already set up in your project
+import { ConcertLights } from '@/components/ConcertLights'; 
+import hero from '@/public/images/hero.jpg';
+
+export default function Hero() {
+    const router = useRouter(); // 2. Initialize the router
     const [showControls, setShowControls] = useState(false);
 
     // --- MASTER STATE ---
@@ -38,6 +43,7 @@ const Hero = () => {
         { icon: Users, label: "Fan" },
         { icon: Calendar, label: "Organizer" },
         { icon: Wrench, label: "Crew" },
+        { icon: Music, label: "Artist" },
     ];
 
     const colors = [
@@ -50,26 +56,28 @@ const Hero = () => {
     ];
 
     return (
-        <div className="relative w-full min-h-screen bg-black overflow-hidden font-sans">
+        <section className="relative w-full h-screen bg-black overflow-hidden font-sans">
 
             {/* BACKGROUND & LIGHTS */}
             <div className="absolute inset-0">
                 <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 z-10" />
-                <div className="absolute inset-0 bg-[url('/images/hero.jpg')] bg-cover bg-center opacity-60" />
+                <div 
+                    className="absolute inset-0 bg-cover bg-center opacity-85"
+                    style={{ backgroundImage: `url("${hero.src}")` }}
+                />
 
                 {/* Pass individual configs to the engine */}
-                <div className="absolute inset-0 z-10">
+                <div className="absolute inset-0 z-10 pointer-events-none">
                     <ConcertLights
                         masterOn={masterOn}
                         beams={beams}
-                        blinders={blinders}
+                        blinders={blinders} 
                         lasers={lasers}
                     />
                 </div>
             </div>
 
-            {/* --- FLOATING LIGHTING CONSOLE (FIXED MOBILE POSITION) --- */}
-            {/* CHANGED: bottom-4 right-4 for mobile, sm:bottom-8 sm:right-8 for desktop */}
+            {/* --- FLOATING LIGHTING CONSOLE --- */}
             <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex flex-col items-end gap-3">
                 <button
                     onClick={() => setShowControls(!showControls)}
@@ -82,9 +90,9 @@ const Hero = () => {
                     <div className="
                         bg-black/90 backdrop-blur-xl border border-white/10 
                         p-4 sm:p-5 rounded-2xl shadow-2xl 
-                        w-72 sm:w-80  /* CHANGED: Narrower width (w-72) on mobile */
+                        w-72 sm:w-80 
                         animate-in slide-in-from-bottom-5 fade-in duration-300 
-                        max-h-[60vh] sm:max-h-[80vh] /* CHANGED: Shorter max-height on mobile */
+                        max-h-[60vh] sm:max-h-[80vh]
                         overflow-y-auto custom-scrollbar
                     ">
 
@@ -161,42 +169,44 @@ const Hero = () => {
             </div>
 
             {/* HERO CONTENT */}
-            <div className="relative z-20 h-full min-h-screen flex flex-col items-center justify-center px-4 py-20 pointer-events-none">
-                <div className="text-center mb-12 md:mb-16 max-w-5xl pointer-events-auto">
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                        <span className="text-white drop-shadow-lg">The Entire Concert</span><br />
+            <div className="relative z-20 h-full flex flex-col items-center justify-center px-4 py-20 pointer-events-none">
+                <div className="text-center mb-12 md:mb-16 max-w-5xl pointer-events-auto mt-20">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-6 leading-[1.1] tracking-tight">
+                        <span className="text-white drop-shadow-2xl">The Entire Concert</span><br />
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-500 to-blue-600 drop-shadow-2xl">
                             Ecosystem. One Platform.
                         </span>
                     </h1>
-                    <p className="text-lg md:text-xl text-cyan-100/60 font-light tracking-wide max-w-2xl mx-auto">
-                        From discovery to production.
+                    <p className="text-lg md:text-2xl text-cyan-100/80 font-light tracking-wide max-w-2xl mx-auto drop-shadow-md">
+                        From discovery to production. Join the revolution in live events.
                     </p>
                 </div>
-                <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center w-full max-w-3xl px-4 pointer-events-auto">
+                
+                <div className="flex flex-col items-center gap-4 justify-center w-full max-w-5xl px-4 pointer-events-auto lg:flex-row lg:gap-6 pb-24 lg:pb-0">
                     {roles.map((role) => {
                         const Icon = role.icon;
                         return (
                             <button
                                 key={role.label}
-                                className="group relative px-8 py-4 rounded-full min-w-[160px] sm:min-w-[180px] backdrop-blur-sm border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(6,182,212,0.4)]"
-                                style={{ background: 'linear-gradient(135deg, hsl(200, 80%, 20%) 0%, hsl(190, 80%, 35%) 100%)' }}
+                                // 3. Redirect on click
+                                onClick={() => router.push('/login')}
+                                className="w-full max-w-xs lg:w-auto lg:max-w-none group relative px-8 py-4 rounded-full min-w-[160px] sm:min-w-[180px] backdrop-blur-md border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:bg-cyan-500 hover:border-cyan-400 hover:text-black"
+                                style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)' }}
                             >
-                                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-200/20 to-transparent opacity-50" />
                                 <div className="flex items-center gap-3 justify-center relative z-10">
-                                    <Icon className="w-5 h-5 text-cyan-50 group-hover:text-white transition-colors" strokeWidth={2} />
-                                    <span className="text-base font-semibold text-cyan-50 group-hover:text-white tracking-wide transition-colors">{role.label}</span>
+                                    <Icon className="w-6 h-6 text-white group-hover:text-primary transition-colors" />
+                                    <span className="text-lg font-bold text-white group-hover:text-primary tracking-wide transition-colors">{role.label}</span>
                                 </div>
                             </button>
                         );
                     })}
                 </div>
             </div>
-        </div>
+        </section>
     );
 };
 
-// --- SUB-COMPONENTS FOR UI ---
+// --- UI HELPER COMPONENTS ---
 
 const Toggle = ({ isOn, onClick, label, color = "green" }) => (
     <button
@@ -237,5 +247,3 @@ const ColorPicker = ({ selected, onSelect, colors }) => (
         ))}
     </div>
 );
-
-export default Hero;

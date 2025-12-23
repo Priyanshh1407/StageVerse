@@ -8,6 +8,8 @@ import {
   Navigation, ArrowRight, Heart, Share2, Link as LinkIcon, 
   CalendarPlus, BarChart3 
 } from 'lucide-react';
+import Navbar from '@/components/Navbar';
+import MainFooter from '@/components/MainFooter';
 
 // --- MOCK DATA SIMULATION (Replace this with your API Call later) ---
 const getEventData = (id) => {
@@ -70,7 +72,8 @@ export default function EventDetailPage({ params }) {
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-200 font-sans">
       
       {/* Header */}
-      <Header />
+      <Navbar />
+      {/* <Header /> */}
 
       <main className="flex-1 flex flex-col">
         
@@ -276,7 +279,7 @@ export default function EventDetailPage({ params }) {
         </div>
       </main>
 
-      <Footer />
+      <MainFooter isLoggedIn={false} />
     </div>
   );
 }

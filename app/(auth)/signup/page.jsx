@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Building, Wrench, Chrome, AlertTriangle, Music, Settings } from 'lucide-react';
+// 1. Added ArrowLeft to imports
+import { Mail, Lock, User, Building, Wrench, Chrome, AlertTriangle, Music, Settings, ArrowLeft } from 'lucide-react';
 
-const page = () => {
+const SignupPage = () => {
   const [role, setRole] = useState('fan');
   const [error, setError] = useState('');
 
@@ -38,7 +39,17 @@ const page = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-black font-sans py-10">
+    <div className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black font-sans">
+      
+      {/* --- 2. NEW HOME BUTTON --- */}
+      <Link 
+        href="/" 
+        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/70 hover:text-white hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300 group"
+      >
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium hidden sm:inline">Home</span>
+      </Link>
+
       {/* --- BACKGROUND --- */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[url('/images/hero.jpg')] bg-cover bg-center opacity-50" />
@@ -49,19 +60,16 @@ const page = () => {
 
       {/* --- SIGNUP CARD --- */}
       <motion.div
-        // 'layout' prop makes the container animate its size when content changes!
         layout
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{
           opacity: { duration: 0.5 },
-          layout: { duration: 0.3, type: "spring", stiffness: 300, damping: 30 } // Smooth resize animation
+          layout: { duration: 0.3, type: "spring", stiffness: 300, damping: 30 }
         }}
-        // REMOVED 'aspect-video'
-        // ADDED 'h-auto' to hug content
-        className="relative z-10 w-[90%] max-w-4xl h-auto flex flex-col items-center justify-center p-8 sm:p-12 m-4"
+        className="relative z-10 w-[95%] sm:w-[90%] max-w-4xl max-h-[95dvh] overflow-y-auto flex flex-col items-center justify-center p-6 sm:p-12 m-2 scrollbar-hide"
       >
-        {/* Glassmorphism Background (Stretches with parent) */}
+        {/* Glassmorphism Background */}
         <div
           className="absolute inset-0 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-cyan-500/50"
           style={{ boxShadow: '0 0 50px 10px rgba(6,182,212, 0.2), inset 0 0 20px rgba(6,182,212, 0.1)' }}
@@ -78,8 +86,8 @@ const page = () => {
             <span className="text-2xl font-bold text-white tracking-widest drop-shadow-md">StageVerse</span>
           </div>
 
-          {/* AMATEUR WARNING BOX (Animated height) */}
-          <div className="w-full flex justify-center min-h-[24px] mb-2">
+          {/* AMATEUR WARNING BOX */}
+          <div className="w-full flex justify-center min-h-[20px] mb-2">
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -95,12 +103,12 @@ const page = () => {
             </AnimatePresence>
           </div>
 
-          <h2 className="text-3xl font-bold text-white mb-6 text-center drop-shadow-lg">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center drop-shadow-lg">
             Create your account
           </h2>
 
           {/* --- ROLE SELECTION TOGGLE --- */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full mb-6 p-1 bg-white/5 rounded-xl border border-white/10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full mb-4 sm:mb-6 p-1 bg-white/5 rounded-xl border border-white/10">
             <RoleButton active={role === 'fan'} onClick={() => setRole('fan')} icon={User} label="Fan" />
             <RoleButton active={role === 'artist'} onClick={() => setRole('artist')} icon={Music} label="Artist" />
             <RoleButton active={role === 'organizer'} onClick={() => setRole('organizer')} icon={Building} label="Organizer" />
@@ -108,14 +116,14 @@ const page = () => {
           </div>
 
           {/* --- FORM --- */}
-          <form onSubmit={handleSubmit} className="w-full space-y-4">
+          <form onSubmit={handleSubmit} className="w-full space-y-3 sm:space-y-4">
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <InputField name="name" type="text" placeholder="Full Name" icon={User} value={formData.name} onChange={handleChange} />
               <InputField name="email" type="text" placeholder="Email" icon={Mail} value={formData.email} onChange={handleChange} />
             </div>
 
-            {/* CONDITIONAL FIELDS (Layout prop ensures smooth scaling) */}
+            {/* CONDITIONAL FIELDS */}
             <AnimatePresence mode="wait">
               {role === 'artist' && (
                 <motion.div
@@ -126,35 +134,21 @@ const page = () => {
                   className="overflow-hidden"
                 >
                   <div className="relative group">
-                    {/* Icon */}
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Music className="h-5 w-5 text-gray-500 group-focus-within:text-cyan-400 transition-colors" />
                     </div>
-
-                    {/* Dropdown Select */}
                     <select
                       name="genre"
                       value={formData.genre}
                       onChange={handleChange}
-                      className="block w-full pl-11 pr-4 py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-base appearance-none backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300 cursor-pointer">
+                      className="block w-full pl-11 pr-4 py-3 sm:py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-sm sm:text-base appearance-none backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300 cursor-pointer">
                       <option value="" className="bg-gray-900 text-gray-500">Select Genre...</option>
                       <option value="Pop" className="bg-gray-900">Pop</option>
-                      <option value="Rock" className="bg-gray-900">Rock</option>
-                      <option value="Hip Hop" className="bg-gray-900">Hip Hop</option>
                       <option value="Electronic" className="bg-gray-900">Electronic / EDM</option>
-                      <option value="R&B" className="bg-gray-900">R&B / Soul</option>
-                      <option value="Jazz" className="bg-gray-900">Jazz</option>
-                      <option value="Classical" className="bg-gray-900">Classical</option>
-                      <option value="Metal" className="bg-gray-900">Metal</option>
-                      <option value="Country" className="bg-gray-900">Country</option>
-                      <option value="Folk" className="bg-gray-900">Folk / Indie</option>
+                      <option value="Rock" className="bg-gray-900">Rock</option>
                       <option value="Other" className="bg-gray-900">Other</option>
                     </select>
-
-                    {/* Custom Arrow Indicator */}
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-500">
-                      ▼
-                    </div>
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-500">▼</div>
                   </div>
                 </motion.div>
               )}
@@ -187,14 +181,12 @@ const page = () => {
                       name="jobTitle"
                       value={formData.jobTitle}
                       onChange={handleChange}
-                      className="block w-full pl-11 pr-4 py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-base appearance-none backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300 cursor-pointer"
+                      className="block w-full pl-11 pr-4 py-3 sm:py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-sm sm:text-base appearance-none backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300 cursor-pointer"
                     >
                       <option value="" className="bg-gray-900 text-gray-500">Select Job Title...</option>
                       <option value="LD" className="bg-gray-900">Lighting Designer (LD)</option>
                       <option value="FOH" className="bg-gray-900">FOH Audio Engineer</option>
-                      <option value="MON" className="bg-gray-900">Monitor Engineer</option>
                       <option value="SM" className="bg-gray-900">Stage Manager</option>
-                      <option value="TECH" className="bg-gray-900">System Tech</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-500">▼</div>
                   </div>
@@ -206,7 +198,7 @@ const page = () => {
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl text-white font-bold text-lg tracking-wider uppercase transition-all duration-300 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.6)] active:scale-[0.98] mt-2"
+              className="w-full py-3 sm:py-3.5 rounded-xl text-white font-bold text-base sm:text-lg tracking-wider uppercase transition-all duration-300 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.6)] active:scale-[0.98] mt-2"
             >
               Create Account
             </button>
@@ -215,13 +207,13 @@ const page = () => {
             <AnimatePresence>
               {role === 'fan' && (
                 <motion.button
-                  layout // Animates the layout when this appears/disappears
+                  layout
                   key="google-btn"
                   initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                  animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
                   exit={{ opacity: 0, height: 0, marginTop: 0 }}
                   type="button"
-                  className="w-full py-3 rounded-xl text-white text-sm font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-cyan-500/30 overflow-hidden"
+                  className="w-full py-2.5 sm:py-3 rounded-xl text-white text-sm font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-cyan-500/30 overflow-hidden"
                 >
                   <Chrome className="w-4 h-4" />
                   <span>Sign up with Google</span>
@@ -231,7 +223,7 @@ const page = () => {
 
           </form>
 
-          <p className="mt-6 text-gray-400 text-xs">
+          <p className="mt-4 sm:mt-6 text-gray-400 text-xs">
             Already have an account?{' '}
             <Link href="/login" className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors">
               Log in
@@ -267,7 +259,7 @@ const InputField = ({ name, type, placeholder, icon: Icon, value, onChange }) =>
     <input
       name={name}
       type={type}
-      className="block w-full pl-11 pr-4 py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-base placeholder-gray-500 backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
+      className="block w-full pl-11 pr-4 py-3 sm:py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-sm sm:text-base placeholder-gray-500 backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
       placeholder={placeholder}
       value={value}
       onChange={onChange}
@@ -275,4 +267,4 @@ const InputField = ({ name, type, placeholder, icon: Icon, value, onChange }) =>
   </div>
 );
 
-export default page;
+export default SignupPage;
