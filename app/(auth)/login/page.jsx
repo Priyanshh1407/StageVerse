@@ -16,10 +16,10 @@ const MOCK_DB_USERS = [
 // --- 2. CONFIGURATION: Role-to-URL Mapping ---
 // This acts as the "Traffic Cop" logic
 const ROLE_PATHS = {
-  fan: '/dashboard/fan',
-  organizer: '/dashboard/organizer',
-  crew: '/dashboard/crew',
-  artist: '/artist/dashboard', // Note: Artist path is unique
+  fan: '/dashboard',
+  organizer: '/manage/dashboard',
+  crew: '/prod-dashboard',
+  artist: '/artist-dashboard', // Note: Artist path is unique
   admin: '/admin/overview'     // Easy to add new roles later
 };
 
