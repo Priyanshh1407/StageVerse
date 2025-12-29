@@ -12,6 +12,7 @@ import OrganizerSidebar from '@/components/organizer/OrganizerSidebar'; // <--- 
 import HypeChart from '@/components/organizer/HypeChart';
 import AIDescriptionGenerator from '@/components/organizer/AIDescriptionGenerator';
 import StatsCard from '@/components/organizer/StatsCard';
+import Link from 'next/link';
 
 // Mock Data (Simulate API)
 const dashboardData = {
@@ -114,9 +115,9 @@ export default function OrganizerDashboard() {
                 <h4 className="text-white font-bold text-sm flex items-center gap-2 mb-1">
                   <Zap className="w-4 h-4 text-[#0d93f2]" /> Quick Actions
                 </h4>
-                <button className="w-full px-4 py-2.5 rounded-lg bg-[#0d93f2] text-white font-bold text-sm hover:bg-[#0b84db] transition-colors flex justify-between items-center group">
+                <Link href="/create-event" className="w-full px-4 py-2.5 rounded-lg bg-[#0d93f2] text-white font-bold text-sm hover:bg-[#0b84db] transition-colors flex justify-between items-center group">
                   Create New Event <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
+                </Link>
                 <div className="flex gap-2">
                   <button className="flex-1 px-3 py-2 rounded-lg bg-[#2c3b47] hover:bg-[#3e5060] text-xs font-medium text-white flex items-center justify-center gap-2 transition-colors">
                     <Send className="w-3 h-3 text-[#90b2cb]" /> Blast

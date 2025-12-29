@@ -51,10 +51,10 @@ export default function CreateEventPage() {
         <header className="flex-none flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#2c3b47] p-8 bg-[#101b22] z-10">
           <div className="flex flex-col gap-2">
             <Link 
-              href="/organizer/events" 
+              href="/manage/dashboard" 
               className="flex items-center gap-2 text-[#90b2cb] hover:text-[#0d93f2] transition-colors text-sm font-medium mb-1"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Events
+              <ArrowLeft className="w-4 h-4" /> Dashboard
             </Link>
             <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight text-white">
               Create New Event
