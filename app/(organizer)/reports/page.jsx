@@ -57,7 +57,7 @@ const GENERATE_CHART_DATA = () => Array.from({ length: 15 }).map((_, i) => ({
 }));
 
 export default function ReportsPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // --- STATE ---
   const [stats, setStats] = useState([]);

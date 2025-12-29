@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { PlayCircle, ChevronsRight, Vote, MousePointer2, Bell, Send, AlertTriangle, Ban, Check } from 'lucide-react';
 
 export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarning, onEmergency }) {
@@ -41,8 +41,7 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
                 />
             </ActionCard>
 
-            {/* 3. 5 MIN WARNING */}
-            {/* 3. LAST SONG ALERT (Replaces 5 Min Warning) */}
+            {/* 3. LAST SONG ALERT */}
             <ActionCard
                 icon={Bell}
                 iconColor="text-orange-500"
@@ -96,28 +95,36 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
     );
 }
 
-// --- CUSTOM SLIDER COMPONENT ---
+// --- CUSTOM SLIDER COMPONENT (MOBILE FIXED) ---
 function SlideToConfirm({ onConfirm }) {
     const [sliderWidth, setSliderWidth] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const containerRef = useRef(null);
 
-    const handleMouseDown = (e) => {
+    // 1. Use Pointer events instead of Mouse events (Handles Touch + Mouse)
+    const handlePointerDown = (e) => {
         setIsDragging(true);
+        // 2. Capture the pointer so dragging works even if finger leaves the button area
+        e.target.setPointerCapture(e.pointerId);
     };
 
-    const handleMouseMove = (e) => {
+    const handlePointerMove = (e) => {
         if (!isDragging || !containerRef.current) return;
+        
         const rect = containerRef.current.getBoundingClientRect();
+        // Calculate position relative to container
         const offsetX = e.clientX - rect.left;
+        
         // Limit slide between 0 and max width
         const newWidth = Math.max(0, Math.min(offsetX, rect.width));
         setSliderWidth(newWidth);
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = (e) => {
         if (!isDragging || !containerRef.current) return;
+        
         setIsDragging(false);
+        e.target.releasePointerCapture(e.pointerId);
 
         // Threshold to confirm (e.g., 90%)
         if (sliderWidth > containerRef.current.offsetWidth * 0.9) {
@@ -126,25 +133,11 @@ function SlideToConfirm({ onConfirm }) {
         setSliderWidth(0); // Reset
     };
 
-    // Add global event listeners for drag release outside element
-    useEffect(() => {
-        if (isDragging) {
-            window.addEventListener('mouseup', handleMouseUp);
-            window.addEventListener('mousemove', handleMouseMove);
-        } else {
-            window.removeEventListener('mouseup', handleMouseUp);
-            window.removeEventListener('mousemove', handleMouseMove);
-        }
-        return () => {
-            window.removeEventListener('mouseup', handleMouseUp);
-            window.removeEventListener('mousemove', handleMouseMove);
-        };
-    }, [isDragging, sliderWidth]);
-
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-14 rounded-lg overflow-hidden border border-[#0d93f2]/30 bg-[#0d93f2]/5 select-none cursor-pointer"
+            // 3. 'touch-none' is CRITICAL: It prevents the mobile browser from scrolling the page while you drag
+            className="relative w-full h-14 rounded-lg overflow-hidden border border-[#0d93f2]/30 bg-[#0d93f2]/5 select-none touch-none"
         >
             {/* Dragged Background */}
             <div
@@ -154,7 +147,10 @@ function SlideToConfirm({ onConfirm }) {
 
             {/* Slider Handle (The Arrow) */}
             <div
-                onMouseDown={handleMouseDown}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerLeave={handlePointerUp} // Safety fallback
                 style={{ left: `${sliderWidth}px` }}
                 className="absolute inset-y-0 w-14 bg-[#0d93f2] flex items-center justify-center cursor-grab active:cursor-grabbing hover:brightness-110 shadow-xl z-10 transition-all duration-75 ease-linear"
             >

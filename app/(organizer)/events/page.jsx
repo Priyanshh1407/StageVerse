@@ -23,7 +23,7 @@ const INITIAL_EVENTS = [
 
 export default function EventsPage() {
   const router = useRouter(); 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // --- STATE FOR INTERACTIVITY ---
   const [events, setEvents] = useState(INITIAL_EVENTS);
@@ -341,8 +341,11 @@ function EventRow({ event, onDuplicate, onDelete }) {
         </span>
       </td>
       <td className="px-6 py-4 text-right">
-        {/* Buttons show on hover via 'group-hover:opacity-100' */}
-        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* FIXED HERE: 
+           - 'opacity-100' makes it visible by default (Mobile)
+           - 'md:opacity-0 md:group-hover:opacity-100' applies hover effect ONLY on Desktop
+        */}
+        <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <button className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors" title="Edit">
             <Edit className="w-5 h-5" />
           </button>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Trash2, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react';
+import { Search, Trash2, ChevronLeft, ChevronRight, Edit2, MoreHorizontal, Clock } from 'lucide-react';
 
 export default function GuestTable({ data, onDelete, onEdit }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,8 +23,9 @@ export default function GuestTable({ data, onDelete, onEdit }) {
   };
 
   return (
-    <div className="lg:col-span-2 flex flex-col gap-4">
-      {/* Search Bar Code Omitted for Brevity - Same as before */}
+    <div className="w-full lg:col-span-2 flex flex-col gap-4">
+      
+      {/* --- CONTROLS SECTION --- */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -39,7 +40,7 @@ export default function GuestTable({ data, onDelete, onEdit }) {
         <select 
           value={filterTier}
           onChange={(e) => setFilterTier(e.target.value)}
-          className="h-11 px-3 rounded-lg bg-white dark:bg-[#182934] border border-slate-200 dark:border-[#315168] text-slate-700 dark:text-white outline-none focus:border-[#0d93f2] cursor-pointer min-w-[140px]"
+          className="h-11 px-3 rounded-lg bg-white dark:bg-[#182934] border border-slate-200 dark:border-[#315168] text-slate-700 dark:text-white outline-none focus:border-[#0d93f2] cursor-pointer w-full sm:w-auto min-w-[140px]"
         >
           <option>All Tiers</option>
           <option>All Access</option>
@@ -48,35 +49,47 @@ export default function GuestTable({ data, onDelete, onEdit }) {
         </select>
       </div>
 
+      {/* --- DATA DISPLAY CONTAINER --- */}
       <div className="bg-white dark:bg-[#182934] rounded-xl border border-slate-200 dark:border-[#315168] shadow-sm overflow-hidden flex-1 flex flex-col min-h-[400px]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 dark:bg-[#223949] border-b border-slate-200 dark:border-[#315168]">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white">Guest</th>
-                <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white">Tier</th>
-                <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white">Status</th>
-                <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white">Added</th>
-                <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#223949]">
-              {filteredData.length > 0 ? (
-                filteredData.map((guest) => (
-                  <GuestRow key={guest.id} guest={guest} timeAgo={timeAgo} onDelete={onDelete} onEdit={onEdit} />
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="px-6 py-10 text-center text-slate-500">
-                    No guests found matching your filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
         
-        <div className="border-t border-slate-200 dark:border-[#315168] bg-slate-50 dark:bg-[#223949] px-6 py-3 flex items-center justify-between mt-auto">
+        {filteredData.length > 0 ? (
+          <>
+            {/* 1. DESKTOP VIEW (Table) - Hidden on Mobile */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 dark:bg-[#223949] border-b border-slate-200 dark:border-[#315168]">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white">Guest</th>
+                    <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white">Tier</th>
+                    <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white">Status</th>
+                    <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white">Added</th>
+                    <th className="px-6 py-4 font-semibold text-slate-900 dark:text-white text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-[#223949]">
+                  {filteredData.map((guest) => (
+                    <GuestRow key={guest.id} guest={guest} timeAgo={timeAgo} onDelete={onDelete} onEdit={onEdit} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 2. MOBILE VIEW (Cards) - Hidden on Desktop */}
+            <div className="md:hidden flex flex-col divide-y divide-slate-200 dark:divide-[#315168]">
+              {filteredData.map((guest) => (
+                <MobileGuestCard key={guest.id} guest={guest} timeAgo={timeAgo} onDelete={onDelete} onEdit={onEdit} />
+              ))}
+            </div>
+          </>
+        ) : (
+          /* EMPTY STATE */
+          <div className="flex-1 flex flex-col items-center justify-center p-10 text-center text-slate-500">
+            <p>No guests found matching your filters.</p>
+          </div>
+        )}
+        
+        {/* PAGINATION FOOTER */}
+        <div className="border-t border-slate-200 dark:border-[#315168] bg-slate-50 dark:bg-[#223949] px-4 md:px-6 py-3 flex items-center justify-between mt-auto">
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Showing {filteredData.length} of {data.length} guests
           </p>
@@ -90,6 +103,7 @@ export default function GuestTable({ data, onDelete, onEdit }) {
   );
 }
 
+// --- DESKTOP ROW COMPONENT ---
 function GuestRow({ guest, timeAgo, onDelete, onEdit }) {
   const tierStyles = {
     'All Access': 'text-amber-600 dark:text-amber-500 bg-amber-500/10 border-amber-500/20',
@@ -106,7 +120,7 @@ function GuestRow({ guest, timeAgo, onDelete, onEdit }) {
   };
 
   return (
-    <tr className="group hover:bg-slate-50 dark:hover:bg-[#1e2e3a] transition-colors animate-in fade-in duration-300 slide-in-from-left-2">
+    <tr className="group hover:bg-slate-50 dark:hover:bg-[#1e2e3a] transition-colors">
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${avatarColors[guest.color] || avatarColors.blue}`}>
@@ -134,22 +148,62 @@ function GuestRow({ guest, timeAgo, onDelete, onEdit }) {
       </td>
       <td className="px-6 py-4 text-right">
         <div className="flex items-center justify-end gap-2">
-            <button 
-                onClick={() => onEdit(guest)} // Pass entire object to fill form
-                className="text-slate-400 hover:text-[#0d93f2] p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#223949] transition-colors"
-                title="Edit"
-            >
-                <Edit2 className="w-4 h-4" />
-            </button>
-            <button 
-                onClick={() => onDelete(guest.id)}
-                className="text-slate-400 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                title="Delete"
-            >
-                <Trash2 className="w-4 h-4" />
-            </button>
+            <button onClick={() => onEdit(guest)} className="text-slate-400 hover:text-[#0d93f2] p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#223949] transition-colors"><Edit2 className="w-4 h-4" /></button>
+            <button onClick={() => onDelete(guest.id)} className="text-slate-400 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><Trash2 className="w-4 h-4" /></button>
         </div>
       </td>
     </tr>
   );
+}
+
+// --- MOBILE CARD COMPONENT ---
+function MobileGuestCard({ guest, timeAgo, onDelete, onEdit }) {
+    const tierStyles = {
+        'All Access': 'text-amber-600 dark:text-amber-500 bg-amber-500/10 border-amber-500/20',
+        'VIP': 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
+        'Afterparty': 'text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+    };
+    
+    const avatarColors = {
+        indigo: 'bg-indigo-500/20 text-indigo-500',
+        purple: 'bg-purple-500/20 text-purple-500',
+        pink: 'bg-pink-500/20 text-pink-500',
+        blue: 'bg-blue-500/20 text-blue-500',
+        orange: 'bg-orange-500/20 text-orange-500',
+    };
+
+    return (
+        <div className="p-4 bg-white dark:bg-[#182934] flex flex-col gap-3">
+            <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${avatarColors[guest.color] || avatarColors.blue}`}>
+                        {guest.initials}
+                    </div>
+                    <div>
+                        <p className="font-medium text-slate-900 dark:text-white">{guest.name}</p>
+                        {guest.email && <p className="text-xs text-slate-500 dark:text-slate-400">{guest.email}</p>}
+                    </div>
+                </div>
+                <div className="flex gap-1">
+                    <button onClick={() => onEdit(guest)} className="p-2 text-slate-400 hover:text-[#0d93f2] bg-slate-50 dark:bg-[#223949] rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => onDelete(guest.id)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-[#223949] rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                </div>
+            </div>
+            
+            <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold border ${tierStyles[guest.tier]}`}>
+                        {guest.tier}
+                    </span>
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${guest.status === 'Checked In' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
+                        {guest.status}
+                    </span>
+                </div>
+                <div className="flex items-center gap-1 text-slate-400 text-xs">
+                    <Clock className="w-3 h-3" />
+                    {timeAgo(guest.added)}
+                </div>
+            </div>
+        </div>
+    );
 }

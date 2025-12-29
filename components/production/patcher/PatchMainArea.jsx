@@ -6,19 +6,6 @@ import { FileCode, FileJson, AlertTriangle, Wrench } from 'lucide-react';
 export default function PatchMainArea({ patches = [] }) {
   return (
     <main className="flex-1 flex flex-col bg-[#0F0F10] relative overflow-hidden h-full min-w-0">
-      
-      {/* Header */}
-      <header className="h-[80px] border-b border-[#2c3e50] flex items-center justify-between px-8 bg-[#16202a]/30 backdrop-blur-sm shrink-0 flex-none">
-        <div className="flex flex-col justify-center">
-          <h2 className="text-white font-bold text-xl">Active Patch Sheet</h2>
-          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">Version 1.4 • Auto-Saved</span>
-        </div>
-        <div className="flex gap-3">
-          <ActionButton icon={FileCode} label="Export PDF" />
-          <ActionButton icon={FileJson} label="Export XML" />
-        </div>
-      </header>
-
       {/* Table Container */}
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         

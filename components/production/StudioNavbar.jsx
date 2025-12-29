@@ -3,31 +3,42 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, Bell, User, LogOut, CreditCard, Settings, HelpCircle, ChevronDown } from 'lucide-react';
+import { 
+  Search, Bell, User, LogOut, CreditCard, Settings, 
+  HelpCircle, ChevronDown, Menu, X 
+} from 'lucide-react';
 
 export default function StudioNavbar() {
   const pathname = usePathname();
-  const router = useRouter(); // Used for Logout navigation
+  const router = useRouter();
   
-  // State for Profile Dropdown
+  // State for Dropdowns
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const dropdownRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
+      // Close Profile Dropdown
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileOpen(false);
+      }
+      // Close Mobile Menu if clicking outside nav
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        // Optional: Check if the click was on the hamburger button itself to avoid conflict
+        // For simplicity, we usually let the button toggle handle itself or use a wrapper.
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownRef]);
+  }, []);
 
   // Handle Logout
   const handleLogout = () => {
-    // In a real app, you would clear tokens here
-    router.push('/'); // Redirect to Home Page
+    router.push('/'); 
   };
 
   const navItems = [
@@ -39,9 +50,19 @@ export default function StudioNavbar() {
   ];
 
   return (
-    <nav className="h-[64px] bg-[#0d131a] border-b border-[#2c3e50] flex items-center justify-between px-6 shrink-0 relative z-50 shadow-lg select-none">
-      <div className="flex items-center gap-8 h-full">
+    <nav className="h-[64px] bg-[#0d131a] border-b border-[#2c3e50] flex items-center justify-between px-4 md:px-6 shrink-0 relative z-50 shadow-lg select-none" ref={mobileMenuRef}>
+      
+      {/* LEFT SECTION: Hamburger + Logo + Desktop Nav */}
+      <div className="flex items-center gap-4 md:gap-8 h-full">
         
+        {/* Mobile Menu Toggle */}
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="lg:hidden text-[#90b2cb] hover:text-white transition-colors"
+        >
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+
         {/* Logo */}
         <Link href="/production/dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
           <div className="w-8 h-8 rounded bg-gradient-to-br from-[#00d4ff] to-blue-600 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.3)]">
@@ -50,7 +71,7 @@ export default function StudioNavbar() {
           <span className="text-white font-bold text-lg tracking-tight hidden md:block">Production Suite</span>
         </Link>
 
-        {/* Top Navigation Links */}
+        {/* Desktop Navigation Links (Hidden on Mobile) */}
         <div className="hidden lg:flex items-center gap-1 h-full ml-4">
           {navItems.map((item) => {
             const active = item.isActive(pathname);
@@ -71,10 +92,10 @@ export default function StudioNavbar() {
         </div>
       </div>
 
-      {/* Right Actions */}
-      <div className="flex items-center gap-5">
+      {/* RIGHT SECTION: Search + Notifications + Profile */}
+      <div className="flex items-center gap-3 md:gap-5">
         
-        {/* Search Bar */}
+        {/* Desktop Search Bar */}
         <div className="hidden md:flex items-center bg-[#0b1219] border border-[#2c3e50] rounded-full px-3 py-1.5 gap-2 group cursor-pointer hover:border-gray-500 transition-colors">
           <Search className="w-4 h-4 text-[#90b2cb] group-hover:text-[#00d4ff] transition-colors" />
           <span className="text-[10px] text-[#90b2cb] font-mono group-hover:text-white uppercase">Search</span>
@@ -82,7 +103,7 @@ export default function StudioNavbar() {
 
         <div className="h-4 w-px bg-[#2c3e50] hidden md:block"></div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           
           {/* Notifications */}
           <button className="text-[#90b2cb] hover:text-white transition-colors relative p-1">
@@ -103,30 +124,18 @@ export default function StudioNavbar() {
               <div className={`w-9 h-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 border flex items-center justify-center text-xs font-bold text-white shadow-lg transition-all ${isProfileOpen ? 'border-[#00d4ff] ring-2 ring-[#00d4ff]/20' : 'border-gray-500 group-hover:border-[#00d4ff]'}`}>
                  AM
               </div>
-              <ChevronDown className={`w-3 h-3 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180 text-white' : ''}`} />
+              <ChevronDown className={`hidden sm:block w-3 h-3 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180 text-white' : ''}`} />
             </button>
 
             {/* The Dropdown Menu */}
             {isProfileOpen && (
               <div className="absolute right-0 top-12 w-64 bg-[#18181B] border border-[#2c3e50] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                
-                {/* --- COMMENTED OUT SECTIONS FOR LATER USE ---
-                
-                <div className="p-4 border-b border-[#2c3e50] bg-[#1d2b36]">
+                {/* Mobile-only profile info in dropdown */}
+                <div className="p-4 border-b border-[#2c3e50] bg-[#1d2b36] sm:hidden">
                   <p className="text-white font-bold text-sm">Alex Morrison</p>
-                  <p className="text-xs text-gray-400 mt-0.5 truncate">alex.m@stageverse.com</p>
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">Lighting Designer</p>
                 </div>
 
-                <div className="p-2 flex flex-col gap-1">
-                  <DropdownItem icon={User} label="Profile Settings" />
-                  <DropdownItem icon={CreditCard} label="Billing & Plans" />
-                  <DropdownItem icon={Settings} label="Studio Preferences" />
-                  <DropdownItem icon={HelpCircle} label="Help & Support" />
-                </div>
-                
-                ---------------------------------------------- */}
-
-                {/* Footer (Logout) - Styling adjusted to be the only item */}
                 <div className="p-2 bg-[#0b1219]"> 
                   <button 
                     onClick={handleLogout}
@@ -139,22 +148,50 @@ export default function StudioNavbar() {
               </div>
             )}
           </div>
-
         </div>
       </div>
-    </nav>
-  );
-}
 
-// Helper Sub-component for menu items
-function DropdownItem({ icon: Icon, label, onClick }) {
-  return (
-    <button 
-      onClick={onClick} 
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-gray-300 hover:text-white hover:bg-[#2c3e50] transition-colors text-left"
-    >
-      <Icon className="w-4 h-4 text-gray-500" />
-      {label}
-    </button>
+      {/* ============================== */}
+      {/* MOBILE NAVIGATION MENU DRAWER */}
+      {/* ============================== */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-[64px] left-0 w-full bg-[#0d131a] border-b border-[#2c3e50] shadow-2xl lg:hidden flex flex-col animate-in slide-in-from-top-2 duration-200">
+          
+          {/* Mobile Search */}
+          <div className="p-4 pb-2">
+            <div className="flex items-center bg-[#0b1219] border border-[#2c3e50] rounded-lg px-3 py-2.5 gap-2">
+              <Search className="w-4 h-4 text-[#90b2cb]" />
+              <input 
+                type="text" 
+                placeholder="Search projects..." 
+                className="bg-transparent border-none outline-none text-white text-sm w-full placeholder-[#90b2cb]" 
+              />
+            </div>
+          </div>
+
+          {/* Links */}
+          <div className="flex flex-col p-2">
+            {navItems.map((item) => {
+              const active = item.isActive(pathname);
+              return (
+                <Link 
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)} // Close menu on click
+                  className={`flex items-center px-4 py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors
+                    ${active 
+                      ? 'text-white bg-[#00d4ff]/10 text-[#00d4ff]' 
+                      : 'text-[#90b2cb] hover:text-white hover:bg-white/5'
+                    }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+    </nav>
   );
 }
