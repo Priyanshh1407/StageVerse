@@ -270,7 +270,7 @@ export default function FanDashboard() {
             <section className="flex flex-col gap-6 pt-4">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div><h3 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-2"><ImageIcon className="w-6 h-6 text-[#0d93f2]" />Memory Vault</h3><p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Your curated collection of moments.</p></div>
-                <Link href="/dashboard/fan/vault?action=upload" className="flex items-center gap-2 px-4 py-2 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</Link>
+                <Link href="/memory-vault?action=upload" className="flex items-center gap-2 px-4 py-2 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</Link>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
                 {data.memories.slice(0, 5).map((memory) => {
@@ -279,7 +279,7 @@ export default function FanDashboard() {
                   return <div key={memory.id} className="group relative rounded-xl overflow-hidden cursor-pointer"><Image src={memory.image} alt={memory.title} fill className="object-cover transition-transform duration-500 group-hover:scale-110" /><div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4"><p className="text-white font-bold text-xs">{memory.title}</p></div></div>;
                 })}
               </div>
-              <div className="flex justify-center mt-2"><Link href="/dashboard/fan/vault" className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-[#0d93f2] transition-colors flex items-center gap-1">Enter Memory Vault<ArrowRight className="w-4 h-4" /></Link></div>
+              <div className="flex justify-center mt-2"><Link href="/memory-vault" className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-[#0d93f2] transition-colors flex items-center gap-1">Enter Memory Vault<ArrowRight className="w-4 h-4" /></Link></div>
             </section>
 
           </div>

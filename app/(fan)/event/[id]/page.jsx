@@ -208,7 +208,7 @@ export default function EventDetailPage({ params }) {
                       {event.ticket.status}
                     </div>
                   </div>
-                  <button className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20 mb-3 group">
+                  <button className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold h-12 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-400/20 mb-3 group">
                     <span>Get Tickets</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>

@@ -32,7 +32,10 @@ export default function Home() {
       // 2. Mock Local Data
       const mockLocal = [
         { id: 1, title: 'Neon Dreams: 80s Night', venue: 'Brooklyn Steel', time: '10:00 PM', tags: ['Dance', 'Retro', '18+'], price: '$25', image: 'https://images.unsplash.com/photo-1545128485-c400e7702796?q=80&w=800&auto=format&fit=crop', badge: 'Tonight' },
-        { id: 2, title: 'Jazz in the Park', venue: 'Prospect Park', time: 'Tomorrow, 2:00 PM', tags: ['Jazz', 'Outdoor', 'Free'], price: 'Free', image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop', badge: null }
+        { id: 2, title: 'Jazz in the Park', venue: 'Prospect Park', time: 'Tomorrow, 2:00 PM', tags: ['Jazz', 'Outdoor', 'Free'], price: 'Free', image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop', badge: null },
+        { id: 3, title: 'Neon Dreams: 80s Night', venue: 'Brooklyn Steel', time: '10:00 PM', tags: ['Dance', 'Retro', '18+'], price: '$25', image: 'https://images.unsplash.com/photo-1545128485-c400e7702796?q=80&w=800&auto=format&fit=crop', badge: 'Tonight' },
+        { id: 4, title: 'Jazz in the Park', venue: 'Prospect Park', time: 'Tomorrow, 2:00 PM', tags: ['Jazz', 'Outdoor', 'Free'], price: 'Free', image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop', badge: null }
+
       ];
 
       setTrendingData(mockTrending);
@@ -46,11 +49,11 @@ export default function Home() {
   return (
     <div className="bg-[#f5f7f8] dark:bg-[#050505] font-sans text-slate-900 dark:text-white antialiased selection:bg-[#00d4ff] selection:text-black">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-        
+
         <Navbar isLoggedIn={false} />
 
         <main className="flex-1 relative pt-0">
-          
+
           {/* Hero takes full height usually, so no extra padding needed here if Hero is h-screen */}
           <Hero />
 
@@ -61,21 +64,21 @@ export default function Home() {
              - pb-20: Adds bottom padding so the footer doesn't feel jammed.
           */}
           <div className="relative z-10 flex flex-col space-y-16 md:space-y-24 pb-20 bg-transparent">
-            
+
             {/* Dynamic Sections */}
             <div className="w-full">
-               <TrendingEvents events={trendingData} isLoading={isLoading} />
+              <TrendingEvents events={trendingData} isLoading={isLoading} />
             </div>
-            
+
             <div className="w-full">
-               <LocalEvents events={localData} isLoading={isLoading} />
+              <LocalEvents events={localData} isLoading={isLoading} />
             </div>
 
             {/* Static Promo */}
             <div className="w-full">
-               <PromoSection />
+              <PromoSection />
             </div>
-            
+
           </div>
         </main>
 
