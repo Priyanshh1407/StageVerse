@@ -70,7 +70,7 @@ export default function LocalEvents({ events, isLoading }) {
           <div className="space-y-4 min-h-[400px]"> 
             {visibleEvents.map((event) => (
               <Link 
-                href={`/event/${event.id}`} 
+                href={`/events/${event.id}`} 
                 key={event.id} 
                 className="group flex flex-col md:flex-row bg-[#141414] rounded-xl overflow-hidden border border-white/5 hover:border-[#00d4ff]/30 transition-all hover:bg-white/5 cursor-pointer animate-in fade-in slide-in-from-right-4 duration-300"
               >

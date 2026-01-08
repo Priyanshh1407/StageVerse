@@ -1,3 +1,4 @@
+'use client';
 import Link from "next/link";
 import { Twitter, Facebook, Instagram, Youtube, Sparkles, BarChart3 } from "lucide-react";
 

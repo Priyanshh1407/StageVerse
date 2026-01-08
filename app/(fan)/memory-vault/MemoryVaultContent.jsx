@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import FanSidebar from '@/components/fan/FanSidebar';
@@ -12,91 +12,91 @@ import {
 } from 'lucide-react';
 
 // --- BASE DATA ---
-const BASE_MEMORIES = [
-  { 
-    id: 1, 
-    type: 'video', 
-    duration: '4:20 min', 
-    title: "Electric Daisy Carnival Finale", 
-    location: "Las Vegas, NV", 
-    date: "2023-05-20", 
-    artist: "Various",
-    venue: "Las Vegas Motor Speedway",
-    image: "https://images.unsplash.com/photo-1459749411177-3c0714b62437?q=80&w=800&auto=format&fit=crop",
-    videoSrc: "https://videos.pexels.com/video-files/2022395/2022395-hd_1920_1080_30fps.mp4",
-    featured: true 
-  },
-  { 
-    id: 2, 
-    type: 'photo', 
-    title: "Tame Impala", 
-    subtitle: "The Slow Rush Tour • 2022",
-    date: "2022-03-15",
-    artist: "Tame Impala",
-    venue: "Barclays Center",
-    image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop" 
-  },
-  { 
-    id: 3, 
-    type: 'ticket', 
-    title: "Coachella 2022", 
-    subtitle: "Weekend 1 • VIP Pass",
-    date: "2022-04-15",
-    venue: "Empire Polo Club"
-  },
-  { 
-    id: 4, 
-    type: 'photo', 
-    title: "The Killers", 
-    subtitle: "Imploding The Mirage • 2022",
-    date: "2022-09-30",
-    artist: "The Killers",
-    venue: "Madison Square Garden",
-    image: "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=800&auto=format&fit=crop" 
-  },
-  { 
-    id: 5, 
-    type: 'photo', 
-    title: "Adele", 
-    subtitle: "Hyde Park • 2022",
-    date: "2022-07-01",
-    artist: "Adele",
-    venue: "Hyde Park",
-    image: "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=800&auto=format&fit=crop" 
-  },
-  { 
-    id: 6, 
-    type: 'album', 
-    title: "Radiohead", 
-    subtitle: "A Moon Shaped Pool Tour",
-    count: 42,
-    date: "2018-07-10",
-    artist: "Radiohead",
-    venue: "Madison Square Garden",
-    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop" 
-  },
-  { 
-    id: 10, 
-    type: 'video', 
-    duration: '0:15 sec', 
-    title: "Guitar Solo Close-up", 
-    location: "Denver, CO", 
-    date: "2023-11-12", 
-    artist: "John Mayer",
-    venue: "Ball Arena",
-    image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop",
-    videoSrc: "https://videos.pexels.com/video-files/4763826/4763826-uhd_2560_1440_24fps.mp4" 
-  }
-];
+// const BASE_MEMORIES = [
+//   { 
+//     id: 1, 
+//     type: 'video', 
+//     duration: '4:20 min', 
+//     title: "Electric Daisy Carnival Finale", 
+//     location: "Las Vegas, NV", 
+//     date: "2023-05-20", 
+//     artist: "Various",
+//     venue: "Las Vegas Motor Speedway",
+//     image: "https://images.unsplash.com/photo-1459749411177-3c0714b62437?q=80&w=800&auto=format&fit=crop",
+//     videoSrc: "https://videos.pexels.com/video-files/2022395/2022395-hd_1920_1080_30fps.mp4",
+//     featured: true 
+//   },
+//   { 
+//     id: 2, 
+//     type: 'photo', 
+//     title: "Tame Impala", 
+//     subtitle: "The Slow Rush Tour • 2022",
+//     date: "2022-03-15",
+//     artist: "Tame Impala",
+//     venue: "Barclays Center",
+//     image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop" 
+//   },
+//   { 
+//     id: 3, 
+//     type: 'ticket', 
+//     title: "Coachella 2022", 
+//     subtitle: "Weekend 1 • VIP Pass",
+//     date: "2022-04-15",
+//     venue: "Empire Polo Club"
+//   },
+//   { 
+//     id: 4, 
+//     type: 'photo', 
+//     title: "The Killers", 
+//     subtitle: "Imploding The Mirage • 2022",
+//     date: "2022-09-30",
+//     artist: "The Killers",
+//     venue: "Madison Square Garden",
+//     image: "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=800&auto=format&fit=crop" 
+//   },
+//   { 
+//     id: 5, 
+//     type: 'photo', 
+//     title: "Adele", 
+//     subtitle: "Hyde Park • 2022",
+//     date: "2022-07-01",
+//     artist: "Adele",
+//     venue: "Hyde Park",
+//     image: "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=800&auto=format&fit=crop" 
+//   },
+//   { 
+//     id: 6, 
+//     type: 'album', 
+//     title: "Radiohead", 
+//     subtitle: "A Moon Shaped Pool Tour",
+//     count: 42,
+//     date: "2018-07-10",
+//     artist: "Radiohead",
+//     venue: "Madison Square Garden",
+//     image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop" 
+//   },
+//   { 
+//     id: 10, 
+//     type: 'video', 
+//     duration: '0:15 sec', 
+//     title: "Guitar Solo Close-up", 
+//     location: "Denver, CO", 
+//     date: "2023-11-12", 
+//     artist: "John Mayer",
+//     venue: "Ball Arena",
+//     image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop",
+//     videoSrc: "https://videos.pexels.com/video-files/4763826/4763826-uhd_2560_1440_24fps.mp4" 
+//   }
+// ];
 
 // --- GENERATE LARGE DATASET ---
-const ALL_MEMORIES = Array.from({ length: 5 }).flatMap((_, i) => 
-  BASE_MEMORIES.map(item => ({
-    ...item,
-    id: `${item.id}-${i}`,
-    title: i > 0 ? `${item.title} (Archived ${i})` : item.title
-  }))
-);
+// const ALL_MEMORIES = Array.from({ length: 5 }).flatMap((_, i) => 
+//   BASE_MEMORIES.map(item => ({
+//     ...item,
+//     id: `${item.id}-${i}`,
+//     title: i > 0 ? `${item.title} (Archived ${i})` : item.title
+//   }))
+// );
 
 export default function MemoryVaultPage() {
   const searchParams = useSearchParams();
@@ -109,6 +109,9 @@ export default function MemoryVaultPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
+  const [memories,setMemories]=useState([]);
+  const [isLoading,setIsLoading]=useState(true);
+
   // --- FILTER STATE ---
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArtist, setSelectedArtist] = useState('All Artists');
@@ -119,6 +122,25 @@ export default function MemoryVaultPage() {
   const ITEMS_PER_PAGE = 8;
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  useEffect(()=>{
+    const fetchMemories = async()=>{
+      try{
+        const res = await fetch('/api/memory-vault');
+        const data = await res.json();
+        if(data.success){
+          const formatted = data.data.map(m=>({...m, id:m._id}));
+          setMemories(formatted);
+        }
+      } catch(error){
+        console.error("Failed to load memories",error);
+      } finally{
+        setIsLoading(false);
+      }
+    };
+
+    fetchMemories();
+  },[isUploadModalOpen])
 
   // Open Modal from URL
   useEffect(() => {
@@ -145,16 +167,29 @@ export default function MemoryVaultPage() {
   };
 
   // --- FILTER LOGIC ---
-  const filteredMemories = ALL_MEMORIES.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+  // const filteredMemories = useMemo(()=>{})
+  //  ALL_MEMORIES.filter((item) => {
+  //   const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+  //   const matchesArtist = selectedArtist === 'All Artists' || item.artist === selectedArtist;
+  //   const matchesVenue = selectedVenue === 'All Venues' || item.venue === selectedVenue;
+    
+  //   const itemYear = new Date(item.date).getFullYear().toString();
+  //   const matchesYear = selectedYear === 'Any Date' || itemYear === selectedYear;
+
+  //   return matchesSearch && matchesArtist && matchesVenue && matchesYear;
+  // });
+  const filteredMemories= useMemo(()=>{
+    return memories.filter((item)=>{
+      const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesArtist = selectedArtist === 'All Artists' || item.artist === selectedArtist;
     const matchesVenue = selectedVenue === 'All Venues' || item.venue === selectedVenue;
     
-    const itemYear = new Date(item.date).getFullYear().toString();
+    const itemYear = item.date?new Date(item.date).getFullYear().toString():'Unkown';
     const matchesYear = selectedYear === 'Any Date' || itemYear === selectedYear;
 
-    return matchesSearch && matchesArtist && matchesVenue && matchesYear;
-  });
+    return matchesSearch && matchesArtist&&matchesVenue&&matchesYear;
+    });
+  },[memories,searchQuery,selectedArtist,selectedVenue,selectedYear]);
 
   // --- RESET PAGINATION ON FILTER CHANGE ---
   useEffect(() => {
@@ -172,9 +207,9 @@ export default function MemoryVaultPage() {
     }, 600);
   };
 
-  const artists = ['All Artists', ...new Set(ALL_MEMORIES.map(m => m.artist).filter(Boolean))];
-  const venues = ['All Venues', ...new Set(ALL_MEMORIES.map(m => m.venue).filter(Boolean))];
-  const years = ['Any Date', ...new Set(ALL_MEMORIES.map(m => new Date(m.date).getFullYear().toString()))];
+  const artists = useMemo(()=>['All Artists', ...new Set(memories.map(m => m.artist).filter(Boolean))],[memories]);
+  const venues = useMemo(()=>['All Venues', ...new Set(memories.map(m => m.venue).filter(Boolean))],[memories]);
+  const years = useMemo(()=>['Any Date', ...new Set(memories.map(m => new Date(m.date).getFullYear().toString()))],[memories]);
 
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#0d93f2]/30 relative">
@@ -294,8 +329,8 @@ export default function MemoryVaultPage() {
                 <p className="text-slate-500 text-xs mt-1 text-center">Drag & drop photos or videos here</p>
               </div>
 
-              {visibleMemories.length > 0 ? (
-                visibleMemories.map((item) => (
+              {filteredMemories.slice(0,visibleCount).length > 0 ? (
+                filteredMemories.slice(0,visibleCount).map((item) => (
                   <MemoryCard key={item.id} item={item} />
                 ))
               ) : (

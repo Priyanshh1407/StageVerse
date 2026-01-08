@@ -1,3 +1,4 @@
+'use client';
 import { Sparkles, Save, Trash2 } from 'lucide-react';
 
 export default function BuilderHeader() {

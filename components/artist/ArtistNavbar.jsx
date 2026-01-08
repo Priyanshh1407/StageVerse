@@ -10,10 +10,21 @@ export default function ArtistNavbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    console.log("Logging out...");
-    router.push('/'); 
-  };
+  const handleLogout = async () => {
+  try {
+    // 1. Ask Server to delete the Cookie
+    await fetch('/api/auth/logout', { method: 'POST' });
+
+    // 2. Clear Client-side User Info (for UI)
+    localStorage.removeItem('user'); 
+    
+    // 3. Force Redirect to Login
+    router.push('/');
+    router.refresh(); // Important: Refreshes Server Components to see you are gone
+  } catch (err) {
+    console.error('Logout failed', err);
+  }
+};
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);

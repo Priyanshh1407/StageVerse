@@ -38,7 +38,6 @@ const VENUE_DETAILS = {
     }
 };
 
-
 const PAST_TICKETS = [
     { id: 'p1', artist: "Khruangbin", date: "Oct 22, 2022", venue: "Red Rocks", image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=200&auto=format&fit=crop" },
     { id: 'p2', artist: "The Killers", date: "Aug 15, 2022", venue: "Wembley", image: "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=200&auto=format&fit=crop" },

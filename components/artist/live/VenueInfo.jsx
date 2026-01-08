@@ -1,3 +1,4 @@
+'use client';
 export default function VenueInfo() {
   return (
     <div className="bg-white dark:bg-[#15232d] rounded-xl border border-slate-200 dark:border-[#223949] overflow-hidden shadow-sm h-[200px] relative group">

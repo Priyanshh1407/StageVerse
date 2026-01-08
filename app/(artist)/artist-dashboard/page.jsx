@@ -1,3 +1,4 @@
+'use client';
 import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import { 
   LiveShowCard, 

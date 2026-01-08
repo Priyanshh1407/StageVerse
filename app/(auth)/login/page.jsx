@@ -5,14 +5,6 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Chrome, AlertTriangle, ArrowLeft } from 'lucide-react';
 
-// --- 1. MOCK DATABASE (Only stores Role, NOT Path) ---
-const MOCK_DB_USERS = [
-  { email: 'fan@stageverse.com', password: 'password123', role: 'fan' },
-  { email: 'organizer@stageverse.com', password: 'password123', role: 'organizer' },
-  { email: 'crew@stageverse.com', password: 'password123', role: 'crew' },
-  { email: 'artist@stageverse.com', password: 'password123', role: 'artist' }
-];
-
 // --- 2. CONFIGURATION: Role-to-URL Mapping ---
 // This acts as the "Traffic Cop" logic
 const ROLE_PATHS = {
@@ -42,44 +34,52 @@ const LoginPage = () => {
       return;
     }
 
-    // Simulate Network Request
-    await new Promise(resolve => setTimeout(resolve, 800));
-
     // --- 3. LOGIN LOGIC ---
-    
-    // A. Find user in DB
-    const user = MOCK_DB_USERS.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
 
-    if (user) {
-      // B. Get the Role from the User Object
-      const userRole = user.role; 
+    try {
+      // Call the backend api
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // C. Look up the Path using the Mapping Object
-      const destination = ROLE_PATHS[userRole];
+      const data = await response.json();
 
-      // D. Safety Check: Does a path exist for this role?
-      if (destination) {
-        console.log(`User is a ${userRole}, redirecting to: ${destination}`);
-        router.push(destination);
-      } else {
-        // Fallback if role is undefined in your app
-        console.error('Role not mapped to a route!');
-        router.push('/'); 
+      // Check for errors
+      if (!response.ok) {
+        throw new Error(data.message || 'Login Failed');
       }
-    } else {
-      setError('Invalid email or password.');
+
+      // Success! Save the token 
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Role based redirect
+      const userRole = data.user.role;
+      const destination = ROLE_PATHS[userRole] || '/dashboard';
+
+      console.log(`✅ Login Success! User is a ${userRole}. Redirecting to ${destination}...`);
+
+      // Artificial delay just to show the "Verifying..." animation for a split second longer
+      setTimeout(() => {
+        router.push(destination);
+        router.refresh();
+      }, 500);
+    } catch (err) {
+      console.log('Login Error: ', err);
+      setError(err.message);
       setIsLoading(false);
     }
   };
 
   return (
     <div className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black font-sans">
-      
+
       {/* HOME BUTTON */}
-      <Link 
-        href="/" 
+      <Link
+        href="/"
         className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/70 hover:text-white hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300 group"
       >
         <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
@@ -101,15 +101,15 @@ const LoginPage = () => {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative z-10 w-[90%] max-w-lg flex flex-col items-center justify-center p-6 sm:p-12 md:p-16"
       >
-        <div 
+        <div
           className="absolute inset-0 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-cyan-500/50"
           style={{
             boxShadow: '0 0 50px 10px rgba(6,182,212, 0.2), inset 0 0 20px rgba(6,182,212, 0.1)'
           }}
         />
-        
+
         <div className="relative z-20 flex flex-col items-center w-full">
-          
+
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.6)]">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
@@ -141,21 +141,21 @@ const LoginPage = () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="w-full space-y-4 sm:space-y-6">
-            
-            <InputField 
-              type="text" 
-              placeholder="Email Address" 
+
+            <InputField
+              type="text"
+              placeholder="Email Address"
               icon={Mail}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                if (error) setError(''); 
+                if (error) setError('');
               }}
             />
 
-            <InputField 
-              type="password" 
-              placeholder="Password" 
+            <InputField
+              type="password"
+              placeholder="Password"
               icon={Lock}
               value={password}
               onChange={(e) => {

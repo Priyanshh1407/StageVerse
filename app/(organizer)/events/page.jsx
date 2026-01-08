@@ -2,41 +2,82 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; 
-import { 
-  Bell, Search, Filter, CalendarDays, Plus, MoreVertical, 
-  Music, Mic, Palette, Trophy, Utensils, Edit, LineChart, Copy, 
-  ChevronLeft, ChevronRight, Menu, Trash2, CheckCircle, Eye
+import { useRouter } from 'next/navigation';
+import {
+  Bell, Search, Filter, CalendarDays, Plus, MoreVertical,
+  Music, Mic, Palette, Trophy, Utensils, Edit, LineChart, Copy,
+  ChevronLeft, ChevronRight, Menu, Trash2, CheckCircle, Eye, RefreshCw
 } from 'lucide-react';
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 
-// --- MOCK DATA GENERATOR ---
-const INITIAL_EVENTS = [
-  { id: 1, name: "Summer Vibes Festival 2024", category: "Electronic • Music", date: "Aug 24, 2024", time: "8:00 PM", venue: "Neon Arena", location: "Los Angeles, CA", ticketsSold: 12450, capacityPercentage: 78, status: "Live", icon: Music },
-  { id: 2, name: "Tech Talks: Future AI", category: "Conference • Tech", date: "Sep 12, 2024", time: "10:00 AM", venue: "Convention Center", location: "San Francisco, CA", ticketsSold: 450, capacityPercentage: 30, status: "Draft", icon: Mic },
-  { id: 3, name: "Modern Art Gallery Opening", category: "Exhibition • Art", date: "Jul 15, 2024", time: "6:00 PM", venue: "The Void Gallery", location: "New York, NY", ticketsSold: 2000, capacityPercentage: 100, status: "Completed", icon: Palette },
-  { id: 4, name: "Urban Hoops Championship", category: "Sports • Tournament", date: "Oct 05, 2024", time: "2:00 PM", venue: "City Park Courts", location: "Chicago, IL", ticketsSold: 850, capacityPercentage: 55, status: "Live", icon: Trophy },
-  { id: 5, name: "Taste of Downtown", category: "Food • Festival", date: "Nov 20, 2024", time: "11:00 AM", venue: "Downtown Plaza", location: "Austin, TX", ticketsSold: 0, capacityPercentage: 0, status: "Scheduled", icon: Utensils },
-  { id: 6, name: "Winter Jazz Gala", category: "Jazz • Music", date: "Dec 10, 2024", time: "7:00 PM", venue: "Blue Note", location: "Chicago, IL", ticketsSold: 120, capacityPercentage: 15, status: "Scheduled", icon: Music },
-  { id: 7, name: "Startup Pitch Night", category: "Business • Networking", date: "Jan 15, 2025", time: "6:30 PM", venue: "WeWork Loft", location: "Seattle, WA", ticketsSold: 50, capacityPercentage: 50, status: "Draft", icon: Mic },
-];
-
 export default function EventsPage() {
-  const router = useRouter(); 
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   // --- STATE FOR INTERACTIVITY ---
-  const [events, setEvents] = useState(INITIAL_EVENTS);
+  const [events, setEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
+
+  // Fetch events 
+  const fetchEvents = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/events?mode=organizer');
+      const data = await res.json();
+
+      if (data.success) {
+        const formatedEvents = data.data.map(event => {
+
+          let totalSold = 0;
+          let totalCapacity = 0;
+
+          if (event.ticketTiers && event.ticketTiers.length > 0) {
+            event.ticketTiers.forEach(tier => {
+              totalSold += (tier.sold || 0);
+              totalCapacity += (tier.capacity || 0);
+            });
+          }
+
+          const capacityPercentage = totalCapacity > 0 ? Math.round((totalSold / totalCapacity) * 100) : 0;
+
+          return {
+            id: event._id,
+            eventId: event.eventId,
+            name: event.title,
+            artist: event.artist || 'TBA',
+            category: `${event.genre || 'General'} • ${event.vibe || 'Event'}`,
+            date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            time: event.time,
+            venue: event.venue?.name || 'Unknown Venue',
+            location: event.city,
+            ticketsSold: totalSold,
+            capacityPercentage: capacityPercentage,
+            status: event.status || 'Scheduled',
+            icon: getCategoryIcon(event.genre)
+          };
+        });
+        setEvents(formatedEvents);
+      }
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   // --- FILTER LOGIC ---
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
-      const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            event.venue.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.venue.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "All" || event.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -52,24 +93,86 @@ export default function EventsPage() {
   // --- HANDLERS ---
   const handleCreateRedirect = () => {
     // Redirect to Create Event Page
-    router.push('/create-event'); 
+    router.push('/create-event');
   };
 
-  const handleDuplicate = (event) => {
-    const newEvent = {
-      ...event,
-      id: Date.now(), // simple unique id
-      name: `${event.name} (Copy)`,
-      status: 'Draft',
-      ticketsSold: 0,
-      capacityPercentage: 0
-    };
-    setEvents([newEvent, ...events]);
+  const handleViewLive = (eventId) => {
+    window.open(`/event/${eventId}`, '_blank');
   };
 
-  const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this event?")) {
-      setEvents(events.filter(e => e.id !== id));
+  const handleEdit = (event) => {
+    const idToUse = event.eventId || event.id;
+    router.push(`/create-event?id=${idToUse}`);
+  }
+
+  const handleAnalytics = (id) => {
+    router.push(`/manage/events/${id}/analytics`);
+  }
+
+  const handleDuplicate = async (event) => {
+    if (!confirm(`Duplicate "${event.name}"?`)) return;
+
+    setIsLoading(true);
+    try {
+      // A. Fetch full raw details of the event first (to get clean data)
+      const res = await fetch(`/api/events/${event.id}`); // Using the Long ID
+      const json = await res.json();
+
+      if (!json.success) throw new Error("Failed to fetch original event");
+      const originalEvent = json.data;
+
+      // B. Prepare payload (Remove IDs, dates, and add 'Copy')
+      const payload = {
+        title: `${originalEvent.title} (Copy)`,
+        description: originalEvent.description,
+        artist: originalEvent.artist,
+        genre: originalEvent.genre,
+        vibe: originalEvent.vibe,
+        date: originalEvent.date, // Keep original date or reset? Keeping for now.
+        time: originalEvent.time,
+        city: originalEvent.city,
+        venue: originalEvent.venue?._id || originalEvent.venue, // Ensure we send ID
+        status: 'Draft', // Always reset status to Draft
+        ticketTiers: originalEvent.ticketTiers.map(tier => ({
+          name: tier.name,
+          price: tier.price,
+          capacity: tier.capacity,
+          sold: 0, // Reset sold count
+          status: 'Active'
+        }))
+      };
+
+      // C. Create the new Event
+      const createRes = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (createRes.ok) {
+        alert("Event Duplicated Successfully!");
+        fetchEvents(); // Refresh the table
+      } else {
+        alert("Failed to duplicate.");
+      }
+    } catch (error) {
+      console.error("Duplicate error:", error);
+      alert("Error duplicating event.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm("Are you sure you want to delete this event permanently?")) {
+      try {
+        // Optimistic update
+        setEvents(prev => prev.filter(e => e.id !== id));
+        await fetch(`/api/events/${id}`, { method: 'DELETE' });
+      } catch (err) {
+        alert("Failed to delete event");
+        fetchEvents();
+      }
     }
   };
 
@@ -84,21 +187,31 @@ export default function EventsPage() {
     setCurrentPage(1);
   }, [searchQuery, statusFilter]);
 
+  const getCategoryIcon = (genre) => {
+    if (!genre) return Music;
+    const g = genre.toLowerCase();
+    if (g.includes('tech') || g.includes('business')) return Mic;
+    if (g.includes('art') || g.includes('theater')) return Palette;
+    if (g.includes('sport')) return Trophy;
+    if (g.includes('food')) return Utensils;
+    return Music;
+  };
+
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30">
-      
+
       {/* Imported Sidebar Component */}
       <OrganizerSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-[#101b22]">
-        
+
         <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-[#2c3b47] scrollbar-track-[#101b22]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-6">
-            
+
             {/* CONTROLS */}
-            <EventsControlBar 
+            <EventsControlBar
               search={searchQuery}
               setSearch={setSearchQuery}
               statusFilter={statusFilter}
@@ -108,21 +221,32 @@ export default function EventsPage() {
 
             {/* EVENTS TABLE CONTAINER */}
             <div className="bg-[#192734] rounded-xl border border-[#2c3b47] overflow-hidden flex flex-col min-h-[400px]">
-              <EventsTable 
-                data={currentData} 
-                onDuplicate={handleDuplicate}
-                onDelete={handleDelete}
-              />
-              
-              <Pagination 
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={filteredEvents.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
-            </div>
+              {isLoading ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-[#90b2cb] gap-3">
+                  <RefreshCw className="w-8 h-8 animate-spin text-[#0d93f2]" />
+                  <p>Loading your events...</p>
+                </div>
+              ) : (
+                <>
+                  <EventsTable
+                    data={currentData}
+                    onDelete={handleDelete}
+                    onDuplicate={handleDuplicate}
+                    onEdit={handleEdit}
+                    onAnalytics={handleAnalytics}
+                    onViewLive={handleViewLive}
+                  />
 
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={filteredEvents.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                  />
+                </>
+              )}
+            </div>
           </div>
         </div>
       </main>
@@ -154,7 +278,7 @@ function Header({ onMenuClick }) {
         <div className="flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
           <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
             <div className="w-full h-full rounded-full bg-[#101b22] relative overflow-hidden">
-               <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
+              <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
             </div>
           </div>
         </div>
@@ -174,25 +298,25 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="w-5 h-5 text-[#90b2cb]" />
           </div>
-          <input 
+          <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] transition-colors" 
-            placeholder="Search events..." 
+            className="block w-full pl-10 pr-3 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] transition-colors"
+            placeholder="Search events..."
             type="text"
           />
         </div>
 
         {/* Filter Dropdown */}
         <div className="relative group">
-          <button 
+          <button
             onClick={() => setShowFilterDropdown(!showFilterDropdown)}
             className="flex items-center gap-2 px-3 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg hover:border-[#3e5060] transition-colors text-sm text-[#90b2cb] hover:text-white"
           >
             <Filter className="w-4 h-4" />
             <span>Status: {statusFilter}</span>
           </button>
-          
+
           {showFilterDropdown && (
             <div className="absolute top-full left-0 mt-2 w-40 bg-[#192734] border border-[#2c3b47] rounded-lg shadow-xl z-10 overflow-hidden">
               {["All", "Live", "Draft", "Scheduled", "Completed"].map((status) => (
@@ -220,7 +344,7 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
       </div>
 
       {/* Create Button with Redirect */}
-      <button 
+      <button
         onClick={onCreate}
         className="flex items-center gap-2 bg-[#0d93f2] hover:bg-[#0b84db] text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-lg shadow-[#0d93f2]/20 w-full md:w-auto justify-center"
       >
@@ -231,11 +355,17 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
   );
 }
 
-function EventsTable({ data, onDuplicate, onDelete }) {
+function EventsTable({ data, onDuplicate, onDelete, onEdit, onAnalytics, onViewLive }) {
   if (data.length === 0) {
     return (
-      <div className="p-12 text-center text-[#90b2cb]">
-        No events found matching your criteria.
+      <div className="p-12 text-center flex flex-col items-center gap-4 text-[#90b2cb]">
+        <div className="w-16 h-16 rounded-full bg-[#101b22] border border-[#2c3b47] flex items-center justify-center">
+          <CalendarDays className="w-8 h-8 opacity-50" />
+        </div>
+        <div>
+          <h3 className="text-white font-medium mb-1">No Events Found</h3>
+          <p className="text-sm">Create your first event to see it here.</p>
+        </div>
       </div>
     );
   }
@@ -245,7 +375,8 @@ function EventsTable({ data, onDuplicate, onDelete }) {
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="bg-[#101b22]/50 border-b border-[#2c3b47] text-[#90b2cb] text-xs uppercase tracking-wider">
-            <th className="px-6 py-4 font-medium w-[30%]">Event Name</th>
+            <th className="px-6 py-4 font-medium w-[25%]">Event Name</th>
+            <th className="px-6 py-4 font-medium">Artist</th>
             <th className="px-6 py-4 font-medium">Date & Time</th>
             <th className="px-6 py-4 font-medium">Venue</th>
             <th className="px-6 py-4 font-medium">Tickets Sold</th>
@@ -255,11 +386,14 @@ function EventsTable({ data, onDuplicate, onDelete }) {
         </thead>
         <tbody className="divide-y divide-[#2c3b47]">
           {data.map((event) => (
-            <EventRow 
-              key={event.id} 
-              event={event} 
+            <EventRow
+              key={event.id}
+              event={event}
               onDuplicate={onDuplicate}
               onDelete={onDelete}
+              onEdit={onEdit}
+              onAnalytics={onAnalytics}
+              onViewLive={onViewLive}
             />
           ))}
         </tbody>
@@ -268,7 +402,7 @@ function EventsTable({ data, onDuplicate, onDelete }) {
   );
 }
 
-function EventRow({ event, onDuplicate, onDelete }) {
+function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLive }) {
   const [showMenu, setShowMenu] = useState(false);
 
   // Status styling logic
@@ -312,6 +446,13 @@ function EventRow({ event, onDuplicate, onDelete }) {
           </div>
         </div>
       </td>
+      {/* 2. ARTIST COLUMN */}
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-2">
+          <Mic className="w-3 h-3 text-[#90b2cb]" /> {/* Optional icon */}
+          <span className="text-sm text-white font-medium">{event.artist}</span>
+        </div>
+      </td>
       <td className="px-6 py-4">
         <div className="text-sm text-white">{event.date}</div>
         <div className="text-xs text-[#90b2cb]">{event.time}</div>
@@ -327,8 +468,8 @@ function EventRow({ event, onDuplicate, onDelete }) {
             <span className="text-[#90b2cb]">{event.capacityPercentage}%</span>
           </div>
           <div className="w-full bg-[#101b22] h-1.5 rounded-full overflow-hidden">
-            <div 
-              className={`${getProgressColor(event.status)} h-full rounded-full`} 
+            <div
+              className={`${getProgressColor(event.status)} h-full rounded-full`}
               style={{ width: `${event.capacityPercentage}%` }}
             ></div>
           </div>
@@ -346,18 +487,23 @@ function EventRow({ event, onDuplicate, onDelete }) {
            - 'md:opacity-0 md:group-hover:opacity-100' applies hover effect ONLY on Desktop
         */}
         <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-          <button className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors" title="Edit">
+          <button
+            onClick={() => onEdit(event)}
+            className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors"
+            title="Edit">
             <Edit className="w-5 h-5" />
           </button>
-          <button className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors" title="Analytics">
+          <button
+            onClick={() => onAnalytics(event.id)}
+            className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors" title="Analytics">
             <LineChart className="w-5 h-5" />
           </button>
           <button onClick={() => onDuplicate(event)} className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors" title="Duplicate">
             <Copy className="w-5 h-5" />
           </button>
-          
+
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowMenu(!showMenu)}
               className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors"
             >
@@ -365,12 +511,14 @@ function EventRow({ event, onDuplicate, onDelete }) {
             </button>
             {showMenu && (
               <div className="absolute right-0 top-full mt-2 w-32 bg-[#192734] border border-[#2c3b47] rounded-lg shadow-xl z-20 overflow-hidden flex flex-col">
-                 <button className="flex items-center gap-2 px-4 py-2 text-xs text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] text-left">
-                    <Eye className="w-3 h-3" /> View Live
-                 </button>
-                 <button onClick={() => onDelete(event.id)} className="flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-[#2c3b47] text-left">
-                    <Trash2 className="w-3 h-3" /> Delete
-                 </button>
+                <button
+                  onClick={() => onViewLive(event.id)}
+                  className="flex items-center gap-2 px-4 py-2 text-xs text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] text-left">
+                  <Eye className="w-3 h-3" /> View Live
+                </button>
+                <button onClick={() => onDelete(event.id)} className="flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-[#2c3b47] text-left">
+                  <Trash2 className="w-3 h-3" /> Delete
+                </button>
               </div>
             )}
           </div>
@@ -390,29 +538,28 @@ function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageC
         Showing <span className="font-medium text-white">{totalItems > 0 ? startItem : 0}</span> to <span className="font-medium text-white">{endItem}</span> of <span className="font-medium text-white">{totalItems}</span> events
       </div>
       <div className="flex gap-2">
-        <button 
+        <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="px-3 py-1.5 text-xs font-medium text-[#90b2cb] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#2c3b47] rounded transition-colors flex items-center"
         >
           <ChevronLeft className="w-3 h-3 mr-1" /> Previous
         </button>
-        
+
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-           <button 
-             key={page}
-             onClick={() => onPageChange(page)}
-             className={`px-3 py-1.5 text-xs font-medium rounded shadow-sm transition-colors ${
-               currentPage === page 
-                 ? 'text-white bg-[#0d93f2] hover:bg-[#0b84db]' 
-                 : 'text-[#90b2cb] hover:text-white hover:bg-[#2c3b47]'
-             }`}
-           >
-             {page}
-           </button>
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`px-3 py-1.5 text-xs font-medium rounded shadow-sm transition-colors ${currentPage === page
+              ? 'text-white bg-[#0d93f2] hover:bg-[#0b84db]'
+              : 'text-[#90b2cb] hover:text-white hover:bg-[#2c3b47]'
+              }`}
+          >
+            {page}
+          </button>
         ))}
 
-        <button 
+        <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages || totalPages === 0}
           className="px-3 py-1.5 text-xs font-medium text-[#90b2cb] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#2c3b47] rounded transition-colors flex items-center"

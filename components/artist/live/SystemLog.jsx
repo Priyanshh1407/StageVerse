@@ -1,3 +1,4 @@
+'use client';
 import { useState } from 'react';
 import { History, Plus } from 'lucide-react';
 

@@ -31,7 +31,7 @@ export default function TrendingEvents({ events, isLoading }) {
             {events.map((event) => (
               /* 2. Changed outer div to Link and added href */
               <Link 
-                href={`/event/${event.id}`} 
+                href={`/events/${event.id}`} 
                 key={event.id} 
                 className="group relative overflow-hidden rounded-2xl bg-[#0a0a0a] border border-white/5 transition-all hover:border-[#00d4ff]/30 hover:shadow-[0_0_40px_-10px_rgba(0,212,255,0.3)] cursor-pointer block"
               >

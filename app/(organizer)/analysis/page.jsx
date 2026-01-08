@@ -16,7 +16,7 @@ import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 // ==================================================================================
 // --- TEMPORARY: COMING SOON MODE ---
 // Change to `false` to view the actual page, or delete this section when ready.
-const IS_COMING_SOON = true; 
+const IS_COMING_SOON = false; 
 // ==================================================================================
 
 // --- MOCK DATA: TRENDS ---

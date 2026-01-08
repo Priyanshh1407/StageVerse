@@ -1,156 +1,161 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import FanSidebar from '@/components/fan/FanSidebar';
 import CreateAlertModal from '@/components/fan/discover/CreateAlertModal';
 import AllReleasesModal from '@/components/fan/discover/AllReleaseModal';
 
-import { 
-  Menu, Search, Music, MapPin, Calendar, SlidersHorizontal, 
-  Sparkles, Heart, Users, Bell, Plus, ChevronDown, ChevronUp, X 
+import {
+  Menu, Search, Music, MapPin, Calendar, SlidersHorizontal,
+  Sparkles, Heart, Users, Bell, Plus, ChevronDown, ChevronUp, X
 } from 'lucide-react';
 
 // --- MOCK DATA ---
-const RECOMMENDED_EVENTS = [
-  {
-    id: 1,
-    artist: "Radiohead",
-    tour: "Moon Shaped Pool Tour",
-    date: { month: "OCT", day: "24" },
-    venue: "Madison Square Garden, NY",
-    city: "New York",
-    genre: "Alt-Rock",
-    tags: ["Alt-Rock", "Electronic"],
-    vibe: "Intimate",
-    price: 85,
-    match: "98% Match",
-    image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: 2,
-    artist: "Tame Impala",
-    tour: "Sound System",
-    date: { month: "NOV", day: "12" },
-    venue: "The Greek Theatre, LA",
-    city: "Los Angeles",
-    genre: "Psychedelic",
-    tags: ["Psychedelic", "Indie"],
-    vibe: "Outdoor",
-    price: 65,
-    match: "Based on Tame Impala",
-    image: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: 3,
-    artist: "Khruangbin",
-    tour: "World Tour",
-    date: { month: "DEC", day: "05" },
-    venue: "Red Rocks Amphitheatre, CO",
-    city: "Colorado",
-    genre: "Funk",
-    tags: ["Funk", "Soul"],
-    vibe: "Festival",
-    price: 55,
-    match: "Selling Fast",
-    image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop"
-  },
-  // -- Extra Items for Expansion --
-  {
-    id: 4,
-    artist: "Fred again..",
-    tour: "Actual Life",
-    date: { month: "NOV", day: "18" },
-    venue: "Brooklyn Mirage, NY",
-    city: "New York",
-    genre: "Electronic",
-    tags: ["House", "Garage"],
-    vibe: "Rave",
-    price: 90,
-    match: "Trending",
-    image: "https://images.unsplash.com/photo-1574155376612-c84efdd3a64f?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: 5,
-    artist: "The 1975",
-    tour: "At Their Very Best",
-    date: { month: "JAN", day: "10" },
-    venue: "O2 Arena, London",
-    city: "London",
-    genre: "Pop",
-    tags: ["Pop", "Rock"],
-    vibe: "Arena",
-    price: 75,
-    match: "For You",
-    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: 6,
-    artist: "Arctic Monkeys",
-    tour: "The Car Tour",
-    date: { month: "FEB", day: "14" },
-    venue: "Kia Forum, LA",
-    city: "Los Angeles",
-    genre: "Rock",
-    tags: ["Indie", "Rock"],
-    vibe: "Arena",
-    price: 80,
-    match: "Popular",
-    image: "https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=800&auto=format&fit=crop"
-  }
-];
+// const RECOMMENDED_EVENTS = [
+//   {
+//     id: 1,
+//     artist: "Radiohead",
+//     tour: "Moon Shaped Pool Tour",
+//     date: { month: "OCT", day: "24" },
+//     venue: "Madison Square Garden, NY",
+//     city: "New York",
+//     genre: "Alt-Rock",
+//     tags: ["Alt-Rock", "Electronic"],
+//     vibe: "Intimate",
+//     price: 85,
+//     match: "98% Match",
+//     image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop"
+//   },
+//   {
+//     id: 2,
+//     artist: "Tame Impala",
+//     tour: "Sound System",
+//     date: { month: "NOV", day: "12" },
+//     venue: "The Greek Theatre, LA",
+//     city: "Los Angeles",
+//     genre: "Psychedelic",
+//     tags: ["Psychedelic", "Indie"],
+//     vibe: "Outdoor",
+//     price: 65,
+//     match: "Based on Tame Impala",
+//     image: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=800&auto=format&fit=crop"
+//   },
+//   {
+//     id: 3,
+//     artist: "Khruangbin",
+//     tour: "World Tour",
+//     date: { month: "DEC", day: "05" },
+//     venue: "Red Rocks Amphitheatre, CO",
+//     city: "Colorado",
+//     genre: "Funk",
+//     tags: ["Funk", "Soul"],
+//     vibe: "Festival",
+//     price: 55,
+//     match: "Selling Fast",
+//     image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop"
+//   },
+//   // -- Extra Items for Expansion --
+//   {
+//     id: 4,
+//     artist: "Fred again..",
+//     tour: "Actual Life",
+//     date: { month: "NOV", day: "18" },
+//     venue: "Brooklyn Mirage, NY",
+//     city: "New York",
+//     genre: "Electronic",
+//     tags: ["House", "Garage"],
+//     vibe: "Rave",
+//     price: 90,
+//     match: "Trending",
+//     image: "https://images.unsplash.com/photo-1574155376612-c84efdd3a64f?q=80&w=800&auto=format&fit=crop"
+//   },
+//   {
+//     id: 5,
+//     artist: "The 1975",
+//     tour: "At Their Very Best",
+//     date: { month: "JAN", day: "10" },
+//     venue: "O2 Arena, London",
+//     city: "London",
+//     genre: "Pop",
+//     tags: ["Pop", "Rock"],
+//     vibe: "Arena",
+//     price: 75,
+//     match: "For You",
+//     image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=800&auto=format&fit=crop"
+//   },
+//   {
+//     id: 6,
+//     artist: "Arctic Monkeys",
+//     tour: "The Car Tour",
+//     date: { month: "FEB", day: "14" },
+//     venue: "Kia Forum, LA",
+//     city: "Los Angeles",
+//     genre: "Rock",
+//     tags: ["Indie", "Rock"],
+//     vibe: "Arena",
+//     price: 80,
+//     match: "Popular",
+//     image: "https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=800&auto=format&fit=crop"
+//   }
+// ];
 
-const FRIENDS_EVENTS = [
-  {
-    id: 1,
-    title: "Electric Daisy Carnival",
-    venue: "Las Vegas Motor Speedway",
-    date: "Fri, Nov 18",
-    status: "Next Week",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8",
-    attendees: [
-      { initials: "SJ", img: null },
-      { initials: null, img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" },
-      { count: 3 }
-    ]
-  },
-  {
-    id: 2,
-    title: "The Killers - Live",
-    venue: "TD Garden, Boston",
-    date: "Sat, Nov 12",
-    status: "Tomorrow",
-    statusColor: "text-green-500",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA8Rmm3uq1-2OEiQe7gSWxyfJiWrk4GuiL1Eb6GI1YS-h168pIiJDuOgnLDAobGaYy-Mkr6tLaIIDUZgf0XTB1WH8Vq5dMPQEFFSgYstKC1x0s5dFYwMd249Mb9_U6p22Rl1AL2nNoVoecA1EvJ4INIlZkl1PyH9OPgWx-bWdPvWC6Huwg_rmqG04pkcmUZCFEjT9QbuZQ6317VD8a8Qg1HltQfptOQsV_XMVkpinE-uE0yferTHC_yZ4EYC73sy0pFXBHOEHVXkqWi",
-    attendees: [
-      { initials: "M", color: "bg-purple-500" },
-      { initials: "D", color: "bg-blue-500" }
-    ]
-  },
-  // -- Extra Item for Expansion --
-  {
-    id: 3,
-    title: "Coachella 2025",
-    venue: "Empire Polo Club",
-    date: "Fri, Apr 14",
-    status: "Going Soon",
-    statusColor: "text-[#0d93f2]",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8",
-    attendees: [
-      { initials: "AL", color: "bg-orange-500" },
-      { count: 5 }
-    ]
-  }
-];
+// const FRIENDS_EVENTS = [
+//   {
+//     id: 1,
+//     title: "Electric Daisy Carnival",
+//     venue: "Las Vegas Motor Speedway",
+//     date: "Fri, Nov 18",
+//     status: "Next Week",
+//     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8",
+//     attendees: [
+//       { initials: "SJ", img: null },
+//       { initials: null, img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" },
+//       { count: 3 }
+//     ]
+//   },
+//   {
+//     id: 2,
+//     title: "The Killers - Live",
+//     venue: "TD Garden, Boston",
+//     date: "Sat, Nov 12",
+//     status: "Tomorrow",
+//     statusColor: "text-green-500",
+//     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA8Rmm3uq1-2OEiQe7gSWxyfJiWrk4GuiL1Eb6GI1YS-h168pIiJDuOgnLDAobGaYy-Mkr6tLaIIDUZgf0XTB1WH8Vq5dMPQEFFSgYstKC1x0s5dFYwMd249Mb9_U6p22Rl1AL2nNoVoecA1EvJ4INIlZkl1PyH9OPgWx-bWdPvWC6Huwg_rmqG04pkcmUZCFEjT9QbuZQ6317VD8a8Qg1HltQfptOQsV_XMVkpinE-uE0yferTHC_yZ4EYC73sy0pFXBHOEHVXkqWi",
+//     attendees: [
+//       { initials: "M", color: "bg-purple-500" },
+//       { initials: "D", color: "bg-blue-500" }
+//     ]
+//   },
+//   // -- Extra Item for Expansion --
+//   {
+//     id: 3,
+//     title: "Coachella 2025",
+//     venue: "Empire Polo Club",
+//     date: "Fri, Apr 14",
+//     status: "Going Soon",
+//     statusColor: "text-[#0d93f2]",
+//     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8",
+//     attendees: [
+//       { initials: "AL", color: "bg-orange-500" },
+//       { count: 5 }
+//     ]
+//   }
+// ];
 
-const NEW_RELEASES = [
-  { id: 1, artist: "Adele", title: "World Tour 2024 Announced", type: "NEW ALBUM", color: "bg-[#0d93f2]", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8" },
-  { id: 2, artist: "Metallica", title: "72 Seasons - Out Now", type: "SINGLE", color: "bg-purple-600", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAjhght7KFz6rinfM1d5OY5S0IpCdQQLln3QXd4sJ0O6iQgKQXuM6Ts7xNcV9sMO80my7lqs3tu9QI_XZvIZLA2c2sWmHMOGoSFHE1ukVFSbRyyd6n0ctliyp9dlIoFQ-UySMdA3EnufIKBsFgN4Ki-LI-dpCQkPZxbm2pRW5P7ZgZEFW5-iLCXJRinswEIA65iWBk7ND8F5KqyTdesZaj-DfxORMqNHJnSXdZr3qrpIqdwOvXsfhYDCMqufjGvjbrYVSTOo9vTOjWy" },
-  { id: 3, artist: "Skrillex", title: "Summer Festivals Lineup", type: "TOUR", color: "bg-green-600", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8" },
-];
+// const NEW_RELEASES = [
+//   { id: 1, artist: "Adele", title: "World Tour 2024 Announced", type: "NEW ALBUM", color: "bg-[#0d93f2]", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8" },
+//   { id: 2, artist: "Metallica", title: "72 Seasons - Out Now", type: "SINGLE", color: "bg-purple-600", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAjhght7KFz6rinfM1d5OY5S0IpCdQQLln3QXd4sJ0O6iQgKQXuM6Ts7xNcV9sMO80my7lqs3tu9QI_XZvIZLA2c2sWmHMOGoSFHE1ukVFSbRyyd6n0ctliyp9dlIoFQ-UySMdA3EnufIKBsFgN4Ki-LI-dpCQkPZxbm2pRW5P7ZgZEFW5-iLCXJRinswEIA65iWBk7ND8F5KqyTdesZaj-DfxORMqNHJnSXdZr3qrpIqdwOvXsfhYDCMqufjGvjbrYVSTOo9vTOjWy" },
+//   { id: 3, artist: "Skrillex", title: "Summer Festivals Lineup", type: "TOUR", color: "bg-green-600", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8" },
+// ];
 export default function DiscoverPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const [events, setEvents] = useState([]);
+  const [friendEvents, setFriendEvents] = useState([]);
+  const [releases, setReleases] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // --- MODAL STATES ---
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
@@ -176,34 +181,83 @@ export default function DiscoverPage() {
     }));
   };
 
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('search', searchQuery);
+        if (selectedGenre !== 'All') params.append('genre', selectedGenre);
+        if (selectedCity !== 'All') params.append('city', selectedCity);
+        if (selectedVibe !== 'All') params.append('vibe', selectedVibe);
+        if (selectedDate !== 'All') params.append('date', selectedDate);
+
+        const res = await fetch(`/api/discover?${params.toString()}`);
+        const result = await res.json();
+
+        if (result.success) {
+          const formattedEvents = result.data.map(e => {
+            const d = new Date(e.date);
+            return {
+              ...e,
+              id: e._id,
+              date: {
+                month: d.toLocaleString('default', { month: 'short' }).toUpperCase(),
+                day: d.getDate()
+              },
+              venue: e.venue?.name || e.venue || "Unknown Venue",
+              city: e.venue?.city || e.city || "Unknown City",
+              match: "95% match"
+            };
+          });
+          setEvents(formattedEvents);
+        }
+
+        const resFriends = await fetch('/api/discover/friends');
+        const dataFriends = await resFriends.json();
+        if (dataFriends.success) setFriendEvents(dataFriends.data);
+
+        const resRelease = await fetch('/api/discover/release');
+        const dataRelease = await resRelease.json();
+        if (dataRelease.success) setReleases(dataRelease.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => fetchAll(), 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, selectedGenre, selectedCity, selectedDate, selectedVibe])
+
   // --- DYNAMIC OPTIONS ---
-  const genres = useMemo(() => ['All', ...new Set(RECOMMENDED_EVENTS.map(e => e.genre))], []);
-  const cities = useMemo(() => ['All', ...new Set(RECOMMENDED_EVENTS.map(e => e.city))], []);
-  const dates = useMemo(() => ['All', ...new Set(RECOMMENDED_EVENTS.map(e => e.date.month))], []);
-  const vibes = useMemo(() => ['All', ...new Set(RECOMMENDED_EVENTS.map(e => e.vibe))], []);
+  const genres = useMemo(() => ['All', ...new Set(events.map(e => e.genre))], [events]);
+  const cities = useMemo(() => ['All', ...new Set(events.map(e => e.city))], [events]);
+  const dateOptions = ['All', 'Today', 'This Week', 'This Month', 'OCT', 'NOV', 'DEC'];
+  const vibes = ['All', 'Intimate', 'Festival', 'Rave', 'Arena', 'Outdoor'];
 
   // --- FILTER LOGIC ---
-  const filteredRecommended = RECOMMENDED_EVENTS.filter(event => {
-    const matchesSearch = event.artist.toLowerCase().includes(searchQuery.toLowerCase()) || event.venue.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesGenre = selectedGenre === 'All' || event.genre === selectedGenre;
-    const matchesCity = selectedCity === 'All' || event.city === selectedCity;
-    const matchesDate = selectedDate === 'All' || event.date.month === selectedDate;
-    const matchesVibe = selectedVibe === 'All' || event.vibe === selectedVibe;
-    return matchesSearch && matchesGenre && matchesCity && matchesDate && matchesVibe;
-  });
+  // const filteredRecommended = RECOMMENDED_EVENTS.filter(event => {
+  //   const matchesSearch = event.artist.toLowerCase().includes(searchQuery.toLowerCase()) || event.venue.toLowerCase().includes(searchQuery.toLowerCase());
+  //   const matchesGenre = selectedGenre === 'All' || event.genre === selectedGenre;
+  //   const matchesCity = selectedCity === 'All' || event.city === selectedCity;
+  //   const matchesDate = selectedDate === 'All' || event.date.month === selectedDate;
+  //   const matchesVibe = selectedVibe === 'All' || event.vibe === selectedVibe;
+  //   return matchesSearch && matchesGenre && matchesCity && matchesDate && matchesVibe;
+  // });
 
-  const filteredFriends = FRIENDS_EVENTS.filter(event => event.title.toLowerCase().includes(searchQuery.toLowerCase()));
-  
-  const filteredReleases = NEW_RELEASES.filter(item => 
+  const filteredRecommended = events;
+
+  const filteredFriends = friendEvents.filter(event => event.title.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const filteredReleases = releases.filter(item =>
     item.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // --- DISPLAY LOGIC (Fixing the undefined error) ---
-  const displayedRecommended = expandedSections.recommended ? filteredRecommended : filteredRecommended.slice(0, 3);
+  const displayedRecommended = expandedSections.recommended ? filteredRecommended : filteredRecommended.slice(0, 6);
   const displayedFriends = expandedSections.friends ? filteredFriends : filteredFriends.slice(0, 2);
-  
-  // Only show top 3 releases on the dashboard, the rest go in the modal
   const displayedReleases = filteredReleases.slice(0, 3);
 
   const resetFilters = () => {
@@ -216,7 +270,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#0d93f2]/30">
-      
+
       <FanSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -229,25 +283,25 @@ export default function DiscoverPage() {
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:px-12 lg:py-10 scroll-smooth">
           <div className="max-w-7xl mx-auto flex flex-col gap-10 pb-10">
-            
+
             {/* HERO & FILTERS */}
             <section className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Discover your next experience</h1>
                 <p className="text-slate-500 dark:text-slate-400 text-lg">Personalized recommendations based on your taste.</p>
               </div>
-              
+
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0d93f2] outline-none shadow-sm transition-all" placeholder="Search artists, venues, or cities..." type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                   {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>}
                 </div>
-                
+
                 <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
                   <FilterDropdown icon={Music} label="Genre" options={genres} value={selectedGenre} onChange={setSelectedGenre} />
                   <FilterDropdown icon={MapPin} label="City" options={cities} value={selectedCity} onChange={setSelectedCity} />
-                  <FilterDropdown icon={Calendar} label="Date" options={dates} value={selectedDate} onChange={setSelectedDate} />
+                  <FilterDropdown icon={Calendar} label="Date" options={dateOptions} value={selectedDate} onChange={setSelectedDate} />
                   <button onClick={resetFilters} className="flex items-center gap-2 px-4 py-3 bg-[#0d93f2]/5 border border-[#0d93f2]/30 rounded-xl transition-colors whitespace-nowrap shadow-sm text-sm font-medium text-[#0d93f2] hover:bg-[#0d93f2]/10"><SlidersHorizontal className="w-4 h-4" /> Reset</button>
                 </div>
               </div>
@@ -302,9 +356,9 @@ export default function DiscoverPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {/* Map the DISPLAYED releases, not the filtered ones, so we respect the limit */}
                   {displayedReleases.map(item => <ReleaseCard key={item.id} item={item} />)}
-                  
+
                   {/* View All Button Card */}
-                  <div 
+                  <div
                     onClick={() => setIsReleasesModalOpen(true)}
                     className="group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer bg-slate-800 border border-slate-700 flex flex-col items-center justify-center hover:bg-slate-700 transition-colors"
                   >
@@ -335,7 +389,7 @@ export default function DiscoverPage() {
 
       {/* MODALS */}
       <CreateAlertModal isOpen={isAlertModalOpen} onClose={() => setIsAlertModalOpen(false)} />
-      <AllReleasesModal isOpen={isReleasesModalOpen} onClose={() => setIsReleasesModalOpen(false)} releases={NEW_RELEASES} />
+      <AllReleasesModal isOpen={isReleasesModalOpen} onClose={() => setIsReleasesModalOpen(false)} releases={releases} />
 
     </div>
   );
@@ -384,21 +438,59 @@ function RecommendedCard({ event }) {
   return (
     <div className="group flex flex-col bg-white dark:bg-[#1a2632] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-lg hover:border-[#0d93f2]/50 transition-all duration-300 cursor-pointer">
       <div className="relative h-48 overflow-hidden">
+        {/* Date Badge */}
         <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/80 backdrop-blur text-slate-900 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold z-10 text-center shadow-sm">
-          <span className="block text-red-500 uppercase">{event.date.month}</span><span className="text-lg leading-none">{event.date.day}</span>
+          <span className="block text-red-500 uppercase">{event.date?.month || 'OCT'}</span>
+          <span className="text-lg leading-none">{event.date?.day || '24'}</span>
         </div>
-        <div className="absolute top-3 right-3 z-10"><button className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur transition-colors"><Heart className="w-4 h-4" /></button></div>
-        <Image src={event.image} alt={event.artist} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+        
+        {/* Heart Icon */}
+        <div className="absolute top-3 right-3 z-10">
+          <button className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur transition-colors">
+            <Heart className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Image - Added Fallback */}
+        <Image 
+          src={event.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"} 
+          alt={event.artist || "Event"} 
+          fill 
+          className="object-cover transition-transform duration-700 group-hover:scale-110" 
+        />
+        
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
-        <span className="absolute bottom-3 left-3 px-2 py-1 rounded bg-[#0d93f2]/20 border border-[#0d93f2]/30 backdrop-blur text-[10px] font-bold text-white uppercase tracking-wider">{event.match}</span>
+        <span className="absolute bottom-3 left-3 px-2 py-1 rounded bg-[#0d93f2]/20 border border-[#0d93f2]/30 backdrop-blur text-[10px] font-bold text-white uppercase tracking-wider">
+          {event.match || '95% Match'}
+        </span>
       </div>
+
       <div className="p-5 flex flex-col flex-1">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1 group-hover:text-[#0d93f2] transition-colors">{event.artist} - {event.tour}</h3>
-        <div className="flex items-center gap-1 text-sm text-slate-500 mb-4"><MapPin className="w-3.5 h-3.5" /><span>{event.venue}</span></div>
-        <div className="flex flex-wrap gap-2 mb-4">{event.tags.map(tag => <span key={tag} className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">{tag}</span>)}</div>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1 group-hover:text-[#0d93f2] transition-colors">
+          {event.artist} - {event.tour || event.title}
+        </h3>
+        
+        <div className="flex items-center gap-1 text-sm text-slate-500 mb-4">
+          <MapPin className="w-3.5 h-3.5" />
+          <span>{event.venue}</span>
+        </div>
+
+        {/* --- FIX IS HERE: Added (event.tags || []) --- */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {(event.tags || []).map(tag => (
+            <span key={tag} className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              {tag}
+            </span>
+          ))}
+        </div>
+
         <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <span className="text-sm font-bold text-slate-900 dark:text-white">From ${event.price}</span>
-          <Link href={`/dashboard/fan/events/${event.id}`} className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-lg hover:opacity-90 transition-opacity">Get Tickets</Link>
+          <span className="text-sm font-bold text-slate-900 dark:text-white">
+            From ${event.price}
+          </span>
+          <Link href={`/dashboard/fan/events/${event.id}`} className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-lg hover:opacity-90 transition-opacity">
+            Get Tickets
+          </Link>
         </div>
       </div>
     </div>

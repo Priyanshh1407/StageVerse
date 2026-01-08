@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { 
-  Bell, ChevronDown, Download, RefreshCw, 
-  TrendingUp, TrendingDown, MoreHorizontal, Filter, Search, 
+import {
+  Bell, ChevronDown, Download, RefreshCw,
+  TrendingUp, TrendingDown, MoreHorizontal, Filter, Search,
   ChevronLeft, ChevronRight, Menu, FileSpreadsheet, FileText, Check, CalendarDays
 } from 'lucide-react';
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
@@ -24,7 +27,7 @@ const formatCurrency = (amount) => {
 
 const formatNumber = (num) => {
   return new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 0, 
+    maximumFractionDigits: 0,
   }).format(num);
 };
 
@@ -33,40 +36,22 @@ const formatPercentage = (val) => {
   return `${sign}${val.toFixed(1)}%`; // Rounds 12.1086... -> +12.1%
 };
 
-// --- MOCK DATA CONSTANTS ---
-const REVENUE_TYPES = [
-  { label: "VIP Admission", value: 62400, percent: 45, color: "bg-[#0d93f2]" },
-  { label: "General Admission", value: 48500, percent: 35, color: "bg-[#3b82f6]" },
-  { label: "Early Bird", value: 20800, percent: 15, color: "bg-[#60a5fa]" },
-  { label: "Add-ons / Merch", value: 10800, percent: 5, color: "bg-[#93c5fd]" },
-];
-
-const ALL_TRANSACTIONS = Array.from({ length: 45 }).map((_, i) => ({
-  id: `#TRX-${88592 - i}`,
-  date: `Aug ${24 - Math.floor(i / 5)}, 2023`,
-  customer: ["Sarah Jenkins", "Michael Chen", "Jessica Alverez", "David Ross", "Emma Watson", "John Doe"][i % 6],
-  type: ["VIP Admission", "General Admission", "Group Bundle (5)", "Early Bird"][i % 4],
-  qty: (i % 3) + 1,
-  amount: [240, 85, 375, 45, 170][i % 5],
-  status: i % 7 === 2 ? "Pending" : "Paid"
-}));
-
-const GENERATE_CHART_DATA = () => Array.from({ length: 15 }).map((_, i) => ({
-  name: `Day ${i + 1}`,
-  value: Math.floor(Math.random() * 8000) + 2000
-}));
-
 export default function ReportsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   // --- STATE ---
   const [stats, setStats] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const [revenueTypes, setRevenueTypes] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [eventsList, setEventsList] = useState([]);
+
   const [isGenerating, setIsGenerating] = useState(true); // Start true to trigger initial fetch
-  
+
   // Filters
   const [category, setCategory] = useState("Financial Overview");
-  const [eventScope, setEventScope] = useState("All Events");
+  const [eventScope, setEventScope] = useState("");
   const [dateRange, setDateRange] = useState("Aug 01 - Aug 31, 2023");
 
   // Transactions State
@@ -77,102 +62,137 @@ export default function ReportsPage() {
   // --- API SIMULATION ---
   const fetchData = async () => {
     setIsGenerating(true);
-    
-    // Simulate Network Delay
-    await new Promise(resolve => setTimeout(resolve, 800));
 
-    // 1. CHART DATA
-    setChartData(GENERATE_CHART_DATA());
+    try {
+      const params = new URLSearchParams({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchQuery,
+        eventId: eventScope,
+        category: category
+      });
 
-    // 2. STATS DATA (Raw numbers from your image)
-    const rawApiData = [
-      {
-        id: 'revenue',
-        label: "Total Revenue",
-        value: 157106.25, // Raw from DB
-        type: 'currency',
-        trend: 12.10861148830032, // Raw decimal
-        trendDirection: 'up'
-      },
-      {
-        id: 'tickets',
-        label: "Tickets Sold",
-        value: 13726.13, 
-        type: 'number',
-        trend: 7.861962890831536,
-        trendDirection: 'up'
-      },
-      {
-        id: 'avg_price',
-        label: "Avg. Ticket Price",
-        value: 41.33,
-        type: 'currency',
-        trend: 0.11331063359082294,
-        trendDirection: 'neutral'
-      },
-      {
-        id: 'refunds',
-        label: "Refund Rate",
-        value: 0.8,
-        type: 'percentage',
-        trend: -0.830081966004601,
-        trendDirection: 'down'
+      const res = await fetch(`/api/reports?${params}`);
+      const result = await res.json();
+
+      if (result.success) {
+        setStats(result.data.kpi);
+        setChartData(result.data.chart);
+        setRevenueTypes(result.data.revenueTypes);
+        setTransactions(result.data.transactions);
+        setTotalCount(result.data.pagination?.total);
+
+        if (result.data.eventsList) {
+          setEventsList(result.data.eventsList);
+        }
       }
-    ];
-    setStats(rawApiData);
-    
-    setIsGenerating(false);
+    } catch (err) {
+      console.error('Failed to fetch reports: ', err);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // Initial Load
   useEffect(() => {
     fetchData();
-  }, []);
-
-  // Filter Transactions logic
-  const filteredTransactions = useMemo(() => {
-    return ALL_TRANSACTIONS.filter(t => 
-      t.customer.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      t.id.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+  }, [currentPage, searchQuery, eventScope, category]);
 
   // Pagination Logic
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
-  const currentTransactions = filteredTransactions.slice(
-    (currentPage - 1) * itemsPerPage, 
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) setCurrentPage(newPage);
   };
 
+  const handleExportExcel = () => {
+    if (!transactions || transactions.length === 0) {
+      alert("No data to export!");
+      return;
+    }
+
+    const excelData = transactions.map(t => ({
+      "Transaction ID": t.id,
+      "Date": t.date,
+      "Customer Name": t.customer,
+      "Ticket type": t.type,
+      "Quantity": t.qty,
+      "Amount": t.amount,
+      "Status": t.status
+    }));
+
+    const workSheet = XLSX.utils.json_to_sheet(excelData);
+
+    const workBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workBook, workSheet, "Sale Report");
+
+    XLSX.writeFile(workBook, `Event_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  }
+
+  const handleExportPDF = () => {
+    if (!transactions || transactions.length === 0) {
+      alert("No data to export");
+      return;
+    }
+    const doc = new jsPDF();
+
+    //title
+    doc.setFontSize(18);
+    doc.text("Event Sale Report", 14, 22);
+
+    //subtitle
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+
+    // table generation
+    autoTable(doc, {
+      startY: 40,
+      head: [['ID', 'Date', 'Customer', 'Type', 'Qty', 'Amount', 'Status']],
+      body: transactions.map(t => [
+        t.id,
+        t.date,
+        t.customer,
+        t.type,
+        t.qty,
+        `₹${t.amount}`,
+        t.status
+      ]),
+      theme: 'grid',
+      headStyles: { fillColor: [44, 59, 71] },
+      styles: { fontSize: 8 }
+    });
+
+    doc.save(`sales_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }
+
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30">
-      
+
       {/* Imported Sidebar Component */}
       <OrganizerSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-[#101b22]">
-        
+
         <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-[#2c3b47] scrollbar-track-[#101b22]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-6">
-            
+
             {/* CONTROLS */}
-            <ReportControls 
+            <ReportControls
               category={category} setCategory={setCategory}
               scope={eventScope} setScope={setEventScope}
-              date={dateRange}
+              eventsList={eventsList}
               onGenerate={fetchData}
               isGenerating={isGenerating}
+              onExportExcel={handleExportExcel}
+              onExportPDF={handleExportPDF}
             />
 
             {/* STATS GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {isGenerating 
+              {isGenerating
                 ? Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
                 : stats.map((stat) => <StatCard key={stat.id} data={stat} />)
               }
@@ -181,18 +201,18 @@ export default function ReportsPage() {
             {/* CHARTS ROW */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <SalesChart data={chartData} />
-              <RevenueByType />
+              <RevenueByType data={revenueTypes} />
             </div>
 
             {/* TRANSACTIONS TABLE */}
-            <TransactionsTable 
-              data={currentTransactions}
+            <TransactionsTable
+              data={transactions}
               search={searchQuery}
               onSearch={setSearchQuery}
               page={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
-              totalCount={filteredTransactions.length}
+              totalCount={totalCount}
             />
 
           </div>
@@ -230,7 +250,7 @@ function Header({ onMenuClick }) {
         <div className="flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
           <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
             <div className="w-full h-full rounded-full bg-[#101b22] relative overflow-hidden">
-               <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
+              <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
             </div>
           </div>
         </div>
@@ -239,7 +259,7 @@ function Header({ onMenuClick }) {
   );
 }
 
-function ReportControls({ category, setCategory, scope, setScope, date, onGenerate, isGenerating }) {
+function ReportControls({ category, setCategory, scope, setScope, eventsList, date, onGenerate, isGenerating, onExportExcel, onExportPDF }) {
   const [isExportOpen, setIsExportOpen] = useState(false);
 
   return (
@@ -250,7 +270,7 @@ function ReportControls({ category, setCategory, scope, setScope, date, onGenera
           <div className="flex flex-col gap-2 w-full md:w-1/4">
             <label className="text-[#90b2cb] text-xs font-semibold uppercase tracking-wider">Report Category</label>
             <div className="relative">
-              <select 
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full bg-[#101b22] border border-[#2c3b47] text-white text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] appearance-none cursor-pointer"
@@ -263,27 +283,29 @@ function ReportControls({ category, setCategory, scope, setScope, date, onGenera
               <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#90b2cb] pointer-events-none" />
             </div>
           </div>
-          
+
           {/* EVENT SCOPE SELECT */}
           <div className="flex flex-col gap-2 w-full md:w-1/4">
             <label className="text-[#90b2cb] text-xs font-semibold uppercase tracking-wider">Event Scope</label>
             <div className="relative">
-              <select 
+              <select
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
                 className="w-full bg-[#101b22] border border-[#2c3b47] text-white text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] appearance-none cursor-pointer"
               >
                 <option>All Events</option>
-                <option>Summer Bass Festival 2023</option>
-                <option>Neon Nights: Tokyo</option>
-                <option>Warehouse Project Alpha</option>
+                {eventsList && eventsList.map((event) => (
+                  <option key={event._id} value={event._id}>
+                    {event.title}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#90b2cb] pointer-events-none" />
             </div>
           </div>
 
           {/* DATE PICKER */}
-          <div className="flex flex-col gap-2 w-full md:w-1/4">
+          {/* <div className="flex flex-col gap-2 w-full md:w-1/4">
             <label className="text-[#90b2cb] text-xs font-semibold uppercase tracking-wider">Date Range</label>
             <button className="flex items-center justify-between w-full bg-[#101b22] border border-[#2c3b47] text-white text-sm rounded-lg px-3 py-2.5 hover:border-[#3e5060] transition-colors">
               <span className="flex items-center gap-2">
@@ -291,21 +313,21 @@ function ReportControls({ category, setCategory, scope, setScope, date, onGenera
                 {date}
               </span>
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center gap-3 w-full lg:w-auto mt-2 lg:mt-0 relative">
-          <button 
+          <button
             onClick={onGenerate}
             disabled={isGenerating}
             className={`flex-1 lg:flex-none flex items-center justify-center gap-2 bg-[#0d93f2] hover:bg-[#0b84db] text-white font-medium px-5 py-2.5 rounded-lg transition-all shadow-[0_0_15px_rgba(13,147,242,0.3)] ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
           >
-            <RefreshCw className={`w-5 h-5 ${isGenerating ? 'animate-spin' : ''}`} /> 
+            <RefreshCw className={`w-5 h-5 ${isGenerating ? 'animate-spin' : ''}`} />
             {isGenerating ? 'Generating...' : 'Generate'}
           </button>
-          
+
           <div className="relative">
-            <button 
+            <button
               onClick={() => setIsExportOpen(!isExportOpen)}
               className="flex items-center justify-center gap-2 bg-[#2c3b47] hover:bg-[#3e5060] text-white font-medium px-5 py-2.5 rounded-lg transition-colors border border-transparent hover:border-[#90b2cb]/30"
             >
@@ -313,10 +335,10 @@ function ReportControls({ category, setCategory, scope, setScope, date, onGenera
             </button>
             {isExportOpen && (
               <div className="absolute top-full right-0 mt-2 w-48 bg-[#192734] border border-[#2c3b47] rounded-lg shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95">
-                <button onClick={() => setIsExportOpen(false)} className="w-full text-left px-4 py-3 text-sm text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4" /> Export as CSV
+                <button onClick={() => { onExportExcel(); setIsExportOpen(false) }} className="w-full text-left px-4 py-3 text-sm text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] flex items-center gap-2">
+                  <FileSpreadsheet className="w-4 h-4" /> Export as Excel File
                 </button>
-                <button onClick={() => setIsExportOpen(false)} className="w-full text-left px-4 py-3 text-sm text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] flex items-center gap-2">
+                <button onClick={() => { onExportPDF(); setIsExportOpen(false) }} className="w-full text-left px-4 py-3 text-sm text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] flex items-center gap-2">
                   <FileText className="w-4 h-4" /> Export as PDF
                 </button>
               </div>
@@ -332,13 +354,13 @@ function StatCard({ data }) {
   // Determine if trend is positive or negative for styling
   const isPositive = data.trend > 0;
   const isNeutral = data.trend === 0 || (data.trend < 0.2 && data.trend > -0.2); // Treat very small numbers as neutral
-  
-  let trendColors = isPositive 
-    ? "text-[#0bda5b] bg-[#0bda5b]/10 border-[#0bda5b]/20" 
+
+  let trendColors = isPositive
+    ? "text-[#0bda5b] bg-[#0bda5b]/10 border-[#0bda5b]/20"
     : "text-red-400 bg-red-400/10 border-red-400/20";
-  
+
   let TrendIcon = isPositive ? TrendingUp : TrendingDown;
-  
+
   // Overrides for "Neutral" trends
   if (isNeutral) {
     trendColors = "text-[#90b2cb] bg-[#2c3b47]";
@@ -391,39 +413,39 @@ function SalesChart({ data }) {
           </span>
         </div>
       </div>
-      
+
       <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0d93f2" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#0d93f2" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#0d93f2" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#0d93f2" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c3b47" />
-            <XAxis 
-              dataKey="name" 
-              hide={true} 
+            <XAxis
+              dataKey="name"
+              hide={true}
             />
-            <YAxis 
-              tick={{fill: '#90b2cb', fontSize: 10}} 
-              tickLine={false} 
+            <YAxis
+              tick={{ fill: '#90b2cb', fontSize: 10 }}
+              tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `$${value/1000}k`}
+              tickFormatter={(value) => `$${value / 1000}k`}
             />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ backgroundColor: '#101b22', borderColor: '#2c3b47', color: '#fff' }}
               itemStyle={{ color: '#fff' }}
               formatter={(value) => [`$${value.toLocaleString()}`, "Revenue"]}
             />
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#0d93f2" 
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke="#0d93f2"
               strokeWidth={2}
-              fillOpacity={1} 
-              fill="url(#colorVal)" 
+              fillOpacity={1}
+              fill="url(#colorVal)"
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -432,8 +454,10 @@ function SalesChart({ data }) {
   );
 }
 
-function RevenueByType() {
+function RevenueByType({ data }) {
   const [activeMenu, setActiveMenu] = useState(false);
+  const items = data && data.length > 0 ? data : [];
+  const colors = ["bg-[#0d93f2]", "bg-[#3b82f6]", "bg-[#60a5fa]", "bg-[#93c5fd]"];
 
   return (
     <div className="lg:col-span-1 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col h-[350px]">
@@ -452,15 +476,15 @@ function RevenueByType() {
         </div>
       </div>
       <div className="flex-1 flex flex-col justify-center space-y-6">
-        {REVENUE_TYPES.map((type, i) => (
+        {items.map((type, i) => (
           <div key={i} className="group cursor-default">
             <div className="flex justify-between text-xs mb-2">
               <span className="text-white font-medium group-hover:text-[#0d93f2] transition-colors">{type.label}</span>
               <span className="text-white font-bold">${type.value.toLocaleString()} <span className="text-[#90b2cb] font-normal">({type.percent}%)</span></span>
             </div>
             <div className="w-full bg-[#101b22] h-2.5 rounded-full overflow-hidden">
-              <div 
-                className={`${type.color} h-full rounded-full transition-all duration-1000 ease-out`} 
+              <div
+                className={`${colors[i % colors.length]} h-full rounded-full transition-all duration-1000 ease-out`}
                 style={{ width: `${type.percent}%` }}
               ></div>
             </div>
@@ -478,14 +502,14 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
         <h3 className="text-lg font-bold text-white">Transaction Details</h3>
         <div className="flex gap-2 w-full md:w-auto">
           <div className="relative w-full md:w-64">
-            <input 
+            <input
               value={search}
               onChange={(e) => {
                 onSearch(e.target.value);
-                onPageChange(1); 
+                onPageChange(1);
               }}
-              className="bg-[#101b22] border border-[#2c3b47] text-white text-xs rounded px-3 py-2 pl-9 focus:outline-none focus:border-[#0d93f2] w-full placeholder-[#90b2cb]/50" 
-              placeholder="Search ID or Customer..." 
+              className="bg-[#101b22] border border-[#2c3b47] text-white text-xs rounded px-3 py-2 pl-9 focus:outline-none focus:border-[#0d93f2] w-full placeholder-[#90b2cb]/50"
+              placeholder="Search ID or Customer..."
               type="text"
             />
             <Search className="absolute left-2.5 top-2 w-4 h-4 text-[#90b2cb]" />
@@ -495,7 +519,7 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
           </button>
         </div>
       </div>
-      
+
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-[#90b2cb]">
           <thead className="bg-[#101b22] text-xs uppercase font-medium text-white border-b border-[#2c3b47]">
@@ -520,11 +544,10 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
                   <td className="px-6 py-3">{trx.qty}</td>
                   <td className="px-6 py-3 text-right font-medium text-white">${trx.amount.toFixed(2)}</td>
                   <td className="px-6 py-3 text-center">
-                    <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border uppercase font-bold ${
-                      trx.status === 'Paid' 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                        : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                    }`}>
+                    <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border uppercase font-bold ${trx.status === 'Paid'
+                      ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                      : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                      }`}>
                       {trx.status === 'Paid' && <Check className="w-3 h-3" />}
                       {trx.status}
                     </span>
@@ -546,18 +569,18 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
       <div className="px-6 py-3 border-t border-[#2c3b47] flex flex-col sm:flex-row justify-between items-center text-xs text-[#90b2cb] gap-4">
         <span>Showing {data.length} of {totalCount} transactions</span>
         <div className="flex gap-1 items-center">
-          <button 
+          <button
             onClick={() => onPageChange(page - 1)}
             disabled={page === 1}
             className="px-2 py-1 rounded hover:bg-[#2c3b47] disabled:opacity-30 disabled:hover:bg-transparent flex items-center transition-colors"
           >
             <ChevronLeft className="w-3 h-3 mr-1" /> Prev
           </button>
-          
+
           {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
             const p = i + 1;
             return (
-              <button 
+              <button
                 key={p}
                 onClick={() => onPageChange(p)}
                 className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${page === p ? 'bg-[#0d93f2] text-white font-bold' : 'hover:bg-[#2c3b47]'}`}
@@ -566,10 +589,10 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
               </button>
             )
           })}
-          
+
           {totalPages > 5 && <span className="px-2">...</span>}
 
-          <button 
+          <button
             onClick={() => onPageChange(page + 1)}
             disabled={page === totalPages || totalPages === 0}
             className="px-2 py-1 rounded hover:bg-[#2c3b47] disabled:opacity-30 disabled:hover:bg-transparent flex items-center transition-colors"

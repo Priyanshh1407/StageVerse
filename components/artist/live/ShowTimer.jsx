@@ -1,3 +1,4 @@
+'use client';
 export default function ShowTimer({ time, status }) {
   // Determine label based on status
   const label = status === 'Standby' ? "Time To Showtime" : "Show Duration";

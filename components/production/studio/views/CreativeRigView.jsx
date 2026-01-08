@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { MoreVertical, Sun, CheckCircle, Zap, Aperture } from 'lucide-react';
 

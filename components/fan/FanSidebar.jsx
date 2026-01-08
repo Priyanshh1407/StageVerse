@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+// MERGE THESE IMPORTS:
+import { usePathname, useRouter } from 'next/navigation'; 
 import {
   Compass, Ticket, Users, Settings,
   LogOut, Sparkles, Image as ImageIcon, X
@@ -10,28 +11,45 @@ import {
 
 const FanSidebar = ({ isOpen, onClose }) => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const links = [
     { label: "My Passport", href: "/dashboard", icon: Ticket },
-    { label: "Discover", href: "/discover", icon: Compass }, 
+    { label: "Discover", href: "/discover", icon: Compass },
     { label: "Memories", href: "/memory-vault", icon: ImageIcon },
     { label: "Friends", href: "/social", icon: Users },
     { label: "Tickets", href: "/ticket", icon: Ticket },
   ];
 
+  const handleLogout = async () => {
+    try {
+      // 1. Ask Server to delete the Cookie
+      await fetch('/api/auth/logout', { method: 'POST' });
+
+      // 2. Clear Client-side User Info (for UI)
+      localStorage.removeItem('user');
+
+      // 3. Force Redirect to Login
+      router.push('/');
+      router.refresh(); // Important: Refreshes Server Components to see you are gone
+      console.log("Logout Successful");
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  };
+
   return (
     <>
       {/* 1. MOBILE OVERLAY (Backdrop) */}
       {/* This only shows on mobile when sidebar is open */}
-      <div 
-        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+      <div
+        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         onClick={onClose}
       />
 
       {/* 2. SIDEBAR CONTAINER */}
-      <aside 
+      <aside
         className={`
           fixed top-0 left-0 z-50 h-screen w-64 p-4
           bg-white dark:bg-[#1a2632] border-r border-slate-200 dark:border-slate-800
@@ -54,7 +72,7 @@ const FanSidebar = ({ isOpen, onClose }) => {
           </div>
 
           {/* Close Button (Visible only on Mobile) */}
-          <button 
+          <button
             onClick={onClose}
             className="md:hidden p-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
@@ -74,7 +92,7 @@ const FanSidebar = ({ isOpen, onClose }) => {
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${isActive
                   ? "bg-cyan-600 text-white shadow-lg shadow-cyan-600/25"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 <item.icon className="w-5 h-5" />
                 {item.label}
@@ -85,13 +103,12 @@ const FanSidebar = ({ isOpen, onClose }) => {
 
         {/* Logout Section */}
         <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-700">
-          <Link 
-            href="/" // Redirects to Home Page
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 transition-colors"
+          <button
+            onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 transition-colors"
           >
             <LogOut className="w-5 h-5" />
             <span className="font-medium text-sm">Log Out</span>
-          </Link>
+          </button>
         </div>
       </aside>
     </>

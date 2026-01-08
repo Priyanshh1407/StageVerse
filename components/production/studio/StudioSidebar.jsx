@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { PlusCircle, Wand2, Info, ChevronDown } from 'lucide-react';
 

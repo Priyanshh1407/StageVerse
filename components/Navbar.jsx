@@ -1,23 +1,63 @@
 'use client';
 
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Star, Menu, X } from 'lucide-react';
+import { Star, Menu, X, LogOut, User } from 'lucide-react'; // Added Icons
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [mounted, setMounted] = useState(false);
 
-  // Defined links based on your latest structure
+  // 1. Check Login State on Mount
+  useEffect(() => {
+    setMounted(true);
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  // 2. Logout Function
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' }); // Clear Cookie
+      localStorage.removeItem('user'); // Clear UI Data
+      setUser(null);
+      setIsOpen(false); // Close mobile menu if open
+      router.push('/'); 
+      router.refresh();
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  };
+
+  // 3. Helper to get the correct Dashboard URL based on Role
+  const getDashboardLink = () => {
+    if (!user) return '/';
+    const roleMap = {
+      artist: '/artist-dashboard',
+      organizer: '/manage/dashboard',
+      production: '/prod-dashboard',
+      fan: '/dashboard'
+    };
+    return roleMap[user.role] || '/dashboard';
+  };
+
   const navLinks = [
     { label: 'Events', href: '/explore' },
     { label: 'Artists', href: '/explore-artist' },
-    // { label: 'Overview', href: '/overview' },
     { label: 'About Us', href: '/about' },
     { label: 'Contact', href: '/contact' },
   ];
+
+  // Prevent hydration mismatch
+  if (!mounted) return null;
 
   return (
     <>
@@ -54,13 +94,43 @@ export default function Navbar() {
 
           {/* Actions & Mobile Toggle */}
           <div className="flex items-center gap-4">
-            <button className="hidden text-sm font-bold text-slate-300 uppercase transition-colors hover:text-white sm:block">
-              Login
-            </button>
             
-            <button className="hidden sm:block rounded-full bg-[#00d4ff] px-7 py-2.5 text-sm font-bold text-black uppercase transition-all hover:bg-white hover:scale-105 shadow-[0_0_20px_rgba(0,212,255,0.25)]">
-              Sign Up
-            </button>
+            {/* --- DYNAMIC AUTH SECTION --- */}
+            {user ? (
+              // LOGGED IN VIEW
+              <div className="hidden sm:flex items-center gap-4">
+                <span className="text-sm text-slate-300">
+                  Hi, <span className="text-[#00d4ff] font-bold">{user.name}</span>
+                </span>
+
+                <Link 
+                  href={getDashboardLink()}
+                  className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-500 to-[#00d4ff] flex items-center justify-center text-white font-bold text-sm hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,212,255,0.3)]"
+                  title="Go to Dashboard"
+                >
+                   {user.name.charAt(0).toUpperCase()}
+                </Link>
+
+                <button 
+                  onClick={handleLogout}
+                  className="text-slate-400 hover:text-red-400 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              // LOGGED OUT VIEW
+              <>
+                <Link href="/login" className="hidden text-sm font-bold text-slate-300 uppercase transition-colors hover:text-white sm:block">
+                  Login
+                </Link>
+                
+                <Link href="/signup" className="hidden sm:block rounded-full bg-[#00d4ff] px-7 py-2.5 text-sm font-bold text-black uppercase transition-all hover:bg-white hover:scale-105 shadow-[0_0_20px_rgba(0,212,255,0.25)]">
+                  Sign Up
+                </Link>
+              </>
+            )}
 
             {/* Mobile Menu Button */}
             <button 
@@ -74,7 +144,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Menu Dropdown (Framer Motion) */}
+      {/* Mobile Menu Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -101,12 +171,41 @@ export default function Navbar() {
               })}
               
               <div className="pt-4 flex flex-col gap-4 border-t border-white/10">
-                <button className="w-full py-3 rounded-lg border border-white/10 text-white font-bold hover:bg-white/5 transition-colors">
-                  LOGIN
-                </button>
-                <button className="w-full py-3 rounded-lg bg-[#00d4ff] text-black font-bold hover:bg-white transition-colors shadow-[0_0_15px_rgba(0,212,255,0.25)]">
-                  SIGN UP
-                </button>
+                {user ? (
+                   // MOBILE LOGGED IN
+                   <div className="flex flex-col gap-4">
+                      <Link 
+                        href={getDashboardLink()}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:border-[#00d4ff]/50"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-[#00d4ff] flex items-center justify-center text-black font-bold">
+                           {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-white font-bold">{user.name}</span>
+                          <span className="text-xs text-[#00d4ff] uppercase">{user.role} Dashboard</span>
+                        </div>
+                      </Link>
+
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full py-3 rounded-lg border border-red-500/30 text-red-400 font-bold hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" /> LOGOUT
+                      </button>
+                   </div>
+                ) : (
+                   // MOBILE LOGGED OUT
+                   <>
+                    <Link href="/login" onClick={() => setIsOpen(false)} className="w-full py-3 rounded-lg border border-white/10 text-white font-bold text-center hover:bg-white/5 transition-colors">
+                      LOGIN
+                    </Link>
+                    <Link href="/signup" onClick={() => setIsOpen(false)} className="w-full py-3 rounded-lg bg-[#00d4ff] text-black font-bold text-center hover:bg-white transition-colors shadow-[0_0_15px_rgba(0,212,255,0.25)]">
+                      SIGN UP
+                    </Link>
+                   </>
+                )}
               </div>
             </div>
           </motion.div>
