@@ -203,7 +203,7 @@ export async function GET(req) {
         ...e,
         organizerId: organizer._id,
         time: "19:00",
-        eventId: 1000 + i // Unique Event ID generation
+        eventId: i+1 // Unique Event ID generation
     }));
 
     const events = await Event.insertMany(eventsData);

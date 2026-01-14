@@ -40,6 +40,20 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
     }
   }, [isOpen, currentUser]);
 
+  useEffect(() => {
+      const handleEsc = (e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      if (isOpen) {
+        window.addEventListener('keydown', handleEsc);
+      }
+      return () => {
+        window.removeEventListener('keydown', handleEsc);
+      };
+    }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   // 3. Handle Save

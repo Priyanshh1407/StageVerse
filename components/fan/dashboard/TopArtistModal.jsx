@@ -3,16 +3,16 @@ import React, { useState, useEffect, use } from 'react';
 import { X, Search, Ticket, ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 
-const ALL_ARTISTS = [
-  { rank: 1, name: "Radiohead", genre: "Alt-Rock / Electronic", count: 5, image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop" },
-  { rank: 2, name: "Tame Impala", genre: "Psychedelic Rock", count: 3, image: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=800&auto=format&fit=crop" },
-  { rank: 3, name: "Khruangbin", genre: "Funk / Soul", count: 3, image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop" },
-  { rank: 4, name: "The Strokes", genre: "Indie Rock", count: 2, image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=800&auto=format&fit=crop" },
-  { rank: 5, name: "Arcade Fire", genre: "Indie / Alternative", count: 2, image: "https://images.unsplash.com/photo-1514525253440-b393332569ca?q=80&w=800&auto=format&fit=crop" },
-  { rank: 6, name: "Daft Punk", genre: "Electronic / House", count: 1, image: "https://images.unsplash.com/photo-1459749411177-3c0714b62437?q=80&w=800&auto=format&fit=crop" },
-];
+// const ALL_ARTISTS = [
+//   { rank: 1, name: "Radiohead", genre: "Alt-Rock / Electronic", count: 5, image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop" },
+//   { rank: 2, name: "Tame Impala", genre: "Psychedelic Rock", count: 3, image: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=800&auto=format&fit=crop" },
+//   { rank: 3, name: "Khruangbin", genre: "Funk / Soul", count: 3, image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop" },
+//   { rank: 4, name: "The Strokes", genre: "Indie Rock", count: 2, image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=800&auto=format&fit=crop" },
+//   { rank: 5, name: "Arcade Fire", genre: "Indie / Alternative", count: 2, image: "https://images.unsplash.com/photo-1514525253440-b393332569ca?q=80&w=800&auto=format&fit=crop" },
+//   { rank: 6, name: "Daft Punk", genre: "Electronic / House", count: 1, image: "https://images.unsplash.com/photo-1459749411177-3c0714b62437?q=80&w=800&auto=format&fit=crop" },
+// ];
 
-export default function TopArtistsModal({ isOpen, onClose }) {
+export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Reset search when modal opens/closes
@@ -37,7 +37,7 @@ export default function TopArtistsModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   // --- FILTER LOGIC ---
-  const filteredArtists = ALL_ARTISTS.filter((artist) => {
+  const filteredArtists = artists.filter((artist) => {
     const query = searchQuery.toLowerCase();
     return (
       artist.name.toLowerCase().includes(query) ||
