@@ -1,78 +1,171 @@
 'use client';
-import React from 'react';
-import { MoreVertical, Sun, CheckCircle, Zap, Aperture } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MoreVertical, Sun, CheckCircle, Target, Layers, Trash2 } from 'lucide-react';
 
-export default function CreativeRigView() {
-  const groups = [
-    {
-      id: 1, role: 'Intro Sequence', color: 'blue',
-      fixtures: '8x Martin MAC Aura XB', location: 'Floor Package',
-      patch: 'Univ 2 • CH 001-200', icon: Sun
-    },
-    {
-      id: 2, role: 'Main Wash', color: 'orange',
-      fixtures: '12x Robe MegaPointe', location: 'Mid Truss',
-      patch: 'Univ 3 • CH 001-576', icon: Aperture
-    },
-    {
-      id: 3, role: 'Drum Solo', color: 'red',
-      fixtures: '6x Blinders (Atomic 3000)', location: 'Risers',
-      patch: 'Univ 4 • CH 001-024', icon: Zap
-    }
-  ];
+export default function CreativeRigView({ fixtures, onDeleteGroup }) {
+   const [activeMenuId, setActiveMenuId] = useState(null);
 
-  const colorMap = {
-    blue: { bg: 'bg-blue-900/40', text: 'text-blue-400', border: 'border-blue-500/30', dot: 'bg-blue-500', iconHover: 'group-hover:text-blue-500' },
-    orange: { bg: 'bg-orange-900/40', text: 'text-orange-400', border: 'border-orange-500/30', dot: 'bg-orange-500', iconHover: 'group-hover:text-orange-500' },
-    red: { bg: 'bg-red-900/40', text: 'text-red-400', border: 'border-red-500/30', dot: 'bg-red-500', iconHover: 'group-hover:text-red-500' },
-  };
+   // Close menu when clicking outside
+   useEffect(() => {
+      const handleClickOutside = (event) => {
+         if (!event.target.closest('.action-menu-container')) {
+            setActiveMenuId(null);
+         }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+   }, []);
 
-  return (
-    <div className="flex flex-col gap-8 p-6 pb-12">
-      {groups.map((group) => {
-        const theme = colorMap[group.color];
-        const Icon = group.icon;
-        
-        return (
-          <div key={group.id} className="flex flex-col gap-3">
-             {/* Header Label */}
-             <div className="flex items-center gap-3">
-                <span className={`${theme.bg} ${theme.text} ${theme.border} border px-3 py-1 rounded text-[11px] font-bold tracking-widest uppercase flex items-center gap-2`}>
-                   <span className={`size-2 rounded-full ${theme.dot}`}></span>
-                   {group.role}
-                </span>
-                <div className="h-px bg-[#27272A] flex-1"></div>
-             </div>
+   const toggleMenu = (id) => {
+      setActiveMenuId(activeMenuId === id ? null : id);
+   };
 
-             {/* Card */}
-             <div className="bg-[#18181B] border border-[#27272A] rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-[#3F3F46] transition-all group cursor-default">
-                <div className="flex items-center gap-5">
-                   <div className={`size-12 bg-[#27272A] rounded-lg flex items-center justify-center text-gray-400 ${theme.iconHover} transition-colors`}>
-                      <Icon className="w-7 h-7" />
-                   </div>
-                   <div>
-                      <h3 className="text-white text-xl font-bold tracking-tight">{group.fixtures}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                         <span className="text-gray-400 text-xs font-medium bg-[#27272A] px-2 py-0.5 rounded">{group.location}</span>
-                      </div>
-                   </div>
-                </div>
+   // 1. Hierarchical Grouping: Cue -> Profile Name -> Fixtures
+   const groups = fixtures ? fixtures.reduce((acc, f) => {
+      const cueName = f.cue || 'Unassigned';
 
-                <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-t-0 border-[#27272A] pt-3 md:pt-0 mt-2 md:mt-0">
-                   <div className="text-right">
-                      <div className="flex items-center justify-end gap-1.5 text-green-500 text-xs font-bold bg-green-900/10 px-2 py-0.5 rounded-full border border-green-900/20 w-fit ml-auto">
-                         <CheckCircle className="w-3.5 h-3.5" /> Patched
-                      </div>
-                      <p className="text-[#52525B] text-[10px] font-mono mt-1">{group.patch}</p>
-                   </div>
-                   <button className="text-gray-600 hover:text-white transition-colors">
-                      <MoreVertical className="w-5 h-5" />
-                   </button>
-                </div>
-             </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+      if (!acc[cueName]) {
+         acc[cueName] = {
+            role: cueName,
+            color: f.cueColor || 'blue',
+            subgroups: {}
+         };
+      }
+
+      // Sub-group by Profile
+      const profileKey = f.profile || 'Unknown Fixture';
+      if (!acc[cueName].subgroups[profileKey]) {
+         acc[cueName].subgroups[profileKey] = {
+            profile: profileKey,
+            items: [],
+            minAddr: Infinity,
+            maxAddr: -Infinity,
+            universe: f.universe
+         };
+      }
+
+      const sub = acc[cueName].subgroups[profileKey];
+      sub.items.push(f);
+
+      // Calc address range for this specific batch
+      const addr = parseInt(f.address);
+      if (!isNaN(addr)) {
+         if (addr < sub.minAddr) sub.minAddr = addr;
+         if (addr > sub.maxAddr) sub.maxAddr = addr + (parseInt(f.channels) || 0) - 1;
+      }
+
+      return acc;
+   }, {}) : {};
+
+   const groupList = Object.values(groups);
+
+   const colorMap = {
+      blue: { bg: 'bg-blue-900/40', text: 'text-blue-400', border: 'border-blue-500/30', dot: 'bg-blue-500', iconHover: 'group-hover:text-blue-500' },
+      orange: { bg: 'bg-orange-900/40', text: 'text-orange-400', border: 'border-orange-500/30', dot: 'bg-orange-500', iconHover: 'group-hover:text-orange-500' },
+      red: { bg: 'bg-red-900/40', text: 'text-red-400', border: 'border-red-500/30', dot: 'bg-red-500', iconHover: 'group-hover:text-red-500' },
+   };
+
+   if (!fixtures || fixtures.length === 0) {
+      return (
+         <div className="flex flex-col items-center justify-center h-full text-gray-500 p-12">
+            <Layers className="w-12 h-12 mb-4 opacity-20" />
+            <p>No groups defined yet.</p>
+            <p className="text-xs mt-1 text-gray-600">Add fixtures from the sidebar to start creating.</p>
+         </div>
+      );
+   }
+
+   return (
+      <div className="flex flex-col gap-8 p-6 pb-12">
+         {groupList.map((group) => {
+            const theme = colorMap[group.color] || colorMap.blue;
+            const subGroups = Object.values(group.subgroups);
+
+            return (
+               <div key={group.role} className="flex flex-col gap-3">
+                  {/* Header Label (Role) */}
+                  <div className="flex items-center gap-3">
+                     <span className={`${theme.bg} ${theme.text} ${theme.border} border px-3 py-1 rounded text-[11px] font-bold tracking-widest uppercase flex items-center gap-2`}>
+                        <span className={`size-2 rounded-full ${theme.dot}`}></span>
+                        {group.role}
+                     </span>
+                     <div className="h-px bg-[#27272A] flex-1"></div>
+                  </div>
+
+                  {/* Render a Card for EACH Profile Type within this Role */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                     {subGroups.map((sub) => {
+                        const uniqueId = `${group.role}-${sub.profile}`;
+                        const count = sub.items.length;
+                        // Clean up profile name for display
+                        const displayName = sub.profile.split('(')[0];
+                        const patchLabel = `Univ ${sub.universe || '?'} • CH ${sub.minAddr !== Infinity ? String(sub.minAddr).padStart(3, '0') : '???'}-${sub.maxAddr !== -Infinity ? String(sub.maxAddr).padStart(3, '0') : '???'}`;
+
+                        const isOpen = activeMenuId === uniqueId;
+
+                        return (
+                           <div key={uniqueId} className="bg-[#18181B] border border-[#27272A] rounded-xl p-5 flex flex-col justify-between gap-4 hover:border-[#3F3F46] transition-all group cursor-default shadow-sm">
+
+                              {/* Card Content */}
+                              <div className="flex items-start justify-between">
+                                 <div className="flex items-center gap-4">
+                                    <div className={`size-12 bg-[#27272A] rounded-lg flex items-center justify-center text-gray-400 ${theme.iconHover} transition-colors shrink-0`}>
+                                       <Target className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                       <h3 className="text-white text-lg font-bold tracking-tight leading-tight">{count}x {displayName}</h3>
+                                       <div className="flex items-center gap-2 mt-1.5">
+                                          <span className="text-gray-500 text-[10px] font-medium bg-[#27272A] px-2 py-0.5 rounded uppercase tracking-wide">Fixture Batch</span>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+
+                              {/* Footer / Patch Info */}
+                              <div className="flex items-end justify-between border-t border-[#27272A] pt-4 mt-2">
+                                 <div>
+                                    <div className="flex items-center gap-1.5 text-green-500 text-[10px] font-bold">
+                                       <CheckCircle className="w-3 h-3" /> Patched
+                                    </div>
+                                    <p className="text-[#52525B] text-[10px] font-mono mt-0.5">{patchLabel}</p>
+                                 </div>
+
+                                 {/* ACTION MENU */}
+                                 <div className="relative action-menu-container">
+                                    <button
+                                       onClick={(e) => { e.stopPropagation(); toggleMenu(uniqueId); }}
+                                       className={`text-gray-600 hover:text-white transition-colors p-1.5 rounded-md ${isOpen ? 'text-white bg-[#27272A]' : ''}`}
+                                    >
+                                       <MoreVertical className="w-4 h-4" />
+                                    </button>
+
+                                    {/* DROPDOWN */}
+                                    {isOpen && (
+                                       <div className="absolute right-0 bottom-8 w-48 bg-[#27272A] border border-[#3F3F46] rounded-lg shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-bottom-right">
+                                          <div className="flex flex-col py-1">
+                                             <div className="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-[#3F3F46] mb-1">
+                                                Manage Group
+                                             </div>
+                                             {/* UPDATED DELETE ACTION to pass Profile too */}
+                                             <button
+                                                onClick={() => onDeleteGroup(group.role, sub.profile)}
+                                                className="flex items-center gap-3 px-4 py-2.5 text-xs text-red-400 hover:text-white hover:bg-red-600 transition-colors w-full text-left group/item"
+                                             >
+                                                <Trash2 className="w-3.5 h-3.5 group-hover/item:text-white" />
+                                                Delete Fixture Batch
+                                             </button>
+                                          </div>
+                                       </div>
+                                    )}
+                                 </div>
+                              </div>
+                           </div>
+                        );
+                     })}
+                  </div>
+               </div>
+            );
+         })}
+      </div>
+   );
 }

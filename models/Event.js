@@ -35,33 +35,34 @@ const LineupMemberSchema = new mongoose.Schema({
 // 5. Main Event Schema
 const EventSchema = new mongoose.Schema({
   eventId: { type: Number, unique: true }, // Short ID (e.g. 1001)
-  
+
   title: { type: String, required: true },
-  
+
   // 📝 This acts as the "About The Event" section
-  description: { type: String, required: true }, 
-  
+  description: { type: String, required: true },
+
   date: { type: Date, required: true },
   time: { type: String, required: true },
-  
+
   venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', required: true },
   city: { type: String, required: true },
-  
+
   artist: { type: String, required: true }, // Headliner Name
   lineup: [LineupMemberSchema], // Support Acts
-  
+
   genre: { type: String },
   vibe: { type: String },
-  
+
   images: ImageAssetsSchema, // Stores hero, artist, venue URLs
-  
+
   ticketTiers: [TicketTierSchema],
   discounts: [DiscountSchema], // Renamed to plural for consistency
-  
-  status: { type: String, default: 'Scheduled' },
-  organizerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-}, { 
-  timestamps: true 
+
+  status: { type: String, default: 'Scheduled' }, // 'requested', 'active', 'archived'
+  organizerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // Production Crew assigned by Artist
+}, {
+  timestamps: true
 });
 
 // Check if model exists to prevent "OverwriteModelError" in dev mode

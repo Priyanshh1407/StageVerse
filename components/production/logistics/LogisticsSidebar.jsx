@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Lightbulb } from 'lucide-react';
 
 export default function LogisticsSidebar({ crew = [], docs = [] }) {
   return (
     // FIX: Sidebar Background #0F0F10, Border #27272A
     <aside className="w-80 border-l border-[#27272A] bg-[#0F0F10] hidden xl:flex flex-col gap-0 z-10 h-full">
-      
+
       <div className="p-6 border-b border-[#27272A]">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-bold text-lg">Project Docs</h3>
@@ -15,7 +14,7 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
         </div>
         <div className="flex flex-col gap-3">
           {docs.map((doc, i) => (
-             <DocItem key={i} {...doc} />
+            <DocItem key={i} {...doc} />
           ))}
         </div>
       </div>
@@ -25,14 +24,14 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
           <h3 className="text-white font-bold text-lg">Crew Status</h3>
           <span className="bg-green-500/10 text-green-500 text-xs px-2 py-0.5 rounded-full font-medium border border-green-500/20">{crew.length} Active</span>
         </div>
-        
+
         <div className="space-y-4">
           {crew.map((member, i) => (
             <CrewItem key={i} {...member} />
           ))}
         </div>
 
-         <div className="mt-8 p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20">
+        <div className="mt-8 p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20">
           <div className="flex items-start gap-3">
             <Lightbulb className="text-blue-500 w-6 h-6 shrink-0" />
             <div>
@@ -46,16 +45,26 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
   );
 }
 
-function DocItem({ icon: Icon, color, bgColor, title, time }) {
+import { Lightbulb, Map, Grid, Box } from 'lucide-react';
+
+function DocItem({ title, type, url }) {
+  // Map string type to Icon component
+  let Icon = Box;
+  let color = "text-blue-400";
+  let bgColor = "bg-blue-500/10";
+
+  if (type === 'Map') { Icon = Map; color = "text-purple-400"; bgColor = "bg-purple-500/10"; }
+  if (type === 'Grid') { Icon = Grid; color = "text-green-400"; bgColor = "bg-green-500/10"; }
+
   return (
     // FIX: Item BG #18181B
-    <a className="group flex items-center p-3 rounded-lg bg-[#18181B] border border-transparent hover:border-blue-500/50 transition-all" href="#">
+    <a className="group flex items-center p-3 rounded-lg bg-[#18181B] border border-transparent hover:border-blue-500/50 transition-all" href={url || '#'}>
       <div className={`size-10 rounded ${bgColor} flex items-center justify-center ${color} mr-3 group-hover:text-white transition-colors`}>
         <Icon className="w-5 h-5" />
       </div>
       <div className="flex-1">
         <p className="text-white text-sm font-bold group-hover:text-blue-400 transition-colors">{title}</p>
-        <p className="text-gray-500 text-xs">{time}</p>
+        <p className="text-gray-500 text-xs">{type}</p>
       </div>
     </a>
   );
