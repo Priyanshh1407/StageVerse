@@ -1,105 +1,243 @@
 'use client';
+import { useState, useEffect } from 'react';
+import { MessageSquare, Settings, Users, Music } from 'lucide-react';
 import ArtistNavbar from '@/components/artist/ArtistNavbar';
-import { 
-  LiveShowCard, 
-  TicketStatsCard, 
-  MerchAlert, 
-  StatGrid, 
-  UpcomingStops 
+import {
+  LiveShowCard,
+  TicketStatsCard,
+  MerchAlert,
+  StatGrid,
+  UpcomingStops,
+  DaySheetCard,
 } from '@/components/artist/dashboard/dashboard-parts';
 
-// This object mimics exactly what your Database/API should return
-const MOCK_DATA = {
-  tourName: "Asia Leg 2024",
-  systemStatus: "Online",
-  
-  currentShow: {
-    city: "Mumbai, IN",
-    venue: "Jio World Garden",
-    doorsOpen: "18:00 PM",
-    showStart: "20:00 PM",
-    localTime: "20:15",
-    statusLabel: "Live Tonight",
-    isLive: true,
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBfb9PuDv96ogpYImHXpexg0rFzsdNIr8tFbhqgvrF_4GmSzuKTmyfkXrLlSLtx8Js2o9Eadg4BD_ca1DTrh1CRCaiAIu73D1OwXkzwP2qljqmslV8v_TU1sGT1l1nre6B9FIquCwhXocec8PLmp-_RDtj5580rIP04kun3LZZOhyzSpgiJ_uW18PfrTdAIZqlzoM0JRj8nzyM8P7HLb8bn8Pb7bSDOAad-GrORRTFj44fdYMTvUaMeczDbix3cQoR1SQcqRTT1YnmR"
-  },
+export default function ArtistDashboard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  ticketStats: {
-    sold: 5000,
-    capacity: 5100,
-    percentage: 98,
-    vipPercent: 100,
-    gaPercent: 97,
-    soldOut: true
-  },
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/artist/dashboard');
+        const json = await res.json();
 
-  alert: {
-    active: true,
-    title: "Merch Alert",
-    message: "Low stock on",
-    highlight: "Size M Hoodies at Main Booth"
-  },
+        if (json.success) {
+          setData(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
-  quickStats: [
-    { label: "Fan Pulse", value: "High Eng.", sub: "+12% vs last show", iconName: "Heart", trend: true },
-    { label: "Weather", value: "29°C Clear", sub: "Humidity: 65%", iconName: "Sun", trend: false },
-    { label: "Gross Rev", value: "$124.5k", sub: "Est. Final", iconName: "DollarSign", trend: false },
-    { label: "Streams", value: "2.4M", sub: "Top City: Mumbai", iconName: "BarChart3", trend: false, success: true },
-  ],
+  const [showRevenueModal, setShowRevenueModal] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
 
-  stops: [
-    { date: "24", month: "OCT", city: "New Delhi, IN", venue: "JLN Stadium" },
-    { date: "26", month: "OCT", city: "Bangalore, IN", venue: "Palace Grounds" },
-    { date: "29", month: "OCT", city: "Singapore, SG", venue: "Indoor Stadium" },
-  ]
-};
+  const handleStatAction = (actionType) => {
+    if (actionType === 'revenue_breakdown') {
+      setShowRevenueModal(true);
+    }
+  };
 
-export default async function ArtistDashboard() {
-  // In the future: const data = await fetch('api/dashboard').then(res => res.json())
-  const data = MOCK_DATA;
+  const handleTaskComplete = async (taskId) => {
+    try {
+      const res = await fetch('/api/production/logistics', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: taskId, status: 'Done' })
+      });
+      if (res.ok) {
+        // Optimistic update
+        setData(prev => ({
+          ...prev,
+          alert: {
+            ...prev.alert,
+            tasks: prev.alert.tasks.filter(t => t._id !== taskId),
+            message: `You have ${prev.alert.tasks.length - 1} Urgent Tasks Pending`
+          }
+        }));
+        // If cleared, close modal after delay
+        if (data.alert.tasks.length <= 1) {
+          setTimeout(() => setShowAlertModal(false), 500);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to complete task", e);
+    }
+  };
+
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        setShowRevenueModal(false);
+        setShowAlertModal(false);
+      }
+    };
+    if (showRevenueModal) {
+      window.addEventListener('keydown', handleEsc);
+    }
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showRevenueModal, showAlertModal]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-[#0d93f2] border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-slate-500 dark:text-slate-400 font-medium">Loading Tour Data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
 
   return (
-    <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] text-slate-900 dark:text-white font-sans">
+    <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] text-slate-900 dark:text-white font-sans relative">
       <ArtistNavbar />
-      
+
+      {/* Revenue Breakdown Modal */}
+      {showRevenueModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowRevenueModal(false)}>
+          <div className="bg-white dark:bg-[#1e2e38] rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-700/50" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white">Gross Revenue Breakdown</h3>
+              <button onClick={() => setShowRevenueModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
+              {data.revenueBreakdown && data.revenueBreakdown.map((item, idx) => (
+                <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-[#101b23] border border-slate-200 dark:border-slate-700">
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">{item.city}</p>
+                    <p className="text-xs text-slate-500">{new Date(item.date).toLocaleDateString()}</p>
+                  </div>
+                  <p className="font-mono font-bold text-[#0d93f2]">${(item.revenue / 1000).toFixed(1)}k</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 pt-4 border-t border-slate-700 flex justify-between items-center">
+              <span className="text-slate-400 font-medium">Total Tour Gross</span>
+              <span className="text-2xl font-black text-emerald-400">
+                {data.quickStats.find(s => s.label === "Gross Rev")?.value}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Details Modal */}
+      {showAlertModal && data.alert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowAlertModal(false)}>
+          <div
+            className="bg-white dark:bg-[#1e2e38] rounded-2xl p-6 w-full max-w-lg shadow-2xl border border-red-500/30 outline-none"
+            onClick={e => e.stopPropagation()}
+            tabIndex="-1" // Allow focus
+            ref={(el) => el && el.focus()} // Auto-focus on mount
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                Urgent Tasks
+              </h3>
+              <button onClick={() => setShowAlertModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
+              {data.alert.tasks && data.alert.tasks.map((task) => (
+                <div key={task._id} className="flex justify-between items-center p-4 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors group">
+                  <div>
+                    <p className="font-bold text-white">{task.title}</p>
+                    <p className="text-xs text-red-300 font-medium uppercase tracking-wide">High Priority • Due {task.dueDate || 'ASAP'}</p>
+                  </div>
+                  <button
+                    onClick={() => handleTaskComplete(task._id)}
+                    className="px-3 py-1.5 bg-green-500/20 text-green-400 border border-green-500/50 rounded-lg text-xs font-bold hover:bg-green-500 hover:text-white transition-all flex items-center gap-1"
+                  >
+                    Mark Done
+                  </button>
+                </div>
+              ))}
+              {(!data.alert.tasks || data.alert.tasks.length === 0) && (
+                <div className="text-center py-8 text-slate-400">
+                  <p>All clear! No urgent tasks.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 w-full max-w-[1400px] mx-auto p-6 md:p-8 flex flex-col gap-8">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+        {/* Header Section with Quick Actions */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-slate-900 dark:text-white tracking-tight text-3xl md:text-4xl font-bold leading-tight">
               Tour Hub: {data.tourName}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">Overview of today's logistics and tour status.</p>
           </div>
-          <div className="flex items-center gap-3 bg-white dark:bg-[#223949] px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-            </span>
-            <span className="text-sm font-bold text-slate-700 dark:text-white">System {data.systemStatus}</span>
+
+          <div className="flex items-center gap-2 bg-white dark:bg-[#1e2e38] p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+
+            <a href="/tech-rider#crew-messenger" className="group flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                <MessageSquare className="w-4 h-4" />
+              </div>
+              <span className="hidden md:inline">Message Crew</span>
+            </a>
+
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+            <a href="/tech-rider" className="group flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+              <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">
+                <Settings className="w-4 h-4" />
+              </div>
+              <span className="hidden md:inline">Rider</span>
+            </a>
+
+            <a href="/guest-list" className="group flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400">
+              <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                <Users className="w-4 h-4" />
+              </div>
+              <span className="hidden md:inline">Guests</span>
+            </a>
+
+            <a href="/setlist-builder" className="group flex items-center gap-2 px-3 py-2 bg-[#0d93f2] hover:bg-[#0b84db] text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 transition-all ml-1">
+              <Music className="w-4 h-4" />
+              <span>Setlist Builder</span>
+            </a>
           </div>
         </div>
 
         {/* Hero & Logistics Grid */}
         <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-             {/* Pass specific data objects to components */}
-             <LiveShowCard data={data.currentShow} />
-             
-             <div className="flex flex-col gap-6">
-                <TicketStatsCard data={data.ticketStats} />
-                <MerchAlert data={data.alert} />
-             </div>
+          {/* ROW 1: Hero Show Card + Day Sheet */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            <div className="lg:col-span-2 h-full">
+              <LiveShowCard data={data.currentShow} />
+            </div>
+            <div className="lg:col-span-1 h-full">
+              <DaySheetCard onClick={() => window.location.href = '/day-sheet'} />
+            </div>
+          </div>
+
+          {/* ROW 2: Statistics & Alerts */}
+          {/* ROW 2: Statistics & Alerts - FULL WIDTH */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+            <TicketStatsCard data={data.ticketStats} />
+            <MerchAlert data={data.alert} onClick={() => setShowAlertModal(true)} />
           </div>
         </div>
 
         {/* Stats Grid */}
-        <StatGrid data={data.quickStats} />
+        <StatGrid data={data.quickStats} onAction={handleStatAction} />
 
         {/* Upcoming Route */}
         <UpcomingStops data={data.stops} />
-        
+
       </main>
     </div>
   );

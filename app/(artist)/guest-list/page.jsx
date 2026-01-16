@@ -8,13 +8,7 @@ import AddGuestForm from '@/components/artist/guestlist/AddGuestForm';
 import GuestTable from '@/components/artist/guestlist/GuestTable';
 import { Loader2 } from 'lucide-react';
 
-const MOCK_DB_GUESTS = [
-  { id: 1, name: 'Sarah Miller', email: 'sarah.m@example.com', initials: 'SM', color: 'indigo', tier: 'All Access', status: 'Checked In', added: new Date(Date.now() - 1000 * 60 * 10).toISOString() },
-  { id: 2, name: 'James Doe', email: '+1 555-0123', initials: 'JD', color: 'purple', tier: 'VIP', status: 'Pending', added: new Date(Date.now() - 1000 * 60 * 25).toISOString() },
-  { id: 3, name: 'Anna Lee', email: 'anna@lee.com', initials: 'AL', color: 'pink', tier: 'Afterparty', status: 'Pending', added: new Date(Date.now() - 1000 * 60 * 45).toISOString() },
-  { id: 4, name: 'Ryan King', email: 'ryan.k@agency.com', initials: 'RK', color: 'blue', tier: 'All Access', status: 'Checked In', added: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
-  { id: 5, name: 'Marcus Lee', email: 'marcus@test.com', initials: 'ML', color: 'orange', tier: 'Afterparty', status: 'Pending', added: new Date(Date.now() - 1000 * 60 * 120).toISOString() },
-];
+// MOCK_DB_GUESTS removed. We fetch real data now.
 
 export default function GuestListPage() {
   const [guests, setGuests] = useState([]);
@@ -23,9 +17,23 @@ export default function GuestListPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setGuests(MOCK_DB_GUESTS);
-      setIsLoading(false);
+      try {
+        const res = await fetch('/api/artist/guest-list?eventId=13');
+        const json = await res.json();
+        if (json.success) {
+          const mapped = json.data.map(g => ({
+            ...g,
+            id: g._id,
+            initials: g.name.substring(0, 2).toUpperCase(),
+            color: 'indigo'
+          }));
+          setGuests(mapped);
+        }
+      } catch (e) {
+        console.error("Failed to load guest list");
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadData();
   }, []);
@@ -41,24 +49,37 @@ export default function GuestListPage() {
 
   // --- ACTIONS ---
 
-  const handleAddGuest = (formData) => {
-    const newGuest = {
-      id: Date.now(),
-      name: formData.name,
-      email: formData.email,
-      tier: formData.tier,
-      initials: formData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2),
-      color: ['blue', 'purple', 'indigo', 'pink', 'orange'][Math.floor(Math.random() * 5)],
-      status: formData.status || 'Pending',
-      added: new Date().toISOString()
-    };
-    setGuests(prev => [newGuest, ...prev]);
+  const handleAddGuest = async (formData) => {
+    try {
+      const res = await fetch('/api/artist/guest-list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: '13',
+          name: formData.name,
+          email: formData.email,
+          tier: formData.tier
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        const newGuest = {
+          ...json.data,
+          id: json.data._id,
+          initials: json.data.name.substring(0, 2).toUpperCase(),
+          color: 'blue'
+        };
+        setGuests(prev => [newGuest, ...prev]);
+      }
+    } catch (e) {
+      alert("Failed to add guest");
+    }
   };
 
   const handleUpdateGuest = (formData) => {
-    setGuests(prev => prev.map(g => 
-      g.id === editingGuest.id 
-        ? { ...g, ...formData, initials: formData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) } 
+    setGuests(prev => prev.map(g =>
+      g.id === editingGuest.id
+        ? { ...g, ...formData, initials: formData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) }
         : g
     ));
     setEditingGuest(null);
@@ -66,8 +87,8 @@ export default function GuestListPage() {
 
   const handleDeleteGuest = (id) => {
     if (confirm('Are you sure you want to remove this guest?')) {
-        setGuests(prev => prev.filter(guest => guest.id !== id));
-        if (editingGuest?.id === id) setEditingGuest(null);
+      setGuests(prev => prev.filter(guest => guest.id !== id));
+      if (editingGuest?.id === id) setEditingGuest(null);
     }
   };
 
@@ -84,30 +105,30 @@ export default function GuestListPage() {
       <ArtistNavbar />
 
       <main className="flex-1 w-full max-w-7xl mx-auto p-6 flex flex-col gap-6">
-        
+
         {/* Pass the handler to the header */}
         <GuestListHeader onNewList={handleNewList} />
-        
+
         <StatsGrid stats={stats} isLoading={isLoading} />
 
         <div className="grid lg:grid-cols-3 gap-6">
-          <AddGuestForm 
-            onAdd={handleAddGuest} 
+          <AddGuestForm
+            onAdd={handleAddGuest}
             onUpdate={handleUpdateGuest}
             editingGuest={editingGuest}
             onCancel={() => setEditingGuest(null)}
           />
 
           {isLoading ? (
-             <div className="lg:col-span-2 flex items-center justify-center h-64 bg-white dark:bg-[#182934] rounded-xl border border-slate-200 dark:border-[#315168]">
-                <Loader2 className="w-8 h-8 animate-spin text-[#0d93f2]" />
-             </div>
+            <div className="lg:col-span-2 flex items-center justify-center h-64 bg-white dark:bg-[#182934] rounded-xl border border-slate-200 dark:border-[#315168]">
+              <Loader2 className="w-8 h-8 animate-spin text-[#0d93f2]" />
+            </div>
           ) : (
-             <GuestTable 
-               data={guests} 
-               onDelete={handleDeleteGuest} 
-               onEdit={setEditingGuest} 
-             />
+            <GuestTable
+              data={guests}
+              onDelete={handleDeleteGuest}
+              onEdit={setEditingGuest}
+            />
           )}
         </div>
       </main>

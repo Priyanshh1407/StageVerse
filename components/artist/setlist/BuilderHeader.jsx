@@ -1,7 +1,7 @@
 'use client';
 import { Sparkles, Save, Trash2 } from 'lucide-react';
 
-export default function BuilderHeader() {
+export default function BuilderHeader({ onSave }) {
   return (
     <div className="flex flex-wrap justify-between items-end gap-4 border-b border-[#223949] pb-6">
       <div className="flex min-w-72 flex-col gap-2">
@@ -19,7 +19,10 @@ export default function BuilderHeader() {
           <Trash2 className="w-4 h-4" />
           <span className="hidden sm:inline">Discard Draft</span>
         </button>
-        <button className="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white text-sm font-bold tracking-[0.015em] transition-colors shadow-lg shadow-[#0d93f2]/20">
+        <button
+          onClick={onSave}
+          className="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white text-sm font-bold tracking-[0.015em] transition-colors shadow-lg shadow-[#0d93f2]/20"
+        >
           <Save className="w-4 h-4" />
           Save Setlist
         </button>

@@ -1,10 +1,12 @@
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
+import mongoose from 'mongoose';
 import Event from '@/models/Event';
-import Venue from '@/models/Venue'; // Assuming this exists, based on Ref
+import Venue from '@/models/Venue';
+import Task from '@/models/Task';
 import Patch from '@/models/Patch';
-import Activity from '@/models/Activity'; // IMPORT ACTIVITY
+import Activity from '@/models/Activity';
 import { verifyAuth } from '@/lib/auth';
 
 export async function GET(req) {
@@ -76,11 +78,25 @@ export async function GET(req) {
         }));
 
         // 6. Mock Tasks (Still Mocked as requested to keep "Personal Planner")
-        const tasks = [
-            { id: 1, title: 'Finalize patch list', priority: 'High', color: 'red', due: '2h' },
-            { id: 2, title: 'Review plot conflicts', priority: 'In Progress', color: 'amber', due: 'Tomorrow' },
-            { id: 3, title: 'Update fixture inventory', priority: 'To Do', color: 'blue', due: 'Nov 10' }
-        ];
+        // 6. Fetch Real Tasks
+        // We want tasks assigned to "Production Crew" OR tasks for these events in general
+        const taskColorMap = { High: 'red', Medium: 'amber', Low: 'blue', Done: 'green' };
+
+        // Use existing activeEventIds from earlier scope
+
+        const dbTasks = await Task.find({
+            eventId: { $in: activeEventIds },
+            status: { $ne: 'Done' }
+        }).sort({ urgent: -1, priority: 1, dueDate: 1 }).limit(10);
+
+        const tasks = dbTasks.map(t => ({
+            id: t._id,
+            title: t.title,
+            priority: t.priority,
+            color: t.urgent ? 'red' : (taskColorMap[t.priority] || 'blue'),
+            due: t.dueDate || 'ASAP',
+            isArtistMessage: t.title.startsWith('Artist Message')
+        }));
 
         return NextResponse.json({
             success: true,
