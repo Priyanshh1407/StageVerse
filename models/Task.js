@@ -8,6 +8,7 @@ const TaskSchema = new mongoose.Schema({
   assignee: { type: String }, // "Alex M." (Or link to User ID if they have an account)
 
   title: { type: String, required: true }, // "Finalize Truck Pack"
+  description: { type: String }, // detailed message content
 
   // Kanban Info
   columnId: {

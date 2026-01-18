@@ -2,7 +2,7 @@
 
 import { ScrollText, FileJson, File, Share2 } from 'lucide-react';
 
-export default function RiderManifest({ gear, hazer }) {
+export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
   // Calculate totals for summary
   const totalItems = gear.reduce((acc, item) => acc + item.count, 0) + (hazer ? 1 : 0);
   const activeGear = gear.filter(g => g.count > 0);
@@ -10,7 +10,7 @@ export default function RiderManifest({ gear, hazer }) {
   return (
     <aside className="w-full lg:w-80 flex-none">
       <div className="sticky top-24 flex flex-col gap-6">
-        
+
         {/* Receipt/Manifest */}
         <div className="bg-[#1a2632] rounded-xl border border-[#223949] p-0 shadow-lg overflow-hidden">
           <div className="p-5 border-b border-[#223949] bg-black/20">
@@ -36,7 +36,7 @@ export default function RiderManifest({ gear, hazer }) {
                     </td>
                   </tr>
                 )}
-                
+
                 {activeGear.map(item => (
                   <tr key={item.id}>
                     <td className="px-4 py-3 text-white font-medium">{item.name}</td>
@@ -69,7 +69,10 @@ export default function RiderManifest({ gear, hazer }) {
               <FileJson className="w-5 h-5" />
               Download JSON
             </button>
-            <button className="flex items-center gap-3 w-full p-2 text-left rounded-lg hover:bg-white/5 text-white/80 hover:text-white transition-colors text-sm font-medium">
+            <button
+              onClick={onDownloadPDF}
+              className="flex items-center gap-3 w-full p-2 text-left rounded-lg hover:bg-white/5 text-white/80 hover:text-white transition-colors text-sm font-medium"
+            >
               <File className="w-5 h-5" />
               Download PDF Rider
             </button>

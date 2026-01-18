@@ -1,53 +1,214 @@
-
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
-import Rider from '@/models/Rider';
+import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
+import Task from '@/models/Task';
+import User from '@/models/User'; // Ensure User model is registered
+import { riderTemplates } from '@/lib/riderTemplates'; // Import the new templates
 
-// GET: Fetch the artist's rider
+// GET: Fetch Rider for a Specific Event + Assigned User
 export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const { searchParams } = new URL(req.url);
+        const eventId = searchParams.get('eventId');
+
+        if (!eventId) {
+            return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
         }
 
-        // Find rider for this artist
-        const rider = await Rider.findOne({ artistId: user.userId });
+        const event = await Event.findById(eventId).populate('assignedTo', 'name email role');
+        if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
-        // valid even if null (frontend handles empty state)
-        return NextResponse.json({ success: true, data: rider });
+        return NextResponse.json({
+            success: true,
+            data: event.rider || {},
+            assignedTo: event.assignedTo
+        });
 
     } catch (error) {
+        console.error("Rider Fetch Error:", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
-// POST: Update or Create Rider
+function generateDiff(oldRider, newPayload) {
+    const changes = [];
+    if (!oldRider || !oldRider.gear) return ["Initial Rider Created"];
+
+    // 1. Gear Diff
+    const oldGear = oldRider.gear || [];
+    const newGear = newPayload.gear || [];
+
+    // Map for easy lookup
+    const oldMap = new Map(oldGear.map(g => [g.id, g]));
+    const newMap = new Map(newGear.map(g => [g.id, g]));
+
+    // Check for modifications & additions
+    newGear.forEach(newItem => {
+        const oldItem = oldMap.get(newItem.id);
+        if (!oldItem) {
+            changes.push(`• Added: ${newItem.count}x ${newItem.name}`);
+        } else {
+            if (oldItem.count !== newItem.count) {
+                changes.push(`• Changed ${newItem.name}: ${oldItem.count} ➝ ${newItem.count}`);
+            }
+        }
+    });
+
+    // Check for removals
+    oldGear.forEach(oldItem => {
+        if (!newMap.has(oldItem.id)) {
+            changes.push(`• Removed: ${oldItem.name}`);
+        }
+    });
+
+    // 2. Plot Diff
+    if (newPayload.stageLocation && newPayload.stageLocation !== oldRider.stageLocation) {
+        changes.push(`• Stage Location: ${oldRider.stageLocation || 'None'} ➝ ${newPayload.stageLocation}`);
+    }
+    if (newPayload.mountingPreference && newPayload.mountingPreference !== oldRider.mountingPreference) {
+        changes.push(`• Mounting: ${oldRider.mountingPreference || 'Default'} ➝ ${newPayload.mountingPreference}`);
+    }
+    if (newPayload.hazer !== undefined && newPayload.hazer !== oldRider.hazer) {
+        changes.push(`• Hazer: ${oldRider.hazer ? 'Yes' : 'No'} ➝ ${newPayload.hazer ? 'Yes' : 'No'}`);
+    }
+
+    return changes;
+}
+
+// POST: Update Rider & Assign LD
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
-        const { gear, notes } = body;
+        const { eventId, gear, stageLocation, mountingPreference, placementNotes, hazer, assigneeId, assigneeName } = body;
 
-        // Upsert logic: Update if exists, Create if not
-        const updatedRider = await Rider.findOneAndUpdate(
-            { artistId: user.userId },
-            {
-                artistId: user.userId,
-                gear: gear || [],
-                notes: notes || ''
-            },
-            { new: true, upsert: true, setDefaultsOnInsert: true }
-        );
+        if (!eventId) {
+            return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
+        }
 
-        return NextResponse.json({ success: true, data: updatedRider });
+        // 1. Fetch Existing Event to Compare
+        const oldEvent = await Event.findById(eventId);
+        if (!oldEvent) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+
+        const oldRider = oldEvent.rider ? oldEvent.rider.toObject() : {};
+
+        // 2. Prepare Update (Rider + Assignment)
+        const updateData = {};
+        if (gear) updateData['rider.gear'] = gear;
+        if (stageLocation !== undefined) updateData['rider.stageLocation'] = stageLocation;
+        if (mountingPreference !== undefined) updateData['rider.mountingPreference'] = mountingPreference;
+        if (placementNotes !== undefined) updateData['rider.placementNotes'] = placementNotes;
+        if (hazer !== undefined) updateData['rider.hazer'] = hazer;
+
+        // NEW: Handle LD Assignment
+        if (assigneeId) {
+            updateData['assignedTo'] = assigneeId;
+            updateData['status'] = 'requested';
+        }
+
+        // 3. Calculate Diff
+        const changes = generateDiff(oldRider, { gear, stageLocation, mountingPreference, placementNotes, hazer });
+
+        // 4. Update Event (Persist Rider)
+        const updatedEvent = await Event.findByIdAndUpdate(
+            eventId,
+            { $set: updateData },
+            { new: true }
+        ).populate('assignedTo', 'name role');
+
+        // 5. Create Notification Task
+        const isNewAssignment = assigneeId && (!oldEvent.assignedTo || oldEvent.assignedTo.toString() !== assigneeId);
+
+        if (changes.length > 0 || isNewAssignment) {
+
+            // Default Language
+            const lang = 'English';
+
+            // 1. Handle New Assignment (Single high-level event)
+            if (isNewAssignment) {
+                const title = riderTemplates.new_assignment[lang]();
+                await Task.create({
+                    eventId: eventId,
+                    title: title,
+                    description: 'Artist has assigned this event to you.',
+                    assignee: assigneeName || 'Production Crew',
+                    assigneeId: assigneeId,
+                    columnId: 'preprod',
+                    priority: 'High',
+                    urgent: true,
+                    tag: 'Rider',
+                    tagColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+                    dueDate: 'Review ASAP',
+                    status: 'pending'
+                });
+            }
+
+            // 2. Handle Individual Changes (One Notification Per Change)
+            for (const change of changes) {
+                let title = '';
+                let description = change; // The specific change line
+
+                if (change.startsWith('• Added:')) {
+                    const parts = change.split('x ');
+                    const fixtureName = parts.length > 1 ? parts[1] : 'Fixture';
+                    title = riderTemplates.fixture_added[lang](fixtureName);
+                }
+                else if (change.startsWith('• Removed:')) {
+                    const parts = change.split(': ');
+                    const fixtureName = parts.length > 1 ? parts[1] : 'Fixture';
+                    title = riderTemplates.fixture_removed[lang](fixtureName);
+                }
+                else if (change.includes('➝') && change.includes('Changed')) {
+                    const parts = change.split('Changed ');
+                    if (parts.length > 1) {
+                        const [name, valueStr] = parts[1].split(': ');
+                        const [oldVal, newVal] = valueStr ? valueStr.split(' ➝ ') : ['?', '?'];
+                        title = riderTemplates.count_updated[lang](name, oldVal, newVal);
+                    } else {
+                        title = riderTemplates.count_updated[lang]('Item', '?', '?');
+                    }
+                }
+                else if (change.startsWith('• Stage Location:') || change.startsWith('• Mounting:')) {
+                    // Extract "Stage Location" or "Mounting"
+                    const [feature, values] = change.replace('• ', '').split(': ');
+                    const [oldVal, newVal] = values ? values.split(' ➝ ') : ['?', '?'];
+                    title = riderTemplates.stage_plot_updated[lang](feature, oldVal, newVal);
+                }
+                else if (change.startsWith('• Hazer:')) {
+                    const parts = change.split(': ');
+                    const [oldVal, newVal] = parts.length > 1 ? parts[1].split(' ➝ ') : ['?', '?'];
+                    title = riderTemplates.hazer_updated[lang](oldVal, newVal);
+                }
+                else title = riderTemplates.general_update[lang](1); // Fallback
+
+                // Create Task for this specific change
+                await Task.create({
+                    eventId: eventId,
+                    title: title,
+                    description: description,
+                    assignee: assigneeName || 'Production Crew',
+                    assigneeId: assigneeId,
+                    columnId: 'preprod',
+                    priority: 'Medium', // Individual updates might be medium priority
+                    urgent: true, // Keep it urgent so it shows in header
+                    tag: 'Rider',
+                    tagColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+                    dueDate: 'Review',
+                    status: 'pending'
+                });
+                console.log("Crew Notification Created (Sequential):", title);
+            }
+        }
+
+        return NextResponse.json({ success: true, data: updatedEvent.rider, changes, assignedTo: updatedEvent.assignedTo });
 
     } catch (error) {
         console.error("Rider Update Error:", error);

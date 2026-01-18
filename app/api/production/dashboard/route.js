@@ -46,7 +46,8 @@ export async function GET(req) {
 
         // CHECK FOR CONFLICTS (Dynamic Analysis)
         let conflictCount = 0;
-        const activeEventIds = events.filter(e => e.status === 'active').map(e => e._id);
+        // Include 'requested' events so we see their tasks (e.g. New Assignment)
+        const activeEventIds = events.filter(e => e.status === 'active' || e.status === 'requested').map(e => e._id);
         if (activeEventIds.length > 0) {
             const patches = await Patch.find({ eventId: { $in: activeEventIds } });
 
@@ -92,6 +93,7 @@ export async function GET(req) {
         const tasks = dbTasks.map(t => ({
             id: t._id,
             title: t.title,
+            description: t.description, // Pass description
             priority: t.priority,
             color: t.urgent ? 'red' : (taskColorMap[t.priority] || 'blue'),
             due: t.dueDate || 'ASAP',

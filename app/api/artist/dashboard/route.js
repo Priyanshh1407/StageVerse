@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
+import Venue from '@/models/Venue';
 import Task from '@/models/Task';
 import { verifyAuth } from '@/lib/auth';
 

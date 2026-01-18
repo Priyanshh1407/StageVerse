@@ -1,0 +1,1 @@
+const mongoose = require('mongoose'); const Event = require('./models/Event'); mongoose.connect(process.env.MONGODB_URI).then(async () => { const e = await Event.findOne({eventId: 13}); console.log(e ? 'Event 13 Found: ' + e.city : 'Event 13 Not Found'); process.exit(); });

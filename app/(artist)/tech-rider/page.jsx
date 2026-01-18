@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import RiderHeader from '@/components/artist/tech-rider/RiderHeader';
 import GearCard from '@/components/artist/tech-rider/GearCard';
@@ -24,41 +26,89 @@ const ICON_MAP = {
 
 export default function TechRiderPage() {
   const [gear, setGear] = useState([]);
-  const [hazer, setHazer] = useState(true);
+  const [hazer, setHazer] = useState(false);
+  const [plotData, setPlotData] = useState({}); // New Plot State
+  const [selectedLD, setSelectedLD] = useState(null); // New: Assigned LD
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 1. SIMULATE API FETCH
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const res = await fetch('/api/artist/rider');
-        const json = await res.json();
+  // Event Selection State
+  const [events, setEvents] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState(null);
 
-        if (json.success && json.data && json.data.gear) {
-          const processedData = json.data.gear.map(item => ({
-            ...item,
-            icon: ICON_MAP[item.iconKey] || Lightbulb // Restore icon component
-          }));
-          setGear(processedData);
-          if (json.data.notes) {
-            // Future: Set notes if we add a notes field to UI
+  // 1. FETCH EVENTS
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        const res = await fetch('/api/artist/day-sheet', { cache: 'no-store' });
+        const json = await res.json();
+        if (json.success) {
+          setEvents(json.data);
+          // Default to first event if none selected
+          if (json.data.length > 0 && !selectedEventId) {
+            setSelectedEventId(json.data[0]._id);
           }
-        } else {
-          // Default if no rider exists yet
-          setGear([]);
         }
       } catch (e) {
-        console.error("Failed to load rider", e);
+        console.error("Failed to load events", e);
+      }
+    }
+    loadEvents();
+  }, []);
+
+  // 2. LOAD RIDER DATA (When Event Changes)
+  useEffect(() => {
+    if (!selectedEventId) return;
+
+    async function loadRiderData() {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/artist/rider?eventId=${selectedEventId}`, { cache: 'no-store' });
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          // Gear
+          if (json.data.gear) {
+            const processedData = json.data.gear.map(item => ({
+              ...item,
+              icon: ICON_MAP[item.iconKey] || Lightbulb
+            }));
+            setGear(processedData);
+          } else {
+            setGear([]);
+          }
+          // Plot Data
+          setHazer(json.data.hazer || false);
+          setPlotData({
+            stageLocation: json.data.stageLocation,
+            mountingPreference: json.data.mountingPreference,
+            placementNotes: json.data.placementNotes
+          });
+
+          // Pre-fill Assigned LD if exists
+          if (json.assignedTo) {
+            setSelectedLD(json.assignedTo);
+          } else {
+            setSelectedLD(null);
+          }
+        } else {
+          // Reset defaults if no rider found for this event
+          setGear([]);
+          setHazer(false);
+          setPlotData({});
+          setSelectedLD(null);
+        }
+      } catch (e) {
+        console.error("Rider load error", e);
       } finally {
         setIsLoading(false);
       }
     }
-    loadData();
-  }, []);
+    loadRiderData();
+  }, [selectedEventId]);
 
-  // 2. HANDLERS
+  // 3. HANDLERS
   const handleIncrement = (id) => {
     setGear(prev => prev.map(item =>
       item.id === id ? { ...item, count: item.count + 1 } : item
@@ -72,30 +122,38 @@ export default function TechRiderPage() {
   };
 
   const handleAddNewFixture = (newItemData) => {
-    const newId = Math.max(...gear.map(g => g.id)) + 1;
+    // Generate numeric ID. If gear empty, start at 1.
+    const newId = gear.length > 0 ? Math.max(...gear.map(g => g.id || 0)) + 1 : 1;
     const newItem = {
       id: newId,
       name: newItemData.name,
       type: newItemData.type,
       icon: ICON_MAP[newItemData.iconType] || Lightbulb,
-      count: 1, // Start with 1 selected
+      count: 1,
     };
     setGear(prev => [...prev, newItem]);
   };
 
   const handleSaveAndSend = async () => {
+    if (!selectedEventId) return alert("Please select an event first.");
     setIsSaving(true);
-    // Simulate API call
-    // Construct Payload
+
     const payload = {
+      eventId: selectedEventId,
       gear: gear.filter(g => g.count > 0).map(g => ({
         id: g.id,
         name: g.name,
         type: g.type,
         count: g.count,
-        iconKey: Object.keys(ICON_MAP).find(key => ICON_MAP[key] === g.icon) || 'Lightbulb' // serialized
+        iconKey: Object.keys(ICON_MAP).find(key => ICON_MAP[key] === g.icon) || 'Lightbulb'
       })),
-      notes: `Hazer Required: ${hazer}`
+      stageLocation: plotData.stageLocation,
+      mountingPreference: plotData.mountingPreference,
+      placementNotes: plotData.placementNotes,
+      hazer: hazer,
+      // Pass Assignment Info
+      assigneeId: selectedLD ? selectedLD._id : null,
+      assigneeName: selectedLD ? selectedLD.name : null
     };
 
     try {
@@ -105,7 +163,7 @@ export default function TechRiderPage() {
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        alert("Rider Saved & Synced to Cloud!");
+        alert("Rider Saved & Assigned to Event!");
       } else {
         alert("Failed to save.");
       }
@@ -116,6 +174,66 @@ export default function TechRiderPage() {
     setIsSaving(false);
   };
 
+  // 4. PDF GENERATION
+  const handleDownloadPDF = () => {
+    if (!selectedEventId) return;
+    const event = events.find(e => e._id === selectedEventId);
+    if (!event) return;
+
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(22);
+    doc.text(`${event.title} - Tech Rider`, 14, 20);
+
+    // Subtitle
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(`${event.city} • ${new Date(event.date).toLocaleDateString()}`, 14, 28);
+    doc.text(`Venue: ${event.venue || 'TBA'}`, 14, 34);
+
+    // Section 1: Gear List
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text("1. Fixture Manifest", 14, 45);
+
+    const gearRows = gear.filter(g => g.count > 0).map(g => [g.name, g.type || 'Standard', g.count]);
+
+    autoTable(doc, {
+      startY: 50,
+      head: [['Fixture Name', 'Type', 'Count']],
+      body: gearRows,
+      theme: 'striped',
+      headStyles: { fillColor: [13, 147, 242] } // Brand Blue
+    });
+
+    // Section 2: Stage Plot (Below Table)
+    const finalY = doc.lastAutoTable.finalY + 15;
+
+    doc.setFontSize(14);
+    doc.text("2. Stage Plot & Requirements", 14, finalY);
+
+    doc.setFontSize(11);
+    doc.text(`Stage Location: ${plotData.stageLocation || 'Not Specified'}`, 14, finalY + 10);
+    doc.text(`Mounting Preference: ${plotData.mountingPreference || 'Not Specified'}`, 14, finalY + 18);
+    doc.text(`Hazer Requested: ${hazer ? 'Yes' : 'No'}`, 14, finalY + 26);
+
+    if (plotData.placementNotes) {
+      doc.text("Additional Notes:", 14, finalY + 36);
+      doc.setFontSize(10);
+      doc.setTextColor(80);
+      const splitNotes = doc.splitTextToSize(plotData.placementNotes, 180);
+      doc.text(splitNotes, 14, finalY + 42);
+    }
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text("Generated via StageVerse Digital Rider", 14, 285);
+
+    doc.save(`TechRider-${event.title.replace(/\s+/g, '-')}.pdf`);
+  };
+
   return (
     <div className="min-h-screen bg-[#101b23] text-white font-sans flex flex-col overflow-x-hidden">
 
@@ -124,7 +242,15 @@ export default function TechRiderPage() {
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-10 lg:px-20 py-8">
         <div className="flex flex-col max-w-[1200px] mx-auto w-full flex-1">
 
-          <RiderHeader onSave={handleSaveAndSend} isSaving={isSaving} />
+          <RiderHeader
+            onSave={handleSaveAndSend}
+            isSaving={isSaving}
+            events={events}
+            selectedEventId={selectedEventId}
+            onEventChange={setSelectedEventId}
+            selectedLD={selectedLD}
+            onLDSelect={setSelectedLD}
+          />
 
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[#223949] rounded-xl bg-[#1a2632]/50">
@@ -174,14 +300,24 @@ export default function TechRiderPage() {
                   </div>
                 </section>
 
-                <PlacementForm hazer={hazer} setHazer={setHazer} />
+                <PlacementForm
+                  hazer={hazer}
+                  setHazer={setHazer}
+                  plotData={plotData}
+                  setPlotData={setPlotData}
+                />
 
                 <CrewMessenger />
 
               </div>
 
+
               {/* RIGHT COLUMN */}
-              <RiderManifest gear={gear} hazer={hazer} />
+              <RiderManifest
+                gear={gear}
+                hazer={hazer}
+                onDownloadPDF={handleDownloadPDF} // Pass Handler Here
+              />
 
             </div>
           )}

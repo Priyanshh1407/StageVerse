@@ -2,7 +2,12 @@
 
 import { FileText, PenLine, HelpCircle, ChevronDown, CloudFog, Plug, Cable, CheckCircle, Lock } from 'lucide-react';
 
-export default function PlacementForm({ hazer, setHazer }) {
+export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }) {
+
+  const handleChange = (field, value) => {
+    setPlotData(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
     <section className="pb-10">
       <div className="flex justify-between items-end mb-4 px-1">
@@ -20,22 +25,32 @@ export default function PlacementForm({ hazer, setHazer }) {
             <PenLine className="text-[#0d93f2] w-5 h-5" />
             <h3 className="text-white font-bold">Stage Instructions</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
             <div className="space-y-2">
               <label className="text-xs font-bold text-white/60 uppercase tracking-wide flex items-center gap-2">
                 Stage Location
                 <HelpCircle className="w-3 h-3 text-[#0d93f2]" />
               </label>
-              <input className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#0d93f2] focus:border-[#0d93f2] outline-none placeholder-white/20 transition-all" placeholder="e.g. Upstage Center Truss" type="text"/>
+              <input
+                value={plotData.stageLocation || ''}
+                onChange={(e) => handleChange('stageLocation', e.target.value)}
+                className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#0d93f2] focus:border-[#0d93f2] outline-none placeholder-white/20 transition-all"
+                placeholder="e.g. Upstage Center Truss"
+                type="text"
+              />
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-xs font-bold text-white/60 uppercase tracking-wide flex items-center gap-2">
                 Mounting Preference
               </label>
               <div className="relative">
-                <select className="w-full appearance-none bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#0d93f2] focus:border-[#0d93f2] outline-none transition-all cursor-pointer">
+                <select
+                  value={plotData.mountingPreference || 'Standard / Default'}
+                  onChange={(e) => handleChange('mountingPreference', e.target.value)}
+                  className="w-full appearance-none bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#0d93f2] focus:border-[#0d93f2] outline-none transition-all cursor-pointer"
+                >
                   <option>Standard / Default</option>
                   <option>Floor Stand</option>
                   <option>Flown (Truss)</option>
@@ -46,16 +61,21 @@ export default function PlacementForm({ hazer, setHazer }) {
               </div>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-xs font-bold text-white/60 uppercase tracking-wide">Specific Placement Notes</label>
-            <textarea className="w-full bg-[#101b23] border border-[#223949] rounded-lg p-4 text-white text-sm focus:ring-1 focus:ring-[#0d93f2] focus:border-[#0d93f2] outline-none h-32 resize-none placeholder-white/30 leading-relaxed transition-all" placeholder="Enter detailed instructions here..."></textarea>
+            <textarea
+              value={plotData.placementNotes || ''}
+              onChange={(e) => handleChange('placementNotes', e.target.value)}
+              className="w-full bg-[#101b23] border border-[#223949] rounded-lg p-4 text-white text-sm focus:ring-1 focus:ring-[#0d93f2] focus:border-[#0d93f2] outline-none h-32 resize-none placeholder-white/30 leading-relaxed transition-all"
+              placeholder="Enter detailed instructions here..."
+            ></textarea>
           </div>
         </div>
 
         {/* Toggles & Read-only */}
         <div className="flex flex-col gap-4">
-          
+
           {/* Interactive Toggle */}
           <label className="relative flex items-center justify-between bg-[#1a2632] p-5 rounded-xl border border-[#223949] cursor-pointer group hover:border-[#0d93f2]/50 transition-colors shadow-sm h-min select-none">
             <div className="flex items-center gap-3">
@@ -67,7 +87,7 @@ export default function PlacementForm({ hazer, setHazer }) {
                 <span className="text-[11px] text-white/50 block font-medium">Continuous Haze</span>
               </div>
             </div>
-            <div 
+            <div
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${hazer ? 'bg-[#0d93f2]' : 'bg-[#223949]'}`}
               onClick={(e) => { e.preventDefault(); setHazer(!hazer); }}
             >

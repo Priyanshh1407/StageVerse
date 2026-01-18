@@ -7,7 +7,7 @@ const TicketTierSchema = new mongoose.Schema({
   capacity: { type: Number, required: true },
   sold: { type: Number, default: 0 },
   status: { type: String, default: 'Active' }
-});
+}, { _id: false });
 
 // 2. Discount Sub-Schema
 const DiscountSchema = new mongoose.Schema({
@@ -16,7 +16,7 @@ const DiscountSchema = new mongoose.Schema({
   value: { type: Number, required: true }, // e.g. 20
   uses: { type: Number, default: 0 },
   status: { type: String, default: 'Active' }
-});
+}, { _id: false });
 
 // 3. Image Assets Sub-Schema (Hero, Artist, Venue)
 const ImageAssetsSchema = new mongoose.Schema({
@@ -30,7 +30,46 @@ const LineupMemberSchema = new mongoose.Schema({
   name: { type: String, required: true },
   role: { type: String },   // e.g. "Support Act"
   image: { type: String }
+}, { _id: false });
+
+// 6. Day Sheet Item Schema (Custom Timeline)
+const DaySheetItemSchema = new mongoose.Schema({
+  time: { type: String, required: true },
+  title: { type: String, required: true },
+  sub: { type: String },
+  type: { type: String, enum: ['travel', 'work', 'sound', 'doors', 'show', 'other'], default: 'other' },
+  details: { type: String },
+  status: { type: String, default: 'future' }, // future, active, completed
+  tasks: [{ label: String, done: Boolean }]
 });
+
+// 7. Venue Intel Schema (Wifi, Green Room, Local Info)
+const VenueIntelSchema = new mongoose.Schema({
+  wifiName: { type: String },
+  wifiPass: { type: String },
+  greenRoomCode: { type: String },
+  distance: { type: String }, // e.g. "0.2 mi"
+  coffeeName: { type: String },
+  coffeeDesc: { type: String }
+}, { _id: false });
+
+// 8. Tech Rider Schemas (Explicit Definition)
+const GearItemSchema = new mongoose.Schema({
+  id: { type: Number },
+  name: { type: String },
+  type: { type: String },
+  count: { type: Number },
+  iconKey: { type: String }
+}, { _id: false });
+
+const RiderSchema = new mongoose.Schema({
+  gear: [GearItemSchema],
+  stageLocation: { type: String },
+  mountingPreference: { type: String },
+  placementNotes: { type: String },
+  hazer: { type: Boolean, default: false }
+}, { _id: false });
+
 
 // 5. Main Event Schema
 const EventSchema = new mongoose.Schema({
@@ -43,6 +82,7 @@ const EventSchema = new mongoose.Schema({
 
   date: { type: Date, required: true },
   time: { type: String, required: true },
+  doorsOpen: { type: String },
 
   venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', required: true },
   city: { type: String, required: true },
@@ -60,12 +100,23 @@ const EventSchema = new mongoose.Schema({
 
   status: { type: String, default: 'Scheduled' }, // 'requested', 'active', 'archived'
   organizerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // Production Crew assigned by Artist
+  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Production Crew assigned by Artist
+
+  // NEW: Day Sheet & Logistics
+  daySheet: [DaySheetItemSchema],
+  venueIntel: VenueIntelSchema,
+
+  // NEW: Tech Rider (Event Specific)
+  rider: { type: RiderSchema, default: () => ({}) }
+
 }, {
   timestamps: true
 });
 
 // Check if model exists to prevent "OverwriteModelError" in dev mode
+// FORCE RECOMPILE for Dev (to pick up new Schema fields)
+if (process.env.NODE_ENV === 'development') delete mongoose.models.Event;
+
 const Event = mongoose.models.Event || mongoose.model('Event', EventSchema);
 
 export default Event;

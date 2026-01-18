@@ -2,7 +2,7 @@
 
 import { Download, Plus, ChevronRight } from 'lucide-react';
 
-export default function GuestListHeader({ onNewList }) {
+export default function GuestListHeader({ onNewList, onExport }) {
   return (
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-2">
       <div>
@@ -18,15 +18,18 @@ export default function GuestListHeader({ onNewList }) {
           Add guests and manage access tiers instantly synced with the door.
         </p>
       </div>
-      
+
       <div className="flex gap-3">
-        <button className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-white dark:bg-[#223949] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#2c4a5f] transition-colors">
+        <button
+          onClick={onExport}
+          className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-white dark:bg-[#223949] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#2c4a5f] transition-colors"
+        >
           <Download className="w-5 h-5" />
           <span>Export CSV</span>
         </button>
-        
+
         {/* Connected the New List Button */}
-        <button 
+        <button
           onClick={onNewList}
           className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white text-sm font-bold shadow-sm transition-colors"
         >

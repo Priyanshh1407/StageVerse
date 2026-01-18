@@ -76,13 +76,31 @@ export default function GuestListPage() {
     }
   };
 
-  const handleUpdateGuest = (formData) => {
-    setGuests(prev => prev.map(g =>
-      g.id === editingGuest.id
-        ? { ...g, ...formData, initials: formData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) }
-        : g
-    ));
-    setEditingGuest(null);
+  const handleUpdateGuest = async (formData) => {
+    try {
+      const res = await fetch('/api/artist/guest-list', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingGuest.id,
+          ...formData
+        })
+      });
+
+      if (res.ok) {
+        setGuests(prev => prev.map(g =>
+          g.id === editingGuest.id
+            ? { ...g, ...formData, initials: formData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) }
+            : g
+        ));
+        setEditingGuest(null);
+      } else {
+        alert("Failed to update guest");
+      }
+    } catch (e) {
+      console.error("Update failed", e);
+      alert("Failed to update guest");
+    }
   };
 
   const handleDeleteGuest = (id) => {
@@ -93,10 +111,75 @@ export default function GuestListPage() {
   };
 
   // NEW: Handle New List (Clear All)
-  const handleNewList = () => {
-    if (confirm('Create a new list? This will remove all current guests.')) {
-      setGuests([]);
-      setEditingGuest(null);
+  const handleNewList = async () => {
+    if (confirm('Are you sure you want to clear the entire list? This action cannot be undone.')) {
+      try {
+        const res = await fetch('/api/artist/guest-list', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventId: '13', clearAll: true })
+        });
+        if (res.ok) {
+          setGuests([]);
+          setEditingGuest(null);
+        } else {
+          alert("Failed to clear list.");
+        }
+      } catch (e) {
+        console.error("Failed to clear list", e);
+      }
+    }
+  };
+
+  // NEW: Handle CSV Export
+  const handleExportCSV = () => {
+    if (guests.length === 0) return alert("List is empty!");
+
+    const headers = ["Name", "Email", "Tier", "Status", "Added At"];
+    const rows = guests.map(g => [
+      `"${g.name}"`,
+      `"${g.email || ''}"`,
+      g.tier,
+      g.status,
+      new Date(g.addedAt).toLocaleDateString()
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + headers.join(",") + "\n"
+      + rows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `guest_list_event_13_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCheckIn = async (guestId, currentStatus) => {
+    const newStatus = currentStatus === 'Checked In' ? 'Pending' : 'Checked In'; // Toggle
+    try {
+      // Optimistic Update
+      setGuests(prev => prev.map(g =>
+        g.id === guestId ? { ...g, status: newStatus } : g
+      ));
+
+      const res = await fetch('/api/artist/guest-list', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: guestId, status: newStatus })
+      });
+
+      if (!res.ok) throw new Error("Failed to update");
+
+    } catch (e) {
+      console.error("Check-in failed", e);
+      // Revert on failure
+      setGuests(prev => prev.map(g =>
+        g.id === guestId ? { ...g, status: currentStatus } : g
+      ));
+      alert("Failed to update status");
     }
   };
 
@@ -107,7 +190,7 @@ export default function GuestListPage() {
       <main className="flex-1 w-full max-w-7xl mx-auto p-6 flex flex-col gap-6">
 
         {/* Pass the handler to the header */}
-        <GuestListHeader onNewList={handleNewList} />
+        <GuestListHeader onNewList={handleNewList} onExport={handleExportCSV} />
 
         <StatsGrid stats={stats} isLoading={isLoading} />
 
@@ -128,6 +211,7 @@ export default function GuestListPage() {
               data={guests}
               onDelete={handleDeleteGuest}
               onEdit={setEditingGuest}
+              onCheckIn={handleCheckIn}
             />
           )}
         </div>
