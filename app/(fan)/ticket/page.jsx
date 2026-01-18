@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { toast } from "sonner";
 import FanSidebar from '@/components/fan/FanSidebar';
 import TicketModal from '@/components/fan/ticket/TicketModal';
 import VenueInfoModal from '@/components/fan/ticket/VenueInfoModal';
@@ -45,7 +46,7 @@ export default function TicketsPage() {
     }, []);
 
     // --- HANDLERS ---
-    
+
     // Open Venue Modal (Now uses dynamic data object)
     const handleOpenVenue = (venueData) => {
         setSelectedVenue(venueData || {
@@ -109,9 +110,9 @@ export default function TicketsPage() {
                                 </h2>
 
                                 {tickets.upcoming.length === 0 ? (
-                                     <div className="p-10 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-center text-slate-500">
+                                    <div className="p-10 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-center text-slate-500">
                                         No upcoming tickets found. Go to Discover to find events!
-                                     </div>
+                                    </div>
                                 ) : (
                                     <>
                                         {/* --- LARGE TICKET CARD (Primary) --- */}
@@ -144,7 +145,7 @@ export default function TicketsPage() {
                                                     </div>
 
                                                     <div className="mt-8 flex flex-wrap gap-3 pt-6 border-t border-slate-100 dark:border-slate-800/50">
-                                                        <ActionButton icon={Calendar} label="Add to Calendar" onClick={() => alert("Calendar integration coming soon!")} />
+                                                        <ActionButton icon={Calendar} label="Add to Calendar" onClick={() => toast.info("Calendar integration coming soon!")} />
                                                         <ActionButton icon={Share2} label="Transfer" onClick={() => handleOpenTicket(primaryTicket)} />
                                                         <ActionButton icon={Info} label="Venue Info" onClick={() => handleOpenVenue(primaryTicket.venueDetails)} />
                                                     </div>
@@ -217,7 +218,7 @@ export default function TicketsPage() {
                                                 <h4 className="font-bold text-slate-700 dark:text-slate-300 truncate">{ticket.artist}</h4>
                                                 <p className="text-xs text-slate-500 mt-1">{ticket.dateFull} • {ticket.venue}</p>
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={() => handleOpenTicket(ticket)}
                                                 className="text-slate-400 hover:text-[#0d93f2] p-2 transition-colors"
                                             >
@@ -227,7 +228,7 @@ export default function TicketsPage() {
                                     ))}
                                 </div>
                             )}
-                            
+
                             {tickets.past.length > 0 && (
                                 <button
                                     onClick={() => setIsHistoryModalOpen(true)}
@@ -256,7 +257,7 @@ export default function TicketsPage() {
             <TicketHistoryModal
                 isOpen={isHistoryModalOpen}
                 onClose={() => setIsHistoryModalOpen(false)}
-                tickets={tickets.past} 
+                tickets={tickets.past}
                 onSelectTicket={handleOpenTicket}
             />
 

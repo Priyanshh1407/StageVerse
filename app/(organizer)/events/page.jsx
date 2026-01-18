@@ -8,6 +8,7 @@ import {
   Music, Mic, Palette, Trophy, Utensils, Edit, LineChart, Copy,
   ChevronLeft, ChevronRight, Menu, Trash2, CheckCircle, Eye, RefreshCw
 } from 'lucide-react';
+import { toast } from "sonner";
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 
 export default function EventsPage() {
@@ -150,14 +151,14 @@ export default function EventsPage() {
       });
 
       if (createRes.ok) {
-        alert("Event Duplicated Successfully!");
+        toast.success("Event Duplicated Successfully!");
         fetchEvents(); // Refresh the table
       } else {
-        alert("Failed to duplicate.");
+        toast.error("Failed to duplicate.");
       }
     } catch (error) {
       console.error("Duplicate error:", error);
-      alert("Error duplicating event.");
+      toast.error("Error duplicating event.");
     } finally {
       setIsLoading(false);
     }
@@ -170,7 +171,7 @@ export default function EventsPage() {
         setEvents(prev => prev.filter(e => e.id !== id));
         await fetch(`/api/events/${id}`, { method: 'DELETE' });
       } catch (err) {
-        alert("Failed to delete event");
+        toast.error("Failed to delete event");
         fetchEvents();
       }
     }

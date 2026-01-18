@@ -1,49 +1,58 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { X, Search, Plus, Trash2, Save, Info, ChevronUp, ChevronDown } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { X, Search, Plus, Trash2, Save, Info, ChevronUp, ChevronDown, CheckCircle2, Ticket, Calendar } from 'lucide-react';
+import Image from 'next/image';
+import { toast } from 'sonner';
+import ScorecardModal from './ScoreCardModal';
 
-export default function PredictionModal({ isOpen, onClose, artistName = "The Strokes" }) {
+export default function SetListPredictor({ initialEventId, events = [] }) {
   // --- STATE ---
-  const [prediction, setPrediction] = useState([]); 
+  const [selectedEventId, setSelectedEventId] = useState(initialEventId || (events[0]?.event?._id));
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Computed Active Data
+  const currentEventData = events.find(e => e.event._id === selectedEventId) || events[0];
+  const { event, songs: availableSongs = [], prediction: initialPrediction = null, setlist: actualSetlist = null } = currentEventData || {};
+
+  const [prediction, setPrediction] = useState(initialPrediction?.songs || []);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showScorecard, setShowScorecard] = useState(false);
 
-  // Mock Data
-  const allSongs = [
-    { id: 's1', title: "Reptilia", album: "Room on Fire" },
-    { id: 's2', title: "Last Nite", album: "Is This It" },
-    { id: 's3', title: "Someday", album: "Is This It" },
-    { id: 's4', title: "The Adults Are Talking", album: "The New Abnormal" },
-    { id: 's5', title: "Hard to Explain", album: "Is This It" },
-    { id: 's6', title: "New Person, Same Old Mistakes", album: "Currents" },
-    { id: 's7', title: "Lost In Yesterday", album: "The Slow Rush" },
-    { id: 's8', title: "Under Cover of Darkness", album: "Angles" },
-    { id: 's9', title: "You Only Live Once", album: "First Impressions" },
-    { id: 's10', title: "Machu Picchu", album: "Angles" },
-    { id: 's11', title: "Selfless", album: "The New Abnormal" },
-    { id: 's12', title: "Brooklyn Bridge to Chorus", album: "The New Abnormal" },
-  ];
+  const isGraded = initialPrediction?.status === 'graded';
 
+  // --- EFFECT: SYNC ON SELECTION CHANGE ---
   useEffect(() => {
-    const handleEscKey = (e) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      } 
-    };
-    window.addEventListener('keydown', handleEscKey);
-    return () => window.removeEventListener('keydown', handleEscKey);
-  }, [isOpen, onClose]);
+    setPrediction(initialPrediction?.songs || []);
+    setSearchQuery("");
+    // If graded, we default to showing scorecard? Or just available to view.
+    // Let's reset scorecard visibility unless we want to force it.
+    setShowScorecard(false);
+  }, [selectedEventId, initialPrediction]);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Filter Logic
-  const filteredPool = allSongs.filter(song => 
-    !prediction.find(p => p.id === song.id) &&
+  const filteredPool = availableSongs.filter(song =>
+    !prediction.find(p => (p.id === song._id || p.id === song.id)) && // Handle _id vs id
     song.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // --- HANDLERS ---
   const addToPrediction = (song) => {
     if (prediction.length >= 10) return;
-    setPrediction([...prediction, song]);
+    setPrediction([...prediction, { id: song._id || song.id, title: song.title, album: song.album || "Single" }]);
   };
 
   const removeFromPrediction = (id) => {
@@ -58,83 +67,161 @@ export default function PredictionModal({ isOpen, onClose, artistName = "The Str
     setPrediction(newPrediction);
   };
 
-  if (!isOpen) return null;
+  const handleSave = async () => {
+    if (!event) return;
+    try {
+      setIsSubmitting(true);
+      const res = await fetch('/api/fan/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: event._id || event.eventId,
+          songs: prediction
+        })
+      });
+
+      console.log("Submitting Prediction Payload:", {
+        eventId: event._id || event.eventId,
+        songs: prediction
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Prediction Locked In!");
+        // Force refresh or update state to reflect 'submitted' status if needed
+        // Ideally we fetch again or update local 'initialPrediction' prop logic 
+        // For now, toast confirms it.
+      } else {
+        toast.error(json.error || "Failed to save");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error saving prediction");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!event) return <div className="p-10 text-white">Loading Event...</div>;
+
+  // Render Graded View
+  if (isGraded && !showScorecard) {
+    // We allow them to toggle scorecard. But if they are just browsing events, 
+    // maybe we show a "View Result" Summary Card instead of the full editor?
+    // Yes, let's keep the editor hidden and show "Results Declared Button".
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
-      {/* CSS for Custom Scrollbar */}
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #101b23; 
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #315168; 
-          border-radius: 20px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #0d93f2; 
-        }
-      `}</style>
+    <div className="flex flex-col w-full h-[85vh] sm:max-w-6xl mx-auto bg-[#101b23] rounded-xl border border-[#315168] shadow-2xl overflow-hidden relative">
 
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      {/* Header with Dropdown */}
+      <div className="flex-none px-6 py-4 border-b border-[#315168] bg-[#101b23] flex items-center justify-between z-20 relative">
+        <div className="flex items-center gap-4">
 
-      {/* Main Modal Container 
-          - Mobile: Full width, starts from bottom, 90% height
-          - Desktop: Centered, limited width/height
-      */}
-      <div className="relative flex flex-col w-full h-[90vh] sm:h-[85vh] sm:max-w-5xl bg-[#101b23] rounded-t-2xl sm:rounded-2xl border border-[#315168] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
-        
-        {/* Header */}
-        <div className="flex-none px-4 sm:px-6 py-4 border-b border-[#315168] bg-[#101b23] flex items-center justify-between">
-          <div className="min-w-0">
-            <h2 className="text-white text-xl sm:text-2xl font-bold flex items-center gap-2 truncate">
-              🔮 Predict: <span className="text-[#0d93f2] truncate">{artistName}</span>
-            </h2>
-            <p className="text-[#90b2cb] text-xs sm:text-sm truncate">
-              Select & arrange songs. Max 10.
-            </p>
+          {/* Custom Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-3 bg-[#182934] hover:bg-[#223949] border border-[#315168] rounded-lg px-4 py-2 transition-all group"
+            >
+              <div className="flex items-center gap-2">
+                <div className="relative w-8 h-8 rounded overflow-hidden bg-black">
+                  <Image src={event.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"} alt={event.artist} fill className="object-cover" />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-white text-sm font-bold leading-tight">{event.artist}</h2>
+                  <p className="text-[#90b2cb] text-[10px] uppercase tracking-wide flex items-center gap-1">
+                    <Ticket className="w-3 h-3" /> {event.venue}
+                  </p>
+                </div>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-[#90b2cb] group-hover:text-white transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-72 bg-[#182934]/95 backdrop-blur-xl border border-[#315168] rounded-xl shadow-2xl overflow-hidden py-2 animate-in fade-in zoom-in-95">
+                <p className="px-4 py-2 text-[10px] uppercase font-bold text-[#5a7c96] tracking-wider">Select Event to Predict</p>
+                <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                  {events.map((item) => (
+                    <button
+                      key={item.event._id}
+                      onClick={() => {
+                        setSelectedEventId(item.event._id);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#223949] transition-colors ${selectedEventId === item.event._id ? 'bg-[#0d93f2]/10 border-l-2 border-[#0d93f2]' : 'border-l-2 border-transparent'}`}
+                    >
+                      <div className="relative w-8 h-8 rounded overflow-hidden bg-black shrink-0">
+                        <Image src={item.event.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"} alt={item.event.artist} fill className="object-cover" />
+                      </div>
+                      <div className="text-left min-w-0">
+                        <p className={`text-sm font-bold truncate ${selectedEventId === item.event._id ? 'text-[#0d93f2]' : 'text-slate-200'}`}>{item.event.artist}</p>
+                        <p className="text-[#90b2cb] text-[10px] truncate flex items-center gap-1">
+                          {new Date(item.event.date).toLocaleDateString()} • {item.event.venue}
+                        </p>
+                      </div>
+                      {item.prediction?.status === 'graded' && <CheckCircle2 className="w-4 h-4 text-green-500 ml-auto shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-          <button onClick={onClose} className="text-[#90b2cb] hover:text-white p-2 rounded-full hover:bg-[#223949] ml-2 shrink-0">
-            <X className="w-6 h-6" />
+
+          <div className="hidden md:block h-8 w-[1px] bg-[#315168]"></div>
+          <p className="hidden md:block text-[#90b2cb] text-sm">
+            Select up to 10 songs for the setlist.
+          </p>
+        </div>
+      </div>
+
+      {/* Main Display Logic: Graded vs Editor */}
+      {isGraded && !showScorecard ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#1a2f3d] to-[#101b23]">
+          <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mb-6 animate-pulse">
+            <CheckCircle2 className="w-10 h-10 text-green-500" />
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-2">Results are In!</h2>
+          <p className="text-[#90b2cb] max-w-md mx-auto mb-8">The artist has declared the official setlist for {event.venue}. Check your scorecard to see how many points you scored.</p>
+          <button
+            onClick={() => setShowScorecard(true)}
+            className="px-8 py-4 bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold rounded-xl shadow-xl shadow-[#0d93f2]/20 transition-transform hover:scale-105 active:scale-95"
+          >
+            View Scorecard
           </button>
         </div>
+      ) : (
+        /* EDITOR VIEW */
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative z-10">
 
-        {/* Content Area - Stack on mobile, Side-by-side on Desktop */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-          
-          {/* SECTION 1: Song Pool (Top on Mobile / Left on Desktop) */}
+          {/* SECTION 1: Song Pool */}
           <div className="w-full md:w-1/3 h-1/2 md:h-auto border-b md:border-b-0 md:border-r border-[#315168] flex flex-col bg-[#0b1217]">
-            {/* Search Bar */}
-            <div className="p-3 sm:p-4 border-b border-[#315168]">
+            <div className="p-4 border-b border-[#315168]">
               <div className="relative">
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#90b2cb]" />
-                <input 
-                  type="text" 
-                  placeholder="Search songs..." 
+                <input
+                  type="text"
+                  placeholder="Search songs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-[#182934] border border-[#315168] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#0d93f2]"
                 />
               </div>
             </div>
-            
-            {/* List */}
+
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
               {filteredPool.length > 0 ? (
                 filteredPool.map(song => (
-                  <button 
-                    key={song.id}
+                  <button
+                    key={song._id || song.id}
                     onClick={() => addToPrediction(song)}
-                    disabled={prediction.length >= 10}
+                    disabled={prediction.length >= 10 || isGraded} // Disable if graded
                     className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-[#182934] text-left group transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-[#315168]"
                   >
                     <div className="min-w-0 pr-2">
                       <p className="text-white text-sm font-medium truncate">{song.title}</p>
-                      <p className="text-[#90b2cb] text-xs truncate">{song.album}</p>
+                      <p className="text-[#90b2cb] text-xs truncate">{song.album || "Single"}</p>
                     </div>
                     <div className="bg-[#223949] p-1.5 rounded-full text-[#0d93f2] group-hover:bg-[#0d93f2] group-hover:text-white transition-colors shrink-0">
                       <Plus className="w-4 h-4" />
@@ -147,83 +234,91 @@ export default function PredictionModal({ isOpen, onClose, artistName = "The Str
             </div>
           </div>
 
-          {/* SECTION 2: My Prediction (Bottom on Mobile / Right on Desktop) */}
+          {/* SECTION 2: My Prediction */}
           <div className="flex-1 flex flex-col bg-[#101b23] h-1/2 md:h-auto">
-            <div className="p-3 sm:p-4 border-b border-[#315168] flex justify-between items-center bg-[#142029]">
-              <h3 className="text-white font-bold flex items-center gap-2 text-sm sm:text-base">
+            <div className="p-4 border-b border-[#315168] flex justify-between items-center bg-[#142029]">
+              <h3 className="text-white font-bold flex items-center gap-2">
                 Your Draft <span className="px-2 py-0.5 rounded-full bg-[#0d93f2]/20 text-[#0d93f2] text-xs font-mono">{prediction.length}/10</span>
               </h3>
-              {prediction.length === 0 && (
-                <span className="text-[#90b2cb] text-xs flex items-center gap-1 animate-pulse hidden sm:flex">
-                  <Info className="w-3 h-3" /> Select songs to start
-                </span>
-              )}
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar bg-[#101b23]">
+
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#101b23]">
               {prediction.length > 0 ? (
                 <div className="space-y-2">
                   {prediction.map((song, index) => (
-                    <div key={song.id} className="flex items-center gap-3 bg-[#182934] p-2.5 sm:p-3 rounded-lg border border-[#315168] group transition-all">
-                      <div className="flex-none w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0d93f2]/10 text-[#0d93f2] flex items-center justify-center text-xs sm:text-sm font-bold border border-[#0d93f2]/20">
+                    <div key={song.id} className="flex items-center gap-3 bg-[#182934] p-3 rounded-lg border border-[#315168] group transition-all">
+                      <div className="flex-none w-8 h-8 rounded-full bg-[#0d93f2]/10 text-[#0d93f2] flex items-center justify-center text-sm font-bold border border-[#0d93f2]/20">
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white text-sm font-medium truncate">{song.title}</p>
-                        <p className="text-[#90b2cb] text-xs truncate">{song.album}</p>
                       </div>
-                      
+
                       {/* Controls */}
-                      <div className="flex items-center gap-1">
-                        <div className="flex flex-col gap-0.5 mr-1">
-                          <button 
-                            onClick={() => moveItem(index, -1)} 
-                            disabled={index === 0}
-                            className="p-0.5 text-[#90b2cb] hover:text-white disabled:opacity-30 hover:bg-[#223949] rounded"
+                      {!isGraded && (
+                        <div className="flex items-center gap-1">
+                          <div className="flex flex-col gap-0.5 mr-1">
+                            <button
+                              onClick={() => moveItem(index, -1)}
+                              disabled={index === 0}
+                              className="p-0.5 text-[#90b2cb] hover:text-white disabled:opacity-30 hover:bg-[#223949] rounded"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => moveItem(index, 1)}
+                              disabled={index === prediction.length - 1}
+                              className="p-0.5 text-[#90b2cb] hover:text-white disabled:opacity-30 hover:bg-[#223949] rounded"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => removeFromPrediction(song.id)}
+                            className="p-2 text-[#90b2cb] hover:text-red-400 hover:bg-red-400/10 rounded-lg"
                           >
-                            <ChevronUp className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={() => moveItem(index, 1)} 
-                            disabled={index === prediction.length - 1}
-                            className="p-0.5 text-[#90b2cb] hover:text-white disabled:opacity-30 hover:bg-[#223949] rounded"
-                          >
-                            <ChevronDown className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <button 
-                          onClick={() => removeFromPrediction(song.id)}
-                          className="p-2 text-[#90b2cb] hover:text-red-400 hover:bg-red-400/10 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-[#90b2cb]/50 border-2 border-dashed border-[#315168]/50 rounded-xl m-2">
                   <p className="text-sm font-medium">Your setlist is empty</p>
-                  <p className="text-xs mt-1">Add songs from above</p>
+                  <p className="text-xs mt-1">Add songs from the left</p>
                 </div>
               )}
             </div>
 
             {/* Footer */}
             <div className="p-4 border-t border-[#315168] bg-[#142029] flex justify-end gap-3 shrink-0">
-              <button onClick={onClose} className="px-4 py-2.5 text-[#90b2cb] hover:text-white font-medium text-sm transition-colors hidden sm:block">Cancel</button>
-              <button 
-                onClick={() => { console.log(prediction); onClose(); }}
-                disabled={prediction.length === 0}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 bg-[#0d93f2] hover:bg-[#0b84db] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold shadow-lg shadow-[#0d93f2]/20 transition-all active:scale-95"
+              <button
+                onClick={handleSave}
+                disabled={prediction.length === 0 || isSubmitting || isGraded}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[#0d93f2] hover:bg-[#0b84db] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold shadow-lg shadow-[#0d93f2]/20 transition-all active:scale-95"
               >
                 <Save className="w-4 h-4" />
-                Lock In Prediction
+                {isSubmitting ? "Saving..." : (isGraded ? "Prediction Locked" : "Lock In Prediction")}
               </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Scorecard Modal (Rendered on top if open) */}
+      {showScorecard && (
+        <ScorecardModal
+          isOpen={showScorecard}
+          onClose={() => setShowScorecard(false)}
+          artistName={event?.artist || "Artist"}
+          prediction={prediction}
+          actualSetlist={actualSetlist?.items || []}
+          totalScore={initialPrediction?.score || 0}
+        />
+      )}
+
     </div>
   );
 }

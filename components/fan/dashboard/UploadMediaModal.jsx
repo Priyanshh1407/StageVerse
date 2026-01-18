@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { X, UploadCloud, Ticket, Calendar, UserPlus, Lock, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { toast } from "sonner";
 
 export default function UploadMediaModal({ isOpen, onClose }) {
   // --- FORM STATE ---
@@ -8,7 +9,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
   const [eventQuery, setEventQuery] = useState('');
   const [eventResults, setEventResults] = useState([]);
   const [showEventDropdown, setShowEventDropdown] = useState(false);
-  
+
   const [taggedFriends, setTaggedFriends] = useState([]);
   const [friendQuery, setFriendQuery] = useState('');
   const [showFriendDropdown, setShowFriendDropdown] = useState(false);
@@ -44,14 +45,14 @@ export default function UploadMediaModal({ isOpen, onClose }) {
 
   // --- 2. UPLOAD LOGIC (Cloudinary -> DB) ---
   const handleUpload = async () => {
-    if (files.length === 0) return alert("Please select files first!");
-    
+    if (files.length === 0) return toast.error("Please select files first!");
+
     setIsUploading(true);
     let completedCount = 0;
 
     // CLOUDINARY CONFIG (Replace these with your actual keys if not using env vars for testing)
-    const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME; 
-    const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET || 'stageverse_unsigned'; 
+    const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET || 'stageverse_unsigned';
 
     try {
       // Loop through every file selected
@@ -70,23 +71,23 @@ export default function UploadMediaModal({ isOpen, onClose }) {
         });
         const cloudinaryData = await cloudinaryRes.json();
         if (cloudinaryData.error) {
-            console.error("Cloudinary Error Details:", cloudinaryData.error);
+          console.error("Cloudinary Error Details:", cloudinaryData.error);
         }
 
         if (!cloudinaryData.secure_url) throw new Error('Cloudinary upload failed');
 
         // C. Save to MongoDB via our API
         const payload = {
-            imageUrl: resourceType === 'image' ? cloudinaryData.secure_url : cloudinaryData.secure_url.replace('.mp4', '.jpg'), // Simple thumbnail logic
-            videoSrc: resourceType === 'video' ? cloudinaryData.secure_url : null,
-            title: notes || (selectedEvent ? selectedEvent.title : "New Memory"), // Use notes as title or fallback
-            date: date || new Date(),
-            location: selectedEvent?.city || "Unknown Location",
-            artist: selectedEvent?.artist || "Unknown Artist",
-            venue: selectedEvent?.venue?.name || selectedEvent?.venue || "Unknown Venue",
-            eventId: selectedEvent?._id
-            // Note: We aren't saving 'taggedFriends' or 'privacy' in the simple Model yet, 
-            // but the UI collects them for future expansion.
+          imageUrl: resourceType === 'image' ? cloudinaryData.secure_url : cloudinaryData.secure_url.replace('.mp4', '.jpg'), // Simple thumbnail logic
+          videoSrc: resourceType === 'video' ? cloudinaryData.secure_url : null,
+          title: notes || (selectedEvent ? selectedEvent.title : "New Memory"), // Use notes as title or fallback
+          date: date || new Date(),
+          location: selectedEvent?.city || "Unknown Location",
+          artist: selectedEvent?.artist || "Unknown Artist",
+          venue: selectedEvent?.venue?.name || selectedEvent?.venue || "Unknown Venue",
+          eventId: selectedEvent?._id
+          // Note: We aren't saving 'taggedFriends' or 'privacy' in the simple Model yet, 
+          // but the UI collects them for future expansion.
         };
 
         const dbRes = await fetch('/api/memory-vault', {
@@ -105,13 +106,13 @@ export default function UploadMediaModal({ isOpen, onClose }) {
       // D. Cleanup and Close
       setIsUploading(false);
       onClose(); // Close modal
-      alert("Upload Complete!");
+      toast.success("Upload Complete!");
       window.location.reload(); // Refresh to see new memories (or trigger a refetch in parent)
 
     } catch (error) {
       console.error(error);
       setIsUploading(false);
-      alert("Upload failed. Check console.");
+      toast.error("Upload failed. Check console.");
     }
   };
 
@@ -141,7 +142,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
   // Close dropdowns
   useEffect(() => {
     const handleClick = (e) => {
-        if(eventInputRef.current && !eventInputRef.current.contains(e.target)) setShowEventDropdown(false);
+      if (eventInputRef.current && !eventInputRef.current.contains(e.target)) setShowEventDropdown(false);
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -166,7 +167,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-2xl bg-white dark:bg-[#1a2632] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Upload New Memories</h2>
@@ -177,44 +178,44 @@ export default function UploadMediaModal({ isOpen, onClose }) {
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
+
           {/* 1. DRAG & DROP ZONE */}
-          <div 
+          <div
             onClick={triggerFileSelect}
             className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-colors cursor-pointer group
             ${files.length > 0 ? 'border-[#0d93f2] bg-[#0d93f2]/5' : 'border-slate-300 dark:border-slate-600 hover:border-[#0d93f2] hover:bg-slate-50 dark:hover:bg-slate-800'}`}
           >
             {/* HIDDEN INPUT - Only accepts Image and Video */}
-            <input 
-                type="file" 
-                ref={fileInputRef}
-                className="hidden" 
-                multiple 
-                accept="image/*,video/*"
-                onChange={handleFileChange}
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              multiple
+              accept="image/*,video/*"
+              onChange={handleFileChange}
             />
 
             <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <UploadCloud className="w-8 h-8 text-slate-500 dark:text-slate-400" />
             </div>
-            
+
             {files.length === 0 ? (
-                <>
-                    <p className="text-slate-900 dark:text-white font-medium mb-2">Click to select photos & videos</p>
-                    <p className="text-slate-500 text-sm">JPG, PNG, MP4 supported</p>
-                </>
+              <>
+                <p className="text-slate-900 dark:text-white font-medium mb-2">Click to select photos & videos</p>
+                <p className="text-slate-500 text-sm">JPG, PNG, MP4 supported</p>
+              </>
             ) : (
-                <div className="w-full">
-                    <p className="text-[#0d93f2] font-bold mb-4">{files.length} files selected</p>
-                    <div className="flex flex-wrap gap-2 justify-center">
-                        {files.map((f, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm text-sm text-slate-700 dark:text-slate-300">
-                                <span className="max-w-[100px] truncate">{f.name}</span>
-                                <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} className="text-red-500 hover:text-red-700"><X className="w-3 h-3" /></button>
-                            </div>
-                        ))}
+              <div className="w-full">
+                <p className="text-[#0d93f2] font-bold mb-4">{files.length} files selected</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {files.map((f, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm text-sm text-slate-700 dark:text-slate-300">
+                      <span className="max-w-[100px] truncate">{f.name}</span>
+                      <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} className="text-red-500 hover:text-red-700"><X className="w-3 h-3" /></button>
                     </div>
+                  ))}
                 </div>
+              </div>
             )}
           </div>
 
@@ -224,9 +225,9 @@ export default function UploadMediaModal({ isOpen, onClose }) {
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Event Name</label>
               <div className="relative">
                 <Ticket className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
-                <input 
-                  className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#0d93f2]" 
-                  placeholder="Search event..." 
+                <input
+                  className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#0d93f2]"
+                  placeholder="Search event..."
                   value={eventQuery}
                   onChange={(e) => { setEventQuery(e.target.value); setShowEventDropdown(true); }}
                   onFocus={() => setShowEventDropdown(true)}
@@ -234,12 +235,12 @@ export default function UploadMediaModal({ isOpen, onClose }) {
               </div>
               {showEventDropdown && eventResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto">
-                    {eventResults.map(e => (
-                        <button key={e._id} onClick={() => { setSelectedEvent(e); setEventQuery(e.title); setDate(new Date(e.date).toISOString().split('T')[0]); setShowEventDropdown(false); }} className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800">
-                            <span className="font-bold block text-sm">{e.title}</span>
-                            <span className="text-xs text-slate-500">{e.venue?.name}</span>
-                        </button>
-                    ))}
+                  {eventResults.map(e => (
+                    <button key={e._id} onClick={() => { setSelectedEvent(e); setEventQuery(e.title); setDate(new Date(e.date).toISOString().split('T')[0]); setShowEventDropdown(false); }} className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <span className="font-bold block text-sm">{e.title}</span>
+                      <span className="text-xs text-slate-500">{e.venue?.name}</span>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -248,9 +249,9 @@ export default function UploadMediaModal({ isOpen, onClose }) {
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Date Attended</label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
-                <input 
+                <input
                   type="date"
-                  className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#0d93f2] dark:[color-scheme:dark]" 
+                  className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#0d93f2] dark:[color-scheme:dark]"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                 />
@@ -260,17 +261,17 @@ export default function UploadMediaModal({ isOpen, onClose }) {
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Notes / Caption</label>
-            <textarea 
-                className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#0d93f2] resize-none" 
-                rows="3"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="What was the highlight of the show?"
+            <textarea
+              className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#0d93f2] resize-none"
+              rows="3"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="What was the highlight of the show?"
             ></textarea>
           </div>
-          
+
           {/* Privacy and Friends inputs are UI only for now in this snippet for brevity */}
-          
+
         </div>
 
         {/* Footer */}
@@ -278,19 +279,19 @@ export default function UploadMediaModal({ isOpen, onClose }) {
           <button onClick={onClose} disabled={isUploading} className="px-6 py-2.5 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
             Cancel
           </button>
-          
-          <button 
+
+          <button
             onClick={handleUpload}
             disabled={isUploading || files.length === 0}
             className="px-6 py-2.5 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white font-bold rounded-lg shadow-lg shadow-[#0d93f2]/25 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? (
-                <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Uploading {uploadProgress}%
-                </>
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Uploading {uploadProgress}%
+              </>
             ) : (
-                <>Upload {files.length > 0 && `(${files.length})`}</>
+              <>Upload {files.length > 0 && `(${files.length})`}</>
             )}
           </button>
         </div>

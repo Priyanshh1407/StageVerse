@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { toast } from "sonner";
 
 export default function ArtistApiTestPage() {
     const [responses, setResponses] = useState({});
@@ -89,7 +90,7 @@ export default function ArtistApiTestPage() {
                         onClick={async () => {
                             const res = await fetch('/api/artist/seed', { method: 'POST' });
                             const json = await res.json();
-                            alert(json.message || json.error);
+                            toast.error(json.message || json.error);
                         }}
                         className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded"
                     >

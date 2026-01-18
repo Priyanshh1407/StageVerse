@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wifi, Copy, Lock, Info, Star, Navigation, Edit2, Save, X } from 'lucide-react';
+import { MapPin, Globe, Phone, Mail, Clock, Calendar, AlertTriangle, Users } from 'lucide-react';
+import { toast } from "sonner";
 
 export default function VenueIntel({ intel, onUpdate }) {
   const [data, setData] = useState(intel || {});
@@ -14,7 +15,7 @@ export default function VenueIntel({ intel, onUpdate }) {
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
-    alert(`Copied: ${text}`);
+    toast.success(`Copied: ${text}`);
   };
 
   const handleSave = () => {

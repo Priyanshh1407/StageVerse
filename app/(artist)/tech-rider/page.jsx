@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { toast } from "sonner";
 import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import RiderHeader from '@/components/artist/tech-rider/RiderHeader';
 import GearCard from '@/components/artist/tech-rider/GearCard';
@@ -135,7 +136,7 @@ export default function TechRiderPage() {
   };
 
   const handleSaveAndSend = async () => {
-    if (!selectedEventId) return alert("Please select an event first.");
+    if (!selectedEventId) return toast.error("Please select an event first.");
     setIsSaving(true);
 
     const payload = {
@@ -163,12 +164,12 @@ export default function TechRiderPage() {
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        alert("Rider Saved & Assigned to Event!");
+        toast.success("Rider Saved & Assigned to Event!");
       } else {
-        alert("Failed to save.");
+        toast.error("Failed to save.");
       }
     } catch (e) {
-      alert("Error saving rider.");
+      toast.error("Error saving rider.");
     }
 
     setIsSaving(false);

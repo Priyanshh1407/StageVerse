@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { toast } from "sonner";
 import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import LiveHeader from '@/components/artist/live/LiveHeader';
 import ShowTimer from '@/components/artist/live/ShowTimer';
@@ -28,7 +29,7 @@ export default function LiveModePage() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [showEncoreScreen, setShowEncoreScreen] = useState(false);
-  
+
   // Data Passing
   const [selectedPollData, setSelectedPollData] = useState(null);
 
@@ -70,10 +71,10 @@ export default function LiveModePage() {
   const handleStartShow = () => {
     if (showStatus === 'Live') return;
     if (showStatus === 'Standby') {
-        setElapsedSeconds(0); 
-        addLog("Show Started", "Intro Sequence 01 Initiated", "active");
+      setElapsedSeconds(0);
+      addLog("Show Started", "Intro Sequence 01 Initiated", "active");
     } else {
-        addLog("Show Resumed", "Timer continued", "active");
+      addLog("Show Resumed", "Timer continued", "active");
     }
     setShowStatus('Live');
   };
@@ -92,10 +93,10 @@ export default function LiveModePage() {
   const handleConfirmPoll = () => {
     setShowPreviewModal(false);
     addLog(`${selectedPollData?.title || 'Poll'} Activated`, "Live Pulse System: Voting Open", "active");
-    
+
     // Simulate flow: After 5 seconds, simulate a winner (optional)
     setTimeout(() => {
-        addLog("Poll Results Finalized", "Winner: Midnight City (54%)", "active");
+      addLog("Poll Results Finalized", "Winner: Midnight City (54%)", "active");
     }, 5000);
   };
 
@@ -110,17 +111,17 @@ export default function LiveModePage() {
   // 4. Emergency
   const handleEmergencyPause = () => {
     if (showStatus === 'Paused') {
-        setShowStatus('Live');
-        addLog("TECHNICAL PAUSE ENDED", "Resuming show flow.", "active");
+      setShowStatus('Live');
+      addLog("TECHNICAL PAUSE ENDED", "Resuming show flow.", "active");
     } else {
-        setShowStatus('Paused');
-        addLog("EMERGENCY PAUSE ACTIVATED", "Timer halted. Audio Cut.", "critical");
+      setShowStatus('Paused');
+      addLog("EMERGENCY PAUSE ACTIVATED", "Timer halted. Audio Cut.", "critical");
     }
   };
 
   // 5. Manual Log
   const handleManualLog = (text) => addLog(text, "Manual Entry");
-  const handleOpenSettings = () => alert("Opening Settings...");
+  const handleOpenSettings = () => toast.info("Opening Settings...");
 
   return (
     <div className="h-screen bg-[#f5f7f8] dark:bg-[#101b22] text-slate-900 dark:text-white font-sans flex flex-col overflow-hidden">
@@ -128,9 +129,9 @@ export default function LiveModePage() {
 
       {/* --- FULL SCREEN OVERLAY (Conditionally Rendered) --- */}
       {showEncoreScreen && (
-        <EncoreScreen 
-          winnerName="MIDNIGHT CITY" 
-          onClose={() => setShowEncoreScreen(false)} 
+        <EncoreScreen
+          winnerName="MIDNIGHT CITY"
+          onClose={() => setShowEncoreScreen(false)}
         />
       )}
 
@@ -138,19 +139,19 @@ export default function LiveModePage() {
         <LiveHeader status={showStatus} onOpenSettings={handleOpenSettings} />
 
         <div className="flex flex-col xl:flex-row gap-6 mt-6 h-full">
-          
+
           {/* LEFT COLUMN: Controls */}
           <div className="flex-1 flex flex-col gap-6">
             <ShowTimer time={formatTime(elapsedSeconds)} status={showStatus} />
-            
-            <ActionGrid 
+
+            <ActionGrid
               status={showStatus}
               onStartShow={handleStartShow}
               onEncorePoll={handleTriggerPollClick} // Starts Selection Flow
               onWarning={handleWarningClick}        // Starts Warning Flow
               onEmergency={handleEmergencyPause}
-              // Optional: Manual Trigger for Screen if you want a button for it
-              // onReveal={() => setShowEncoreScreen(true)} 
+            // Optional: Manual Trigger for Screen if you want a button for it
+            // onReveal={() => setShowEncoreScreen(true)} 
             />
           </div>
 
@@ -164,27 +165,27 @@ export default function LiveModePage() {
       </main>
 
       {/* --- MODALS --- */}
-      
+
       {/* 1. Poll Selection Modal */}
-      <PollSelectionModal 
+      <PollSelectionModal
         isOpen={showSelectionModal}
         onClose={() => setShowSelectionModal(false)}
         onSelect={handleSelectPoll}
       />
 
       {/* 2. Poll Preview Modal */}
-      <PollModal 
-        isOpen={showPreviewModal} 
-        onClose={() => setShowPreviewModal(false)} 
+      <PollModal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
         onActivate={handleConfirmPoll}
-        // Pass title dynamically if your modal supports it, e.g. title={selectedPollData?.title}
+      // Pass title dynamically if your modal supports it, e.g. title={selectedPollData?.title}
       />
 
       {/* 3. Last Song Warning Modal */}
-      <WarningModal 
-        isOpen={showWarningModal} 
-        onClose={() => setShowWarningModal(false)} 
-        onConfirm={handleConfirmWarning} 
+      <WarningModal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+        onConfirm={handleConfirmWarning}
       />
 
     </div>

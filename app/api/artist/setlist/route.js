@@ -1,8 +1,10 @@
 
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Setlist from '@/models/Setlist';
+import Song from '@/models/Song';
 import { verifyAuth } from '@/lib/auth';
 
 // ... (GET remains similar, but check if we need to resolve ID there too? Yes, likely)
@@ -15,25 +17,29 @@ export async function GET(req) {
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
-        let eventId = searchParams.get('eventId');
-        if (!eventId) return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
+        let eventIdInput = searchParams.get('eventId');
+        if (!eventIdInput) return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
 
-        // Resolve numeric ID to Mongo ID if needed
-        const numericEventId = parseInt(eventId);
-        console.log(`[Setlist GET] Resolving Event ID: ${eventId} -> ${numericEventId}`);
+        let mongoEventId = eventIdInput;
 
-        const event = await Event.findOne({ eventId: numericEventId });
+        // Determine if input is valid ObjectId or Legacy Number
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(eventIdInput);
 
-        if (event) {
-            console.log(`[Setlist GET] Found Event: ${event._id}`);
-            eventId = event._id;
+        if (isValidObjectId) {
+            mongoEventId = eventIdInput;
         } else {
-            console.log(`[Setlist GET] Event ${numericEventId} not found. Returning null.`);
-            return NextResponse.json({ success: true, data: null });
+            // Legacy Numeric Lookup
+            const numericEventId = parseInt(eventIdInput);
+            if (!isNaN(numericEventId)) {
+                const event = await Event.findOne({ eventId: numericEventId });
+                if (event) mongoEventId = event._id;
+                else return NextResponse.json({ success: true, data: null });
+            } else {
+                return NextResponse.json({ error: 'Invalid Event ID format' }, { status: 400 });
+            }
         }
 
-        console.log(`[Setlist GET] Querying Setlist for Event ObjectId: ${eventId}`);
-        const setlist = await Setlist.findOne({ eventId });
+        const setlist = await Setlist.findOne({ eventId: mongoEventId });
         return NextResponse.json({ success: true, data: setlist });
 
     } catch (error) {
@@ -56,13 +62,49 @@ export async function POST(req) {
             return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
         }
 
-        // Resolve numeric ID to Mongo ID
-        const event = await Event.findOne({ eventId: eventId });
-        if (!event) {
-            return NextResponse.json({ error: `Event ${eventId} not found` }, { status: 404 });
+        let mongoEventId = eventId;
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(eventId);
+
+        if (!isValidObjectId) {
+            // Resolve numeric ID to Mongo ID
+            const event = await Event.findOne({ eventId: eventId });
+            if (!event) {
+                return NextResponse.json({ error: `Event ${eventId} not found` }, { status: 404 });
+            }
+            mongoEventId = event._id;
         }
 
-        const mongoEventId = event._id;
+        // --- NEW: Sync Items to Song Collection ---
+        // Iterate through items, ensure they exist in Song collection
+        // This ensures the Fan Predictor has a pool to choose from
+        const processedItems = await Promise.all(items.map(async (item) => {
+            // Try to find existing song by Title + Artist
+            // Use regex for case-insensitive match
+            let song = await Song.findOne({
+                artistId: user.userId,
+                title: { $regex: new RegExp(`^${item.title}$`, 'i') }
+            });
+
+            if (!song) {
+                // Create new Song if it doesn't exist
+                song = await Song.create({
+                    artistId: user.userId,
+                    title: item.title,
+                    duration: item.duration,
+                    bpm: item.bpm && !isNaN(parseInt(item.bpm)) ? parseInt(item.bpm) : null,
+                    tags: item.tags ? item.tags.map(t => t.label || t).filter(Boolean) : [], // Flatten tag objects if needed
+                    color: item.tags && item.tags.length > 0 ? item.tags[0].color : 'blue'
+                });
+                console.log(`[Setlist Sync] Created new song: ${item.title}`);
+            }
+
+            // Return the item with the valid songId attached
+            return {
+                ...item,
+                songId: song._id,
+                // Ensure we keep the setlist-specific overrides (notes, status)
+            };
+        }));
 
         // Upsert setlist for this event
         const updatedSetlist = await Setlist.findOneAndUpdate(
@@ -70,7 +112,7 @@ export async function POST(req) {
             {
                 artistId: user.userId,
                 eventId: mongoEventId,
-                items: items
+                items: processedItems
             },
             { new: true, upsert: true, setDefaultsOnInsert: true }
         );

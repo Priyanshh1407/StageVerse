@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Upload, Calendar, MapPin, Layers, Loader2 } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, Users, Music } from 'lucide-react';
+import { toast } from "sonner";
 
 export default function CreateShowModal({ onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -74,11 +75,11 @@ export default function CreateShowModal({ onClose, onSave }) {
       if (res.ok) {
         onSave(data.data);
       } else {
-        alert(data.error || 'Failed to save show');
+        toast.error(data.error || 'Failed to save show');
       }
     } catch (err) {
       console.error(err);
-      alert('System error saving show');
+      toast.error('System error saving show');
     } finally {
       setIsSubmitting(false);
     }

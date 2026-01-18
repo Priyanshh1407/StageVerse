@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { jsPDF } from 'jspdf';
+import { toast } from "sonner";
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import {
@@ -107,7 +108,7 @@ export default function ReportsPage() {
 
   const handleExportExcel = () => {
     if (!transactions || transactions.length === 0) {
-      alert("No data to export!");
+      toast.error("No data to export!");
       return;
     }
 
@@ -131,7 +132,7 @@ export default function ReportsPage() {
 
   const handleExportPDF = () => {
     if (!transactions || transactions.length === 0) {
-      alert("No data to export");
+      toast.error("No data to export");
       return;
     }
     const doc = new jsPDF();

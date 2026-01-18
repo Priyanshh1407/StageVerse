@@ -108,6 +108,19 @@ export function TicketStatsCard({ data }) {
 
 // 3. Merch / Alert Box
 export function MerchAlert({ data, onClick }) {
+  // This looks like a component prop, not a direct alert call inside logic.
+  // Checking previous grep... "onClick={() => alert(...)}" ?
+  // Grep said line 110: export function MerchAlert({ data, onClick }) { ... matches "alert(" ? No.
+  // Wait, the grep output was:
+  // {"File":"...dashboard-parts.jsx","LineNumber":110,"LineContent":"export function MerchAlert({ data, onClick }) {"}
+  // Why did it match? Maybe "Alert" in MerchAlert?
+  // Ah, grep was case insensitive `alert(`. 
+  // "MerchAlert" matches.
+  // I should check if there is actual alert usage inside.
+  // The grep didn't show usage for this file other than the definition line which is a false positive if I'm not careful.
+  // Let's Skip this file unless I see actual usage.
+  // Grep match: "MerchAlert" -> "Alert" is part of the name.
+
   if (!data || !data.active) return null;
 
   const colorMap = {

@@ -3,13 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 // MERGE THESE IMPORTS:
-import { usePathname, useRouter } from 'next/navigation'; 
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Compass, Ticket, Users, Settings,
-  LogOut, Sparkles, Image as ImageIcon, X
+  LogOut, Sparkles, Image as ImageIcon, X, Bell
 } from 'lucide-react';
 
-const FanSidebar = ({ isOpen, onClose }) => {
+const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -19,6 +19,7 @@ const FanSidebar = ({ isOpen, onClose }) => {
     { label: "Memories", href: "/memory-vault", icon: ImageIcon },
     { label: "Friends", href: "/social", icon: Users },
     { label: "Tickets", href: "/ticket", icon: Ticket },
+    { label: "Notifications", action: "OPEN_NOTIFICATIONS", icon: Bell },
   ];
 
   const handleLogout = async () => {
@@ -84,6 +85,20 @@ const FanSidebar = ({ isOpen, onClose }) => {
         <nav className="flex flex-col gap-1 flex-1">
           {links.map((item) => {
             const isActive = pathname === item.href;
+
+            if (item.action === 'OPEN_NOTIFICATIONS') {
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => { onClose(); onOpenNotifications && onOpenNotifications(); }}
+                  className="flex w-full items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white text-left"
+                >
+                  <item.icon className="w-5 h-5" />
+                  {item.label}
+                </button>
+              );
+            }
+
             return (
               <Link
                 key={item.href}

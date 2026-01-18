@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Ticket, Minus, Plus, Loader2, CheckCircle, User, CreditCard, ArrowLeft } from 'lucide-react';
+import { Ticket, CreditCard, CheckCircle2, ChevronRight, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
 
 export default function TicketSelection({ eventId, tiers = [] }) {
   const router = useRouter();
-  
+
   // --- STATE ---
   const [step, setStep] = useState(1); // 1 = Select, 2 = Details/Pay
   const [selectedTierId, setSelectedTierId] = useState(null);
@@ -20,40 +21,40 @@ export default function TicketSelection({ eventId, tiers = [] }) {
 
   // --- HANDLERS ---
   const handleProceed = () => {
-    if (!selectedTierId) return alert("Please select a ticket");
+    if (!selectedTierId) return toast.error("Please select a ticket");
     setStep(2);
   };
 
   const handleBuy = async () => {
-    if (!buyerName.trim()) return alert("Please enter the name for the ticket booking");
-    
+    if (!buyerName.trim()) return toast.error("Please enter the name for the ticket booking");
+
     setIsBuying(true);
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            eventId, 
-            ticketTierId: selectedTierId, 
-            quantity,
-            buyerName // 👈 Sending the name
+        body: JSON.stringify({
+          eventId,
+          ticketTierId: selectedTierId,
+          quantity,
+          buyerName // 👈 Sending the name
         })
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        alert(`Success! Order ID: ${data.trxId}`);
-        router.refresh(); 
+        toast.success(`Success! Order ID: ${data.trxId}`);
+        router.refresh();
         // Reset or redirect to a "Success" page
         setStep(1);
         setQuantity(1);
         setSelectedTierId(null);
       } else {
-        alert(data.message || "Purchase failed");
+        toast.error(data.message || "Purchase failed");
       }
     } catch (error) {
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     } finally {
       setIsBuying(false);
     }
@@ -69,13 +70,13 @@ export default function TicketSelection({ eventId, tiers = [] }) {
 
   return (
     <div className="bg-white dark:bg-[#192734] border border-slate-200 dark:border-[#2c3b47] rounded-xl p-6 shadow-xl top-24 overflow-hidden">
-      
+
       {/* HEADER WITH BACK BUTTON */}
       <div className="flex items-center gap-3 mb-6">
         {step === 2 && (
-            <button onClick={() => setStep(1)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#2c3b47] transition-colors">
-                <ArrowLeft className="w-5 h-5 text-slate-500 dark:text-[#90b2cb]" />
-            </button>
+          <button onClick={() => setStep(1)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#2c3b47] transition-colors">
+            <ArrowLeft className="w-5 h-5 text-slate-500 dark:text-[#90b2cb]" />
+          </button>
         )}
         <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           {step === 1 ? <><Ticket className="w-5 h-5 text-[#0d93f2]" /> Select Tickets</> : 'Confirm Details'}
@@ -91,15 +92,15 @@ export default function TicketSelection({ eventId, tiers = [] }) {
               const isSelected = selectedTierId === tier._id;
 
               return (
-                <div 
+                <div
                   key={tier._id}
                   onClick={() => !isSoldOut && setSelectedTierId(tier._id)}
                   className={`
                     relative p-4 rounded-lg border cursor-pointer transition-all flex justify-between items-center
-                    ${isSoldOut 
-                      ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-[#101b22] border-slate-200 dark:border-[#2c3b47]' 
-                      : isSelected 
-                        ? 'border-[#0d93f2] bg-[#0d93f2]/10 ring-1 ring-[#0d93f2]' 
+                    ${isSoldOut
+                      ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-[#101b22] border-slate-200 dark:border-[#2c3b47]'
+                      : isSelected
+                        ? 'border-[#0d93f2] bg-[#0d93f2]/10 ring-1 ring-[#0d93f2]'
                         : 'border-slate-200 dark:border-[#2c3b47] bg-white dark:bg-[#101b22] hover:border-[#0d93f2]/50'}
                   `}
                 >
@@ -147,53 +148,53 @@ export default function TicketSelection({ eventId, tiers = [] }) {
       {/* === STEP 2: DETAILS & PAY === */}
       {step === 2 && (
         <div className="animate-in slide-in-from-right-4 fade-in duration-300">
-            
-            {/* ORDER SUMMARY */}
-            <div className="bg-slate-50 dark:bg-[#101b22] p-4 rounded-lg border border-slate-200 dark:border-[#2c3b47] mb-6">
-                <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-500 dark:text-[#90b2cb]">{selectedTier?.name} <span className="text-xs">x{quantity}</span></span>
-                    <span className="text-slate-900 dark:text-white font-bold">${totalPrice}</span>
-                </div>
-                <div className="h-px bg-slate-200 dark:bg-[#2c3b47] my-3"></div>
-                <div className="flex justify-between items-center">
-                    <span className="text-slate-900 dark:text-white font-bold text-sm">Total Due</span>
-                    <span className="text-xl font-black text-[#0d93f2]">${totalPrice}</span>
-                </div>
+
+          {/* ORDER SUMMARY */}
+          <div className="bg-slate-50 dark:bg-[#101b22] p-4 rounded-lg border border-slate-200 dark:border-[#2c3b47] mb-6">
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-slate-500 dark:text-[#90b2cb]">{selectedTier?.name} <span className="text-xs">x{quantity}</span></span>
+              <span className="text-slate-900 dark:text-white font-bold">${totalPrice}</span>
+            </div>
+            <div className="h-px bg-slate-200 dark:bg-[#2c3b47] my-3"></div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-900 dark:text-white font-bold text-sm">Total Due</span>
+              <span className="text-xl font-black text-[#0d93f2]">${totalPrice}</span>
+            </div>
+          </div>
+
+          {/* INPUT FIELDS */}
+          <div className="space-y-4 mb-6">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-[#90b2cb] uppercase mb-1.5">Booking Name</label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <input
+                  value={buyerName}
+                  onChange={(e) => setBuyerName(e.target.value)}
+                  className="w-full pl-10 p-2.5 bg-slate-50 dark:bg-[#101b22] border border-slate-200 dark:border-[#2c3b47] rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#0d93f2]"
+                  placeholder="Who is this ticket for?"
+                />
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">This name will appear on the ticket.</p>
             </div>
 
-            {/* INPUT FIELDS */}
-            <div className="space-y-4 mb-6">
-                <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-[#90b2cb] uppercase mb-1.5">Booking Name</label>
-                    <div className="relative">
-                        <User className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                        <input 
-                            value={buyerName}
-                            onChange={(e) => setBuyerName(e.target.value)}
-                            className="w-full pl-10 p-2.5 bg-slate-50 dark:bg-[#101b22] border border-slate-200 dark:border-[#2c3b47] rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#0d93f2]"
-                            placeholder="Who is this ticket for?"
-                        />
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1">This name will appear on the ticket.</p>
-                </div>
-                
-                {/* Mock Payment Field (Visual Only) */}
-                <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-[#90b2cb] uppercase mb-1.5">Payment Method</label>
-                    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[#101b22] border border-slate-200 dark:border-[#2c3b47] rounded-lg opacity-80">
-                        <CreditCard className="w-4 h-4 text-slate-900 dark:text-white" />
-                        <span className="text-sm text-slate-900 dark:text-white">•••• •••• •••• 4242</span>
-                    </div>
-                </div>
+            {/* Mock Payment Field (Visual Only) */}
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-[#90b2cb] uppercase mb-1.5">Payment Method</label>
+              <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[#101b22] border border-slate-200 dark:border-[#2c3b47] rounded-lg opacity-80">
+                <CreditCard className="w-4 h-4 text-slate-900 dark:text-white" />
+                <span className="text-sm text-slate-900 dark:text-white">•••• •••• •••• 4242</span>
+              </div>
             </div>
+          </div>
 
-            <button
-                onClick={handleBuy}
-                disabled={isBuying || !buyerName}
-                className="w-full py-3.5 rounded-xl font-bold text-white bg-[#0d93f2] hover:bg-[#0b84db] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0d93f2]/20"
-            >
-                {isBuying ? <Loader2 className="w-5 h-5 animate-spin" /> : `Pay $${totalPrice}`}
-            </button>
+          <button
+            onClick={handleBuy}
+            disabled={isBuying || !buyerName}
+            className="w-full py-3.5 rounded-xl font-bold text-white bg-[#0d93f2] hover:bg-[#0b84db] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0d93f2]/20"
+          >
+            {isBuying ? <Loader2 className="w-5 h-5 animate-spin" /> : `Pay $${totalPrice}`}
+          </button>
         </div>
       )}
 

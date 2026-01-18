@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { toast } from "sonner";
 import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import GuestListHeader from '@/components/artist/guestlist/Header';
 import StatsGrid from '@/components/artist/guestlist/StatsGrid';
@@ -72,7 +73,7 @@ export default function GuestListPage() {
         setGuests(prev => [newGuest, ...prev]);
       }
     } catch (e) {
-      alert("Failed to add guest");
+      toast.error("Failed to add guest");
     }
   };
 
@@ -95,11 +96,11 @@ export default function GuestListPage() {
         ));
         setEditingGuest(null);
       } else {
-        alert("Failed to update guest");
+        toast.error("Failed to update guest");
       }
     } catch (e) {
       console.error("Update failed", e);
-      alert("Failed to update guest");
+      toast.error("Failed to update guest");
     }
   };
 
@@ -123,7 +124,7 @@ export default function GuestListPage() {
           setGuests([]);
           setEditingGuest(null);
         } else {
-          alert("Failed to clear list.");
+          toast.error("Failed to clear list.");
         }
       } catch (e) {
         console.error("Failed to clear list", e);
@@ -133,7 +134,7 @@ export default function GuestListPage() {
 
   // NEW: Handle CSV Export
   const handleExportCSV = () => {
-    if (guests.length === 0) return alert("List is empty!");
+    if (guests.length === 0) return toast.error("List is empty!");
 
     const headers = ["Name", "Email", "Tier", "Status", "Added At"];
     const rows = guests.map(g => [
@@ -179,7 +180,7 @@ export default function GuestListPage() {
       setGuests(prev => prev.map(g =>
         g.id === guestId ? { ...g, status: currentStatus } : g
       ));
-      alert("Failed to update status");
+      toast.error("Failed to update status");
     }
   };
 

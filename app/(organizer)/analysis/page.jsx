@@ -3,11 +3,11 @@
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import { 
-  CalendarDays, Download, Info, TrendingUp, Sparkles, Lightbulb, 
+import {
+  CalendarDays, Download, Info, TrendingUp, Sparkles, Lightbulb,
   Speaker, Beer, Shield, Filter, Smile, Frown, Menu, Bell, Loader2, FileText,
   Rocket, ArrowLeft // Added for Coming Soon screen
 } from 'lucide-react';
@@ -16,7 +16,7 @@ import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 // ==================================================================================
 // --- TEMPORARY: COMING SOON MODE ---
 // Change to `false` to view the actual page, or delete this section when ready.
-const IS_COMING_SOON = false; 
+const IS_COMING_SOON = false;
 // ==================================================================================
 
 // --- MOCK DATA: TRENDS ---
@@ -72,8 +72,8 @@ export default function AnalysisPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // --- STATE FOR INTERACTIVITY ---
-  const [chartView, setChartView] = useState('event'); 
-  const [reviewFilter, setReviewFilter] = useState('all'); 
+  const [chartView, setChartView] = useState('event');
+  const [reviewFilter, setReviewFilter] = useState('all');
   const [isGenerating, setIsGenerating] = useState(false);
 
   // --- HANDLERS ---
@@ -81,7 +81,7 @@ export default function AnalysisPage() {
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
-      alert("Report generated successfully! Check your downloads.");
+      toast.success("Report generated successfully! Check your downloads.");
     }, 1500);
   };
 
@@ -92,12 +92,12 @@ export default function AnalysisPage() {
   };
 
   const handleFullAnalysis = () => {
-    alert("Navigating to full detailed analysis view...");
+    toast.info("Navigating to full detailed analysis view...");
   };
 
   // --- DERIVED DATA ---
   const currentChartData = chartView === 'event' ? TREND_DATA_EVENT : TREND_DATA_POST;
-  
+
   const filteredReviews = useMemo(() => {
     if (reviewFilter === 'all') return REVIEWS;
     return REVIEWS.filter(r => r.sentiment === reviewFilter);
@@ -105,7 +105,7 @@ export default function AnalysisPage() {
 
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30 relative">
-      
+
       {/* ========================================
         COMING SOON OVERLAY - DELETE WHEN READY
         ========================================
@@ -113,21 +113,21 @@ export default function AnalysisPage() {
       {IS_COMING_SOON && (
         <div className="absolute inset-0 z-[100] bg-[#101b22]/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-500">
           <div className="bg-[#192734] p-8 rounded-2xl border border-[#2c3b47] shadow-2xl max-w-md w-full relative overflow-hidden group">
-            
+
             {/* Decoration */}
             <div className="absolute top-0 right-0 p-12 bg-[#0d93f2]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            
+
             <div className="relative z-10 flex flex-col items-center">
               <div className="w-16 h-16 bg-[#0d93f2]/20 rounded-full flex items-center justify-center mb-6 text-[#0d93f2]">
                 <Rocket className="w-8 h-8" />
               </div>
-              
+
               <h2 className="text-2xl font-bold text-white mb-2">Coming Soon</h2>
               <p className="text-[#90b2cb] mb-8">
                 Our advanced sentiment analysis engine is currently crunching the numbers. Check back shortly for insights.
               </p>
-              
-              <button 
+
+              <button
                 onClick={() => router.push('/manage/dashboard')}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold transition-all shadow-lg shadow-[#0d93f2]/20"
               >
@@ -143,19 +143,19 @@ export default function AnalysisPage() {
       <OrganizerSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-[#101b22]">
-        
-        <Header 
-          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+
+        <Header
+          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
           isGenerating={isGenerating}
           onGenerate={handleGenerateReport}
         />
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-[#2c3b47] scrollbar-track-[#101b22]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-6">
-            
+
             {/* TOP ROW: OVERVIEW */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
+
               {/* Scorecard */}
               <div className="lg:col-span-1 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col justify-center relative overflow-hidden">
                 <div className="flex justify-between items-center mb-4 z-10">
@@ -171,7 +171,7 @@ export default function AnalysisPage() {
                   </span>
                 </div>
                 <p className="text-[#90b2cb] text-sm mb-6 z-10">Positive Experience Score</p>
-                
+
                 {/* Progress Bar */}
                 <div className="relative h-3 w-full bg-[#315168]/30 rounded-full overflow-hidden z-10">
                   <div className="absolute h-full bg-gradient-to-r from-blue-500 to-[#0d93f2] w-[84%] rounded-full shadow-[0_0_10px_rgba(13,147,242,0.5)]"></div>
@@ -212,14 +212,14 @@ export default function AnalysisPage() {
                   </h3>
                   <span className="text-xs text-[#90b2cb] uppercase tracking-wider font-bold">Positive Sentiment</span>
                 </div>
-                
-                <TopicCard 
-                  icon={Lightbulb} title="LIGHTING & VISUALS" score="92%" 
+
+                <TopicCard
+                  icon={Lightbulb} title="LIGHTING & VISUALS" score="92%"
                   quote="Spectacular laser show" subtext='Mentioned 214 times • "Immersive", "Stunning"'
                   type="positive"
                 />
-                <TopicCard 
-                  icon={Speaker} title="SOUND QUALITY" score="88%" 
+                <TopicCard
+                  icon={Speaker} title="SOUND QUALITY" score="88%"
                   quote="Crisp and punchy bass" subtext='Mentioned 156 times • "Loud", "Clear"'
                   type="positive"
                 />
@@ -235,13 +235,13 @@ export default function AnalysisPage() {
                   <span className="text-xs text-[#90b2cb] uppercase tracking-wider font-bold">Negative Sentiment</span>
                 </div>
 
-                <TopicCard 
-                  icon={Beer} title="BAR SERVICE" score="34%" 
+                <TopicCard
+                  icon={Beer} title="BAR SERVICE" score="34%"
                   quote="Wait times over 20 mins" subtext='Mentioned 310 times • "Slow", "Crowded"'
                   type="negative"
                 />
-                <TopicCard 
-                  icon={Shield} title="ENTRY SECURITY" score="45%" 
+                <TopicCard
+                  icon={Shield} title="ENTRY SECURITY" score="45%"
                   quote="Confusing line management" subtext='Mentioned 85 times • "Chaos", "Rude"'
                   type="negative"
                 />
@@ -250,19 +250,19 @@ export default function AnalysisPage() {
 
             {/* BOTTOM ROW: CHART & CLOUD */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
+
               {/* Sentiment Chart */}
               <div className="lg:col-span-2 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-white text-lg font-bold">Sentiment Over Time</h3>
                   <div className="flex bg-white/5 rounded-lg p-0.5">
-                    <button 
+                    <button
                       onClick={() => setChartView('event')}
                       className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'event' ? 'bg-[#0d93f2] text-white shadow' : 'text-[#90b2cb] hover:text-white'}`}
                     >
                       Event Day
                     </button>
-                    <button 
+                    <button
                       onClick={() => setChartView('post')}
                       className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'post' ? 'bg-[#0d93f2] text-white shadow' : 'text-[#90b2cb] hover:text-white'}`}
                     >
@@ -270,16 +270,16 @@ export default function AnalysisPage() {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="flex-1 w-full min-h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={currentChartData} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c3b47" opacity={0.5} />
-                      <XAxis dataKey="time" tick={{fill: '#90b2cb', fontSize: 10}} tickLine={false} axisLine={false} />
-                      <YAxis tick={{fill: '#90b2cb', fontSize: 10}} tickLine={false} axisLine={false} />
-                      <Tooltip 
+                      <XAxis dataKey="time" tick={{ fill: '#90b2cb', fontSize: 10 }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fill: '#90b2cb', fontSize: 10 }} tickLine={false} axisLine={false} />
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#101b22', borderColor: '#2c3b47', color: '#fff', borderRadius: '8px' }}
-                        cursor={{fill: '#ffffff0a'}}
+                        cursor={{ fill: '#ffffff0a' }}
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                         {currentChartData.map((entry, index) => (
@@ -296,20 +296,20 @@ export default function AnalysisPage() {
                 <h3 className="text-white text-lg font-bold mb-4">Trending Keywords</h3>
                 <div className="flex-1 flex flex-wrap content-start gap-2">
                   {KEYWORDS.map((tag, i) => (
-                    <span 
-                      key={i} 
+                    <span
+                      key={i}
                       className={`
                         px-3 py-1.5 rounded-lg border font-bold ${tag.size} cursor-default transition-transform hover:scale-105
-                        ${tag.type === 'positive' ? 'bg-[#0d93f2]/20 text-[#0d93f2] border-[#0d93f2]/30' : 
-                          tag.type === 'negative' ? 'bg-red-500/20 text-red-500 border-red-500/30' : 
-                          'bg-white/5 text-white/80 border-white/10'}
+                        ${tag.type === 'positive' ? 'bg-[#0d93f2]/20 text-[#0d93f2] border-[#0d93f2]/30' :
+                          tag.type === 'negative' ? 'bg-red-500/20 text-red-500 border-red-500/30' :
+                            'bg-white/5 text-white/80 border-white/10'}
                       `}
                     >
                       {tag.label}
                     </span>
                   ))}
                 </div>
-                <button 
+                <button
                   onClick={handleFullAnalysis}
                   className="mt-4 w-full py-2 rounded-lg border border-white/10 text-[#90b2cb] text-xs font-bold hover:bg-white/5 transition-colors"
                 >
@@ -328,23 +328,23 @@ export default function AnalysisPage() {
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={handleReviewFilterToggle}
                     className={`p-1 rounded transition-colors ${reviewFilter !== 'all' ? 'text-[#0d93f2] bg-[#0d93f2]/10' : 'text-[#90b2cb] hover:text-white'}`}
                     title="Toggle Filter (All / Positive / Negative)"
                   >
                     <Filter className="w-4 h-4" />
                   </button>
-                  <button 
-                    onClick={() => alert("Downloading reviews CSV...")}
-                    className="text-[#90b2cb] hover:text-white p-1" 
+                  <button
+                    onClick={() => toast.info("Downloading reviews CSV...")}
+                    className="text-[#90b2cb] hover:text-white p-1"
                     title="Download CSV"
                   >
                     <Download className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              
+
               <div className="divide-y divide-[#2c3b47]">
                 {filteredReviews.length > 0 ? (
                   filteredReviews.map((review) => (
@@ -396,14 +396,14 @@ function Header({ onMenuClick, isGenerating, onGenerate }) {
           </div>
           <p className="text-[#90b2cb] text-sm flex items-center gap-2 pl-10 md:pl-0">
             <CalendarDays className="w-4 h-4" />
-            September 15, 2023 
+            September 15, 2023
             <span className="w-1 h-1 rounded-full bg-[#90b2cb]"></span>
             Post-Event Sentiment Analysis
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4 w-full md:w-auto pl-10 md:pl-0">
-          <button 
+          <button
             onClick={onGenerate}
             disabled={isGenerating}
             className={`
@@ -415,13 +415,13 @@ function Header({ onMenuClick, isGenerating, onGenerate }) {
             {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
             {isGenerating ? 'Generating...' : 'Generate Report'}
           </button>
-          
+
           <div className="hidden md:flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
-             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[1px]">
-                <div className="w-full h-full rounded-full bg-[#101b22] relative overflow-hidden">
-                   <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
-                </div>
-             </div>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[1px]">
+              <div className="w-full h-full rounded-full bg-[#101b22] relative overflow-hidden">
+                <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
+              </div>
+            </div>
           </div>
         </div>
       </div>

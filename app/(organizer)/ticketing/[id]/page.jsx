@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
+import { toast } from "sonner";
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 import {
     Menu, Search, Bell, ChevronDown, DollarSign,
@@ -88,11 +89,11 @@ export default function TicketingPage() {
                 closeModal();
             } else {
                 const err = await res.json();
-                alert(`Action failed: ${err.message}`);
+                toast.error(`Action failed: ${err.message}`);
             }
         } catch (err) {
             console.error(err);
-            alert("Error processing request.");
+            toast.error("Error processing request.");
         }
     };
 
