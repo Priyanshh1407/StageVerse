@@ -220,10 +220,22 @@ export default function LiveModePage(props) {
   // 3. Warning Flow
   const handleWarningClick = () => setShowWarningModal(true);
 
-  const handleConfirmWarning = () => {
+  const handleConfirmWarning = async () => {
     setShowWarningModal(false);
     addLog("Last Song Alert Sent", "Crew prepared for finale/egress", "critical");
 
+    // 1. Persist to DB (Reliability)
+    try {
+      await fetch('/api/production/live', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId, warning: true })
+      });
+    } catch (e) {
+      console.error("Failed to persist warning", e);
+    }
+
+    // 2. Emit Socket (Speed)
     if (socket) {
       console.log(`[Artist] Emitting show:warning for Event: ${eventId}`);
       socket.emit("show:warning", { eventId });
@@ -232,6 +244,17 @@ export default function LiveModePage(props) {
       console.error("[Artist] Socket disconnected. Cannot send warning.");
       toast.error("Socket Error: Check Connection");
     }
+
+    // 3. Auto-Clear Warning after 30s (Optional)
+    setTimeout(async () => {
+      try {
+        await fetch('/api/production/live', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventId, warning: false })
+        });
+      } catch (e) { }
+    }, 30000);
   };
 
   // 4. Emergency

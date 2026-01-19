@@ -120,6 +120,7 @@ export async function GET(req) {
             },
             setlist: formattedSetlist,
             showStatus: setlistDoc?.showStatus || 'Standby',
+            showWarning: setlistDoc?.showWarning || false,
             activePoll: activePoll
         });
 
@@ -136,7 +137,12 @@ export async function PUT(req) {
         const body = await req.json();
         const { eventId, status } = body;
 
-        if (!eventId || !status) return NextResponse.json({ success: false, message: "Missing fields" }, { status: 400 });
+        if (!eventId) return NextResponse.json({ success: false, message: "Missing Event ID" }, { status: 400 });
+
+        // Allow partial updates: Status OR Warning
+        if (!status && typeof body.warning === 'undefined') {
+            return NextResponse.json({ success: false, message: "No update fields provided" }, { status: 400 });
+        }
 
         // Find Setlist
         let setlist = await Setlist.findOne({ eventId: eventId });
@@ -145,8 +151,9 @@ export async function PUT(req) {
             return NextResponse.json({ success: false, message: "Setlist not found" }, { status: 404 });
         }
 
-        // Update Global Status
-        setlist.showStatus = status;
+        // Update Setlist Fields
+        if (body.status) setlist.showStatus = body.status;
+        if (typeof body.warning === 'boolean') setlist.showWarning = body.warning;
 
         // LOGIC: If Show is Live, ensure we have an Active Song
         if (status === 'Live') {

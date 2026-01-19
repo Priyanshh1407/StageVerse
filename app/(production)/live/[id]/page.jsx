@@ -96,13 +96,26 @@ export default function LiveShowPage(props) {
       const json = await res.json();
       if (json.success) {
         // Map API response to Component State Structure
-        setShow({
-          name: json.event.title,
-          status: json.showStatus || 'Standby', // Restore Sync
-          bpm: 128,          // Default or from current song
-          currentSong: json.setlist.find(s => s.status === 'live') || json.setlist[0],
-          currentCue: {},    // Placeholder or fetch real cues
-          setlist: json.setlist
+        // Map API response to Component State Structure
+        setShow(prev => {
+          // LOGIC: "Latched Standby"
+          // 1. If currently Standby (or null/first load), STAY Standby (ignore DB 'Live').
+          //    This prevents auto-start on load/refresh.
+          // 2. If currently Live (set via Socket), respect DB status (allows Stop).
+          const currentStatus = prev?.status || 'Standby';
+          const newStatus = currentStatus === 'Live' ? (json.showStatus || 'Standby') : 'Standby';
+
+          console.log(`[Poll] DB Status: ${json.showStatus}, Local: ${currentStatus} -> Result: ${newStatus}`);
+
+          return {
+            ...prev, // Keep existing fields if needed
+            name: json.event.title,
+            status: newStatus,
+            bpm: 128,
+            currentSong: json.setlist.find(s => s.status === 'live') || json.setlist[0],
+            currentCue: {},
+            setlist: json.setlist
+          };
         });
 
         // Sync Active Poll if exists (Backup to Socket)
@@ -111,6 +124,11 @@ export default function LiveShowPage(props) {
             question: json.activePoll.question,
             options: json.activePoll.options
           });
+        }
+
+        // Sync Warning (Backup to Socket)
+        if (json.showWarning) {
+          setShowWarning(true);
         }
       }
     } catch (e) {

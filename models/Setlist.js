@@ -45,7 +45,9 @@ const SetlistSchema = new mongoose.Schema({
     active: { type: Boolean, default: false }
   }],
   // Global Show Status for Persistence
-  showStatus: { type: String, enum: ['Standby', 'Live', 'Paused'], default: 'Standby' }
+  showStatus: { type: String, enum: ['Standby', 'Live', 'Paused'], default: 'Standby' },
+  // Feature: Last Song Warning Persistence
+  showWarning: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.models.Setlist || mongoose.model('Setlist', SetlistSchema);

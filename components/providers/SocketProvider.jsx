@@ -18,7 +18,9 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         // Standard Socket Initialization
-        const socketInstance = io(process.env.NEXT_PUBLIC_SITE_URL || window.location.origin, {
+        // Use 'undefined' to force relative path (auto-detects host:port)
+        // This fixes Mobile/LAN issues where localhost != IP
+        const socketInstance = io(undefined, {
             path: "/api/socket/io",
             addTrailingSlash: false,
             transports: ["polling", "websocket"],
