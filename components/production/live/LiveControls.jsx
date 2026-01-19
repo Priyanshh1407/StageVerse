@@ -4,35 +4,67 @@ import React, { useState } from 'react';
 import { PlayCircle, AlertTriangle, Eye, Crosshair, Wind, CheckCircle2, Megaphone, BarChart3, Check } from 'lucide-react';
 import EncoreScreen from '@/components/EncoreScreen'; // Import the new screen
 
-export default function LiveControls({ currentSong, currentCue }) {
+export default function LiveControls({ currentSong, currentCue, pollStats, winner, onRevealEncore, showWarning, onCloseWarning }) {
   if (!currentSong) return <div className="p-8 text-gray-500">No song active</div>;
 
-  // --- STATE FOR FULL SCREEN DISPLAY ---
+  // --- SHOW WINNER IF DECLARED ---
   const [showEncoreScreen, setShowEncoreScreen] = useState(false);
+  const [encoreWinner, setEncoreWinner] = useState(null);
 
-  // --- MOCK POLL DATA ---
-  const activePoll = {
+  // Use real data or fallback
+  const activePoll = pollStats ? {
     isActive: true,
-    title: "Encore Vote",
-    totalVotes: 12450,
-    options: [
-      { id: 1, title: "Midnight City", type: "M83 Cover", percent: 54, winning: true },
-      { id: 2, title: "Wait", type: "M83 Original", percent: 46 }
-    ]
+    title: pollStats.question,
+    options: pollStats.options.map(o => ({
+      ...o,
+      title: o.text,
+      percent: pollStats.options.reduce((a, b) => a + b.votes, 0) > 0 ? Math.round((o.votes / pollStats.options.reduce((a, b) => a + b.votes, 0)) * 100) : 0,
+      winning: winner === o.text // Check if this option is the winner
+    }))
+  } : null;
+
+  const tech = currentCue.technical || {
+    visual: '-', visualDetail: '-', spots: '-', spotsDetail: '-', haze: '-', hazeDetail: '-'
   };
 
-  const tech = currentCue.technical || { 
-    visual: '-', visualDetail: '-', spots: '-', spotsDetail: '-', haze: '-', hazeDetail: '-' 
+  // Handler to reveal with actual winner
+  const handleRevealEncore = (winnerName) => {
+    setEncoreWinner(winnerName);
+    setShowEncoreScreen(true);
+    // Auto-close after 10 seconds
+    setTimeout(() => {
+      setShowEncoreScreen(false);
+    }, 10000);
   };
 
   return (
-    <main className="flex-1 flex flex-col overflow-hidden p-4 gap-4 bg-[#0F0F10]">
-      
+    <main className="flex-1 flex flex-col overflow-hidden p-4 gap-4 bg-[#0F0F10] relative">
+
+      {/* --- WARNING OVERLAY --- */}
+      {showWarning && (
+        <div className="absolute inset-0 z-50 bg-red-600/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 backdrop-blur-md">
+          <button
+            onClick={onCloseWarning}
+            className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2"
+          >
+            <div className="text-sm font-bold uppercase tracking-widest border border-white/30 px-4 py-2 rounded hover:bg-white/10">Dismiss Alert</div>
+          </button>
+          <AlertTriangle className="w-24 h-24 text-white animate-pulse" />
+          <h1 className="text-white text-6xl font-black uppercase tracking-tighter mt-4 drop-shadow-xl border-4 border-white px-8 py-2">
+            LAST SONG ALERT
+          </h1>
+          <p className="text-red-100 font-mono text-xl mt-4 font-bold uppercase tracking-widest animate-pulse">
+            PREPARE FOR FINALE SEQUENCE
+          </p>
+        </div>
+      )}
+
       {/* --- RENDER FULL SCREEN OVERLAY IF ACTIVE --- */}
       {showEncoreScreen && (
-        <EncoreScreen 
-          winnerName="MIDNIGHT CITY" 
-          onClose={() => setShowEncoreScreen(false)} 
+        <EncoreScreen
+          winnerName={encoreWinner || "ENCORE"}
+          onClose={() => setShowEncoreScreen(false)}
+          autoClose={10}
         />
       )}
 
@@ -57,8 +89,8 @@ export default function LiveControls({ currentSong, currentCue }) {
             <p className="text-slate-400 font-mono text-xs">{currentSong.timeElapsed} <span className="text-slate-600">/</span> {currentSong.duration}</p>
           </div>
           <div className="rounded-full bg-[#16222b] border border-[#223949] h-2.5 overflow-hidden relative">
-            <div 
-              className="absolute h-full bg-[#0d93f2] transition-all duration-300 ease-linear" 
+            <div
+              className="absolute h-full bg-[#0d93f2] transition-all duration-300 ease-linear"
               style={{ width: `${currentSong.progress}%` }}
             ></div>
           </div>
@@ -68,23 +100,23 @@ export default function LiveControls({ currentSong, currentCue }) {
       {/* 2. DYNAMIC CUE CARD */}
       <div className="flex-1 min-h-[220px] flex flex-col relative rounded-xl overflow-hidden border-2 border-[#0d93f2]/50 shadow-[0_0_20px_rgba(13,147,242,0.1)] group">
         <div className="absolute inset-0 z-0">
-           <div 
-             className="w-full h-full bg-cover bg-center opacity-40 mix-blend-luminosity group-hover:opacity-50 transition-opacity duration-500" 
-             style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop")' }}
-           ></div>
-           <div className="absolute inset-0 bg-gradient-to-t from-[#101b22] via-[#101b22]/90 to-transparent"></div>
+          <div
+            className="w-full h-full bg-cover bg-center opacity-40 mix-blend-luminosity group-hover:opacity-50 transition-opacity duration-500"
+            style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop")' }}
+          ></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#101b22] via-[#101b22]/90 to-transparent"></div>
         </div>
-        
+
         <div className="relative z-10 flex flex-col justify-between h-full p-5 md:p-6">
           <div className="flex justify-between items-start">
             <div className="bg-red-500/20 text-red-400 border border-red-500/50 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
               <AlertTriangle className="w-3 h-3 animate-pulse" /> {currentCue.type} Cue
             </div>
           </div>
-          
+
           <div className="flex flex-col gap-1 max-w-4xl">
             <h2 className="text-white text-3xl md:text-4xl font-black leading-tight tracking-tight drop-shadow-xl uppercase">
-              {currentCue.title} <br/>
+              {currentCue.title} <br />
               <span className="text-[#0d93f2]">{currentCue.action}</span>
             </h2>
             <p className="text-slate-300 text-base md:text-lg font-medium mt-1 border-l-4 border-[#0d93f2] pl-3">
@@ -97,9 +129,12 @@ export default function LiveControls({ currentSong, currentCue }) {
       {/* 3. POLL MONITOR SECTION */}
       <div className="h-auto md:h-40 shrink-0">
         {activePoll && activePoll.isActive ? (
-          <PollMonitor 
-            poll={activePoll} 
-            onReveal={() => setShowEncoreScreen(true)} // Pass trigger to monitor
+          <PollMonitor
+            poll={activePoll}
+            onReveal={(winnerName) => {
+              handleRevealEncore(winnerName);
+              if (onRevealEncore) onRevealEncore(activePoll);
+            }}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 h-full">
@@ -114,90 +149,94 @@ export default function LiveControls({ currentSong, currentCue }) {
   );
 }
 
-// --- UPDATED POLL MONITOR ---
+// --- UPDATED POLL MONITOR - Shows ALL options with percentages ---
 function PollMonitor({ poll, onReveal }) {
   const [isRevealed, setIsRevealed] = useState(false);
-  const winner = poll.options.find(opt => opt.winning) || poll.options[0];
+
+  // Calculate total votes and find winner
+  const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+
+  // Sort options by votes (highest first) and mark winner
+  const sortedOptions = [...poll.options]
+    .map(opt => ({
+      ...opt,
+      percent: totalVotes > 0 ? Math.round((opt.votes || 0) / totalVotes * 100) : 0
+    }))
+    .sort((a, b) => b.percent - a.percent);
+
+  const winner = sortedOptions[0]; // Highest votes = winner
 
   const handleRevealClick = () => {
     setIsRevealed(true);
-    onReveal(); // Trigger the full screen overlay
+    const winnerName = winner?.title || winner?.text || "ENCORE";
+    onReveal(winnerName); // Pass the actual winner name
   };
 
   return (
-    <div className="h-32 md:h-40 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-none">
-      
-      {/* LEFT CARD: RESULT DISPLAY */}
-      <div className="md:col-span-7 bg-[#16222b] border border-[#223949] rounded-xl relative overflow-hidden flex items-center shadow-lg group">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-transparent opacity-60"></div>
-        <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#0d93f2] shadow-[0_0_15px_#0d93f2]"></div>
-        
-        <div className="relative z-10 px-6 md:px-8 py-4 flex flex-col justify-center h-full w-full">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#0d93f2] animate-pulse" />
-              <span className="text-[#0d93f2] font-bold text-xs uppercase tracking-[0.2em]">Poll Decided</span>
-            </div>
-            <div className="bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700 uppercase tracking-wider">
-              Verified
-            </div>
-          </div>
-          
-          <div className="flex items-baseline justify-between w-full">
-            <div>
-              <div className="text-slate-400 text-xs md:text-sm font-bold uppercase tracking-widest mb-1">Winning Encore</div>
-              <div className="text-2xl md:text-4xl xl:text-5xl font-black text-white uppercase tracking-tight drop-shadow-md">
-                {winner.title}
-              </div>
-            </div>
-            <div className="hidden md:block text-right opacity-80">
-              <span className="block text-3xl font-mono font-bold text-white">{winner.percent}%</span>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Votes</span>
-            </div>
-          </div>
+    <div className="h-auto grid grid-cols-1 md:grid-cols-12 gap-4 flex-none">
+
+      {/* LEFT: ALL OPTIONS WITH PERCENTAGES */}
+      <div className="md:col-span-8 bg-[#16222b] border border-[#223949] rounded-xl p-4 shadow-lg">
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart3 className="w-4 h-4 text-[#0d93f2]" />
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{poll.title}</span>
+          <span className="ml-auto text-xs text-slate-500">{totalVotes} votes</span>
         </div>
-        
-        <BarChart3 className="absolute -right-4 -bottom-4 w-32 h-32 text-white/5 pointer-events-none z-0 rotate-12" />
+
+        <div className="space-y-2">
+          {sortedOptions.map((opt, idx) => {
+            const isWinning = idx === 0 && totalVotes > 0;
+            return (
+              <div key={opt.id || opt._id || idx} className="relative">
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-sm font-bold ${isWinning ? 'text-[#0d93f2]' : 'text-white'}`}>
+                    {isWinning && <span className="mr-1">👑</span>}
+                    {opt.title || opt.text}
+                  </span>
+                  <span className={`font-mono text-sm font-bold ${isWinning ? 'text-[#0d93f2]' : 'text-slate-400'}`}>
+                    {opt.percent}%
+                  </span>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 ${isWinning ? 'bg-[#0d93f2]' : 'bg-slate-600'}`}
+                    style={{ width: `${opt.percent}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* RIGHT BUTTON: REVEAL ACTION */}
-      <button 
+      {/* RIGHT: REVEAL BUTTON */}
+      <button
         onClick={handleRevealClick}
-        disabled={isRevealed}
-        className={`md:col-span-5 relative overflow-hidden rounded-xl flex flex-col items-center justify-center gap-1 group transition-all shadow-[0_0_20px_rgba(37,99,235,0.5)] border-2 border-blue-500/50
-          ${isRevealed 
-            ? 'bg-slate-900 border-slate-700 cursor-default opacity-90' 
-            : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 hover:shadow-[0_0_40px_rgba(37,99,235,0.7)] active:translate-y-[2px]'
+        disabled={isRevealed || totalVotes === 0}
+        className={`md:col-span-4 relative overflow-hidden rounded-xl flex flex-col items-center justify-center gap-2 p-4 group transition-all shadow-lg border-2
+          ${isRevealed
+            ? 'bg-slate-900 border-slate-700 cursor-default opacity-90'
+            : totalVotes === 0
+              ? 'bg-slate-800 border-slate-700 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 border-blue-500/50 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)]'
           }
         `}
       >
         {!isRevealed ? (
-            <>
-                <div className="absolute inset-0 bg-blue-400/20 animate-pulse"></div>
-                <div className="relative z-10 flex flex-col items-center">
-                    <Megaphone className="w-10 h-10 md:w-12 md:h-12 text-white drop-shadow-md group-hover:scale-110 transition-transform duration-200 mb-1" />
-                    <span className="text-white text-lg md:text-2xl xl:text-3xl font-black uppercase tracking-wider drop-shadow-md">
-                        Reveal Encore
-                    </span>
-                    <span className="text-blue-200 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mt-1 group-hover:text-white transition-colors">
-                        To Stage & Production
-                    </span>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            </>
+          <>
+            <Megaphone className="w-8 h-8 text-white" />
+            <span className="text-white font-bold text-sm uppercase tracking-wider">Reveal Winner</span>
+            {totalVotes > 0 && (
+              <span className="text-white/70 text-xs">{winner?.title || winner?.text}</span>
+            )}
+          </>
         ) : (
-            <div className="relative z-10 flex flex-col items-center">
-                <CheckCircle2 className="w-10 h-10 text-green-500 mb-1" />
-                <span className="text-white text-xl md:text-2xl font-black uppercase tracking-wider">
-                    Revealed
-                </span>
-                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">
-                    Sent to Screens
-                </span>
-            </div>
+          <>
+            <Check className="w-8 h-8 text-green-400" />
+            <span className="text-green-400 font-bold text-sm uppercase">Revealed!</span>
+          </>
         )}
       </button>
-
     </div>
   );
 }

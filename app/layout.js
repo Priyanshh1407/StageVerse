@@ -23,14 +23,18 @@ export const metadata = {
 
 import { Toaster } from "@/components/ui/sonner";
 
+import { SocketProvider } from "@/components/providers/SocketProvider";
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`dark ${inter.variable}`}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <Toaster />
+        <SocketProvider>
+          {children}
+          <Toaster />
+        </SocketProvider>
       </body>
     </html>
   );

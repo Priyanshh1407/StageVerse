@@ -375,8 +375,8 @@ export default function FanDashboard() {
         </div>
       )}
 
-      {/* --- LIVE POLL OVERLAY --- */}
-      {activeEvent && <LivePollCard eventId={activeEvent._id} onComplete={() => console.log("Poll Ended")} />}
+      {/* --- LIVE POLL OVERLAY (Always Mounted to Listen) --- */}
+      <LivePollCard eventId={activeEvent?._id} onComplete={() => console.log("Poll Ended")} />
 
     </div>
   );

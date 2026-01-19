@@ -8,16 +8,16 @@ const SetlistItemSchema = new mongoose.Schema({
 
   // 2. Snapshot Fields (We copy these from Song.js so we don't have to look them up every time)
   title: { type: String, required: true },
-  duration: { type: String }, 
+  duration: { type: String },
   bpm: { type: String },
   key: { type: String },
 
   // 3. Show-Specific Details (Data that only applies to THIS concert)
   notes: { type: String }, // "Quick Change", "Confetti here"
   status: { type: String, enum: ['pending', 'live', 'completed'], default: 'pending' },
-  
+
   // 4. Visual Tags (Matches your INITIAL_SETLIST mock data)
-  tags: [{ 
+  tags: [{
     label: { type: String }, // "High Energy"
     color: { type: String }  // "orange"
   }],
@@ -43,7 +43,9 @@ const SetlistSchema = new mongoose.Schema({
     msg: { type: String },
     sub: { type: String },
     active: { type: Boolean, default: false }
-  }]
+  }],
+  // Global Show Status for Persistence
+  showStatus: { type: String, enum: ['Standby', 'Live', 'Paused'], default: 'Standby' }
 }, { timestamps: true });
 
 export default mongoose.models.Setlist || mongoose.model('Setlist', SetlistSchema);

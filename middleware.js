@@ -11,17 +11,18 @@ const rolePaths = {
 
 // 2. DEFINITION: Which pages are OPEN to everyone?
 const publicPaths = [
-    '/',
-    '/login',
-    '/signup',
-    '/api/auth',
-    '/contact',
-    '/about',
-    '/artist',
-    '/explore',
-    '/explore-artist',
-    '/events'
-  ];
+  '/',
+  '/login',
+  '/signup',
+  '/api/auth',
+  '/contact',
+  '/about',
+  '/artist',
+  '/explore',
+  '/explore-artist',
+  '/events',
+  '/api/socket'
+];
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
@@ -34,7 +35,7 @@ export async function middleware(req) {
   // -----------------------------------------------------------
   // We check if the current path STARTS with any of the public routes
   // (e.g., /explore/event-1 starts with /explore, so it's allowed)
-  const isPublic = publicPaths.some(route => 
+  const isPublic = publicPaths.some(route =>
     pathname === route || pathname.startsWith(route + '/')
   );
 
@@ -58,7 +59,7 @@ export async function middleware(req) {
   // -----------------------------------------------------------
   // B. AUTHENTICATION CHECK (Protected Routes)
   // -----------------------------------------------------------
-  
+
   // 1. No Token? -> Go to Login
   if (!token) {
     // Store the url they wanted to visit? (Optional feature for later)
@@ -71,7 +72,7 @@ export async function middleware(req) {
     const userRole = payload.role;
 
     // 3. Strict Role Check (Prevent Fan from seeing Artist pages)
-    const targetRole = Object.keys(rolePaths).find(role => 
+    const targetRole = Object.keys(rolePaths).find(role =>
       rolePaths[role].some(path => pathname.startsWith(path))
     );
 

@@ -5,15 +5,15 @@ import React from 'react';
 export default function SetlistTimeline({ items = [] }) {
   return (
     <aside className="w-80 lg:w-96 hidden md:flex flex-col bg-[#16222b] border-l border-[#223949]">
-      
+
       <div className="p-5 border-b border-[#223949] flex justify-between items-center bg-[#101b22]">
         <h3 className="text-white font-bold text-lg">Up Next</h3>
         <span className="text-xs text-slate-400 font-mono">SCROLL: AUTO</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-        {items.map((item) => (
-          <TimelineItem key={item.id} item={item} />
+        {items.map((item, index) => (
+          <TimelineItem key={item._id || item.id} item={item} index={index} />
         ))}
       </div>
 
@@ -30,13 +30,14 @@ export default function SetlistTimeline({ items = [] }) {
   );
 }
 
-function TimelineItem({ item }) {
+function TimelineItem({ item, index }) {
+  const displayId = (index + 1).toString().padStart(2, '0');
   // 1. COMPLETED ITEMS
   if (item.status === 'completed') {
     return (
       <div className="opacity-40 select-none pointer-events-none">
         <div className="flex gap-4 p-3 rounded-lg border border-transparent">
-          <span className="text-slate-500 font-mono text-sm pt-1">{item.id}</span>
+          <span className="text-slate-500 font-mono text-sm pt-1">{displayId}</span>
           <div>
             <p className="text-white font-bold text-lg leading-tight">{item.title}</p>
             <p className="text-slate-500 text-xs font-medium uppercase mt-1">Completed</p>
@@ -52,7 +53,7 @@ function TimelineItem({ item }) {
       <div className="relative">
         <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#0d93f2] rounded-r"></div>
         <div className="flex gap-4 p-3 rounded-lg bg-[#0d93f2]/10 border border-[#0d93f2]/30">
-          <span className="text-[#0d93f2] font-mono text-sm pt-1 animate-pulse">{item.id}</span>
+          <span className="text-[#0d93f2] font-mono text-sm pt-1 animate-pulse">{displayId}</span>
           <div>
             <p className="text-white font-bold text-lg leading-tight">{item.title}</p>
             <p className="text-[#0d93f2] text-xs font-bold uppercase mt-1">Live Now</p>
@@ -66,7 +67,7 @@ function TimelineItem({ item }) {
   return (
     <div className="group">
       <div className="flex gap-4 p-3 rounded-lg border border-[#223949] bg-[#101b22] hover:border-slate-600 transition-colors cursor-pointer">
-        <span className="text-slate-400 font-mono text-sm pt-1 group-hover:text-white">{item.id}</span>
+        <span className="text-slate-400 font-mono text-sm pt-1 group-hover:text-white">{displayId}</span>
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <p className="text-white font-bold text-lg leading-tight group-hover:text-[#0d93f2] transition-colors">{item.title}</p>

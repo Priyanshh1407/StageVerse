@@ -1,50 +1,97 @@
-'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { Check } from 'lucide-react'; // Keep Check as it's used in the new code
+import { Check } from 'lucide-react';
+import { useSocket } from '@/components/providers/SocketProvider';
 
 export default function LivePollCard({ eventId, onComplete }) {
     const [poll, setPoll] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [votedOptionId, setVotedOptionId] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(30);
-    const [isVisible, setIsVisible] = useState(true);
+    const [timeLeft, setTimeLeft] = useState(60);
+    const [isVisible, setIsVisible] = useState(false); // Default to false to prevent flashing
 
-    // Fetch Poll
+    // --- SOCKET INTEGRATION (Stabilized) ---
+    const { socket } = useSocket();
+    const listenerAttached = useRef(false);
+
+    useEffect(() => {
+        if (!socket || listenerAttached.current) return;
+        listenerAttached.current = true;
+
+        console.log("[LivePollCard] Attaching socket listeners");
+
+        const onPollStart = (data) => {
+            console.log("[Socket RX Fan] poll:start FULL DATA:", JSON.stringify(data));
+
+            // Force construct and set poll
+            const newPoll = {
+                _id: data.pollId || 'temp-id',
+                question: data.question || "Live Poll",
+                options: (data.options || []).map((o, idx) => ({
+                    // Prioritize _id if it comes from DB object, then id (custom), then fallback
+                    _id: o._id || o.id || `opt-${idx}`,
+                    text: o.text || `Option ${idx + 1}`,
+                    votes: 12
+                })),
+            };
+
+            console.log("[LivePollCard] Setting poll:", newPoll);
+            setPoll(newPoll);
+            setTimeLeft(60);
+            toast.success("Poll is now ACTIVE!"); // Confirmation
+        };
+
+        const onPollEnd = () => {
+            console.log("[LivePollCard] Poll Ended");
+            setPoll(null);
+        };
+
+        socket.on("poll:start", onPollStart);
+        socket.on("poll:end", onPollEnd);
+
+        return () => {
+            socket.off("poll:start", onPollStart);
+            socket.off("poll:end", onPollEnd);
+            listenerAttached.current = false;
+        };
+    }, [socket]);
+
+    // Fetch Poll (Fallback & Initial Load)
+    const fetchPoll = async (forceShow = false) => {
+        try {
+            const res = await fetch(`/api/fan/poll?eventId=${eventId}`);
+            const json = await res.json();
+            if (json.success && json.poll) {
+                setPoll(json.poll);
+                if (forceShow || json.poll.isActive) {
+                    setIsVisible(true);
+                    setTimeLeft(60); // Reset timer on new fetch
+                }
+            }
+        } catch (e) {
+            console.error("Error fetching poll", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (!eventId) return;
-
-        async function fetchPoll() {
-            try {
-                const res = await fetch(`/api/fan/poll?eventId=${eventId}`);
-                const json = await res.json();
-                if (json.success && json.poll) {
-                    setPoll(json.poll);
-                }
-            } catch (e) {
-                console.error("Error fetching poll", e);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchPoll();
-        const interval = setInterval(fetchPoll, 5000); // Polling every 5s for live updates
-        return () => clearInterval(interval);
+        // fetchPoll(); // DISABLED via User Request: Polls should only trigger via Socket (Real-time only)
     }, [eventId]);
 
-    // Timer Logic
+    // Timer Logic - Auto-close poll when timer expires
     useEffect(() => {
         if (!poll) return;
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    // Timer Finished
+                    // Timer Finished - Close the poll
                     setTimeout(() => {
-                        setIsVisible(false);
-                        if (onComplete) onComplete();
+                        setPoll(null); // This closes the popup
+                        toast.info("Poll closed - Time's up!");
                     }, 1000);
                     return 0;
                 }
@@ -52,43 +99,48 @@ export default function LivePollCard({ eventId, onComplete }) {
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, [poll, onComplete]);
+    }, [poll]);
 
     const handleVote = async (optionId) => {
         if (votedOptionId || isSubmitting) return;
 
+        // Immediate visual feedback
+        setVotedOptionId(optionId);
         setIsSubmitting(true);
+        toast.success("🎉 Vote Submitted!", { duration: 3000 });
 
         try {
-            await fetch('/api/fan/poll/vote', {
+            const res = await fetch('/api/fan/poll', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ pollId: poll._id, optionId })
             });
 
-            const res = await fetch(`/api/fan/poll?eventId=${eventId}`);
-            const json = await res.json();
-            if (json.success && json.poll) {
-                setPoll(json.poll);
-                setVotedOptionId(optionId); // Set voted option after successful vote and poll refresh
-                toast.success("Vote Cast!");
-            } else {
-                toast.error("Failed to vote");
+            const data = await res.json();
+            console.log("[Vote Response]", data);
+
+            if (!data.success) {
+                console.error("Vote failed:", data.error);
+            }
+
+            // Broadcast to other clients
+            if (socket) {
+                socket.emit("poll:vote", { pollId: poll._id, optionId });
             }
         } catch (e) {
-            console.error(e);
-            toast.error("Error voting");
+            console.error("Vote error:", e);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (loading || !poll || !isVisible) return null;
+    if (loading || !poll) return null; // Simplified: If poll exists, show it.
 
     const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+    console.log('Rendering Poll UI', poll);
 
     return (
-        <div className="fixed inset-0 z-[100] bg-[#050505] flex items-center justify-center font-sans animate-in fade-in duration-500">
+        <div className="fixed inset-0 z-[9999] bg-[#050505] flex items-center justify-center font-sans animate-in fade-in duration-500">
             {/* Dynamic Fonts via style injection since we can't edit layout easily */}
             <style jsx global>{`
                 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap');
@@ -113,10 +165,10 @@ export default function LivePollCard({ eventId, onComplete }) {
                     <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-500">Live Poll Active</span>
                 </div>
 
-                <h1 className="text-4xl md:text-5xl font-black uppercase leading-tight tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
+                <h1 className="text-2xl md:text-5xl font-black uppercase leading-tight tracking-tight mb-2 md:mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
                     {poll.question}
                 </h1>
-                <p className="text-slate-400 font-medium text-sm mb-8">Tap your choice below to cast your vote.</p>
+                <p className="text-slate-400 font-medium text-xs md:text-sm mb-6 md:mb-8">Tap your choice below to cast your vote.</p>
 
                 {/* Options Grid */}
                 <div className="w-full flex flex-col gap-4 mb-8">
@@ -126,39 +178,38 @@ export default function LivePollCard({ eventId, onComplete }) {
 
                         return (
                             <button
-                                key={opt._id}
+                                key={opt._id || index}
                                 onClick={() => handleVote(opt._id)}
-                                disabled={!!votedOptionId}
+                                disabled={!!votedOptionId || isSubmitting}
+                                style={{ touchAction: 'manipulation' }}
                                 className={`
-                                    relative w-full h-24 rounded-2xl px-6 flex items-center justify-between overflow-hidden transition-all duration-200 group/card text-left
-                                    border-2 ${isSelected ? 'border-[#00f0ff] bg-[#00f0ff]/10 shadow-[0_0_30px_rgba(0,240,255,0.2)] scale-[0.98]' : 'border-white/10 bg-[#121212] hover:border-white/20'}
+                                    relative w-full min-h-[80px] py-4 rounded-2xl px-6 flex items-center justify-between overflow-hidden transition-all duration-200 text-left cursor-pointer active:scale-[0.98]
+                                    border-2 ${isSelected ? 'border-[#00f0ff] bg-[#00f0ff]/10 shadow-[0_0_30px_rgba(0,240,255,0.2)]' : 'border-white/10 bg-[#121212] active:border-white/30'}
+                                    ${!!votedOptionId && !isSelected ? 'opacity-50' : ''}
+                                    ${isSubmitting ? 'opacity-70' : ''}
                                 `}
                             >
-                                {/* Hover Gradient */}
-                                {!isSelected && <div className="absolute inset-0 bg-gradient-to-br from-[#00f0ff]/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />}
+                                {/* Hover Gradient - pointer-events-none to not block clicks */}
+                                {!votedOptionId && <div className="absolute inset-0 bg-gradient-to-br from-[#00f0ff]/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity pointer-events-none" />}
 
                                 {/* Track Info */}
-                                <div className="relative z-10 flex flex-col items-start">
+                                <div className="relative z-10 flex flex-col items-start pointer-events-none">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Option 0{index + 1}</span>
                                     <h2 className="text-xl font-bold uppercase leading-none text-white">{opt.text}</h2>
                                 </div>
 
-                                {/* Checkmark / Percent */}
-                                <div className="relative z-10 flex items-center gap-3">
-                                    {!!votedOptionId && (
-                                        <span className="text-[#00f0ff] text-lg font-black animate-in fade-in">{percent}%</span>
-                                    )}
-                                    <div className={`
-                                        w-8 h-8 rounded-full bg-[#00f0ff] text-black flex items-center justify-center transition-all duration-200
-                                        ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-50 group-hover/card:opacity-20'}
-                                    `}>
-                                        <Check className="w-5 h-5 font-bold" strokeWidth={4} />
+                                {/* Checkmark - Only show AFTER voting */}
+                                {isSelected && (
+                                    <div className="relative z-10 flex items-center gap-3 pointer-events-none">
+                                        <div className="w-8 h-8 rounded-full bg-[#00f0ff] text-black flex items-center justify-center">
+                                            <Check className="w-5 h-5 font-bold" strokeWidth={4} />
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Vote Progress Bar (Visible after voting) */}
                                 {!!votedOptionId && (
-                                    <div className="absolute bottom-0 left-0 h-1 bg-[#00f0ff] transition-all duration-1000 ease-out" style={{ width: `${percent}%` }} />
+                                    <div className="absolute bottom-0 left-0 h-1 bg-[#00f0ff] transition-all duration-1000 ease-out pointer-events-none" style={{ width: `${percent}%` }} />
                                 )}
                             </button>
                         );
@@ -175,7 +226,7 @@ export default function LivePollCard({ eventId, onComplete }) {
                     <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden relative z-10">
                         <div
                             className="h-full bg-[#00f0ff] shadow-[0_0_10px_#00f0ff] transition-all duration-1000 linear"
-                            style={{ width: `${(timeLeft / 30) * 100}%` }}
+                            style={{ width: `${(timeLeft / 60) * 100}%` }}
                         />
                     </div>
                 </div>

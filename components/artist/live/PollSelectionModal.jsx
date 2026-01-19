@@ -1,21 +1,62 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { BarChart2, CheckCircle2, ChevronRight, X } from 'lucide-react';
 
-export default function PollSelectionModal({ isOpen, onClose, onSelect }) {
+export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId }) {
   if (!isOpen) return null;
 
-  // Mock Polls (This would come from your DB/State)
-  const availablePolls = [
-    { id: 'p1', title: 'Encore Vote', type: 'Ready', options: 2, trigger: 'After Song 5' },
-    { id: 'p2', title: 'Next Song Choice', type: 'Draft', options: 3, trigger: 'Manual' },
-    { id: 'p3', title: 'Outfit Color', type: 'Ready', options: 4, trigger: 'Manual' },
-  ];
+  const [availablePolls, setAvailablePolls] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch Polls from DB
+  useEffect(() => {
+    if (!isOpen || !eventId) return;
+
+    const fetchPolls = async () => {
+      try {
+        const res = await fetch(`/api/fan/poll?eventId=${eventId}&all=true`);
+        const json = await res.json();
+        if (json.success) {
+          // Map DB polls to UI format
+          const dbPolls = (json.polls || []).map(p => ({
+            id: p._id,
+            title: p.question,
+            type: p.isActive ? 'Active' : 'Ready',
+            options: p.options.length,
+            trigger: 'Manual',
+            data: p // Keep full object
+          }));
+
+          // ALWAYS Add Template (Create New) option first
+          const templatePoll = {
+            id: 'new-encore',
+            title: 'Create New Poll (Template)',
+            type: 'Template',
+            options: 2,
+            trigger: 'Manual',
+            isTemplate: true,
+            data: {
+              question: "Which song should we play next?",
+              options: ["Option A", "Option B"]
+            }
+          };
+
+          setAvailablePolls([templatePoll, ...dbPolls]);
+        }
+      } catch (e) {
+        console.error("Error fetching polls", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPolls();
+  }, [isOpen, eventId]);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050505]/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-lg bg-[#101b22] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-        
+
         {/* Header */}
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#15232d]">
           <div>
@@ -33,7 +74,7 @@ export default function PollSelectionModal({ isOpen, onClose, onSelect }) {
         {/* Poll List */}
         <div className="p-4 flex flex-col gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
           {availablePolls.map((poll) => (
-            <button 
+            <button
               key={poll.id}
               onClick={() => onSelect(poll)}
               className="group flex items-center justify-between p-4 rounded-xl bg-[#0a1116] border border-white/5 hover:border-purple-500/50 hover:bg-[#1a1a2e] transition-all text-left"

@@ -14,7 +14,13 @@ export default function SetlistCanvas({ items, setItems }) {
   const totalDuration = useMemo(() => {
     let totalSeconds = 0;
     items.forEach(item => {
-      const [mins, secs] = item.duration.split(':').map(Number);
+      // Safety check for invalid/missing duration
+      if (!item.duration || typeof item.duration !== 'string') return;
+
+      const parts = item.duration.split(':');
+      if (parts.length < 2) return;
+
+      const [mins, secs] = parts.map(Number);
       if (!isNaN(mins) && !isNaN(secs)) {
         totalSeconds += (mins * 60) + secs;
       }
@@ -42,7 +48,7 @@ export default function SetlistCanvas({ items, setItems }) {
   const handleFinalSubmit = (promptText) => {
     setIsModalOpen(false); // Close modal
     setIsOptimizing(true); // Start loading state
-    setAiCurated(false); 
+    setAiCurated(false);
 
     console.log("Sending prompt to Gemini:", promptText); // Placeholder for future API call
 
@@ -64,7 +70,7 @@ export default function SetlistCanvas({ items, setItems }) {
       <div className="flex flex-col gap-6">
         <div className="bg-[#1a2c38] border border-[#223949] rounded-2xl p-6 flex flex-wrap md:flex-nowrap justify-between items-center gap-4 shadow-xl shadow-black/20 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-indigo-900/20 to-transparent pointer-events-none"></div>
-          
+
           <div className="relative z-10">
             <h2 className="text-2xl text-white font-bold mb-1 flex items-center gap-3">
               Tonight's Set
@@ -98,13 +104,13 @@ export default function SetlistCanvas({ items, setItems }) {
               </div>
               <div className="text-xs text-[#90b2cb]">AI can suggest better flow based on mood tags</div>
             </div>
-            
-            <button 
+
+            <button
               onClick={handleOptimizeClick} // Updated Handler
               disabled={isOptimizing}
               className={`relative overflow-hidden group flex items-center gap-3 px-6 py-3.5 rounded-xl text-white font-bold shadow-lg transition-all border border-white/10
-                ${isOptimizing 
-                  ? 'bg-[#223949] cursor-not-allowed opacity-80' 
+                ${isOptimizing
+                  ? 'bg-[#223949] cursor-not-allowed opacity-80'
                   : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02]'
                 }
               `}
@@ -147,31 +153,31 @@ export default function SetlistCanvas({ items, setItems }) {
                           className={`group relative flex gap-4 bg-[#101b22] hover:bg-[#223949] border rounded-xl px-4 py-5 justify-between transition-all 
                             ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-[#0d93f2] bg-[#1a2c38] z-50' : 'border-[#223949]'}
                           `}
-                          style={{ ...provided.draggableProps.style }} 
+                          style={{ ...provided.draggableProps.style }}
                         >
                           {index === 0 && !snapshot.isDragging && (<div className="absolute left-0 top-0 bottom-0 w-1 bg-[#0d93f2] rounded-l-xl"></div>)}
                           <div className="flex items-start gap-5">
-                              <div {...provided.dragHandleProps} className="text-[#90b2cb]/30 group-hover:text-[#90b2cb] flex items-center justify-center shrink-0 w-6 pt-1.5 cursor-grab active:cursor-grabbing hover:bg-white/5 rounded">
-                                <GripVertical className="w-6 h-6" />
+                            <div {...provided.dragHandleProps} className="text-[#90b2cb]/30 group-hover:text-[#90b2cb] flex items-center justify-center shrink-0 w-6 pt-1.5 cursor-grab active:cursor-grabbing hover:bg-white/5 rounded">
+                              <GripVertical className="w-6 h-6" />
+                            </div>
+                            <div className="flex flex-1 flex-col justify-center">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className={`font-mono text-base ${index === 0 ? 'text-[#0d93f2] font-bold' : 'text-[#90b2cb]'}`}>{String(index + 1).padStart(2, '0')}</span>
+                                <p className={`text-xl leading-normal ${index === 0 ? 'text-white font-bold' : 'text-white/90 group-hover:text-white font-medium'}`}>{item.title}</p>
                               </div>
-                              <div className="flex flex-1 flex-col justify-center">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <span className={`font-mono text-base ${index === 0 ? 'text-[#0d93f2] font-bold' : 'text-[#90b2cb]'}`}>{String(index + 1).padStart(2, '0')}</span>
-                                  <p className={`text-xl leading-normal ${index === 0 ? 'text-white font-bold' : 'text-white/90 group-hover:text-white font-medium'}`}>{item.title}</p>
-                                </div>
-                                <div className="flex gap-2 flex-wrap">
-                                  {item.tags.map((tag, i) => (
-                                    <span key={i} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border ${tag.color === 'indigo' ? 'bg-[#1e1b4b] text-indigo-300 border-indigo-500/30' : tag.color === 'red' ? 'bg-[#450a0a] text-red-300 border-red-500/30' : 'bg-[#223949] text-[#90b2cb] border-white/10'}`}>{tag.label}</span>
-                                  ))}
-                                </div>
+                              <div className="flex gap-2 flex-wrap">
+                                {item.tags.map((tag, i) => (
+                                  <span key={i} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border ${tag.color === 'indigo' ? 'bg-[#1e1b4b] text-indigo-300 border-indigo-500/30' : tag.color === 'red' ? 'bg-[#450a0a] text-red-300 border-red-500/30' : 'bg-[#223949] text-[#90b2cb] border-white/10'}`}>{tag.label}</span>
+                                ))}
                               </div>
+                            </div>
                           </div>
                           <div className="shrink-0 flex flex-col items-end justify-between gap-2">
-                              <span className="font-mono text-sm text-[#90b2cb]">{item.duration}</span>
-                              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="text-[#90b2cb] hover:text-white p-1.5 rounded hover:bg-white/10"><Lock className="w-4 h-4" /></button>
-                                <button onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 p-1.5 rounded hover:bg-white/10"><Trash2 className="w-4 h-4" /></button>
-                              </div>
+                            <span className="font-mono text-sm text-[#90b2cb]">{item.duration}</span>
+                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button className="text-[#90b2cb] hover:text-white p-1.5 rounded hover:bg-white/10"><Lock className="w-4 h-4" /></button>
+                              <button onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 p-1.5 rounded hover:bg-white/10"><Trash2 className="w-4 h-4" /></button>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -186,10 +192,10 @@ export default function SetlistCanvas({ items, setItems }) {
       </div>
 
       {/* RENDER MODAL OUTSIDE THE MAIN FLOW */}
-      <PromptModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSubmit={handleFinalSubmit} 
+      <PromptModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleFinalSubmit}
       />
     </>
   );

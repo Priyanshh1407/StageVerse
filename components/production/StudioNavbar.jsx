@@ -117,7 +117,7 @@ export default function StudioNavbar({ projectId }) {
     { label: 'Patch Sheet', href: `/patch-sheet/${currentId}`, isActive: (path) => path.includes('/patch-sheet') },
     { label: 'Patch Studio', href: `/patch-studio/${currentId}`, isActive: (path) => path.includes('/patch-studio') },
     { label: 'Logistics', href: `/logistics/${currentId}`, isActive: (path) => path.includes('/logistics') },
-    { label: 'Live Show', href: `/live/${currentId}`, isActive: (path) => path.includes('/live') },
+    { label: 'Live Show', href: `/live`, isActive: (path) => path.includes('/live') },
   ];
 
   // Message Artist Logic
