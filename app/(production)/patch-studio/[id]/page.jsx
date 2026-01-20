@@ -128,6 +128,20 @@ export default function PatchStudioPage(props) {
       const maxId = fixtures.length > 0 ? Math.max(...fixtures.map(f => f.fixtureId || 0)) : 100;
 
       const prepareToAdd = newFixtures.map((f, i) => {
+         // 1. If AI/Manual provided specific address, use it.
+         if (f.address && f.universe) {
+            return {
+               ...f,
+               fixtureId: maxId + i + 1,
+               id: maxId + i + 1,
+               status: 'ok',
+               // Ensure these are numbers
+               address: parseInt(f.address),
+               universe: parseInt(f.universe)
+            };
+         }
+
+         // 2. Otherwise Auto-Patch logic
          const startAddr = nextAddress;
 
          // Increment for next fixture in loop
@@ -146,6 +160,21 @@ export default function PatchStudioPage(props) {
 
       setFixtures(prev => [...prev, ...prepareToAdd]);
       toast.success(`Added ${newFixtures.length} fixtures starting at Address ${prepareToAdd[0].address}`);
+   };
+
+   const handleReplaceFixtures = (newFixtures) => {
+      // Find max ID for safety if needed, but if replaced, maybe reset IDs?
+      // Actually if AI returns replacements, we should trust it, or map them to ensure IDs exist.
+      const mapped = newFixtures.map((f, i) => ({
+         ...f,
+         fixtureId: f.fixtureId || (1000 + i), // ensuring IDs
+         id: f.id || (1000 + i),
+         status: 'ok',
+         address: parseInt(f.address),
+         universe: parseInt(f.universe)
+      }));
+      setFixtures(mapped);
+      toast.success("Patch Repatched by AI");
    };
 
    // --- CONTEXT ACTIONS ---
@@ -266,7 +295,8 @@ export default function PatchStudioPage(props) {
          <div className="flex-1 flex overflow-hidden">
 
             {/* LEFT SIDEBAR (Controls) */}
-            <StudioSidebar onAddFixtures={handleAddFixtures} />
+            {/* LEFT SIDEBAR (Controls) */}
+            <StudioSidebar onAddFixtures={handleAddFixtures} onReplaceFixtures={handleReplaceFixtures} fixtures={fixtures} />
 
             {/* RIGHT CONTENT AREA */}
             <div className="flex-1 bg-[#0F0F10] flex flex-col h-full overflow-hidden relative">

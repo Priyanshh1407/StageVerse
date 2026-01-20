@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { PlusCircle, Wand2, Info, ChevronDown, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function StudioSidebar({ onAddFixtures }) {
+export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtures = [] }) {
+   // ...
    const [profiles, setProfiles] = useState([]);
    const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
@@ -13,6 +14,68 @@ export default function StudioSidebar({ onAddFixtures }) {
    const [quantity, setQuantity] = useState(8);
    const [role, setRole] = useState("Intro Sequence");
    const [logic, setLogic] = useState("");
+   const [isGenerating, setIsGenerating] = useState(false);
+
+   const handleAiPatch = async () => {
+      if (!logic.trim()) {
+         toast.error("Please enter a prompt (e.g. 'Patch 8 beams')");
+         return;
+      }
+
+      setIsGenerating(true);
+      try {
+         // Create lightweight context
+         const currentPatch = fixtures.map(f => ({
+            u: f.universe,
+            a: f.address,
+            c: f.channels,
+            type: f.profile,
+            mode: f.mode
+         }));
+
+         const res = await fetch('/api/patch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+               prompt: logic,
+               currentPatch: currentPatch
+            })
+         });
+         const json = await res.json();
+
+         if (json.error) {
+            toast.error("AI Error: " + json.error);
+         } else if (json.patch && Array.isArray(json.patch)) {
+            const newFixtures = json.patch.map(item => ({
+               profile: item.type || 'Generic',
+               mode: 'Standard', // Default
+               channels: 16,     // Default assumption
+               quantity: 1,
+               patch: 'Auto',
+               address: item.address,   // Critical: Passing AI Address
+               universe: item.universe, // Critical: Passing AI Universe
+               cue: 'Ready',
+               cueColor: 'blue',
+               status: 'ok'
+            }));
+
+            if (json.action === 'replace' && onReplaceFixtures) {
+               onReplaceFixtures(newFixtures);
+            } else if (onAddFixtures) {
+               onAddFixtures(newFixtures);
+            }
+
+            toast.success(json.action === 'replace' ? "Patch Repatched!" : `AI patched ${newFixtures.length} fixtures!`);
+            setLogic(''); // Clear prompt
+         }
+
+      } catch (e) {
+         console.error(e);
+         toast.error("Failed to generate patch");
+      } finally {
+         setIsGenerating(false);
+      }
+   };
 
    // Modal State
    const [showModal, setShowModal] = useState(false);
@@ -193,9 +256,14 @@ export default function StudioSidebar({ onAddFixtures }) {
                <div className="flex flex-col gap-1.5 flex-1 min-h-[160px]">
                   <div className="flex justify-between items-center">
                      <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Logic</label>
-                     <span className="text-[10px] text-blue-500 flex items-center gap-1 bg-blue-500/10 px-1.5 rounded border border-blue-500/20">
-                        <Wand2 className="w-3 h-3" /> AI Assist
-                     </span>
+                     <button
+                        onClick={handleAiPatch}
+                        disabled={isGenerating}
+                        className="text-[10px] text-blue-500 hover:text-white hover:bg-blue-500 transition-colors flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                        {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                        {isGenerating ? 'Thinking...' : 'AI Assist'}
+                     </button>
                   </div>
                   <textarea
                      value={logic}

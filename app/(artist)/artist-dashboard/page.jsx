@@ -220,7 +220,15 @@ export default function ArtistDashboard() {
               <LiveShowCard data={data.currentShow} />
             </div>
             <div className="lg:col-span-1 h-full">
-              <DaySheetCard onClick={() => window.location.href = '/day-sheet'} />
+              <DaySheetCard
+                onClick={() => window.location.href = '/day-sheet'}
+                data={[
+                  { time: "14:00", event: "Load In", status: "past" },
+                  { time: "16:00", event: "Soundcheck", status: "past" },
+                  { time: data.currentShow?.doorsOpen || "19:00", event: "Doors Open", status: "active" },
+                  { time: data.currentShow?.showStart || "20:00", event: "Showtime", status: "future" },
+                ]}
+              />
             </div>
           </div>
 

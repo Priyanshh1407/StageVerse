@@ -5,39 +5,76 @@ import Link from 'next/link';
 import { usePathname, useRouter, useParams } from 'next/navigation';
 import {
   Search, Bell, User, LogOut, CreditCard, Settings,
-  HelpCircle, ChevronDown, Menu, X, MessageSquare
+  HelpCircle, ChevronDown, Menu, X, MessageSquare, Folder, Check
 } from 'lucide-react';
+import { toast } from 'sonner';
 import GlobalSearchModal from './GlobalSearchModal';
 
 export default function StudioNavbar({ projectId }) {
   const pathname = usePathname();
   const router = useRouter();
+  const params = useParams();
 
-  // State for Dropdowns
+  // --- STATE ---
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
-  // Fetch Notifications
+  // Projects State
+  const [projects, setProjects] = useState([]);
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const projectDropdownRef = useRef(null);
+
+  // --- 1. INITIALIZE CONTEXT ID ---
+  // Priority: Prop > URL Param > LocalStorage(optional) > NULL
+  const contextId = projectId || params?.id;
+
+  // We utilize a lazy initializer or effect to set the initial ID (to valid null handling)
+  const [currentId, setCurrentId] = useState(contextId || null);
+
+  // --- 2. FETCH DATA (Projects & Notifications) ---
   useEffect(() => {
-    async function loadNotifications() {
+    async function loadData() {
+      try {
+        // Fetch Projects (re-using dashboard endpoint for simplicity as planned)
+        const resDash = await fetch('/api/production/dashboard');
+        if (resDash.ok) {
+          const json = await resDash.json();
+          if (json.success && json.data.shows) {
+            setProjects(json.data.shows);
+          }
+        }
+
+        // Fetch Notifications
+        const resNotif = await fetch('/api/notifications');
+        const jsonNotif = await resNotif.json();
+        if (jsonNotif.success) setNotifications(jsonNotif.data);
+
+      } catch (e) {
+        console.error("Failed to load navbar data", e);
+      }
+    }
+    loadData();
+
+    // Poll Notifications
+    const interval = setInterval(async () => {
       try {
         const res = await fetch('/api/notifications');
         const json = await res.json();
         if (json.success) setNotifications(json.data);
-      } catch (e) {
-        console.error("Failed to load notifications", e);
-      }
-    }
-    loadNotifications();
-    // Poll every 30 seconds
-    const interval = setInterval(loadNotifications, 30000);
+      } catch (e) { }
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Keyboard Shortcut for Search (Ctrl+K or Cmd+K)
+  // Update State if URL changes
+  useEffect(() => {
+    if (contextId) setCurrentId(contextId);
+  }, [contextId]);
+
+  // Keyboard and Click Outside Handlers
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -46,79 +83,93 @@ export default function StudioNavbar({ projectId }) {
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+      if (projectDropdownRef.current && !projectDropdownRef.current.contains(event.target)) {
+        setIsProjectDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      // Close Profile Dropdown
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsProfileOpen(false);
-      }
-      // Close Mobile Menu if clicking outside nav
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
-        // Optional: Check if the click was on the hamburger button itself to avoid conflict
-        // For simplicity, we usually let the button toggle handle itself or use a wrapper.
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Handle Logout
+  // --- ACTIONS ---
   const handleLogout = async () => {
     try {
-      // 1. Ask Server to delete the Cookie
       await fetch('/api/auth/logout', { method: 'POST' });
-
-      // 2. Clear Client-side User Info (for UI)
       localStorage.removeItem('user');
-
-      // 3. Force Redirect to Login
       router.push('/');
-      router.refresh(); // Important: Refreshes Server Components to see you are gone
-    } catch (err) {
-      console.error('Logout failed', err);
+      router.refresh();
+    } catch (err) { console.error(err); }
+  };
+
+  const handleProjectSelect = (proj) => {
+    setCurrentId(proj.eventId || proj.id);
+    setIsProjectDropdownOpen(false);
+
+    // IMPORTANT: If we are on a project-specific page, redirect to the new project
+    // If we are on the dashboard, just stay there but update context (maybe useful for 'Patch Sheet' click next)
+    if (pathname.includes('/patch-sheet') || pathname.includes('/patch-studio') || pathname.includes('/logistics')) {
+      // Replace the ID in the URL. Assuming structure /page/[id]
+      // We'll just construct the new URL based on the current root
+      const root = pathname.split('/')[1]; // e.g., 'patch-sheet'
+      router.push(`/${root}/${proj.eventId || proj.id}`);
+      toast.success(`Switched to ${proj.title}`);
+    } else {
+      toast.success(`Selected ${proj.title}`);
+      // If on dashboard, maybe redirect to patch sheet? User didn't ask for that.
+      // But clicking "Patch Sheet" next will now work.
     }
   };
 
-  // Get dynamic ID from URL parameters
-  const params = useParams();
-
-  // Logic: 
-  // 1. Prefer explicit prop (projectId)
-  // 2. Then try URL params (id)
-  // 3. Then try localStorage (last visited project)
-  // 4. Finally fallback to '101'
-
-  const contextId = projectId || params?.id;
-  const [currentId, setCurrentId] = useState(contextId || '101');
-
-  useEffect(() => {
-    // If we have a valid context ID, save it
-    if (contextId) {
-      setCurrentId(contextId);
-      localStorage.setItem('sv_last_project', contextId);
-    } else {
-      // If no context (e.g. Dashboard), try to restore last used
-      const lastId = localStorage.getItem('sv_last_project');
-      if (lastId) {
-        setCurrentId(lastId);
-      }
+  // --- NAVIGATION ITEMS ---
+  // Using a function to handle the click logic
+  const handleProtectedNav = (e, pathRoot) => {
+    if (!currentId) {
+      e.preventDefault();
+      toast.error("Please select a project first", {
+        description: "Use the project dropdown in the top left."
+      });
+      setIsProjectDropdownOpen(true);
     }
-  }, [contextId]);
+  };
 
   const navItems = [
     { label: 'Dashboard', href: '/prod-dashboard', isActive: (path) => path.includes('/prod-dashboard') },
-    { label: 'Patch Sheet', href: `/patch-sheet/${currentId}`, isActive: (path) => path.includes('/patch-sheet') },
-    { label: 'Patch Studio', href: `/patch-studio/${currentId}`, isActive: (path) => path.includes('/patch-studio') },
-    { label: 'Logistics', href: `/logistics/${currentId}`, isActive: (path) => path.includes('/logistics') },
+    {
+      label: 'Patch Sheet',
+      href: currentId ? `/patch-sheet/${currentId}` : '#',
+      isActive: (path) => path.includes('/patch-sheet'),
+      onClick: (e) => handleProtectedNav(e, 'patch-sheet')
+    },
+    {
+      label: 'Patch Studio',
+      href: currentId ? `/patch-studio/${currentId}` : '#',
+      isActive: (path) => path.includes('/patch-studio'),
+      onClick: (e) => handleProtectedNav(e, 'patch-studio')
+    },
+    {
+      label: 'Logistics',
+      href: currentId ? `/logistics/${currentId}` : '#',
+      isActive: (path) => path.includes('/logistics'),
+      onClick: (e) => handleProtectedNav(e, 'logistics')
+    },
     { label: 'Live Show', href: `/live`, isActive: (path) => path.includes('/live') },
   ];
+
+  // Current Project Display
+  const currentProject = projects.find(p => (p.eventId || p.id) == currentId); // eslint-disable-line eqeqeq
+  const projectTitle = currentProject ? currentProject.title : "Select Project";
 
   // Message Artist Logic
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
@@ -141,37 +192,28 @@ export default function StudioNavbar({ projectId }) {
           setMsgContent('');
           setIsMsgModalOpen(false);
         }, 1000);
-      } else {
-        setMsgStatus('error');
-      }
-    } catch (e) {
-      setMsgStatus('error');
-    }
+      } else { setMsgStatus('error'); }
+    } catch (e) { setMsgStatus('error'); }
   };
 
-  // Mark Notification/Task as Done
   const handleMarkDone = async (e, id) => {
-    e.stopPropagation(); // Prevent dropdown close if needed
+    e.stopPropagation();
     try {
       const res = await fetch('/api/production/logistics', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: 'Done' })
       });
-      if (res.ok) {
-        setNotifications(prev => prev.filter(n => n._id !== id));
-      }
-    } catch (error) {
-      console.error("Failed to mark done", error);
-    }
+      if (res.ok) setNotifications(prev => prev.filter(n => n._id !== id));
+    } catch (error) { console.error(error); }
   };
 
   return (
     <>
       <nav className="h-[64px] bg-[#0d131a] border-b border-[#2c3e50] flex items-center justify-between px-4 md:px-6 shrink-0 relative z-50 shadow-lg select-none" ref={mobileMenuRef}>
 
-        {/* LEFT SECTION: Hamburger + Logo + Desktop Nav */}
-        <div className="flex items-center gap-4 md:gap-8 h-full">
+        {/* LEFT SECTION: Hamburger + Logo + PROJECT DROPDOWN + Desktop Nav */}
+        <div className="flex items-center gap-4 md:gap-6 h-full">
 
           {/* Mobile Menu Toggle */}
           <button
@@ -186,17 +228,62 @@ export default function StudioNavbar({ projectId }) {
             <div className="w-8 h-8 rounded bg-gradient-to-br from-[#00d4ff] to-blue-600 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.3)]">
               <span className="font-bold text-black text-xl">#</span>
             </div>
-            <span className="text-white font-bold text-lg tracking-tight hidden md:block">Production Suite</span>
+            {/* <span className="text-white font-bold text-lg tracking-tight hidden md:block">Production Suite</span> */}
           </Link>
 
-          {/* Desktop Navigation Links (Hidden on Mobile) */}
-          <div className="hidden lg:flex items-center gap-1 h-full ml-4">
+          {/* PROJECT SELECTOR (NEW) */}
+          <div className="relative hidden md:block" ref={projectDropdownRef}>
+            <button
+              onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#2c3e50] bg-[#0b1219] hover:bg-[#182234] hover:border-gray-500 transition-all group"
+            >
+              <Folder className={`w-4 h-4 ${currentId ? 'text-[#00d4ff]' : 'text-gray-500'}`} />
+              <span className={`text-sm font-bold max-w-[140px] truncate ${currentId ? 'text-white' : 'text-gray-400'}`}>
+                {projectTitle}
+              </span>
+              <ChevronDown className={`w-3 h-3 text-gray-500 transition-transform ${isProjectDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isProjectDropdownOpen && (
+              <div className="absolute left-0 top-full mt-2 w-64 bg-[#18181B] border border-[#2c3e50] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100 z-50">
+                <div className="p-2 border-b border-[#2c3e50] bg-[#1d2b36]">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2">Switch Project</p>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto p-1">
+                  {projects.length > 0 ? projects.map(p => (
+                    <button
+                      key={p.id || p.eventId}
+                      onClick={() => handleProjectSelect(p)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-1
+                                ${((p.id || p.eventId) == currentId)
+                          ? 'bg-[#00d4ff]/10 text-[#00d4ff]'
+                          : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                    >
+                      <span className="truncate">{p.title}</span>
+                      {((p.id || p.eventId) == currentId) && <Check className="w-3 h-3 flex-shrink-0" />}
+                    </button>
+                  )) : (
+                    <div className="p-4 text-center text-xs text-gray-500">No projects found</div>
+                  )}
+                  <Link href="/manage/create-event" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#90b2cb] hover:text-white hover:bg-white/5 transition-colors border-t border-[#2c3e50] mt-1">
+                    <span className="text-lg leading-none">+</span> Create New
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="h-6 w-px bg-[#2c3e50] hidden lg:block mx-2"></div>
+
+          {/* Desktop Navigation Links */}
+          <div className="hidden lg:flex items-center gap-1 h-full">
             {navItems.map((item) => {
               const active = item.isActive(pathname);
               return (
                 <Link
                   key={item.label}
                   href={item.href}
+                  onClick={item.onClick}
                   className={`h-full flex items-center px-4 text-[11px] font-bold uppercase tracking-wider transition-colors border-b-[3px] 
                   ${active
                       ? 'text-white bg-white/5 border-[#00d4ff] shadow-[inset_0_-2px_6px_rgba(0,212,255,0.15)]'
@@ -320,6 +407,22 @@ export default function StudioNavbar({ projectId }) {
         {isMobileMenuOpen && (
           <div className="absolute top-[64px] left-0 w-full bg-[#0d131a] border-b border-[#2c3e50] shadow-2xl lg:hidden flex flex-col animate-in slide-in-from-top-2 duration-200">
 
+            {/* Mobile Project Selector */}
+            <div className="p-4 pb-2 border-b border-[#2c3e50]">
+              <div className="text-xs text-gray-500 uppercase font-bold mb-2">Current Project</div>
+              <div className="bg-[#0b1219] border border-[#2c3e50] rounded-lg p-3 text-white font-bold text-sm flex justify-between items-center" onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}>
+                {projectTitle}
+              </div>
+              {/* Mobile Project List simplified */}
+              {isProjectDropdownOpen && (
+                <div className="flex flex-col gap-1 mt-2">
+                  {projects.map(p => (
+                    <button key={p.eventId} onClick={() => { handleProjectSelect(p); setIsMobileMenuOpen(false); }} className="text-left text-xs text-gray-400 py-1">{p.title}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Mobile Search */}
             <div className="p-4 pb-2">
               <div
@@ -339,7 +442,10 @@ export default function StudioNavbar({ projectId }) {
                   <Link
                     key={item.label}
                     href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)} // Close menu on click
+                    onClick={(e) => {
+                      if (item.onClick) item.onClick(e);
+                      if (!e.defaultPrevented) setIsMobileMenuOpen(false);
+                    }}
                     className={`flex items-center px-4 py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors
                     ${active
                         ? 'text-white bg-[#00d4ff]/10 text-[#00d4ff]'
@@ -355,35 +461,35 @@ export default function StudioNavbar({ projectId }) {
         )}
 
         <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-      </nav>
 
-      {/* Message Modal */}
-      {isMsgModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsMsgModalOpen(false)}>
-          <div className="bg-[#18181B] border border-[#2c3e50] rounded-xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-[#00d4ff]" />
-              Message to Artist
-            </h3>
-            <textarea
-              value={msgContent}
-              onChange={(e) => setMsgContent(e.target.value)}
-              placeholder="Enter urgent message for the artist..."
-              className="w-full h-32 bg-[#0d131a] border border-[#2c3e50] rounded-lg p-3 text-white focus:border-[#00d4ff] focus:outline-none resize-none mb-4"
-            />
-            <div className="flex justify-end gap-3">
-              <button onClick={() => setIsMsgModalOpen(false)} className="px-4 py-2 text-gray-400 hover:text-white text-sm font-bold">Cancel</button>
-              <button
-                onClick={handleSendMessage}
-                disabled={msgStatus === 'sending' || !msgContent.trim()}
-                className="px-6 py-2 bg-[#00d4ff] hover:bg-[#00d4ff]/80 disabled:opacity-50 text-black font-bold rounded-lg text-sm transition-colors"
-              >
-                {msgStatus === 'sending' ? 'Sending...' : msgStatus === 'success' ? 'Sent!' : 'Send Message'}
-              </button>
+        {/* Msg Modal... (same as before) */}
+        {isMsgModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsMsgModalOpen(false)}>
+            <div className="bg-[#18181B] border border-[#2c3e50] rounded-xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-[#00d4ff]" />
+                Message to Artist
+              </h3>
+              <textarea
+                value={msgContent}
+                onChange={(e) => setMsgContent(e.target.value)}
+                placeholder="Enter urgent message for the artist..."
+                className="w-full h-32 bg-[#0d131a] border border-[#2c3e50] rounded-lg p-3 text-white focus:border-[#00d4ff] focus:outline-none resize-none mb-4"
+              />
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setIsMsgModalOpen(false)} className="px-4 py-2 text-gray-400 hover:text-white text-sm font-bold">Cancel</button>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={msgStatus === 'sending' || !msgContent.trim()}
+                  className="px-6 py-2 bg-[#00d4ff] hover:bg-[#00d4ff]/80 disabled:opacity-50 text-black font-bold rounded-lg text-sm transition-colors"
+                >
+                  {msgStatus === 'sending' ? 'Sending...' : msgStatus === 'success' ? 'Sent!' : 'Send Message'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </nav>
     </>
   );
 }

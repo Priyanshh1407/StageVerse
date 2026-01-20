@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings2, ChevronDown, Wand2, Minus, Plus, PlusCircle, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function PatchingSidebar({ showName, onAddFixtures }) {
+export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixtures, fixtures = [] }) {
   const [profiles, setProfiles] = useState([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
@@ -14,8 +14,111 @@ export default function PatchingSidebar({ showName, onAddFixtures }) {
   const [universe, setUniverse] = useState(1);
   const [address, setAddress] = useState(1);
   const [logic, setLogic] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  // Modal State
+  // ... (Modal State)
+
+  // ... (fetchProfiles)
+
+  // Implemented AI Patch
+  const handleAiPatch = async () => {
+    if (!logic.trim()) {
+      toast.error("Please enter a prompt (e.g. 'Patch 8 beams')");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const currentPatch = fixtures.map(f => ({
+        u: f.universe,
+        a: f.address,
+        c: f.channels,
+        type: f.profile, // Preserve Name
+        mode: f.mode
+      }));
+
+      const res = await fetch('/api/patch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: logic, currentPatch })
+      });
+      const json = await res.json();
+
+      if (json.error) {
+        toast.error("AI Error: " + json.error);
+      } else if (json.patch && Array.isArray(json.patch)) {
+        const newFixtures = json.patch.map(item => ({
+          profile: item.type || 'Generic',
+          mode: 'Standard',
+          channels: 16,
+          quantity: 1,
+          patch: 'Auto',
+          address: item.address,
+          universe: item.universe,
+          cue: 'Ready',
+          cueColor: 'blue',
+          status: 'ok'
+        }));
+
+        if (json.action === 'replace' && onReplaceFixtures) {
+          onReplaceFixtures(newFixtures);
+        } else if (onAddFixtures) {
+          onAddFixtures(newFixtures);
+        }
+
+        toast.success(json.action === 'replace' ? "Patch Repatched!" : `AI patched ${newFixtures.length} fixtures!`);
+        setLogic(''); // Clear prompt
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to generate patch");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCalculate = () => {
+    // 1. AI Interdiction
+    if (logic && logic.trim().length > 0) {
+      handleAiPatch();
+      return;
+    }
+
+    if (!onAddFixtures) return;
+    // ... (rest of manual logic)
+    if (!selectedProfileId) {
+      toast.error("Please select a fixture profile");
+      return;
+    }
+    const profile = profiles.find(p => p._id === selectedProfileId);
+    if (!profile) return;
+    const modeData = profile.modes[0] || { name: 'Standard', channels: 16 };
+    const channels = modeData.channels;
+    const newFixtures = [];
+    let currentAddress = parseInt(address);
+    let currentUniverse = parseInt(universe);
+    for (let i = 0; i < quantity; i++) {
+      if (currentAddress + channels > 512) {
+        currentUniverse++;
+        currentAddress = 1;
+      }
+      newFixtures.push({
+        fixtureId: Date.now() + i,
+        profile: `${profile.manufacturer} ${profile.model}`,
+        mode: `${modeData.name} (${channels}ch)`,
+        channels: channels,
+        universe: currentUniverse,
+        address: currentAddress,
+        cue: "New Group",
+        cueColor: "blue",
+        status: "ok"
+      });
+      currentAddress += channels;
+    }
+    onAddFixtures(newFixtures);
+    setAddress(currentAddress);
+    setUniverse(currentUniverse);
+  };
   const [showModal, setShowModal] = useState(false);
   const [newManufacturer, setNewManufacturer] = useState("");
   const [newModel, setNewModel] = useState("");
@@ -80,54 +183,6 @@ export default function PatchingSidebar({ showName, onAddFixtures }) {
     } finally {
       setIsCreating(false);
     }
-  };
-
-  const handleCalculate = () => {
-    if (!onAddFixtures) return;
-
-    if (!selectedProfileId) {
-      toast.error("Please select a fixture profile");
-      return;
-    }
-
-    const profile = profiles.find(p => p._id === selectedProfileId);
-    if (!profile) return;
-
-    // Use the first mode for now (Simplification)
-    const modeData = profile.modes[0] || { name: 'Standard', channels: 16 };
-    const channels = modeData.channels;
-
-    const newFixtures = [];
-    let currentAddress = parseInt(address);
-    let currentUniverse = parseInt(universe);
-
-    for (let i = 0; i < quantity; i++) {
-      // Simple universe overflow logic
-      if (currentAddress + channels > 512) {
-        currentUniverse++;
-        currentAddress = 1;
-      }
-
-      newFixtures.push({
-        fixtureId: Date.now() + i, // Temp ID
-        profile: `${profile.manufacturer} ${profile.model}`,
-        mode: `${modeData.name} (${channels}ch)`,
-        channels: channels,
-        universe: currentUniverse,
-        address: currentAddress,
-        cue: "New Group",
-        cueColor: "blue",
-        status: "ok"
-      });
-
-      currentAddress += channels;
-    }
-
-    onAddFixtures(newFixtures);
-
-    // Auto-advance for next patch
-    setAddress(currentAddress);
-    setUniverse(currentUniverse);
   };
 
   return (
@@ -215,10 +270,11 @@ export default function PatchingSidebar({ showName, onAddFixtures }) {
       <div className="flex-none p-6 border-t border-[#2c3e50] bg-[#16202a] z-10 relative">
         <button
           onClick={handleCalculate}
-          className="w-full py-4 bg-gradient-to-r from-[#1e40af] to-[#1d4ed8] hover:from-[#2563eb] hover:to-[#3b82f6] text-white font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-blue-900/20 transition-all flex items-center justify-center gap-2 text-sm transform active:scale-[0.98] border border-blue-500/30"
+          disabled={isGenerating}
+          className="w-full py-4 bg-gradient-to-r from-[#1e40af] to-[#1d4ed8] hover:from-[#2563eb] hover:to-[#3b82f6] text-white font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-blue-900/20 transition-all flex items-center justify-center gap-2 text-sm transform active:scale-[0.98] border border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Wand2 className="w-5 h-5 fill-none" />
-          Calculate & Append
+          {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5 fill-none" />}
+          {isGenerating ? 'Thinking...' : 'Calculate & Append'}
         </button>
       </div>
 

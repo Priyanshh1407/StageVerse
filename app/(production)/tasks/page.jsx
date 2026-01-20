@@ -2,74 +2,92 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { 
-  CheckCircle2, Circle, Clock, Filter, Plus, Search, 
-  MoreHorizontal, Calendar, ArrowUpRight, X, Trash2, Pencil, Check, ArrowLeft
+import {
+  CheckCircle2, Circle, Clock, Filter, Plus, Search,
+  MoreHorizontal, Calendar, ArrowUpRight, X, Trash2, Pencil, Check, ArrowLeft, Loader2
 } from 'lucide-react';
 import StudioNavbar from '@/components/production/StudioNavbar';
 
-// --- INITIAL DATA ---
-const INITIAL_TASKS = [
-  {
-    id: 1,
-    title: 'Finalize Truck Pack Diagram',
-    show: 'Hamlet World Tour',
-    venue: 'Globe Theatre',
-    priority: 'High',
-    dueDate: 'Yesterday',
-    status: 'pending',
-    assignee: 'Alex M.'
-  },
-  {
-    id: 2,
-    title: 'Review Riser Plot Conflicts',
-    show: 'Neon Nights Tour',
-    venue: 'Mumbai Arena',
-    priority: 'Medium',
-    dueDate: 'Today',
-    status: 'pending',
-    assignee: 'Alex M.'
-  },
-];
+// --- INITIAL DATA (Removed, replaced by fetch) ---
 
 export default function GlobalTasksPage() {
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState(null); // If null, we are creating. If set, we are editing.
+  const [editingTask, setEditingTask] = useState(null);
+
+  // --- FETCH TASKS ---
+  const fetchTasks = async () => {
+    try {
+      const res = await fetch('/api/production/tasks');
+      const json = await res.json();
+      if (json.success) setTasks(json.data);
+    } catch (e) {
+      console.error("Failed to fetch tasks", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
   // --- ACTIONS ---
 
-  const handleSaveTask = (taskData) => {
-    if (editingTask) {
-      // Update existing
-      setTasks(tasks.map(t => t.id === editingTask.id ? { ...t, ...taskData } : t));
-    } else {
-      // Create new
-      const newTask = {
-        id: Date.now(), // Simple ID generator
-        status: 'pending',
-        assignee: 'Me', // Default
-        ...taskData
-      };
-      setTasks([newTask, ...tasks]);
-    }
-    closeModal();
+  const handleSaveTask = async (taskData) => {
+    try {
+      if (editingTask) {
+        // Update existing
+        const res = await fetch('/api/production/tasks', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingTask.id, ...taskData })
+        });
+        if (res.ok) fetchTasks(); // Refresh
+      } else {
+        // Create new
+        const res = await fetch('/api/production/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(taskData)
+        });
+        if (res.ok) fetchTasks();
+      }
+      closeModal();
+    } catch (e) { console.error(e); }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Are you sure you want to delete this task?')) {
-      setTasks(tasks.filter(t => t.id !== id));
+      try {
+        await fetch(`/api/production/tasks?id=${id}`, { method: 'DELETE' });
+        setTasks(tasks.filter(t => t.id !== id));
+      } catch (e) { console.error(e); }
     }
   };
 
-  const handleToggleComplete = (id) => {
-    setTasks(tasks.map(t => 
-      t.id === id ? { ...t, status: t.status === 'completed' ? 'pending' : 'completed' } : t
-    ));
+  const handleToggleComplete = async (id) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    // Optimistic Update
+    setTasks(tasks.map(t => t.id === id ? { ...t, status: t.status === 'completed' ? 'pending' : 'completed' } : t));
+
+    try {
+      await fetch('/api/production/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: task.status === 'completed' ? 'pending' : 'completed' })
+      });
+    } catch (e) {
+      console.error(e);
+      fetchTasks(); // Revert on error
+    }
   };
 
   const openCreateModal = () => {
@@ -100,7 +118,7 @@ export default function GlobalTasksPage() {
 
       <div className="flex flex-1 overflow-hidden">
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#0F0F10]">
-          
+
           {/* Header & Toolbar */}
           <div className="px-6 py-8 border-b border-[#27272A]">
             <div className='mb-2'>
@@ -117,7 +135,7 @@ export default function GlobalTasksPage() {
                 <h1 className="text-3xl font-bold text-white tracking-tight">Global Task Manager</h1>
                 <p className="text-gray-500 text-sm mt-1">Manage deliverables across all active productions.</p>
               </div>
-              <button 
+              <button
                 onClick={openCreateModal}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-blue-600/20"
               >
@@ -130,7 +148,7 @@ export default function GlobalTasksPage() {
             <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
               <div className="flex items-center gap-2 bg-[#18181B] p-1 rounded-lg border border-[#27272A]">
                 {['all', 'pending', 'completed'].map((f) => (
-                  <button 
+                  <button
                     key={f}
                     onClick={() => setFilter(f)}
                     className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all capitalize ${filter === f ? 'bg-[#27272A] text-white shadow-sm' : 'text-gray-500 hover:text-white'}`}
@@ -141,16 +159,16 @@ export default function GlobalTasksPage() {
               </div>
 
               <div className="flex items-center gap-3 w-full lg:w-auto">
-                 <div className="relative flex-1 lg:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <input 
-                      type="text" 
-                      placeholder="Search tasks or shows..." 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-[#18181B] border border-[#27272A] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-600 outline-none"
-                    />
-                 </div>
+                <div className="relative flex-1 lg:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search tasks or shows..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-[#18181B] border border-[#27272A] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-600 outline-none"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -158,20 +176,28 @@ export default function GlobalTasksPage() {
           {/* Task List */}
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
             <div className="max-w-5xl mx-auto space-y-3">
-              {filteredTasks.map(task => (
-                <TaskRow 
-                  key={task.id} 
-                  task={task} 
-                  onToggle={() => handleToggleComplete(task.id)}
-                  onDelete={() => handleDelete(task.id)}
-                  onEdit={() => openEditModal(task)}
-                />
-              ))}
-              
-              {filteredTasks.length === 0 && (
-                <div className="text-center py-20 text-gray-600">
-                  <p>No tasks found.</p>
+              {loading ? (
+                <div className="flex justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                 </div>
+              ) : (
+                <>
+                  {filteredTasks.map(task => (
+                    <TaskRow
+                      key={task.id}
+                      task={task}
+                      onToggle={() => handleToggleComplete(task.id)}
+                      onDelete={() => handleDelete(task.id)}
+                      onEdit={() => openEditModal(task)}
+                    />
+                  ))}
+
+                  {filteredTasks.length === 0 && (
+                    <div className="text-center py-20 text-gray-600">
+                      <p>No tasks found.</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -181,10 +207,10 @@ export default function GlobalTasksPage() {
 
       {/* --- CREATE / EDIT MODAL --- */}
       {isModalOpen && (
-        <TaskModal 
-          task={editingTask} 
-          onClose={closeModal} 
-          onSave={handleSaveTask} 
+        <TaskModal
+          task={editingTask}
+          onClose={closeModal}
+          onSave={handleSaveTask}
         />
       )}
 
@@ -217,9 +243,9 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
 
   return (
     <div className="group flex items-center gap-4 bg-[#18181B] border border-[#27272A] p-4 rounded-xl hover:border-blue-500/30 transition-all shadow-sm relative">
-      
+
       {/* Checkbox */}
-      <button 
+      <button
         onClick={onToggle}
         className={`shrink-0 transition-colors ${task.status === 'completed' ? 'text-green-500' : 'text-gray-600 hover:text-blue-500'}`}
       >
@@ -249,10 +275,10 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
         <div className="text-xs font-medium text-right text-gray-400 flex items-center gap-1">
           <Calendar className="w-3 h-3" /> {task.dueDate}
         </div>
-        
+
         {/* Action Menu Container */}
         <div className="relative" ref={menuRef}>
-          <button 
+          <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="p-2 rounded-lg hover:bg-[#27272A] text-gray-500 hover:text-white transition-colors"
           >
@@ -263,13 +289,13 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
           {menuOpen && (
             <div className="absolute right-0 top-10 w-48 bg-[#18181B] border border-[#27272A] rounded-lg shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
               <div className="flex flex-col p-1">
-                <button 
+                <button
                   onClick={() => { onEdit(); setMenuOpen(false); }}
                   className="flex items-center gap-2 px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-[#27272A] rounded-md text-left"
                 >
                   <Pencil className="w-3.5 h-3.5" /> Edit Task
                 </button>
-                <button 
+                <button
                   onClick={() => { onToggle(); setMenuOpen(false); }}
                   className="flex items-center gap-2 px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-[#27272A] rounded-md text-left"
                 >
@@ -280,7 +306,7 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
                   )}
                 </button>
                 <div className="h-px bg-[#27272A] my-1"></div>
-                <button 
+                <button
                   onClick={() => { onDelete(); setMenuOpen(false); }}
                   className="flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-md text-left"
                 >
@@ -315,7 +341,7 @@ function TaskModal({ task, onClose, onSave }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-[#18181B] border border-[#27272A] w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
+
         <div className="flex justify-between items-center p-5 border-b border-[#27272A]">
           <h3 className="text-white font-bold text-lg">{task ? 'Edit Task' : 'Create New Task'}</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
@@ -324,23 +350,23 @@ function TaskModal({ task, onClose, onSave }) {
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Task Title</label>
-            <input 
+            <input
               required
-              type="text" 
+              type="text"
               className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
               placeholder="e.g. Update Patch Sheet"
               value={formData.title}
-              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Show / Project</label>
-              <select 
+              <select
                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
                 value={formData.show}
-                onChange={(e) => setFormData({...formData, show: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, show: e.target.value })}
               >
                 <option>General</option>
                 <option>Hamlet World Tour</option>
@@ -350,12 +376,12 @@ function TaskModal({ task, onClose, onSave }) {
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Venue</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
                 placeholder="Optional"
                 value={formData.venue}
-                onChange={(e) => setFormData({...formData, venue: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
               />
             </div>
           </div>
@@ -363,10 +389,10 @@ function TaskModal({ task, onClose, onSave }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Priority</label>
-              <select 
+              <select
                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
                 value={formData.priority}
-                onChange={(e) => setFormData({...formData, priority: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
               >
                 <option>Low</option>
                 <option>Medium</option>
@@ -375,25 +401,25 @@ function TaskModal({ task, onClose, onSave }) {
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Due Date</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
                 placeholder="e.g. Tomorrow"
                 value={formData.dueDate}
-                onChange={(e) => setFormData({...formData, dueDate: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
               />
             </div>
           </div>
 
           <div className="mt-4 pt-4 border-t border-[#27272A] flex justify-end gap-3">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onClose}
               className="px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white hover:bg-[#27272A] transition-colors"
             >
               Cancel
             </button>
-            <button 
+            <button
               type="submit"
               className="px-6 py-2 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all"
             >

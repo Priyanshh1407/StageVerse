@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Sparkles, Loader2 } from 'lucide-react';
 import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import BuilderHeader from '@/components/artist/setlist/BuilderHeader';
 import SongBank from '@/components/artist/setlist/SongBank';
@@ -13,11 +14,18 @@ import { toast } from 'sonner';
 
 // Initial Mock Data
 const INITIAL_BANK = [
-  { id: 1, title: "Midnight City", duration: "04:03", bpm: "128 BPM", tag: "High Energy", tagColor: "orange" },
-  { id: 2, title: "Slow Burn", duration: "03:45", bpm: "85 BPM", tag: "Sad/Chill", tagColor: "indigo" },
-  { id: 3, title: "Acoustic Dreams", duration: "02:50", bpm: "Key: G", tag: "Acoustic", tagColor: "amber" },
-  { id: 4, title: "Electric Feel", duration: "03:30", bpm: "105 BPM", tag: "Indie Pop", tagColor: "teal" },
-  { id: 5, title: "Crowd Pleaser (Cover)", duration: "04:15", bpm: "Key: Am", tag: "Anthem", tagColor: "purple" },
+  { id: 1, title: "Mr. Brightside", duration: "03:42", bpm: "148 BPM", tag: "High Energy", tagColor: "orange" },
+  { id: 2, title: "Someone Like You", duration: "04:45", bpm: "67 BPM", tag: "Sad/Chill", tagColor: "indigo" },
+  { id: 3, title: "Uptown Funk", duration: "04:30", bpm: "115 BPM", tag: "Funky", tagColor: "purple" },
+  { id: 4, title: "Fix You", duration: "04:55", bpm: "76 BPM", tag: "Emotional", tagColor: "blue" },
+  { id: 5, title: "Don't Stop Believin'", duration: "04:11", bpm: "119 BPM", tag: "Anthem", tagColor: "teal" },
+  { id: 6, title: "Blinding Lights", duration: "03:20", bpm: "171 BPM", tag: "Synth Pop", tagColor: "pink" },
+  { id: 7, title: "Bohemian Rhapsody", duration: "05:55", bpm: "72 BPM", tag: "Classic", tagColor: "red" },
+  { id: 8, title: "HUMBLE.", duration: "02:57", bpm: "150 BPM", tag: "Hype", tagColor: "orange" },
+  { id: 9, title: "Dreams", duration: "04:17", bpm: "120 BPM", tag: "Chill", tagColor: "green" },
+  { id: 10, title: "Seven Nation Army", duration: "03:51", bpm: "123 BPM", tag: "Rock", tagColor: "red" },
+  { id: 11, title: "Dancing Queen", duration: "03:50", bpm: "100 BPM", tag: "Disco", tagColor: "pink" },
+  { id: 12, title: "Lose Yourself", duration: "05:26", bpm: "171 BPM", tag: "Intense", tagColor: "gray" },
 ];
 
 const INITIAL_SETLIST = [];
@@ -192,7 +200,67 @@ function SetlistBuilderContent() {
     }
   };
 
-  // Guestlist Logic
+  // AI Suggest Logic
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("Suggest 3 unique, high-energy hit songs that would fit a modern setlist.");
+
+  // 1. Open Modal
+  const handleAiSuggestClick = () => {
+    setIsAiModalOpen(true);
+  };
+
+  // 2. Execute Generation
+  const executeAiGeneration = async () => {
+    if (!aiPrompt) return;
+    setIsAiLoading(true);
+    setIsAiModalOpen(false); // Close modal during generation to show loading state in button or toast? 
+    // Actually, maybe keep it open or just show global loader? 
+    // Let's close it and let the button show "Dreaming..."
+
+    try {
+      // Append instruction for JSON format to the user's prompt
+      const fullPrompt = `${aiPrompt} 
+      IMPORTANT: Return a JSON array ONLY. Format: [{"title": "Song Name", "duration": "03:30", "bpm": "120 BPM", "tag": "High Energy", "tagColor": "orange"}].`;
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: fullPrompt })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      // Clean JSON
+      let text = data.result;
+      if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+      else if (text.startsWith("```")) text = text.replace(/^```\s*/, "").replace(/\s*```$/, "");
+
+      const suggestions = JSON.parse(text);
+
+      if (Array.isArray(suggestions)) {
+        const newSongs = suggestions.map(s => ({
+          id: Date.now() + Math.random(),
+          title: s.title,
+          duration: s.duration,
+          bpm: s.bpm,
+          tag: s.tag,
+          tagColor: s.tagColor || 'purple'
+        }));
+        setBankSongs(prev => [...newSongs, ...prev]);
+        toast.success("AI added 3 songs to your bank!");
+      }
+
+    } catch (e) {
+      console.error(e);
+      toast.error("AI Failed to suggest songs.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  // Guestlist Logic (Existing)
   const [guestlistUser, setGuestlistUser] = useState(null);
   const [isGuestlistLoading, setIsGuestlistLoading] = useState(false);
 
@@ -318,6 +386,15 @@ function SetlistBuilderContent() {
 
             {/* Left Column: Song Bank */}
             <div className="lg:col-span-4 flex flex-col gap-4 h-[calc(100vh-220px)] lg:sticky lg:top-24">
+              <button
+                onClick={handleAiSuggestClick}
+                disabled={isAiLoading}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg transition-all disabled:opacity-50"
+              >
+                {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                {isAiLoading ? "Dreaming..." : "Suggest Songs with AI"}
+              </button>
+
               <SongBank
                 songs={bankSongs}
                 onAddSong={addToSetlist}
@@ -348,6 +425,45 @@ function SetlistBuilderContent() {
           </div>
         )}
       </div>
+
+      {/* AI Prompt Modal */}
+      {isAiModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsAiModalOpen(false)}>
+          <div className="bg-[#1e2e38] border border-[#315168] rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-purple-400" />
+                Customize AI Vibe
+              </h3>
+              <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <p className="text-sm text-slate-400 mb-3">Describe the vibe you want (e.g., "Sad acoustic ballads" or "High energy 80s rock").</p>
+
+            <textarea
+              className="w-full bg-[#101b23] border border-[#315168] rounded-xl p-4 text-white text-sm focus:outline-none focus:border-purple-500 min-h-[100px] mb-6"
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="Enter your prompt here..."
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsAiModalOpen(false)}
+                className="px-4 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeAiGeneration}
+                className="px-6 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/20"
+              >
+                Generate Magic
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Leaderboard Modal */}
       <LeaderboardModal

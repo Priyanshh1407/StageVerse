@@ -21,7 +21,9 @@ const publicPaths = [
   '/explore',
   '/explore-artist',
   '/events',
-  '/api/socket'
+  '/api/socket',
+  '/api/description',
+  '/api/patch'
 ];
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);

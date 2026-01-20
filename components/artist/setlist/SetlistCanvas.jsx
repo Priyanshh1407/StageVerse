@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Clock, ListMusic, Sparkles, GripVertical, Lock, Trash2, Loader2, CheckCircle2 } from 'lucide-react';
 import PromptModal from './PromptModal';
+import { toast } from 'sonner';
 
 export default function SetlistCanvas({ items, setItems }) {
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -45,19 +46,80 @@ export default function SetlistCanvas({ items, setItems }) {
   };
 
   // 2. Actually run optimization after Modal Submit
-  const handleFinalSubmit = (promptText) => {
+  const handleFinalSubmit = async (promptText) => {
     setIsModalOpen(false); // Close modal
+
+    if (items.length < 2) {
+      toast.error("Add at least 2 songs to optimize.");
+      return;
+    }
+
     setIsOptimizing(true); // Start loading state
     setAiCurated(false);
 
-    console.log("Sending prompt to Gemini:", promptText); // Placeholder for future API call
+    try {
+      // Prepare simplified list for AI
+      const simplifiedList = items.map(item => ({
+        id: item.id, // Ensure this exists and is unique
+        title: item.title,
+        bpm: item.bpm,
+        tags: item.tags.map(t => t.label).join(", ")
+      }));
 
-    setTimeout(() => {
-      const optimizedItems = [...items].sort(() => Math.random() - 0.5);
-      setItems(optimizedItems);
-      setIsOptimizing(false);
+      const fullPrompt = `
+      I have a setlist of songs: ${JSON.stringify(simplifiedList)}
+      
+      User Goal: "${promptText}"
+      
+      Task: Reorder the songs to best match the user's goal (e.g. flow by BPM, key, or energy).
+      CRITICAL: Return ONLY a JSON array of the song "id"s in the new optimized order.
+      Example usage: ["id_123", "id_456"]
+      `;
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: fullPrompt })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      // Clean JSON
+      let text = data.result;
+      if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+      else if (text.startsWith("```")) text = text.replace(/^```\s*/, "").replace(/\s*```$/, "");
+
+      const optimizedIds = JSON.parse(text);
+
+      if (!Array.isArray(optimizedIds)) throw new Error("AI did not return an array");
+
+      // Reorder items based on IDs
+      // Create a map for O(1) lookup
+      const itemMap = new Map(items.map(item => [String(item.id), item]));
+
+      const newOrder = [];
+      optimizedIds.forEach(id => {
+        const item = itemMap.get(String(id));
+        if (item) {
+          newOrder.push(item);
+          itemMap.delete(String(id)); // Remove so we know what's left
+        }
+      });
+
+      // Append any items that weren't returned (safeguard against AI dropping songs)
+      itemMap.forEach(item => newOrder.push(item));
+
+      setItems(newOrder);
       setAiCurated(true);
-    }, 2000);
+      toast.success("Setlist optimized by AI!");
+
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to optimize flow.");
+    } finally {
+      setIsOptimizing(false);
+    }
   };
 
   const handleRemove = (indexToRemove) => {

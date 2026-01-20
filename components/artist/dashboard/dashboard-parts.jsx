@@ -246,13 +246,15 @@ export function UpcomingStops({ data }) {
 }
 
 // 6. Smart Day Sheet Widget (Redesigned)
-export function DaySheetCard({ onClick }) {
-  const schedule = [
+export function DaySheetCard({ onClick, data }) {
+  const defaultSchedule = [
     { time: "14:00", event: "Load In", status: "past" },
     { time: "16:00", event: "Soundcheck", status: "active" },
     { time: "19:00", event: "Doors Open", status: "future" },
     { time: "21:15", event: "Showtime", status: "future" },
   ];
+
+  const schedule = data || defaultSchedule;
 
   return (
     <div

@@ -8,7 +8,7 @@ import Image from 'next/image';
 
 const GENRES = [
   "Select a Genre", "EDM", "Rock", "Pop", "Jazz", "Hip Hop", "Indie",
-  "Techno", "House", "Classical", "Metal", "R&B", "Comedy", "Theater"
+  "Techno", "House", "Classical", "Metal", "R&B", "Comedy", "Theater", "Bollywood"
 ];
 
 const STATUS_OPTIONS = [
@@ -16,17 +16,18 @@ const STATUS_OPTIONS = [
 ];
 
 export default function EventDetailsForm({
-  onGenerate,
-  isGenerating,
   onOpenVenueModal,
-  autoSelectVenue
+  autoSelectVenue,
+  onPreviewUpdate,
+  aiRequest // New Prop
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const editId = searchParams.get('id'); // Get ID from URL
+  const editId = searchParams.get('id');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isFetching, setIsFetching] = useState(false); // Loading state for Edit Mode
+  const [isFetching, setIsFetching] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false); // Internal State
 
   // --- FORM STATE ---
   const [formData, setFormData] = useState({
@@ -116,6 +117,18 @@ export default function EventDetailsForm({
     }
   }, [autoSelectVenue]);
 
+  // 2b. LISTEN FOR AI REQUESTS (From Preview)
+  useEffect(() => {
+    if (aiRequest?.ts) {
+      let modifier = "";
+      if (aiRequest.type === 'hype') modifier = "Make it extremely HYPE, EXCITING, and use strong adjectives!";
+      if (aiRequest.type === 'seo') modifier = "Include relevant SEO keywords for this artist/genre naturally.";
+
+      // We pass modifier to handleAiGenerate. Note handleAiGenerate shouldn't rely on being an event handler only.
+      handleAiGenerate(null, modifier);
+    }
+  }, [aiRequest]);
+
   // 3. SEARCH VENUES
   useEffect(() => {
     const delayDebounce = setTimeout(async () => {
@@ -159,6 +172,54 @@ export default function EventDetailsForm({
   const handleCreateNewClick = () => {
     setShowDropdown(false);
     onOpenVenueModal(venueSearch);
+  };
+
+  // 3b. AI GENERATE DESCRIPTION
+  const handleAiGenerate = async (e, modifier = "") => {
+    if (e && e.preventDefault) e.preventDefault();
+
+    // If called via useEffect, e is null, logic holds.
+
+    if (!formData.artist) {
+      toast.error("Please enter an Artist name first.");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artist: formData.artist,
+          genre: formData.genre,
+          vibe: getVibeLabel(formData.vibe) + (modifier ? `. IMPORTANT: ${modifier}` : ""),
+          // New Context Fields
+          title: formData.title,
+          date: formData.date,
+          city: formData.city,
+          venue: selectedVenue?.name || venueSearch
+        })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to generate description");
+      }
+
+      if (data.description) {
+        setFormData(prev => ({ ...prev, description: data.description }));
+        if (onPreviewUpdate) onPreviewUpdate(data.description); // Update Preview
+        toast.success(modifier ? "AI Updated with feedback!" : "Description generated!");
+      } else {
+        toast.error("Failed to generate description.");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error(e.message || "AI Error.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // 4. SUBMIT (Create OR Update)
@@ -383,12 +444,19 @@ export default function EventDetailsForm({
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-[#90a4cb]">Description</label>
-        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full h-32 bg-[#182234] border border-[#314368] rounded-lg p-4 text-white focus:border-[#0d93f2] outline-none resize-y" />
+        <textarea
+          value={formData.description}
+          onChange={(e) => {
+            setFormData({ ...formData, description: e.target.value });
+            if (onPreviewUpdate) onPreviewUpdate(e.target.value);
+          }}
+          className="w-full h-32 bg-[#182234] border border-[#314368] rounded-lg p-4 text-white focus:border-[#0d93f2] outline-none resize-y"
+        />
       </div>
 
       <div className="flex gap-4 mt-4">
         <button
-          onClick={onGenerate}
+          onClick={(e) => handleAiGenerate(e)}
           disabled={isGenerating || isSubmitting}
           className="flex-1 h-12 bg-[#192734] border border-[#2c3b47] rounded-lg font-bold text-white hover:bg-[#233b4a] transition-all flex items-center justify-center gap-2"
         >

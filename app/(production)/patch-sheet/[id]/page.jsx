@@ -142,6 +142,21 @@ export default function PatchSheetPage(props) {
     }
   };
 
+  const handleReplaceFixtures = (newFixtures) => {
+    console.log("Replacing fixtures via AI:", newFixtures.length);
+    const mapped = newFixtures.map((f, i) => ({
+      ...f,
+      fixtureId: f.fixtureId || (1000 + i),
+      id: f.id || (1000 + i),
+      status: f.status || 'ok',
+      cue: f.cue || 'General',
+      cueColor: f.cueColor || 'blue',
+      address: parseInt(f.address),
+      universe: parseInt(f.universe)
+    }));
+    setPatches(mapped);
+    toast.success("Patch Repatched by AI");
+  };
 
   if (isLoading) {
     return (
@@ -197,7 +212,12 @@ export default function PatchSheetPage(props) {
           ${mobileView === 'tools' ? 'flex w-full absolute inset-0 z-20' : 'hidden'} 
           md:flex md:relative md:w-[360px] md:min-w-[360px] md:border-r md:border-[#2c3e50] flex-col bg-[#16202a]
         `}>
-          <PatchingSidebar showName={activeShow.name} onAddFixtures={handleAddFixtures} />
+          <PatchingSidebar
+            showName={activeShow.name}
+            onAddFixtures={handleAddFixtures}
+            onReplaceFixtures={handleReplaceFixtures}
+            fixtures={patches}
+          />
         </div>
 
         {/* Right Main Area (Sheet) */}
