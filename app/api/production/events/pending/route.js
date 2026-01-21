@@ -14,7 +14,7 @@ export async function GET(req) {
         // 1. Status is 'requested'
         // 2. Assigned to THIS user
         const pendingEvents = await Event.find({
-            status: 'requested',
+            $or: [{ status: 'requested' }, { productionStatus: 'requested' }],
             assignedTo: user.userId
         }).populate('venue').sort({ date: 1 });
 

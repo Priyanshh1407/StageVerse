@@ -3,37 +3,37 @@
 import { Search, ChevronDown, SlidersHorizontal, Loader2 } from 'lucide-react';
 import ArtistCard from './ArtistCard';
 
-export default function ArtistsFeed({ 
-  artists, 
-  isLoading, 
-  searchQuery, 
-  setSearchQuery, 
-  sortOption, 
+export default function ArtistsFeed({
+  artists,
+  isLoading,
+  searchQuery,
+  setSearchQuery,
+  sortOption,
   setSortOption,
   onToggleFilters,
   onLoadMore, // Receive props
-  hasMore 
+  hasMore
 }) {
   return (
     <div className="flex-1">
-      
+
       <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between">
         {/* ... (Search bar code remains same) ... */}
         <div className="relative w-full md:max-w-xl group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="w-5 h-5 text-gray-500 group-focus-within:text-[#00C2FF] transition-colors" />
           </div>
-          <input 
+          <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-11 pr-4 py-3 border border-gray-800 rounded-xl bg-[#18181B] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00C2FF] focus:border-transparent shadow-sm text-sm transition-all" 
-            placeholder="Search artists, genres, or locations..." 
+            className="block w-full pl-11 pr-4 py-3 border border-gray-800 rounded-xl bg-[#18181B] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00C2FF] focus:border-transparent shadow-sm text-sm transition-all"
+            placeholder="Search artists, genres, or locations..."
           />
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-          <button 
+          <button
             onClick={onToggleFilters}
             className="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#18181B] border border-gray-800 text-white font-medium hover:border-[#00C2FF] transition-all"
           >
@@ -43,7 +43,7 @@ export default function ArtistsFeed({
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-400 whitespace-nowrap hidden sm:inline">Sort By</span>
             <div className="relative">
-              <select 
+              <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value)}
                 className="block w-40 pl-3 pr-10 py-2.5 text-sm border border-gray-800 focus:outline-none focus:ring-[#00C2FF] focus:border-[#00C2FF] rounded-lg bg-[#18181B] text-white appearance-none cursor-pointer hover:border-gray-600 transition-colors"
@@ -60,7 +60,7 @@ export default function ArtistsFeed({
         </div>
       </div>
 
-      <h1 className="text-2xl font-bold text-white mb-6 uppercase tracking-wide">Featured Artists</h1>
+      <h1 className="text-2xl font-bold text-white mb-6 uppercase tracking-wide">Artists</h1>
 
       {isLoading ? (
         <div className="flex h-96 w-full items-center justify-center">
@@ -77,7 +77,7 @@ export default function ArtistsFeed({
           {/* LOAD MORE BUTTON LOGIC */}
           {hasMore && (
             <div className="mt-12 flex justify-center">
-              <button 
+              <button
                 onClick={onLoadMore}
                 className="bg-[#18181B] hover:bg-[#00C2FF] hover:text-black text-white border border-gray-700 hover:border-[#00C2FF] px-8 py-3 rounded-full font-bold transition-all flex items-center gap-2 shadow-lg group"
               >

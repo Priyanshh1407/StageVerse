@@ -8,11 +8,19 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
+        console.log("ARTIST FETCH - User:", user); // DEBUG LOG
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const events = await Event.find({ organizerId: user.userId })
+        console.log("ARTIST FETCH - Querying artistId:", user.userId); // DEBUG LOG
+
+        const events = await Event.find({
+            $or: [
+                { artistId: user.userId },
+                { assignedTo: user.userId }
+            ]
+        })
             .sort({ date: 1 })
             .populate('venue', 'name city')
             .select('title date city venue image');

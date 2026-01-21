@@ -60,7 +60,10 @@ export default function TechRiderPage() {
 
   // 2. LOAD RIDER DATA (When Event Changes)
   useEffect(() => {
-    if (!selectedEventId) return;
+    if (!selectedEventId) {
+      setIsLoading(false); // Fix: Stop loading if no event
+      return;
+    }
 
     async function loadRiderData() {
       setIsLoading(true);

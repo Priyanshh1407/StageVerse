@@ -436,14 +436,14 @@ function EmptyState({ message }) {
 
 function RecommendedCard({ event }) {
   return (
-    <div className="group flex flex-col bg-white dark:bg-[#1a2632] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-lg hover:border-[#0d93f2]/50 transition-all duration-300 cursor-pointer">
+    <Link href={`/events/${event.id}`} className="group flex flex-col bg-white dark:bg-[#1a2632] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-lg hover:border-[#0d93f2]/50 transition-all duration-300 cursor-pointer">
       <div className="relative h-48 overflow-hidden">
         {/* Date Badge */}
         <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/80 backdrop-blur text-slate-900 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold z-10 text-center shadow-sm">
           <span className="block text-red-500 uppercase">{event.date?.month || 'OCT'}</span>
           <span className="text-lg leading-none">{event.date?.day || '24'}</span>
         </div>
-        
+
         {/* Heart Icon */}
         <div className="absolute top-3 right-3 z-10">
           <button className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur transition-colors">
@@ -452,13 +452,13 @@ function RecommendedCard({ event }) {
         </div>
 
         {/* Image - Added Fallback */}
-        <Image 
-          src={event.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"} 
-          alt={event.artist || "Event"} 
-          fill 
-          className="object-cover transition-transform duration-700 group-hover:scale-110" 
+        <Image
+          src={event.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"}
+          alt={event.artist || "Event"}
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        
+
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
         <span className="absolute bottom-3 left-3 px-2 py-1 rounded bg-[#0d93f2]/20 border border-[#0d93f2]/30 backdrop-blur text-[10px] font-bold text-white uppercase tracking-wider">
           {event.match || '95% Match'}
@@ -467,9 +467,9 @@ function RecommendedCard({ event }) {
 
       <div className="p-5 flex flex-col flex-1">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1 group-hover:text-[#0d93f2] transition-colors">
-          {event.artist} - {event.tour || event.title}
+          {event.title}
         </h3>
-        
+
         <div className="flex items-center gap-1 text-sm text-slate-500 mb-4">
           <MapPin className="w-3.5 h-3.5" />
           <span>{event.venue}</span>
@@ -488,18 +488,18 @@ function RecommendedCard({ event }) {
           <span className="text-sm font-bold text-slate-900 dark:text-white">
             From ${event.price}
           </span>
-          <Link href={`/dashboard/fan/events/${event.id}`} className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-lg hover:opacity-90 transition-opacity">
+          <span className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-lg hover:opacity-90 transition-opacity">
             Get Tickets
-          </Link>
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
 function FriendEventCard({ event }) {
   return (
-    <div className="flex flex-col md:flex-row bg-white dark:bg-[#1a2632] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer">
+    <Link href={`/events/${event.id}`} className="flex flex-col md:flex-row bg-white dark:bg-[#1a2632] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer">
       <div className="w-full md:w-48 h-48 md:h-auto relative shrink-0"><Image src={event.image} alt={event.title} fill className="object-cover" /></div>
       <div className="p-5 flex flex-col flex-1 justify-between">
         <div>
@@ -509,16 +509,16 @@ function FriendEventCard({ event }) {
         </div>
         <div className="flex items-center justify-between mt-2">
           <div className="flex -space-x-3">{event.attendees.map((person, i) => <div key={i} className={`size-8 rounded-full ring-2 ring-white dark:ring-[#1a2632] flex items-center justify-center overflow-hidden ${person.color || 'bg-gray-300 dark:bg-slate-700'}`}>{person.img ? <Image src={person.img} alt="User" width={32} height={32} className="object-cover h-full w-full" /> : <span className={`text-[10px] font-bold ${person.count ? 'text-white bg-[#0d93f2] w-full h-full flex items-center justify-center' : 'text-slate-600 dark:text-slate-300'}`}>{person.initials || `+${person.count}`}</span>}</div>)}</div>
-          <Link href={`/dashboard/fan/events/${event.id}`} className="text-sm font-bold text-[#0d93f2] hover:text-[#0d93f2]/80 transition-colors">Join Them</Link>
+          <span className="text-sm font-bold text-[#0d93f2] hover:text-[#0d93f2]/80 transition-colors">Join Them</span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
 function ReleaseCard({ item }) {
   return (
-    <Link href={`/artists/${item.id}`} className="group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer block">
+    <Link href={`/artist/${item.id}`} className="group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer block">
       <Image src={item.image} alt={item.artist} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
         <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold text-white w-fit mb-2 ${item.color}`}>{item.type}</span>

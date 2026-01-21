@@ -1,79 +1,33 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
     Search, Bell, Calendar, Clock, MapPin, Info, Map as MapIcon,
     Navigation, ArrowRight, Heart, Share2, Link as LinkIcon,
-    CalendarPlus, BarChart3, Loader2
+    CalendarPlus, BarChart3, Loader2, Sparkles, Flame, Users, Ticket
 } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import MainFooter from '@/components/MainFooter';
 import TicketSelection from '@/components/fan/TicketSelection';
 import { useParams, useRouter } from 'next/navigation';
 
-// --- MOCK DATA SIMULATION (Replace this with your API Call later) ---
-// const getEventData = (id) => {
-//     // In real app: const res = await fetch(`/api/events/${id}`); return res.json();
-//     return {
-//         id: id,
-//         title: "THE WEEKND",
-//         subtitle: "After Hours Til Dawn Tour",
-//         status: "Selling Fast",
-//         type: "World Tour",
-//         date: "Sat, Aug 19, 2023",
-//         time: "8:00 PM",
-//         isoDate: "2023-08-19T20:00:00",
-//         images: {
-//             hero: "https://lh3.googleusercontent.com/aida-public/AB6AXuDwduQJoR0kv_AMtvXXuHm62fl4IdlAXjFEfXiY_unZtf1y4UmXHEhvpU6khjrloLgiWuy_B_fdGbguiQqY5GiAvU1SaqD3CQLP1-anxRC4_z-gKYY5m2DjNP14tY2kB30pCAJLsZ7q9WgyBQsocVEEuL0U4UBYU5t0G60FQti-dH7EoojvIMb4xhWU8SYluHAc_Ad3RziOeAN2nE10dJyT9gUbu-YmCvJOwDIQN9OkuX9j2GnI0OudiWCBTnKf9IeoRYK7l9_gpErF",
-//             artist: "https://lh3.googleusercontent.com/aida-public/AB6AXuCnMbnYheA1QkOZtX4tO3pR0PL6fwuAHupk2y5PaWxOApeqlO7RSC5EseSLR0jc6YKEEyrnnNaYOgVaHlK8ul5t28A5a6tSdhpvMwWh7mlPQYozCKC0srri4CM46WruoKO9XM8iD3KViT8L1syIcWtcqI6nr217i_19bLSldpcepiOyph--nTaGJs0pXfUfxyslmzGNS-Hb12Rtsv0toe3VrRu1GYvGxxsM9zPRj8gYRh7ENpVvETRf28IrQdAOTxjnimzRXGUjqxx3",
-//             venue: "https://lh3.googleusercontent.com/aida-public/AB6AXuBAthwD-SToJsVEiCOVXt1PzvhqexdQIo6F4LRwNkXV6QtnoBxOIu3KTeWt8slA4P1vx0VmSIQ2GBFZ7JANe6BlzI23iH3ftv2US_20rBxTHvc4mMku_JNm8XMpi_t-_Ei2kVvIn1yGQtqPTLZfwyl7wBc_EeMpdlNTNlE95l4P4K8pmvIbGcxSF-0qqIYQUEzK1P6a9ZGhyrepLLys9KYng2_T15BHbdkdX7BZriB7gR_nQjsgypZk9lvuNUA-dfyEvMBmekRIrxHX"
-//         },
-//         venue: {
-//             name: "Wembley Stadium",
-//             address: "London HA9 0WS, United Kingdom",
-//             city: "London"
-//         },
-//         artist: {
-//             name: "The Weeknd",
-//             bio: "The Weeknd is a Canadian singer, songwriter, and record producer known for his sonic versatility and dark lyricism.",
-//             listeners: "84M Monthly Listeners"
-//         },
-//         about: [
-//             "Prepare for an unforgettable night as The Weeknd brings his critically acclaimed 'After Hours Til Dawn' tour to Wembley Stadium. This spectacular show combines the haunting aesthetics of his 'After Hours' era with the sci-fi synth-pop universe of 'Dawn FM'.",
-//             "Expect a visually stunning production featuring a post-apocalyptic cityscape set, dazzling light shows, and all your favorite hits including 'Blinding Lights', 'Save Your Tears', 'Starboy', and 'Can't Feel My Face'."
-//         ],
-//         lineup: [
-//             { name: "Kaytranada", role: "Support Act", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC7O0Dmmf6BV69YnOEF4vlXPRqNUTcbs3sU_mXcmMDcY-CbSXpXKE0rsGXqSTQhn3R55kSu5RZRG5fjtMvPBeOywZRPk4wrXs77Z6Tf_hY5g042l5OSt_psrk8J1YXvGH-xRb2nVmxAxSvjUN6EK25uAAqui2Jvc1M5yuSS5h4PL7oCjmOtVLdhMoawbT4tGs8P3RDBRmBczeucM7sr2tXPeuQEBItTeVkTwUOP9DWfDkcdGN4SoIkqzeLap_sAuX77oEAxFBwMg2B4" },
-//             { name: "Mike Dean", role: "Special Guest", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD4B9OFjYsH2a8ovGbzrmhrNQNW9ZTupW5kjjwPCIFnjdXZ_mnqR8GRDcjJyjovyDWAwglX7w1d0cqXoWUthXWtml5SOJjThIMdyoA_hngimrIS3-EKfkEvGKP0GULs9wmbLe0TDNLn9vqmTZinn6ZDbh5U-lt8cp5AqsXtF0o6OwhmUxjQ6sdJhiJ46YuTx4LylVCCv1F5YKHsLCNk1-xLLc-Fqjt1VIcuBxIx5-pw6d-Ywfh_oBsmuxRqeAe9rOJgqJsLqEzGHRDS" }
-//         ],
-//         ticket: {
-//             price: 75,
-//             currency: "USD",
-//             status: "Available",
-//             provider: "Ticketmaster"
-//         },
-//         similarEvents: [
-//             { id: 101, name: "Dua Lipa", date: "Sep 22", city: "London", venue: "O2 Arena", price: 65, genre: "Pop", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCHW8a-H2J1AP3GUILVt8cUJd6RIRXEhCP8awRGKD67Dp6Febsn-19A-6jRg8t_2TvWi7-c7uBtZiMeICCFQfwi1iclHNnzFKqd62XhHcGL6zuDqabOXJVCquyNLwT9eBktzDWNThmytqcOzhZinrfkr8D5rD8GSzpMLFHuNXfSfbuftmxHqSzvV0cKC0-2Qmb-9wCewovx07LmlC4S19m6Oiqtcbns7I_qtFkU_O77JLQtcIxjGDK1AXZO602zoHWBA3_OfQu2cmhq" },
-//             { id: 102, name: "Drake", date: "Oct 10", city: "London", venue: "Wembley Arena", price: 120, genre: "R&B", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAqAdCS_X5ubXXGDXcqdm_XQl60rdctFCywY1sw0rVju1ibxTc8Br5htUaLIa07se5Ocvf9RJE61FYutMYLzTNwyE_cnmZIOYkErIiKv0hbiNN5EJp4ZibDHnx9PMei_wCwVn_Iihp8FocPu0sWSokJJCU1QX7GcVljl_i0N-F2z_Sb53zebOwqHjKPR9yK2cUA6sIqafAC2XcDF-_lLWEo3Qwvf9jPxAYtFln6KfxvatFjuJ6SVg7r9y2GVu37PCRE2YlzklQqN4m8" },
-//             { id: 103, name: "Calvin Harris", date: "Nov 05", city: "London", venue: "Hyde Park", price: 55, genre: "Electronic", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCMAffHZx4Df-fT6hjQkHI6m4PSf4pNT1KmXb96S4qJoiKUjqv0akl2Em386WuQT6ocI0dgvdmCMVS6ff-B0Q7SffRcBr_445PWv3z1BALjb-S1qjSiuMwQ8WR22ysQcBVtMVF8lK8tj-TzxwfxsTmfeysLB1lkquwMmMfwFAPWct1XlNIyw8fB_JuHo9c73k3snKJA6m4SNhWfPy_Ltu_zwmf_5qeexZrbb9y68gEdq46gpMXfXrbsCYYMFukNNz_AmoFWGMG1me_H" },
-//             { id: 104, name: "Harry Styles", date: "Dec 12", city: "London", venue: "Wembley Stadium", price: 90, genre: "Pop", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC_l75LBAjfrLQ4fvIitqQ3mwV2UOt9ppcr4nLFbeOfflu_n39UtuP1WYTv4UTkAbD_h6d72QANq4LdcyX3c2tNNnix9U4o7WjlsPqjosLcWupTA6FREB0Ash193p3P_a1PtxEFhJ-Ov2TnFLNUj2v5GdJYyiJzl_5vs4yzNmGSYKYLqUZehiQtVqtpbfmuC2iopEE5w2VRfWlMeqtFt9JUYVpeK9J-017oCplWkwillsl5mVQPF8HUGjHZbSvqIUz1iY9UbFA6kpn4" },
-//         ]
-//     };
-// };
-
 export default function EventDetailPage() {
-    // 1. Simulate Fetching Data based on ID
-    // In Next.js App Router, params are passed as props to the page
     const params = useParams();
     const eventId = params?.id || '1';
-    // const event = getEventData(eventId);
     const router = useRouter();
 
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Scroll Animation Hooks
+    const ref = useRef(null);
+    const { scrollY } = useScroll();
+    const heroY = useTransform(scrollY, [0, 500], [0, 200]);
+    const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.3]);
 
     useEffect(() => {
         if (!eventId) return;
@@ -107,37 +61,29 @@ export default function EventDetailPage() {
 
     const handleGetTickets = () => {
         router.push(`/events/${eventId}/tickets`);
-        // const isLoggedIn = document.cookie.includes('token=');
-
-        // if (isLoggedIn) {
-        //     router.push(`/events/${eventId}/tickets`);
-        // } else {
-        //     router.push(`/login?redirect=/events/${eventId}/tickets`);
-        // }
     };
 
     if (loading) {
         return (
-            <div className="flex flex-col min-h-screen bg-background-light dark:bg-[#101b23]">
+            <div className="flex flex-col min-h-screen bg-black text-white">
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center">
-                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                    <Loader2 className="w-10 h-10 animate-spin text-[#00d4ff]" />
                 </div>
             </div>
         );
     }
 
-    // --- ERROR STATE ---
     if (error || !event) {
         return (
-            <div className="flex flex-col min-h-screen bg-background-light dark:bg-[#101b23]">
+            <div className="flex flex-col min-h-screen bg-black text-white">
                 <Navbar />
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
-                    <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Event Not Found</h2>
-                    <p className="text-slate-500 dark:text-slate-400 mb-6">{error || "We couldn't find the event you're looking for."}</p>
-                    <Link href="/events" className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-bold transition-colors">
-                        Browse Events
+                    <Flame className="w-16 h-16 text-red-500 mb-6 animate-bounce" />
+                    <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tighter">Event Not Found</h2>
+                    <p className="text-slate-400 mb-8 text-lg">{error || "The event you're looking for has vanished."}</p>
+                    <Link href="/events" className="bg-[#00d4ff] hover:bg-white hover:text-black text-black px-8 py-4 rounded-full font-bold transition-all text-lg uppercase tracking-widest shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+                        Explore Other Gigs
                     </Link>
                 </div>
                 <MainFooter isLoggedIn={false} />
@@ -146,342 +92,315 @@ export default function EventDetailPage() {
     }
 
     // --- DATA MAPPING ---
-    const formattedDate = new Date(event.date).toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+    const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
     const images = event.images || {};
-    const heroImage = images.hero || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-    const artistImage = images.artist || "https://images.unsplash.com/photo-1741036379058-cca704d04101?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGFydGlzdCUyMGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D";
-    const venueImage = images.venue || "https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y29uY2VydCUyMHZlbnVlfGVufDB8fDB8fHww";
+    const heroImage = images.hero || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1074&auto=format&fit=crop";
+    const artistImage = images.artist || "https://images.unsplash.com/photo-1741036379058-cca704d04101?w=600&auto=format&fit=crop";
+    const venueImage = images.venue || "https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=600&auto=format&fit=crop";
 
-    // ✅ SAFE ARRAYS (Fixes the crash)
     const aboutSection = event.about || (event.description ? [event.description] : ["No details available."]);
-    const lineup = event.lineup || []; // Default to empty array if missing
+    const lineup = event.lineup || [];
     const similarEvents = event.similarEvents || [];
-
-    // 🛡️ FIX: Calculate Price and Status from Ticket Tiers (Replacing the missing event.ticket object)
     const tiers = event.ticketTiers || [];
-    const minPrice = tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : 0;
-    const ticketStatus = event.status || (tiers.length > 0 ? "Available" : "Sold Out");
-    const currency = "USD"; // Or derive from tiers if you store currency there
 
-    // --- RENDER ---
     return (
-        <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-200 font-sans">
-
-            {/* Header */}
+        <div className="flex flex-col min-h-screen bg-[#050505] text-white font-sans selection:bg-[#00d4ff] selection:text-black overflow-x-hidden">
             <Navbar />
-            {/* <Header /> */}
 
-            <main className="flex-1 flex flex-col">
+            <main className="flex-1 flex flex-col relative w-full">
 
-                {/* Breadcrumbs */}
-                <div className="px-6 md:px-10 lg:px-40 py-4">
-                    <div className="flex flex-wrap gap-2 text-sm">
-                        <Link href="/events" className="text-text-secondary hover:text-primary transition-colors font-medium">Concerts</Link>
-                        <span className="text-text-secondary font-medium">/</span>
-                        <span className="text-slate-900 dark:text-white font-medium">{event.title} - {event.subtitle}</span>
-                    </div>
-                </div>
-
-                {/* Hero Section */}
-                <div className="relative w-full h-[400px] md:h-[500px] overflow-hidden">
-                    <div
+                {/* 1. IMMERSIVE HERO SECTION */}
+                <div className="relative w-full h-[85vh] overflow-hidden" ref={ref}>
+                    {/* Background Parallax Image */}
+                    <motion.div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                        style={{ backgroundImage: `url("${heroImage}")` }}
-                    ></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent"></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-background-dark/90 via-background-dark/40 to-transparent"></div>
+                        style={{
+                            backgroundImage: `url("${heroImage}")`,
+                            y: heroY,
+                            opacity: heroOpacity
+                        }}
+                    />
 
-                    <div className="relative h-full flex flex-col justify-end px-6 md:px-10 lg:px-40 pb-12">
-                        <div className="max-w-4xl">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold uppercase tracking-wider border border-primary/30">{event.type}</span>
-                                <span className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-sm">{event.status}</span>
+                    {/* Dramatic Gradients */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-[#050505] via-transparent to-[#00d4ff]/10 mix-blend-overlay" />
+
+                    {/* Content Container */}
+                    <div className="absolute inset-0 flex flex-col justify-end px-6 md:px-12 lg:px-24 pb-24 z-10">
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="max-w-5xl"
+                        >
+                            {/* Badges */}
+                            <div className="flex flex-wrap items-center gap-4 mb-6">
+                                <span className="bg-[#00d4ff] text-black text-xs font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm shadow-[0_0_15px_rgba(0,212,255,0.6)]">
+                                    {event.type || 'Concert'}
+                                </span>
+                                {event.status && (
+                                    <span className="flex items-center gap-2 bg-red-600/20 backdrop-blur-md border border-red-500/50 text-red-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm animate-pulse">
+                                        <Flame className="w-3.5 h-3.5 fill-current" /> {event.status}
+                                    </span>
+                                )}
                             </div>
-                            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-2">{event.title}</h1>
-                            <h2 className="text-xl md:text-3xl font-normal text-text-secondary mb-6">{event.subtitle}</h2>
-                            <div className="flex flex-wrap items-center gap-6 text-white/90">
-                                <div className="flex items-center gap-2">
-                                    <Calendar className="w-5 h-5 text-primary" />
-                                    <span className="font-medium text-lg">{formattedDate}</span>
+
+                            {/* Massive Title */}
+                            <h1 className="text-5xl md:text-7xl lg:text-9xl font-black text-white tracking-tighter leading-[0.9] mb-4 drop-shadow-2xl mix-blend-screen text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-slate-400">
+                                {event.title}
+                            </h1>
+                            <h2 className="text-xl md:text-3xl font-light text-[#00d4ff] mb-8 tracking-wide font-display">
+                                {event.subtitle}
+                            </h2>
+
+                            {/* Floating Info Details */}
+                            <div className="flex flex-wrap items-center gap-8 md:gap-16 text-white/90 glass-panel p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md inline-flex">
+                                <div className="flex items-center gap-4 group cursor-default">
+                                    <div className="p-3 bg-white/10 rounded-full group-hover:bg-[#00d4ff] group-hover:text-black transition-colors duration-300">
+                                        <Calendar className="w-6 h-6" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-white/50 uppercase tracking-widest font-bold">Date</span>
+                                        <span className="font-bold text-lg md:text-xl">{formattedDate}</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-5 h-5 text-primary" />
-                                    <span className="font-medium text-lg">{event.time}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <MapPin className="w-5 h-5 text-primary" />
-                                    <span className="font-medium text-lg">{event.venue.name}, {event.venue.city}</span>
+                                <div className="w-px h-10 bg-white/10 hidden md:block"></div>
+                                <div className="flex items-center gap-4 group cursor-default">
+                                    <div className="p-3 bg-white/10 rounded-full group-hover:bg-[#00d4ff] group-hover:text-black transition-colors duration-300">
+                                        <MapPin className="w-6 h-6" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-white/50 uppercase tracking-widest font-bold">Venue</span>
+                                        <span className="font-bold text-lg md:text-xl">{event.venue.name}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
 
-                {/* Content Grid */}
-                <div className="px-6 md:px-10 lg:px-40 py-10">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                {/* 2. MAIN CONTENT GRID */}
+                <div className="relative z-20 -mt-12 px-6 md:px-12 lg:px-24 pb-20">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-                        {/* Main Column (Left) */}
-                        <div className="lg:col-span-8 flex flex-col gap-10">
+                        {/* LEFT COLUMN: Story & Details */}
+                        <div className="lg:col-span-8 flex flex-col gap-16">
 
-                            {/* About Section */}
-                            <section>
-                                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                                    <Info className="w-5 h-5 text-primary" />
-                                    About The Event
-                                </h3>
-                                <div className="prose prose-invert max-w-none text-text-secondary leading-relaxed">
-                                    {/* {event.about.map((paragraph, index) => (
-                                        <p key={index} className="mb-4">{paragraph}</p>
-                                    ))} */}
-                                    {aboutSection}
+                            {/* ABOUT SECTION (Immersive Text) */}
+                            <motion.section
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6 }}
+                            >
+                                <div className="flex items-center gap-3 mb-8">
+                                    <Sparkles className="w-6 h-6 text-[#00d4ff]" />
+                                    <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-500">The Experience</h3>
                                 </div>
-                            </section>
 
-                            {/* Lineup Section (Dynamic Map) */}
-                            <section>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Lineup & Support</h3>
-                                <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
+                                <div className="bg-[#111] p-8 md:p-10 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
+                                    {/* Ambient Glow */}
+                                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-blue-500/10 transition-colors duration-700" />
+
+                                    <div className="prose prose-invert prose-lg max-w-none text-slate-300 relative z-10 leading-relaxed">
+                                        {aboutSection.map((text, index) => {
+                                            const hasKeywords = /(HEADLINE:|HOOK:|ATMOSPHERE:|HIGHLIGHTS:|CLOSING:)/.test(text);
+
+                                            if (hasKeywords) {
+                                                const parts = text.split(/(?=(?:HEADLINE:|HOOK:|ATMOSPHERE:|HIGHLIGHTS:|CLOSING:))/g);
+                                                return (
+                                                    <div key={index} className="space-y-8 my-4">
+                                                        {parts.map((part, i) => {
+                                                            const [label, ...contentArr] = part.split(':');
+                                                            const content = contentArr.join(':').trim();
+                                                            if (content) {
+                                                                return (
+                                                                    <div key={i} className="pl-6 border-l-2 border-[#00d4ff]/30 hover:border-[#00d4ff] transition-colors duration-300">
+                                                                        <span className="text-[#00d4ff] font-bold text-sm uppercase tracking-[0.2em] block mb-2">{label.trim()}</span>
+                                                                        <p className="text-white mb-0 text-lg font-light">{content}</p>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return <p key={i}>{part}</p>;
+                                                        })}
+                                                    </div>
+                                                );
+                                            }
+                                            return <p key={index} className="whitespace-pre-line text-lg font-light text-slate-300">{text}</p>;
+                                        })}
+                                    </div>
+                                </div>
+                            </motion.section>
+
+                            {/* LINEUP SECTION (Artist Cards) */}
+                            <motion.section
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                            >
+                                <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                                    <Users className="w-6 h-6 text-[#00d4ff]" /> Lineup
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {lineup.map((act, index) => (
-                                        <div key={index} className="snap-start min-w-[160px] bg-white dark:bg-surface-dark rounded-lg p-3 border border-slate-200 dark:border-white/5 hover:border-primary/50 transition-colors group cursor-pointer">
+                                        <div key={index} className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#111] border border-white/10 cursor-pointer">
                                             <div
-                                                className="aspect-square rounded-md bg-cover bg-center mb-3 group-hover:opacity-90 transition-opacity"
+                                                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
                                                 style={{ backgroundImage: `url("${act.image}")` }}
-                                            ></div>
-                                            <h4 className="font-bold text-slate-900 dark:text-white text-sm">{act.name}</h4>
-                                            <p className="text-xs text-text-secondary">{act.role}</p>
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
+                                            <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                                <h4 className="text-white font-bold text-lg leading-none mb-1">{act.name}</h4>
+                                                <p className="text-[#00d4ff] text-xs font-bold uppercase tracking-wider">{act.role || 'Artist'}</p>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
-                            </section>
+                            </motion.section>
 
-                            {/* Venue Map */}
-                            <section>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                                    <MapIcon className="w-5 h-5 text-primary" />
-                                    Venue Location
+                            {/* VENUE MAP */}
+                            <motion.section
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                            >
+                                <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                                    <MapIcon className="w-6 h-6 text-[#00d4ff]" /> Location
                                 </h3>
-                                <div className="bg-surface-dark rounded-xl overflow-hidden border border-white/5">
-                                    <div className="h-[300px] w-full bg-cover bg-center relative" style={{ backgroundImage: `url("${venueImage}")` }}>
-                                        <div className="absolute inset-0 bg-black/10"></div>
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                            <div className="relative">
-                                                <MapPin className="w-12 h-12 text-red-500 drop-shadow-xl" />
-                                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-1 bg-black/50 blur-[2px] rounded-full"></div>
-                                            </div>
-                                        </div>
-                                        <button className="absolute bottom-4 right-4 bg-white text-slate-900 text-xs font-bold px-3 py-2 rounded shadow-lg hover:bg-gray-100 transition">View Larger Map</button>
-                                    </div>
-                                    <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-darker">
+                                <div className="rounded-3xl overflow-hidden border border-white/10 h-[400px] relative group">
+                                    <div
+                                        className="absolute inset-0 bg-cover bg-center grayscale group-hover:grayscale-0 transition-all duration-700"
+                                        style={{ backgroundImage: `url("${venueImage}")` }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
+
+                                    <div className="absolute bottom-6 left-6 right-6 p-6 bg-black/80 backdrop-blur-xl rounded-2xl border border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
                                         <div>
-                                            <h4 className="text-white font-bold">{event.venue.name}</h4>
-                                            <p className="text-text-secondary text-sm">{event.venue.address}</p>
+                                            <h4 className="text-xl font-bold text-white">{event.venue.name}</h4>
+                                            <p className="text-slate-400 text-sm">{event.venue.address || event.venue.city}</p>
                                         </div>
-                                        <button className="flex items-center gap-2 text-sm text-primary font-medium hover:text-primary/80 transition-colors">
-                                            <Navigation className="w-4 h-4" />
-                                            Get Directions
+                                        <button className="px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-[#00d4ff] transition-colors flex items-center gap-2">
+                                            <Navigation className="w-4 h-4" /> Get Directions
                                         </button>
                                     </div>
                                 </div>
-                            </section>
+                            </motion.section>
+
                         </div>
 
-                        {/* Sidebar (Right - Sticky) */}
+                        {/* RIGHT COLUMN: Sticky Sidebar Actions */}
                         <div className="lg:col-span-4 relative">
-                            <div className="sticky top-24 flex flex-col gap-6">
+                            <div className="sticky top-28 flex flex-col gap-6">
 
-                                {/* Ticket Card */}
-                                {/* 🚀 REAL TICKET SELECTION WIDGET */}
-                                {/* This uses the functional component we built earlier */}
-                                <TicketSelection
-                                    eventId={event._id}
-                                    tiers={event.ticketTiers || []}
-                                />
+                                {/* TICKET WIDGET */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.5, duration: 0.6 }}
+                                    className="bg-[#111] border border-[#00d4ff]/20 rounded-3xl p-1 shadow-[0_0_40px_-10px_rgba(0,212,255,0.15)]"
+                                >
+                                    <TicketSelection eventId={event._id} tiers={tiers} />
+                                </motion.div>
 
-                                {/* <div className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-xl dark:shadow-black/40">
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div>
-                                            <p className="text-sm font-medium text-text-secondary mb-1">Tickets starting from</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-3xl font-bold text-slate-900 dark:text-white">${minPrice}</span>
-                                                <span className="text-sm text-text-secondary">{currency}</span>
-                                            </div>
-                                        </div>
-                                        <div className="bg-green-500/10 text-green-500 border border-green-500/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                                            {ticketStatus}
-                                        </div>
+                                {/* ARTIST PROFILE MINI */}
+                                <div className="bg-[#111]/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 flex items-center gap-5 hover:bg-[#111] transition-colors">
+                                    <div className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-[#00d4ff]" style={{ backgroundImage: `url("${artistImage}")` }} />
+                                    <div>
+                                        <h4 className="text-white font-bold text-lg">{event.artist.name}</h4>
+                                        <p className="text-slate-500 text-sm">{event.artist.listeners || 'Top Artist'}</p>
                                     </div>
-                                    <button onClick={handleGetTickets} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold h-12 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-400/20 mb-3 group">
-                                        <span>Get Tickets</span>
-                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                    </button>
-                                    <button className="w-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-white font-medium h-10 rounded-lg flex items-center justify-center gap-2 transition-colors border border-transparent dark:border-white/5">
-                                        <Heart className="w-5 h-5" />
-                                        <span>Track Event</span>
-                                    </button>
-                                    <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
-                                        <p className="text-xs text-text-secondary text-center">
-                                            Safe & secure checkout via STAGEVERSE
-                                        </p>
-                                    </div>
-                                </div> */}
-
-                                {/* Artist Mini Profile */}
-                                <div className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="size-16 rounded-full bg-cover bg-center border-2 border-primary/30" style={{ backgroundImage: `url("${artistImage}")` }}></div>
-                                        <div>
-                                            <h4 className="font-bold text-lg text-slate-900 dark:text-white">{event.artist.name}</h4>
-                                            <p className="text-sm text-text-secondary">{event.artist.listeners}</p>
-                                        </div>
-                                    </div>
-                                    <p className="text-sm text-text-secondary mb-4 line-clamp-3">
-                                        {event.artist.bio}
-                                    </p>
-                                    <div className="flex gap-2">
-                                        <button className="flex-1 h-9 rounded-lg border border-slate-300 dark:border-white/20 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors">
-                                            Follow
-                                        </button>
-                                        <button className="flex-1 h-9 rounded-lg bg-[#1DB954] hover:bg-[#1ed760] text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors">
-                                            Spotify
+                                    <div className="ml-auto">
+                                        <button className="w-10 h-10 rounded-full bg-[#1DB954] flex items-center justify-center text-black hover:scale-110 transition-transform">
+                                            <ArrowRight className="w-5 h-5 -rotate-45" />
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Share */}
-                                <div className="bg-transparent px-2">
-                                    <div className="flex items-center justify-between text-text-secondary text-sm">
-                                        <span>Share this event</span>
-                                        <div className="flex gap-3">
-                                            <button className="hover:text-primary transition-colors"><Share2 className="w-5 h-5" /></button>
-                                            <button className="hover:text-primary transition-colors"><LinkIcon className="w-5 h-5" /></button>
-                                            <button className="hover:text-primary transition-colors"><CalendarPlus className="w-5 h-5" /></button>
-                                        </div>
+                                {/* SHARE BAR */}
+                                <div className="flex justify-between items-center px-4 py-2 border-t border-white/10 mt-4">
+                                    <span className="text-slate-500 text-sm font-bold uppercase">Share Event</span>
+                                    <div className="flex gap-4">
+                                        {[Share2, LinkIcon, Heart].map((Icon, i) => (
+                                            <button key={i} className="text-slate-400 hover:text-[#00d4ff] transition-colors">
+                                                <Icon className="w-5 h-5" />
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
 
                             </div>
                         </div>
+
                     </div>
                 </div>
 
-                {/* Similar Events (Dynamic Map) */}
-                <div className="border-t border-slate-200 dark:border-[#223949] bg-slate-50 dark:bg-surface-darker py-16">
-                    <div className="px-6 md:px-10 lg:px-40">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Similar Events</h3>
-                            <Link href="/events" className="text-primary font-bold text-sm hover:underline">View All</Link>
+                {/* SIMILAR EVENTS SLIDER */}
+                <section className="py-20 bg-[#080808] border-t border-white/5">
+                    <div className="px-6 md:px-12 lg:px-24">
+                        <div className="flex items-end justify-between mb-12">
+                            <div>
+                                <h3 className="text-sm font-bold text-[#00d4ff] uppercase tracking-widest mb-2">More Like This</h3>
+                                <h2 className="text-3xl md:text-5xl font-black text-white">Don't Miss Out</h2>
+                            </div>
+                            <Link href="/discover" className="text-white hover:text-[#00d4ff] font-bold border-b border-white hover:border-[#00d4ff] pb-1 transition-colors">
+                                View All Events
+                            </Link>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {similarEvents.map((simEvent) => (
-                                <SimilarEventCard key={simEvent.id} event={simEvent} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {similarEvents.map((sim, i) => (
+                                <motion.div
+                                    key={sim.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: i * 0.1 }}
+                                >
+                                    <SimilarEventCard event={sim} />
+                                </motion.div>
                             ))}
                         </div>
                     </div>
-                </div>
-            </main>
+                </section>
 
-            <MainFooter isLoggedIn={false} />
+                <MainFooter isLoggedIn={false} />
+            </main>
         </div>
     );
 }
 
-// --- SUB-COMPONENTS (Reusable) ---
-
+// Sub-component tailored for the new dark theme
 function SimilarEventCard({ event }) {
     return (
-        <div className="group flex flex-col bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-200 dark:border-white/5">
-            <div
-                className="h-48 bg-cover bg-center relative group-hover:scale-105 transition-transform duration-500"
-                style={{ backgroundImage: `url("${event.image}")` }}
-            >
-                <div className="absolute top-3 right-3 bg-white/10 backdrop-blur-md px-2 py-1 rounded text-white text-xs font-bold">{event.genre}</div>
-            </div>
-            <div className="p-4 flex flex-col gap-2 flex-1">
-                <p className="text-primary font-bold text-xs uppercase tracking-wide">{event.date} • {event.city}</p>
-                <h4 className="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">{event.name}</h4>
-                <p className="text-text-secondary text-sm">{event.venue}</p>
-                <div className="mt-auto pt-4 flex items-center justify-between">
-                    <span className="text-slate-900 dark:text-white font-bold text-sm">From ${event.price}</span>
-                    <button className="bg-slate-100 dark:bg-white/10 hover:bg-primary hover:text-white text-slate-900 dark:text-white p-2 rounded-lg transition-colors">
-                        <ArrowRight className="w-4 h-4" />
-                    </button>
+        <Link href={`/events/${event.id}`} className="group block bg-[#111] rounded-2xl overflow-hidden border border-white/5 hover:border-[#00d4ff]/50 transition-all duration-500 hover:-translate-y-2">
+            <div className="h-64 bg-cover bg-center relative overflow-hidden">
+                <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style={{ backgroundImage: `url("${event.image}")` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                <div className="absolute top-4 left-4">
+                    <span className="bg-[#00d4ff] text-black text-[10px] font-black uppercase px-2 py-1 rounded-sm">{event.genre}</span>
+                </div>
+                <div className="absolute bottom-4 left-4">
+                    <p className="text-white font-black text-xl leading-none mb-1">{event.name}</p>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{event.date} • {event.city}</p>
                 </div>
             </div>
-        </div>
-    );
-}
-
-function Header() {
-    return (
-        <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-[#223949] bg-background-light dark:bg-[#101b23] px-6 md:px-10 py-3">
-            <div className="flex items-center gap-8">
-                <Link href="/" className="flex items-center gap-4 dark:text-white text-slate-900">
-                    <BarChart3 className="w-8 h-8 text-primary" />
-                    <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">ConcertTracker</h2>
-                </Link>
-                <div className="hidden lg:flex items-center gap-9">
-                    <Link href="#" className="text-sm font-medium leading-normal text-slate-600 dark:text-white hover:text-primary transition-colors">Discover</Link>
-                    <Link href="#" className="text-sm font-medium leading-normal text-slate-600 dark:text-white hover:text-primary transition-colors">Artists</Link>
-                    <Link href="#" className="text-sm font-medium leading-normal text-slate-600 dark:text-white hover:text-primary transition-colors">Venues</Link>
-                    <Link href="#" className="text-sm font-medium leading-normal text-slate-600 dark:text-white hover:text-primary transition-colors">My Tracked Events</Link>
+            <div className="p-4 flex justify-between items-center border-t border-white/5 bg-[#161616]">
+                <div>
+                    <p className="text-xs text-slate-500 font-bold uppercase mb-0.5">Starting at</p>
+                    <p className="text-white font-bold text-lg">${event.price}</p>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white group-hover:bg-[#00d4ff] group-hover:text-black transition-colors">
+                    <ArrowRight className="w-4 h-4" />
                 </div>
             </div>
-            <div className="flex flex-1 justify-end gap-6 items-center">
-                <label className="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
-                    <div className="flex w-full flex-1 items-stretch rounded-lg h-full border border-slate-200 dark:border-none">
-                        <div className="text-slate-400 dark:text-text-secondary flex bg-white dark:bg-[#223949] items-center justify-center pl-4 rounded-l-lg border-r-0">
-                            <Search className="w-5 h-5" />
-                        </div>
-                        <input className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg rounded-l-none text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-white dark:bg-[#223949] h-full placeholder:text-slate-400 dark:placeholder:text-text-secondary px-4 pl-2 text-sm font-normal leading-normal" placeholder="Search events..." />
-                    </div>
-                </label>
-                <div className="flex items-center gap-4">
-                    <button className="bg-surface-darker hover:bg-surface-dark text-white p-2 rounded-full relative transition-colors">
-                        <Bell className="w-5 h-5" />
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
-                    </button>
-                    <div
-                        className="w-8 h-8 rounded-full bg-cover bg-center ring-2 ring-primary/20"
-                        style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCXWfGS7zEOZwA4uJ8sKrCLdwUyUVeZOHiVwTMZ_XzsRY_UcF172ET-b0zQDkUUr1_rZa37CHnwOQ4wWXkwfzjT4iapKvc42naMCq2aycQUSbBUJAqSxkrFV8M4DzOPkakfjAMRASEEKrptV4GXh1oCCByfW-cWLsInGdZHLR4AE4JCN5nhyU2hozxuTFBP7G-PFnCuWnDZJgBeYY9gQprFHF4SRJYBSv8ChOj-NCH5b9KchVjWbb_p_pKXh8Z2FiImhjaHI8cecng8")' }}
-                    ></div>
-                </div>
-            </div>
-        </header>
-    )
-}
-
-function Footer() {
-    return (
-        <footer className="bg-background-light dark:bg-[#101b23] border-t border-slate-200 dark:border-[#223949] py-10 px-6 lg:px-40">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-                    <BarChart3 className="w-6 h-6 text-primary" />
-                    <span className="font-bold text-lg">ConcertTracker</span>
-                </div>
-                <div className="flex flex-wrap justify-center gap-8 text-sm text-text-secondary">
-                    <Link href="#" className="hover:text-primary transition-colors">About Us</Link>
-                    <Link href="#" className="hover:text-primary transition-colors">Careers</Link>
-                    <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
-                    <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
-                </div>
-                <div className="flex gap-4 text-text-secondary">
-                    <Link href="#" className="hover:text-primary transition-colors">
-                        {/* Simple generic social icon */}
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path></svg>
-                    </Link>
-                </div>
-            </div>
-            <div className="mt-8 text-center text-xs text-text-secondary">
-                © {new Date().getFullYear()} ConcertTracker. All rights reserved.
-            </div>
-        </footer>
+        </Link>
     )
 }

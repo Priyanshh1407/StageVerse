@@ -15,7 +15,9 @@ export async function GET(req) {
         }
 
         // 1. Get all events for calculations
-        const allEvents = await Event.find({ organizerId: user.userId }).select('title city ticketTiers date');
+        // 1. Get all events for calculations
+        console.log("ARTIST DASHBOARD FETCH - Artist ID:", user.userId); // DEBUG LOG
+        const allEvents = await Event.find({ artistId: user.userId }).select('title city ticketTiers date');
 
         let totalTicketsSold = 0;
         let totalCapacity = 0;
@@ -59,7 +61,7 @@ export async function GET(req) {
 
         // 2. Find the next upcoming show (The "Live Tonight" one)
         const nextShow = await Event.findOne({
-            organizerId: user.userId,
+            artistId: user.userId,
             date: { $gte: new Date() }
         })
             .sort({ date: 1 })
@@ -68,7 +70,7 @@ export async function GET(req) {
 
         // 3. Find ALL upcoming stops for the route
         const upcomingStops = await Event.find({
-            organizerId: user.userId,
+            artistId: user.userId,
             date: { $gt: nextShow ? nextShow.date : new Date() }
         })
             .sort({ date: 1 })
@@ -150,6 +152,7 @@ export async function GET(req) {
             tourName,
             systemStatus,
             currentShow: nextShow ? {
+                id: nextShow._id, // Add ID for API calls
                 city: nextShow.city,
                 venue: nextShow.venue?.name || "Unknown Venue",
                 doorsOpen: "18:00 PM",

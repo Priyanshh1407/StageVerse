@@ -18,7 +18,10 @@ export async function GET(req) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
         }
 
-        const guests = await Guest.find({ eventId }).sort({ createdAt: -1 });
+        const guests = await Guest.find({
+            eventId,
+            artistId: artist.userId // NEW: Filter by artist
+        }).sort({ createdAt: -1 });
 
         return NextResponse.json({ success: true, guests });
     } catch (error) {

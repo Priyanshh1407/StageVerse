@@ -2,6 +2,7 @@
 
 import { Users, Search, Mail, MapPin, Calendar, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function GuestlistPanel({ eventId }) {
     const [guests, setGuests] = useState([]);
@@ -60,8 +61,9 @@ export default function GuestlistPanel({ eventId }) {
                 setGuests(prev => prev.map(g => g._id === selectedGuest._id ? json.guest : g));
                 setSelectedGuest(json.guest);
                 setIsEditingNotes(false);
+                toast.success("Notes updated successfully");
             } else {
-                alert("Failed to update notes");
+                toast.error("Failed to update notes");
             }
         } catch (e) {
             console.error(e);
@@ -84,8 +86,9 @@ export default function GuestlistPanel({ eventId }) {
                 // Update local list
                 setGuests(prev => prev.filter(g => g._id !== selectedGuest._id));
                 setSelectedGuest(null);
+                toast.success("Access revoked");
             } else {
-                alert("Failed to revoke access");
+                toast.error("Failed to revoke access");
             }
         } catch (e) {
             console.error(e);
@@ -140,8 +143,8 @@ export default function GuestlistPanel({ eventId }) {
                                     key={guest._id}
                                     onClick={() => setSelectedGuest(guest)}
                                     className={`p-3 rounded-xl cursor-pointer transition-all duration-200 border border-transparent group ${selectedGuest?._id === guest._id
-                                            ? 'bg-[#0d93f2]/10 border-[#0d93f2]/30 shadow-[0_0_15px_rgba(13,147,242,0.1)]'
-                                            : 'hover:bg-[#182934] hover:border-[#315168]/30'
+                                        ? 'bg-[#0d93f2]/10 border-[#0d93f2]/30 shadow-[0_0_15px_rgba(13,147,242,0.1)]'
+                                        : 'hover:bg-[#182934] hover:border-[#315168]/30'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">

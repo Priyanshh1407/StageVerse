@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Globe, Phone, Mail, Clock, Calendar, AlertTriangle, Users } from 'lucide-react';
+import { MapPin, Globe, Phone, Mail, Clock, Calendar, AlertTriangle, Users, Info, Edit2, Save, Wifi, Copy, Lock, Star, Navigation } from 'lucide-react';
 import { toast } from "sonner";
 
 export default function VenueIntel({ intel, onUpdate }) {

@@ -100,7 +100,9 @@ const EventSchema = new mongoose.Schema({
 
   status: { type: String, default: 'Scheduled' }, // 'requested', 'active', 'archived'
   organizerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  artistId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Linked Artist Account
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Production Crew assigned by Artist
+  productionStatus: { type: String, default: 'none' }, // 'none', 'requested', 'active', 'completed'
 
   // NEW: Day Sheet & Logistics
   daySheet: [DaySheetItemSchema],

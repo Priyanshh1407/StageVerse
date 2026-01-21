@@ -12,8 +12,11 @@ const GENRES = [
 ];
 
 const STATUS_OPTIONS = [
-  "Draft", "Scheduled", "Published", "Live", "Completed", "Cancelled"
+  "Draft", "Scheduled", "Published", "Cancelled"
 ];
+
+import CreateVenueModal from '@/components/organizer/create-event/CreateVenueModal';
+import UserSearchInput from '@/components/common/UserSearchInput';
 
 export default function EventDetailsForm({
   onOpenVenueModal,
@@ -33,6 +36,7 @@ export default function EventDetailsForm({
   const [formData, setFormData] = useState({
     title: '',
     artist: '',
+    artistId: null, // Store ID
     genre: '',
     status: 'Scheduled',
     vibe: 50,
@@ -68,7 +72,8 @@ export default function EventDetailsForm({
         // Populate Form
         setFormData({
           title: data.title,
-          artist: data.artist,
+          artist: data.artist, // Name
+          artistId: data.artistId, // ID
           genre: data.genre || '',
           status: data.status || 'Scheduled',
           vibe: getVibeValue(data.vibe), // Helper to convert String back to Slider Number
@@ -317,14 +322,22 @@ export default function EventDetailsForm({
           />
         </div>
 
-        {/* Artist */}
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[#90a4cb]">Artist</label>
-          <input
-            type="text"
-            value={formData.artist}
-            onChange={(e) => setFormData({ ...formData, artist: e.target.value })}
-            className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#0d93f2] outline-none placeholder-[#314368]"
+        {/* Artist Search */}
+        <div className="flex flex-col gap-2 relative z-[60]"> {/* High Z-Index for Dropdown */}
+          <UserSearchInput
+            label="Artist"
+            role="artist"
+            initialValue={formData.artist} // Pass name string OR object if you had full user.
+            // Logic: If edit mode, we might only have name if legacy, or ID if new. 
+            // Best to fetch full user details if ID exists, but for now we trust name.
+            onSelect={(user) => {
+              if (user) {
+                setFormData({ ...formData, artist: user.name, artistId: user._id });
+              } else {
+                setFormData({ ...formData, artist: '', artistId: null });
+              }
+            }}
+            required
           />
         </div>
 

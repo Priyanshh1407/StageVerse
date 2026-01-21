@@ -3,7 +3,9 @@ import mongoose from 'mongoose';
 
 const GuestSchema = new mongoose.Schema({
   // Which event is this guest for?
+  // Which event is this guest for?
   eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true },
+  artistId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Added for filtering
 
   // Basic Info
   name: { type: String, required: true },

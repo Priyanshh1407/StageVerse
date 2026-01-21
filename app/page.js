@@ -18,29 +18,37 @@ export default function Home() {
   // --- SIMULATE API CALL ---
   useEffect(() => {
     async function fetchData() {
-      // Simulate network latency
-      await new Promise(r => setTimeout(r, 1200));
+      try {
+        const res = await fetch('/api/events');
+        const json = await res.json();
 
-      // 1. Mock Trending Data
-      const mockTrending = [
-        { id: 1, name: 'The Midnight', genre: 'Synthwave', date: '14', month: 'OCT', location: 'Terminal 5, NYC', price: 45, image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop', color: 'text-[#00d4ff] border-[#00d4ff]/20 bg-[#00d4ff]/20' },
-        { id: 2, name: 'Glass Animals', genre: 'Indie Pop', date: '02', month: 'NOV', location: 'The Greek, LA', price: null, image: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=800&auto=format&fit=crop', color: 'text-purple-300 border-purple-500/20 bg-purple-500/20' },
-        { id: 3, name: 'Tomorrowland', genre: 'EDM', date: '18', month: 'NOV', location: 'Boom, Belgium', price: 120, image: 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=800&auto=format&fit=crop', color: 'text-yellow-300 border-yellow-500/20 bg-yellow-500/20' },
-        { id: 4, name: 'Warehouse Project', genre: 'Techno', date: '05', month: 'DEC', location: 'Manchester, UK', price: 55, image: 'https://images.unsplash.com/photo-1514525253440-b393332569ca?q=80&w=800&auto=format&fit=crop', color: 'text-red-300 border-red-500/20 bg-red-500/20' },
-      ];
+        if (json.success) {
+          // Map API data to component props
+          const realEvents = json.events.map(e => ({
+            id: e._id,
+            name: e.title,
+            genre: e.genre || 'Music',
+            date: e.date ? new Date(e.date).getDate().toString() : 'TBA',
+            month: e.date ? new Date(e.date).toLocaleString('default', { month: 'short' }).toUpperCase() : '',
+            location: e.venue?.name || e.city || 'Unknown Location',
+            price: e.ticketTiers?.[0]?.price || 0,
+            image: e.images?.hero || e.images?.cover || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800",
+            color: 'text-[#00d4ff] border-[#00d4ff]/20 bg-[#00d4ff]/20', // Default styling
+            title: e.title, // For LocalEvents
+            venue: e.venue?.name || 'TBA', // For LocalEvents
+            time: e.time || '8:00 PM', // For LocalEvents
+            tags: [e.genre || 'Live', 'Music'], // For LocalEvents
+            badge: e.status === 'Selling Fast' ? 'Hot' : null // For LocalEvents
+          }));
 
-      // 2. Mock Local Data
-      const mockLocal = [
-        { id: 1, title: 'Neon Dreams: 80s Night', venue: 'Brooklyn Steel', time: '10:00 PM', tags: ['Dance', 'Retro', '18+'], price: '$25', image: 'https://images.unsplash.com/photo-1545128485-c400e7702796?q=80&w=800&auto=format&fit=crop', badge: 'Tonight' },
-        { id: 2, title: 'Jazz in the Park', venue: 'Prospect Park', time: 'Tomorrow, 2:00 PM', tags: ['Jazz', 'Outdoor', 'Free'], price: 'Free', image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop', badge: null },
-        { id: 3, title: 'Neon Dreams: 80s Night', venue: 'Brooklyn Steel', time: '10:00 PM', tags: ['Dance', 'Retro', '18+'], price: '$25', image: 'https://images.unsplash.com/photo-1545128485-c400e7702796?q=80&w=800&auto=format&fit=crop', badge: 'Tonight' },
-        { id: 4, title: 'Jazz in the Park', venue: 'Prospect Park', time: 'Tomorrow, 2:00 PM', tags: ['Jazz', 'Outdoor', 'Free'], price: 'Free', image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop', badge: null }
-
-      ];
-
-      setTrendingData(mockTrending);
-      setLocalData(mockLocal);
-      setIsLoading(false);
+          setTrendingData(realEvents.slice(0, 4)); // Top 4
+          setLocalData(realEvents.slice(0, 4)); // Same for now, or shuffle
+        }
+      } catch (err) {
+        console.error("Failed to fetch home events", err);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     fetchData();

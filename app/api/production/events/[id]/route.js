@@ -45,7 +45,12 @@ export async function PUT(req, { params }) {
         if (body.type || body.genre) event.genre = body.type || body.genre;
 
         if (body.status) {
-            event.status = body.status;
+            // If Production is accepting (setting to active), update productionStatus too
+            if (body.status === 'active' && isAssigned) {
+                event.productionStatus = 'active';
+            } else {
+                event.status = body.status;
+            }
             actionDetails = `Changed status to ${body.status}: ${event.title}`;
         }
 

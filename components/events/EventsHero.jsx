@@ -10,21 +10,21 @@ export default function EventsHero({ searchValue, onSearchChange }) {
 
       <div className="relative z-20 flex h-full flex-col items-center justify-center px-4 text-center">
         <h1 className="mb-6 text-5xl font-bold tracking-tight text-white sm:text-7xl drop-shadow-lg">
-          Find Your <span className="text-[#00d4ff]">Stage.</span>
+          Events
         </h1>
         <p className="mb-8 max-w-2xl text-lg text-slate-300 sm:text-xl drop-shadow-md">
           Explore the universe of live music.
         </p>
-        
+
         <div className="w-full max-w-2xl">
           <div className="relative flex items-center group">
             <Search className="absolute left-4 w-5 h-5 text-slate-400 group-focus-within:text-[#00d4ff] transition-colors" />
-            <input 
+            <input
               type="text"
               value={searchValue}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full rounded-full border border-white/10 bg-[#121212]/80 py-3 pl-12 pr-4 text-white placeholder-slate-500 backdrop-blur-md focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all" 
-              placeholder="Search events, artists, or venues..." 
+              className="w-full rounded-full border border-white/10 bg-[#121212]/80 py-3 pl-12 pr-4 text-white placeholder-slate-500 backdrop-blur-md focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all"
+              placeholder="Search events, artists, or venues..."
             />
           </div>
         </div>

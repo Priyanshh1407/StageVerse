@@ -43,7 +43,8 @@ export async function POST(req) {
                 status: 'approved', // Auto-approve winners
                 plusOnes: 1, // Give them a +1 by default? Let's say yes for winners.
                 notes: 'Winner of Setlist Prediction Game',
-                addedBy: artist.userId
+                addedBy: artist.userId,
+                artistId: artist.userId // NEW: Save explicit artistId
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );

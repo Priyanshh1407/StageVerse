@@ -10,9 +10,9 @@ export async function GET(req) {
         const user = await verifyAuth(req);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        // Fetch All Events for Artist
+        // Fetch All Events for Artist (where they are the performer)
         const events = await Event.find({
-            organizerId: user.userId
+            artistId: user.userId
         })
             .sort({ date: 1 }) // Upcoming first
             .populate('venue', 'name city state');

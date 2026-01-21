@@ -1,234 +1,244 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-// We removed FanSidebar since this is a public page
-import { 
-  Globe, PlayCircle, ThumbsUp, Play, 
-  Heart, Ticket, Share2, Menu, X 
+import {
+  Play, Heart, Share2, Globe, Music2,
+  Calendar, MapPin, ArrowRight, Loader2, Sparkles, User, Ticket
 } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import MainFooter from '@/components/MainFooter';
+import { useParams } from 'next/navigation';
 
-// --- MOCK DATA (Same as before) ---
-const ARTIST_DATA = {
-  name: "The Neon Synths",
-  image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAnkS0ti0xhyJvZYjVJ2474H-2gM_PIwTpEkJFGQtvKmFanHJwOqgqqpytAK9eZ7qwdQOEOxNFH6ASbFNe8tvoCDbCTjFmhk9knby63XzXyw_lHllSMXnJZ2_uW3ndx1ziblnnklSE14pSQ-wecTHzAkEza5DVFoS3MbGL96SVKPAoZWHexiwTLZpTdsdnMt9bkbjj9lmP8ybnHHTIDtQsw6_fgXMFEBOjyzWVcCnMBC6e8xKVHrwZJZecd8C1XlOh_G48M1rhpJzG_",
-  genres: ["Electronic", "Synth-wave", "Pop"],
-  bio: [
-    "Formed in 2018 in the underground clubs of Berlin, The Neon Synths quickly rose to prominence...",
-    "Known for their immersive live performances involving heavy use of lasers..."
-  ],
-  popularTracks: [
-    { rank: 1, title: "Midnight Drive", album: "Neon Horizons • 2023", duration: "3:45", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAAZaIS6VVRxdkQXE2Z5GGumWGlwuNOCnxKyZlV9l1KsErk2t4bQQOHm1ZCA8HNBX4GAViVYOB-TdVcdlaG6hjSrxytuKoIYVdARrJRjIF1K9WdTIazGKOjY7M9BHXB_z4BGpTCR5bj6_ounKdJOuF11LxTryWiADCHQ4A-FRP5qt49jdszVklg9InqmDdtkUwczN2PnJ6EPbjx9xXvUW4qsb-oGwMzOn2--qlepY5TQ_gMAGfpJnh9yMtcWMRi4AIUlm5bTUhwo9SC" },
-    { rank: 3, title: "Retrograde", album: "Neon Horizons • 2023", duration: "3:08", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCp40tmJw07mRarHEHDzz7Ncjoc0Xm8TWClHJZ_McgAxL9MzJS9fcYKvWH2PgBnqdl_cCqqj1tU48MYqdpwII5lzt2qWUz48PbHiEhUcaOm6bOGr6dPfqyuh5vLkOVQox_lFANzsYNYs0gEa1enOvITK6vOVGg8C8kgna-D08NEniERzhzC5DfT18BqpMygOG4wvGJzaDXLeJo51E8K8ZZDkUtUscqe9sMX4Ty_WiP2pSn3MzH9UNU_YTKHhPd_5aM5yV4Zcxc9zX3G" },
-    { rank: 2, title: "Cyber Heart", album: "Digital Love • 2022", duration: "4:12", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD4k07s5EY9lcTyTcdtgU4dWzXJQQlJJn9m0zVotJBj-Qe6sDLUTE867Ghe40w1TrjDeI5QdZUr2WJ422qh5e67D4GNklgfNWukVT1FN0-17uEHDT6SAdD41O0lnexAK-LxVWOeI22Y-4F5-yHUgzUjQzWb0KgmxDNC0-d1OVAd2-yPbabexA-0-6YEBv_civ_bIUaWewjiXk-726HrJk-LEYSOFgV8kPHzfYIeBBrtQvM2yYP5ZT-lK71bkBleSyxPSSJnGiWDgbJB" },
-  ],
-  upcomingShows: [
-    { day: "12", month: "NOV", venue: "The Basement", city: "London, UK" },
-    { day: "15", month: "NOV", venue: "Le Zénith", city: "Paris, France" },
-    { day: "02", month: "DEC", venue: "Terminal 5", city: "New York, USA" },
-  ],
-  relatedArtists: [
-    { name: "Midnight Runners", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCQ6MDVUOpASOpfFuk-w7oY5nmAsclEGqNb2CwVDf5gosluoQxbLEauc7VcVwBmYYwVLFmHSgVAFoOt5fyC3iQsWFBCfsYjFaiakRelHrBH4cTDNg-Mj0fisKxWM54Pr7FL9r8BgiXsmgHxKE3HEVs6MsXUh6nkDEfl2NVxnh0SdFGXIhzTWaNhLsyJa3OkDEEV8Cefi1uVhnKAPkl23c4qmcZKWxCv7AyQcmKEEVo1DpefpDyUtvlQKvTQTfLBcJX5UUuAg5Vhq0lo" },
-    { name: "Laser Heart", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDuMov3N-scfi7Pr6ExV3ZcLZoJXyAKe4Hf_LjIdCNmX28a7Gs69_G2iQwqkvBhdKc0fi_W6Dt6FZResNLTqWMxFwrMSoe6JakJf3Ll7Ekb3p_XVdXpBREWM24sYqL_hquNKhvN4xWvhxdZ1dfE-umcEuLuwkVYe0GCSmC4IYHU4aEQ7J2Y3EZgunDU9pNg7Uruccl7q4PEI31Kq_Pkromm_35AW2YSMz5heiU9WmD3Wkc7QG7uLi43M52GYdGJyRZN9DNMAD0hGmVA" },
-    { name: "Digital Dream", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD32bMfkeeCneXwnOFT259ri-wsxSVemykbJkrdkAQfRbb2oMh0FK1gn2mJfOjgssjZosYJqYs9V-CBOIaPaqgx2aSORT6BxbIXPH5OJvsFZCygYFs52Iz1ZEfb_rBD3hYYoeytRMEWqAnoWFf-dVJBxtYHPRcP6ugjw7g8ym_Bw09em1O1ioCb_KjzzL7qay9BMTUKzV1dj0La39-cMgyKl_Iec1aHbIGVYeaD9l7uZEqSGBvDKVx8LMU2IcCqnc1dTb84bqfAxG1S" },
-  ]
-};
+export default function PublicArtistPage() {
+  const params = useParams();
+  const artistId = params?.id;
 
-export default function PublicArtistPage({ params }) {
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [artist, setArtist] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Scroll Animation Hooks
+  const ref = useRef(null);
+  const { scrollY } = useScroll();
+  const heroY = useTransform(scrollY, [0, 500], [0, 200]);
+  const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.3]);
+
+  useEffect(() => {
+    if (!artistId) return;
+
+    const fetchArtist = async () => {
+      try {
+        const res = await fetch(`/api/artist/${artistId}`);
+        if (!res.ok) throw new Error("Artist not found");
+        const json = await res.json();
+        if (json.success) {
+          setArtist(json.data);
+        } else {
+          throw new Error(json.message || "Failed to load artist");
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtist();
+  }, [artistId]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-black text-white">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-10 h-10 animate-spin text-[#00d4ff]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !artist) {
+    return (
+      <div className="flex flex-col min-h-screen bg-black text-white">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+          <User className="w-16 h-16 text-slate-500 mb-6" />
+          <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tighter">Artist Not Found</h2>
+          <Link href="/explore-artist" className="text-[#00d4ff] hover:underline font-bold text-lg">
+            Browse Artists
+          </Link>
+        </div>
+        <MainFooter />
+      </div>
+    );
+  }
+
+  // --- DATA ---
+  const heroImage = artist.image || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop";
+  const bio = artist.bio || ["No bio available."];
+  const shows = artist.upcomingShows || [];
 
   return (
-    <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white selection:bg-[#0d93f2]/30">
-      
-      {/* --- PUBLIC HEADER --- */}
+    <div className="flex flex-col min-h-screen bg-[#050505] text-white font-sans selection:bg-[#00d4ff] selection:text-black overflow-x-hidden">
       <Navbar />
 
-      {/* --- MAIN CONTENT --- */}
-      <main>
-        
-        {/* Hero Section */}
-        <div className="relative w-full h-[50vh] sm:h-[60vh] lg:h-[70vh]">
-          <Image 
-            src={ARTIST_DATA.image} 
-            alt={ARTIST_DATA.name} 
-            fill 
-            className="object-cover"
-            priority
+      <main className="flex-1 flex flex-col relative w-full">
+
+        {/* 1. IMMERSIVE HERO SECTION */}
+        <div className="relative w-full h-[70vh] lg:h-[80vh] overflow-hidden" ref={ref}>
+          <motion.div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url("${heroImage}")`,
+              y: heroY,
+              opacity: heroOpacity
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#101b22] via-[#101b22]/60 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full px-4 sm:px-10 lg:px-40 pb-10">
-            <div className="max-w-7xl mx-auto w-full">
-              <h1 className="text-white text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tighter drop-shadow-2xl">
-                {ARTIST_DATA.name.toUpperCase()}
+
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#050505] via-transparent to-[#00d4ff]/10 mix-blend-overlay" />
+
+          <div className="absolute inset-0 flex flex-col justify-end px-6 md:px-12 lg:px-24 pb-24 z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="max-w-5xl"
+            >
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                {artist.genres && artist.genres.map((g, i) => (
+                  <span key={i} className="bg-[#00d4ff]/10 border border-[#00d4ff]/30 text-[#00d4ff] text-xs font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm backdrop-blur-md">
+                    {g}
+                  </span>
+                ))}
+                <span className="flex items-center gap-2 text-slate-300 text-xs font-bold uppercase tracking-widest pl-2 border-l border-white/20">
+                  <MapPin className="w-3.5 h-3.5" /> {artist.location}
+                </span>
+              </div>
+
+              <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-[0.9] mb-8 drop-shadow-2xl mix-blend-screen bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">
+                {artist.name}
               </h1>
-            </div>
+
+              <div className="flex flex-wrap gap-4">
+                <button className="bg-[#00d4ff] text-black px-8 py-3 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 transition-transform flex items-center gap-2 shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+                  <Heart className="w-4 h-4" /> Follow
+                </button>
+                <button className="bg-white/10 text-white border border-white/20 px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-white hover:text-black transition-all flex items-center gap-2 backdrop-blur-md">
+                  <Share2 className="w-4 h-4" /> Share
+                </button>
+              </div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Content Grid */}
-        <div className="px-4 sm:px-10 lg:px-40 -mt-6 relative z-10 pb-20">
-          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
-            
-            {/* Left Column */}
-            <div className="flex-1 flex flex-col gap-8 min-w-0">
-              
-              {/* Tags & Bio Blurb */}
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap gap-2">
-                  {ARTIST_DATA.genres.map(genre => (
-                    <span key={genre} className="px-3 py-1 rounded-full bg-[#182630] border border-[#223949] text-[#0d93f2] text-xs font-bold uppercase tracking-wider">
-                      {genre}
-                    </span>
+        {/* 2. MAIN GRID */}
+        <div className="relative z-20 -mt-12 px-6 md:px-12 lg:px-24 pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+            {/* LEFT: Info & Layout */}
+            <div className="lg:col-span-8 flex flex-col gap-16">
+
+              {/* BIO */}
+              <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="bg-[#111] p-8 md:p-10 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group"
+              >
+                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#00d4ff]" /> About
+                </h3>
+                <div className="prose prose-invert prose-lg max-w-none text-slate-300 leading-relaxed font-light">
+                  {bio.map((p, i) => (
+                    <p key={i} className="mb-4">{p}</p>
                   ))}
                 </div>
-                <p className="text-xl sm:text-2xl text-white font-medium leading-relaxed">
-                  The Neon Synths are an electronic duo redefining the synth-wave genre with pulse-pounding beats.
-                </p>
-                
-                {/* Social Icons */}
-                <div className="flex gap-4 pt-2">
-                  <button className="text-slate-400 hover:text-[#0d93f2] transition-colors"><Globe className="w-6 h-6" /></button>
-                  <button className="text-slate-400 hover:text-[#0d93f2] transition-colors"><PlayCircle className="w-6 h-6" /></button>
-                  <button className="text-slate-400 hover:text-[#0d93f2] transition-colors"><ThumbsUp className="w-6 h-6" /></button>
-                </div>
-              </div>
+              </motion.section>
 
-              {/* Popular Tracks */}
-              <div className="pt-8">
-                <h3 className="text-white text-2xl font-bold mb-6 flex items-center gap-2">
-                  <span className="p-1 bg-[#0d93f2]/20 rounded text-[#0d93f2]"><Play className="w-5 h-5 fill-current" /></span>
-                  Popular Tracks
+              {/* POPULAR TRACKS (Mockup) */}
+              <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                  <Music2 className="w-6 h-6 text-[#00d4ff]" /> Popular
                 </h3>
                 <div className="flex flex-col gap-2">
-                  {ARTIST_DATA.popularTracks.map((track) => (
-                    <TrackRow key={track.rank} track={track} />
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center justify-between p-4 bg-[#111] border border-white/5 rounded-2xl hover:bg-[#161616] hover:border-[#00d4ff]/20 transition-all cursor-pointer group">
+                      <div className="flex items-center gap-6">
+                        <span className="text-slate-600 font-black text-xl w-6 text-center group-hover:text-[#00d4ff]">{i}</span>
+                        <div className="w-12 h-12 bg-gray-800 rounded-lg overflow-hidden relative">
+                          <Image src={`https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=100&h=100&fit=crop`} alt="Track" fill className="object-cover" />
+                        </div>
+                        <div>
+                          <h4 className="text-white font-bold group-hover:text-[#00d4ff] transition-colors">Track Title {i}</h4>
+                          <p className="text-slate-500 text-xs uppercase tracking-wider">Album Name</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-slate-500 text-sm">3:45</span>
+                        <button className="w-10 h-10 rounded-full bg-[#00d4ff] text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
+                          <Play className="w-4 h-4 fill-current ml-0.5" />
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
+              </motion.section>
 
-              {/* Full Bio */}
-              <div className="pt-8 pb-10 border-t border-[#223949] mt-4">
-                <h3 className="text-white text-2xl font-bold mb-4">About the Artist</h3>
-                <div className="prose prose-invert max-w-none text-slate-300 font-sans leading-relaxed space-y-4">
-                  {ARTIST_DATA.bio.map((para, i) => <p key={i}>{para}</p>)}
-                </div>
-              </div>
             </div>
 
-            {/* Right Column (Sidebar) */}
-            <div className="lg:w-[360px] shrink-0">
-              <div className="sticky top-24 flex flex-col gap-6">
-                
-                {/* Upcoming Shows */}
-                <div className="bg-[#182630] rounded-xl border border-[#223949] overflow-hidden shadow-xl">
-                  <div className="p-5 border-b border-[#223949] bg-[#14202a]">
-                    <h3 className="text-white text-lg font-bold">Upcoming Shows</h3>
+            {/* RIGHT: Sidebar (Upcoming Shows) */}
+            <div className="lg:col-span-4 relative">
+              <div className="sticky top-28 flex flex-col gap-6">
+                <div className="bg-[#111] border border-[#00d4ff]/20 rounded-3xl p-6 shadow-[0_0_40px_-10px_rgba(0,212,255,0.15)] relative overflow-hidden">
+                  <div className="flex items-center justify-between mb-6 relative z-10">
+                    <h3 className="text-xl font-bold text-white">Upcoming Shows</h3>
+                    <span className="text-xs bg-[#00d4ff]/10 text-[#00d4ff] px-2 py-1 rounded font-bold uppercase">{shows.length} Found</span>
                   </div>
-                  <div className="p-5 flex flex-col gap-4">
-                    {ARTIST_DATA.upcomingShows.map((show, index) => (
-                      <React.Fragment key={index}>
-                        <ShowCard show={show} />
-                        {index < ARTIST_DATA.upcomingShows.length - 1 && <div className="w-full h-px bg-[#223949]"></div>}
-                      </React.Fragment>
-                    ))}
-                    <button className="text-center text-[#0d93f2] text-sm font-bold hover:underline mt-2">View all 12 dates</button>
+
+                  <div className="space-y-4 relative z-10">
+                    {shows.length > 0 ? shows.map((show) => (
+                      <Link href={`/events/${show.id}`} key={show.id} className="block group">
+                        <div className="flex gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
+                          <div className="bg-[#1a1a1a] rounded-lg w-14 h-14 flex flex-col items-center justify-center border border-white/10 group-hover:border-[#00d4ff] transition-colors">
+                            <span className="text-[10px] text-[#00d4ff] font-black uppercase">{show.month}</span>
+                            <span className="text-xl text-white font-bold leading-none">{show.day}</span>
+                          </div>
+                          <div>
+                            <h4 className="text-white font-bold leading-tight group-hover:text-[#00d4ff] transition-colors">{show.title}</h4>
+                            <p className="text-slate-400 text-xs mt-0.5">{show.venue}, {show.city}</p>
+                          </div>
+                        </div>
+                      </Link>
+                    )) : (
+                      <p className="text-slate-500 text-center py-8">No upcoming shows.</p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-6 border-t border-white/10 text-center">
+                    <Link href="/events" className="inline-flex items-center gap-2 text-sm font-bold text-white hover:text-[#00d4ff] transition-colors uppercase tracking-widest">
+                      View Full Tour <ArrowRight className="w-4 h-4" />
+                    </Link>
                   </div>
                 </div>
-
-                {/* Follow Widget */}
-                <div className="bg-gradient-to-br from-[#101b22] to-[#0d93f2]/10 rounded-xl border border-[#223949] p-5 shadow-lg">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Heart className="text-[#0d93f2] w-6 h-6 fill-[#0d93f2]" />
-                    <h3 className="text-white text-lg font-bold">Don't miss a beat</h3>
-                  </div>
-                  <p className="text-slate-400 text-sm mb-4">Login to follow {ARTIST_DATA.name} and get notified about new tours.</p>
-                  <Link href="/login" className="flex justify-center w-full bg-[#182630] border border-[#223949] hover:bg-[#223949] text-white text-sm font-bold py-2.5 px-4 rounded-lg transition-all">
-                    Login to Follow
-                  </Link>
-                </div>
-
-                {/* Related Artists */}
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider mb-4 text-slate-400">Fans also like</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {ARTIST_DATA.relatedArtists.map((artist, i) => (
-                      <RelatedArtist key={i} artist={artist} />
-                    ))}
-                  </div>
-                </div>
-
               </div>
             </div>
 
           </div>
         </div>
+
+        <MainFooter />
       </main>
-
-      {/* Footer */}
-      <MainFooter />
-    </div>
-  );
-}
-
-// --- SUB-COMPONENTS ---
-
-function TrackRow({ track }) {
-  return (
-    <div className="group flex items-center justify-between p-3 rounded-lg hover:bg-[#182630] transition-colors cursor-pointer border border-transparent hover:border-[#223949]">
-      <div className="flex items-center gap-4 overflow-hidden">
-        <span className="text-slate-500 font-bold w-6 text-center group-hover:text-[#0d93f2]">{track.rank}</span>
-        <div className="relative h-12 w-12 rounded overflow-hidden shrink-0 bg-gray-800">
-          <Image src={track.image} alt={track.title} fill className="object-cover" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-white font-bold truncate group-hover:text-[#0d93f2] transition-colors">{track.title}</p>
-          <p className="text-slate-400 text-sm truncate">{track.album}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-4 pl-4">
-        <span className="text-slate-400 text-sm hidden sm:block font-mono">{track.duration}</span>
-        <button className="size-10 rounded-full bg-[#0d93f2] text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 shadow-lg shadow-[#0d93f2]/20">
-          <Play className="w-5 h-5 fill-current ml-0.5" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ShowCard({ show }) {
-  return (
-    <div className="flex gap-4 items-start group cursor-pointer">
-      <div className="flex flex-col items-center justify-center bg-[#101b22] border border-[#223949] rounded-lg w-14 h-14 shrink-0 text-white group-hover:border-[#0d93f2]/50 transition-colors">
-        <span className="text-[10px] font-bold uppercase text-[#0d93f2] tracking-wide">{show.month}</span>
-        <span className="text-xl font-bold leading-none">{show.day}</span>
-      </div>
-      <div className="flex flex-col gap-2 w-full">
-        <div>
-          <p className="text-white font-bold leading-tight group-hover:text-[#0d93f2] transition-colors">{show.venue}</p>
-          <p className="text-slate-400 text-sm">{show.city}</p>
-        </div>
-        <button className="w-full bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white text-sm font-bold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md">
-          <span>Get Tickets</span>
-          <Ticket className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function RelatedArtist({ artist }) {
-  return (
-    <div className="group flex flex-col items-center gap-2 cursor-pointer">
-      <div className="relative aspect-square w-full rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#0d93f2] transition-all">
-        <Image src={artist.image} alt={artist.name} fill className="object-cover" />
-      </div>
-      <span className="text-xs text-center text-slate-300 group-hover:text-white truncate w-full transition-colors">
-        {artist.name}
-      </span>
     </div>
   );
 }

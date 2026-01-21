@@ -32,7 +32,10 @@ export async function GET(req) {
                 title: event.title,
                 venue: event.city || (event.venue?.name || 'Unknown Venue'),
                 date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                status: event.status, // active, archived, requested
+                date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                // Prioritize 'productionStatus' (requested) if it exists and differs from public status
+                status: (event.productionStatus && event.productionStatus !== 'none') ? event.productionStatus : event.status,
+                originalStatus: event.status, // Keep original for reference
                 type: event.genre || 'General',
                 typeColor: getColorForGenre(event.genre),
                 image: event.images?.hero || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
@@ -40,9 +43,9 @@ export async function GET(req) {
         });
 
         // 4. Calculate Stats
-        const activeShows = shows.filter(s => s.status === 'active');
+        const activeShows = shows.filter(s => s.status === 'active' || s.productionStatus === 'active');
         const archivedShows = shows.filter(s => s.status === 'archived');
-        const requestedShows = shows.filter(s => s.status === 'requested');
+        const requestedShows = shows.filter(s => s.status === 'requested' || s.productionStatus === 'requested');
 
         // CHECK FOR CONFLICTS (Dynamic Analysis)
         let conflictCount = 0;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { BarChart2, PlusCircle, Edit, Trash2, ListMusic, List, Timer, X, ChevronDown, Info, Smartphone, Check, ArrowLeft } from 'lucide-react';
 
 export default function EncorePollConfig({ eventId }) { // Prop
@@ -105,13 +106,15 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
     // 1. Prepare Data
     const validOptions = options.map(o => o.value.trim()).filter(v => v !== "");
 
+
+
     if (validOptions.length < 2) {
-      alert("Please provide at least 2 options.");
+      toast.error("Please provide at least 2 options.");
       return;
     }
 
     if (!eventId) {
-      alert("No event selected. Please select an event first.");
+      toast.error("No event selected. Please select an event first.");
       return;
     }
 
@@ -129,14 +132,14 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
 
       const json = await res.json();
       if (json.success) {
-        alert("Poll Created Successfully!");
+        toast.success("Poll Created Successfully!");
         onSave(); // Close editor
       } else {
-        alert(json.error || "Failed to create poll");
+        toast.error(json.error || "Failed to create poll");
       }
     } catch (e) {
       console.error(e);
-      alert("Error saving poll");
+      toast.error("Error saving poll");
     } finally {
       setLoading(false);
     }

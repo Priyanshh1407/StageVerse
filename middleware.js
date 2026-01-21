@@ -21,6 +21,8 @@ const publicPaths = [
   '/explore',
   '/explore-artist',
   '/events',
+  '/artist', // Public Artist Profile
+  '/api', // Allow ALL API routes to pass through (Let API handle its own auth)
   '/api/socket',
   '/api/description',
   '/api/patch'
