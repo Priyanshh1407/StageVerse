@@ -23,26 +23,17 @@ export async function POST(req) {
                 { message: 'Invalid credentials.' },
                 { status: 401 }
             );
-        }
-
-        // Compare passwords
-        const isMatch = await bcrypt.compare(password, user.password);
+        }        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return NextResponse.json(
                 { message: 'Invalid credentials.' },
                 { status: 401 }
             );
-        }
-
-        // Generate JWT
-        const token = jwt.sign(
+        }        const token = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
-        );
-
-        // Return success response(Hide password again)
-        const response = NextResponse.json(
+        );        const response = NextResponse.json(
             {
                 message: 'Login successful',
                 user: {
@@ -53,12 +44,7 @@ export async function POST(req) {
                 }
             }, {
                 status: 200
-        });
-
-        // 3. SET THE COOKIE (The Key Change 🍪)
-        // httpOnly: true -> Client JS cannot read it (Secure!)
-        // secure: true   -> Only sends over HTTPS (essential for production)
-        response.cookies.set('token', token, {
+        });        response.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',

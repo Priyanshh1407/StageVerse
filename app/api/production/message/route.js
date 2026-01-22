@@ -10,23 +10,14 @@ export async function POST(req) {
         const user = await verifyAuth(req);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { message } = await req.json();
-
-        // Find an active event to attach this message to.
-        // In a real app, the specific Event ID should be passed in the body.
-        // For now, we'll find the first "Active" or "Upcoming" event this user manages.
-        const event = await Event.findOne({
+        const { message } = await req.json();        const event = await Event.findOne({
             $or: [{ organizerId: user.userId }, { assignedTo: user.userId }],
             date: { $gte: new Date() }
         }).sort({ date: 1 });
 
         if (!event) {
             return NextResponse.json({ error: "No active event found to attach message to." }, { status: 400 });
-        }
-
-        // Create the Task (Message)
-        // We use "Crew Message:" prefix so we can potentially filter it differently later if needed
-        const newTask = await Task.create({
+        }        const newTask = await Task.create({
             eventId: event._id,
             title: `Crew Message: ${message}`,
             assignee: "Artist Management", // Assigned back to them

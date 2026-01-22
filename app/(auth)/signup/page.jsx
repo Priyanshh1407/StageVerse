@@ -28,10 +28,7 @@ const SignupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
-
-    // 1. Validation Logic
-    if (!formData.name) { setIsLoading(false); return setError('ERR_MISSING_FIELD: Full_Name is required.'); }
+    setIsLoading(true);    if (!formData.name) { setIsLoading(false); return setError('ERR_MISSING_FIELD: Full_Name is required.'); }
     if (!formData.email.includes('@')) { setIsLoading(false); return setError('CRITICAL: Invalid_Email_Format.'); }
     if (formData.password.length < 6) { setIsLoading(false); return setError('SECURITY_WARN: Password too weak.'); }
 
@@ -39,22 +36,14 @@ const SignupPage = () => {
     if (role === 'production' && !formData.jobTitle) { setIsLoading(false); return setError('ERR_ROLE: Job_Title not selected.'); }
     if (role === 'artist' && !formData.genre) { setIsLoading(false); return setError('ERR_ARTIST: Genre is required.'); }
 
-    try {
-      // 2. Prepare Data Payload
-      // We only send the fields relevant to the selected role
-      const payload = {
+    try {      const payload = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: role,
-        // Optional fields based on role
-        ...(role === 'organizer' && { organization: formData.orgName }), // Ensure Schema has this field
+        role: role,        ...(role === 'organizer' && { organization: formData.orgName }), // Ensure Schema has this field
         ...(role === 'production' && { jobTitle: formData.jobTitle }),   // Ensure Schema has this field
         ...(role === 'artist' && { genre: formData.genre }),             // Ensure Schema has this field
-      };
-
-      // 3. API Call
-      const res = await fetch('/api/auth/signup', {
+      };      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -64,12 +53,7 @@ const SignupPage = () => {
 
       if (!res.ok) {
         throw new Error(data.message || 'Signup failed');
-      }
-
-      // 4. Success Handling
-      console.log('Signup Successful!');
-      // Optional: Auto-login here? usually we send them to login page.
-      router.push('/login'); 
+      }      console.log('Signup Successful!');      router.push('/login'); 
 
     } catch (err) {
       console.error('Signup Error:', err);
@@ -82,7 +66,7 @@ const SignupPage = () => {
   return (
     <div className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black font-sans">
       
-      {/* HOME BUTTON */}
+      {}
       <Link 
         href="/" 
         className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/70 hover:text-white hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300 group"
@@ -91,7 +75,7 @@ const SignupPage = () => {
         <span className="text-sm font-medium hidden sm:inline">Home</span>
       </Link>
 
-      {/* BACKGROUND */}
+      {}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50" />
         <div className="absolute inset-0 bg-black/60" />
@@ -99,7 +83,7 @@ const SignupPage = () => {
         <div className="absolute bottom-[-20%] right-[-20%] w-[500px] h-[500px] bg-cyan-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
       </div>
 
-      {/* SIGNUP CARD */}
+      {}
       <motion.div
         layout
         initial={{ opacity: 0, scale: 0.9 }}
@@ -238,7 +222,7 @@ const SignupPage = () => {
               {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
             
-            {/* Google button hidden for brevity but you can keep it */}
+            {}
           </form>
 
           <p className="mt-4 sm:mt-6 text-gray-400 text-xs">
@@ -251,10 +235,7 @@ const SignupPage = () => {
       </motion.div>
     </div>
   );
-};
-
-// --- HELPER COMPONENTS (Keep these same as before) ---
-const RoleButton = ({ active, onClick, icon: Icon, label }) => (
+};const RoleButton = ({ active, onClick, icon: Icon, label }) => (
   <button
     type="button"
     onClick={onClick}

@@ -29,7 +29,7 @@ export default function CrewMessenger() {
 
     return (
         <div id="crew-messenger" className="bg-[#1a2632] border border-[#223949] rounded-2xl p-6 relative overflow-hidden group">
-            {/* Background Gradient */}
+            {}
             <div className="absolute top-0 right-0 p-8 opacity-10 blur-3xl rounded-full bg-[#0d93f2]" />
 
             <div className="relative z-10 flex flex-col gap-4">

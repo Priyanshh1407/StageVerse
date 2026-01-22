@@ -2,17 +2,11 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue'; // Registry
-import { verifyAuth } from '@/lib/auth';
-
-// GET: Public (Published Only) OR Organizer (My Events)
-export async function GET(req) {
+import { verifyAuth } from '@/lib/auth';export async function GET(req) {
   try {
     await dbConnect();
     const { searchParams } = new URL(req.url);
-    const mode = searchParams.get('mode'); // 'organizer' or null
-
-    // 1. Organizer Mode
-    if (mode === 'organizer') {
+    const mode = searchParams.get('mode'); // 'organizer' or null    if (mode === 'organizer') {
       const user = await verifyAuth(req);
       if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -21,10 +15,7 @@ export async function GET(req) {
         .sort({ createdAt: -1 });
 
       return NextResponse.json({ success: true, data: events });
-    }
-
-    // 2. Public Mode (Default) -> Only Published/Scheduled
-    const events = await Event.find({
+    }    const events = await Event.find({
       status: { $in: ['Published', 'Scheduled', 'Live'] }
     })
       .select('eventId title artist date time city venue images genre vibe status ticketTiers') // Optimize
@@ -37,10 +28,7 @@ export async function GET(req) {
     console.error('Failed to fetch events', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-}
-
-// POST: Create Event (Organizer Only)
-export async function POST(req) {
+}export async function POST(req) {
   try {
     await dbConnect();
     const user = await verifyAuth(req);
@@ -50,19 +38,13 @@ export async function POST(req) {
 
     const body = await req.json();
     console.log("CREATE EVENT BODY:", body); // DEBUG LOG
-    console.log("ARTIST ID LINK:", body.artistId); // DEBUG LOG
-
-    // Generate short ID
-    // Note: In production, use a more robust counter/sequence
-    const count = await Event.countDocuments();
+    console.log("ARTIST ID LINK:", body.artistId); // DEBUG LOG    const count = await Event.countDocuments();
     const eventId = 1000 + count + 1;
 
     const newEvent = new Event({
       ...body,
       eventId,
-      organizerId: user.userId,
-      // artistId is passed in body if selected
-    });
+      organizerId: user.userId,    });
 
     const savedEvent = await newEvent.save();
     console.log("SAVED EVENT:", savedEvent); // DEBUG LOG to confirm artistId is saved

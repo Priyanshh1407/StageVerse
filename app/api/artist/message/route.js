@@ -11,21 +11,14 @@ export async function POST(req) {
         const user = await verifyAuth(req);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { message, priority } = await req.json();
-
-        // Find the "Next Show" (Event 201 or similar) to attach the message to
-        // Logic: Find first upcoming event
-        const nextShow = await Event.findOne({
+        const { message, priority } = await req.json();        const nextShow = await Event.findOne({
             organizerId: user.userId,
             date: { $gte: new Date() }
         }).sort({ date: 1 });
 
         if (!nextShow) {
             return NextResponse.json({ error: "No upcoming shows found to attach message to." }, { status: 400 });
-        }
-
-        // Create the Task
-        const newTask = await Task.create({
+        }        const newTask = await Task.create({
             eventId: nextShow._id,
             title: `Artist Message: ${message}`, // "Artist Message: We need more water"
             assignee: "Production Crew",

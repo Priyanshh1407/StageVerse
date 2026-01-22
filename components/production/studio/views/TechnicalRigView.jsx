@@ -6,10 +6,7 @@ import { MoreHorizontal, Pencil, Trash2, Info, Loader2, X, Save } from 'lucide-r
 export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixture }) {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [editingFixture, setEditingFixture] = useState(null);
-  const [viewingFixture, setViewingFixture] = useState(null);
-
-  // Close menu when clicking outside AND handle ESC key
-  useEffect(() => {
+  const [viewingFixture, setViewingFixture] = useState(null);  useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.action-menu-container')) {
         setActiveMenuId(null);
@@ -17,9 +14,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
     };
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        // Close everything
-        setEditingFixture(null);
+      if (event.key === 'Escape') {        setEditingFixture(null);
         setViewingFixture(null);
         setActiveMenuId(null);
       }
@@ -95,7 +90,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
         </tbody>
       </table>
 
-      {/* EDIT MODAL */}
+      {}
       {editingFixture && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -135,9 +130,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                 <label className="block text-xs font-bold text-gray-400 mb-1">Role / Cue</label>
                 <select
                   value={editingFixture.cue}
-                  onChange={e => {
-                    // Simple color logic map
-                    const colors = { "Intro Sequence": "blue", "Drum Solo": "red", "Main Wash": "orange", "Audience Blinders": "orange", "Specials": "blue" };
+                  onChange={e => {                    const colors = { "Intro Sequence": "blue", "Drum Solo": "red", "Main Wash": "orange", "Audience Blinders": "orange", "Specials": "blue" };
                     setEditingFixture({ ...editingFixture, cue: e.target.value, cueColor: colors[e.target.value] || 'blue' })
                   }}
                   className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
@@ -162,7 +155,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
         </div>
       )}
 
-      {/* VIEW DETAILS MODAL */}
+      {}
       {viewingFixture && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -223,13 +216,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
 
     </div>
   );
-}
-
-// --- SUB-COMPONENT: Single Row with Dropdown Logic ---
-function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConflict, isOpen, onToggle, onDelete, onEdit, onView }) {
-
-  // Color mapping helper
-  const getCueColors = (color) => {
+}function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConflict, isOpen, onToggle, onDelete, onEdit, onView }) {  const getCueColors = (color) => {
     const map = {
       blue: { bg: 'bg-blue-900/20', text: 'text-blue-400', border: 'border-blue-500/20', dot: 'bg-blue-500' },
       orange: { bg: 'bg-orange-900/20', text: 'text-orange-400', border: 'border-orange-500/20', dot: 'bg-orange-500' },
@@ -273,7 +260,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
         </div>
       </td>
 
-      {/* ACTIONS COLUMN WITH DROPDOWN */}
+      {}
       <td className="py-3 px-4 text-right relative action-menu-container">
 
         {isConflict && (
@@ -292,7 +279,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
           <MoreHorizontal className="w-5 h-5" />
         </button>
 
-        {/* THE DROPDOWN MENU */}
+        {}
         {isOpen && (
           <div className="absolute right-8 top-8 w-40 bg-[#27272A] border border-[#3F3F46] rounded-lg shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
             <div className="flex flex-col py-1">

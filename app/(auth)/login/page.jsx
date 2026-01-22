@@ -3,11 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Chrome, AlertTriangle, ArrowLeft } from 'lucide-react';
-
-// --- 2. CONFIGURATION: Role-to-URL Mapping ---
-// This acts as the "Traffic Cop" logic
-const ROLE_PATHS = {
+import { Mail, Lock, Chrome, AlertTriangle, ArrowLeft } from 'lucide-react';const ROLE_PATHS = {
   fan: '/dashboard',
   organizer: '/manage/dashboard',
   crew: '/prod-dashboard',
@@ -25,20 +21,13 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
-
-    // Validation
-    if (!email.includes('@') || password.length < 6) {
+    setIsLoading(true);    if (!email.includes('@') || password.length < 6) {
       setError('Invalid credentials format.');
       setIsLoading(false);
       return;
     }
 
-    // --- 3. LOGIN LOGIC ---
-
-    try {
-      // Call the backend api
-      const response = await fetch('/api/auth/login', {
+    try {      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,24 +35,12 @@ const LoginPage = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
-      // Check for errors
-      if (!response.ok) {
+      const data = await response.json();      if (!response.ok) {
         throw new Error(data.message || 'Login Failed');
-      }
-
-      // Success! Save the token 
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      // Role based redirect
-      const userRole = data.user.role;
+      }      localStorage.setItem('user', JSON.stringify(data.user));      const userRole = data.user.role;
       const destination = ROLE_PATHS[userRole] || '/dashboard';
 
-      console.log(`✅ Login Success! User is a ${userRole}. Redirecting to ${destination}...`);
-
-      // Artificial delay just to show the "Verifying..." animation for a split second longer
-      setTimeout(() => {
+      console.log(`✅ Login Success! User is a ${userRole}. Redirecting to ${destination}...`);      setTimeout(() => {
         router.push(destination);
         router.refresh();
       }, 500);
@@ -77,7 +54,7 @@ const LoginPage = () => {
   return (
     <div className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black font-sans">
 
-      {/* HOME BUTTON */}
+      {}
       <Link
         href="/"
         className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/70 hover:text-white hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300 group"
@@ -86,7 +63,7 @@ const LoginPage = () => {
         <span className="text-sm font-medium hidden sm:inline">Home</span>
       </Link>
 
-      {/* BACKGROUND */}
+      {}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50" />
         <div className="absolute inset-0 bg-black/60" />
@@ -94,7 +71,7 @@ const LoginPage = () => {
         <div className="absolute bottom-[-20%] right-[-20%] w-[500px] h-[500px] bg-cyan-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
       </div>
 
-      {/* LOGIN CARD */}
+      {}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}

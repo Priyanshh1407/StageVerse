@@ -14,8 +14,6 @@ export async function GET(req) {
             .limit(20)
             .lean();
 
-        // Optional: Mark as read batch logic could go here or in a separate PUT
-
         return NextResponse.json({ success: true, notifications });
     } catch (error) {
         console.error("Notifications Fetch Error:", error);

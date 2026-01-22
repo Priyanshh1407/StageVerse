@@ -2,10 +2,7 @@
 
 import { RotateCcw, X, Check } from 'lucide-react';
 
-export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, onClose }) {
-  
-  // Update helpers
-  const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
+export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, onClose }) {  const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
   
   const toggleArrayItem = (field, item) => {
     setFilters(prev => {
@@ -22,13 +19,13 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {}
       <div 
         onClick={onClose}
         className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       ></div>
 
-      {/* Sidebar Panel */}
+      {}
       <aside 
         className={`
           fixed top-0 right-0 bottom-0 z-50 w-[85%] max-w-sm bg-[#0F0F10] border-l border-gray-800 p-6 overflow-y-auto transition-transform duration-300 ease-in-out
@@ -38,7 +35,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
       >
         <div className="lg:sticky lg:top-24 bg-[#18181B] p-6 rounded-2xl border border-gray-800 shadow-lg">
           
-          {/* Header */}
+          {}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-white">Filter By</h2>
             <div className="flex items-center gap-4">
@@ -53,7 +50,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
 
           <div className="space-y-8">
             
-            {/* Genre Checkboxes */}
+            {}
             <div>
               <h3 className="text-xs font-semibold text-gray-400 mb-4 uppercase tracking-wider">Genre</h3>
               <div className="space-y-3">
@@ -73,7 +70,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
               </div>
             </div>
 
-            {/* Artist Type Toggles */}
+            {}
             <div>
               <h3 className="text-xs font-semibold text-gray-400 mb-4 uppercase tracking-wider">Artist Type</h3>
               <div className="space-y-4">
@@ -91,7 +88,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
               </div>
             </div>
 
-            {/* Popularity Slider */}
+            {}
             <div>
               <h3 className="text-xs font-semibold text-gray-400 mb-4 uppercase tracking-wider">Popularity Score</h3>
               <div className="px-1">
@@ -111,7 +108,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
               </div>
             </div>
 
-            {/* Mobile Apply Button */}
+            {}
             <div className="lg:hidden pt-4">
               <button onClick={onClose} className="w-full py-3 rounded-lg bg-[#00C2FF] text-black font-bold">
                 Apply Filters

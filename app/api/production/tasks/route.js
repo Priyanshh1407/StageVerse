@@ -7,17 +7,8 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-        // Retrieve 'status' from query params if needed, or just fetch all
-        const { searchParams } = new URL(req.url);
-        const status = searchParams.get('status');
-
-        // Build Filter
-        // For now, fetching tasks assigned to this user OR generic production tasks
-        // In a real app, you'd filter by user.userId or role.
-        // Assuming for now we just want all tasks for demonstration parity with dashboard
-        let query = {};
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });        const { searchParams } = new URL(req.url);
+        const status = searchParams.get('status');        let query = {};
         if (status && status !== 'all') {
             query.status = status;
         }
@@ -78,10 +69,7 @@ export async function PUT(req) {
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
-        const { id, ...updates } = body;
-
-        // Map frontend status 'completed' -> 'Done', 'pending' -> 'Pending'
-        if (updates.status) {
+        const { id, ...updates } = body;        if (updates.status) {
             updates.status = updates.status === 'completed' ? 'Done' : 'Pending';
         }
 

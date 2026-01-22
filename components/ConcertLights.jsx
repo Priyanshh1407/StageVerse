@@ -10,17 +10,11 @@ export const ConcertLights = ({
   audio,
   isReactive 
 }) => {
-  const [isMounted, setIsMounted] = useState(false);
-  
-  // Global Trigger for Default Mode (Random Sync)
-  const [flashTrigger, setFlashTrigger] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);  const [flashTrigger, setFlashTrigger] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
-
-  // Default Mode Timer
-  useEffect(() => {
+  }, []);  useEffect(() => {
     if (isReactive) return; 
 
     const interval = setInterval(() => {
@@ -40,12 +34,12 @@ export const ConcertLights = ({
       <AnimatePresence>
         {masterOn && (
           <>
-            {/* 1. BEAMS */}
+            {}
             {beams.on && Array.from({ length: beams.count }).map((_, i) => (
               <MovingHead key={`beam-${i}`} index={i} total={beams.count} color={beams.color} />
             ))}
 
-            {/* 2. STROBES */}
+            {}
             {blinders.on && Array.from({ length: blinders.count }).map((_, i) => (
               isReactive ? (
                 <AudioStrobe 
@@ -64,7 +58,7 @@ export const ConcertLights = ({
               )
             ))}
 
-            {/* 3. LASERS */}
+            {}
             {lasers.on && (
                <LaserArray 
                  count={lasers.count} 
@@ -78,10 +72,7 @@ export const ConcertLights = ({
       </AnimatePresence>
     </div>
   );
-};
-
-// --- BEAMS (RESPONSIVE UPDATE) ---
-const MovingHead = ({ index, total, color }) => {
+};const MovingHead = ({ index, total, color }) => {
   const isBottom = index % 2 !== 0;
   const positionPercent = 10 + (80 / (total - 1 || 1)) * index;
   
@@ -89,12 +80,7 @@ const MovingHead = ({ index, total, color }) => {
     <motion.div
       initial={{ opacity: 0 }} 
       animate={{ opacity: isBottom ? 0.5 : 0.4 }} 
-      exit={{ opacity: 0, transition: { duration: 1.5 } }}
-      
-      // RESPONSIVE CLASSES ADDED HERE:
-      // Mobile: w-14 (thin), h-[120vh], bottom-[-20px]
-      // Desktop (md): w-32 (thick), h-[150vh], bottom-[-50px]
-      className={`
+      exit={{ opacity: 0, transition: { duration: 1.5 } }}      className={`
         absolute mix-blend-screen
         w-14 md:w-32 
         h-[120vh] md:h-[150vh]
@@ -113,9 +99,7 @@ const MovingHead = ({ index, total, color }) => {
         <div 
           className="w-full h-full blur-xl md:blur-2xl" // Less blur on mobile to keep definition
           style={{ 
-            background: `linear-gradient(to ${isBottom ? 'top' : 'bottom'}, ${color}, transparent 60%)`, 
-            // Tighter clip-path for mobile ? No, scaling width handles it.
-            clipPath: isBottom 
+            background: `linear-gradient(to ${isBottom ? 'top' : 'bottom'}, ${color}, transparent 60%)`,             clipPath: isBottom 
               ? "polygon(40% 100%, 60% 100%, 100% 0%, 0% 0%)" 
               : "polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%)" 
           }} 
@@ -123,19 +107,14 @@ const MovingHead = ({ index, total, color }) => {
       </motion.div>
     </motion.div>
   );
-};
-
-// --- SYNCED STROBE (RESPONSIVE UPDATE) ---
-const SyncedStrobe = ({ index, total, isFired }) => {
+};const SyncedStrobe = ({ index, total, isFired }) => {
   const center = (total - 1) / 2;
   const topOffset = 5 + (Math.abs(index - center) * 3);
   const leftPos = 5 + (90 / (total - 1 || 1)) * index;
 
   return (
     <motion.div
-      exit={{ opacity: 0, scale: 0 }}
-      // Responsive Size: w-8 on mobile, w-12 on desktop
-      className="absolute w-8 h-8 md:w-12 md:h-12 rounded-full blur-md mix-blend-screen bg-white transition-opacity duration-75"
+      exit={{ opacity: 0, scale: 0 }}      className="absolute w-8 h-8 md:w-12 md:h-12 rounded-full blur-md mix-blend-screen bg-white transition-opacity duration-75"
       style={{ 
         top: `${topOffset}%`, left: `${leftPos}%`, 
         opacity: isFired ? 1 : 0, 
@@ -146,10 +125,7 @@ const SyncedStrobe = ({ index, total, isFired }) => {
       <div className="w-full h-full bg-white rounded-full" />
     </motion.div>
   );
-};
-
-// --- AUDIO STROBE (RESPONSIVE UPDATE) ---
-const AudioStrobe = ({ index, total, energy }) => {
+};const AudioStrobe = ({ index, total, energy }) => {
   const center = (total - 1) / 2;
   const topOffset = 5 + (Math.abs(index - center) * 3);
   const leftPos = 5 + (90 / (total - 1 || 1)) * index;
@@ -162,18 +138,13 @@ const AudioStrobe = ({ index, total, energy }) => {
 
   return (
     <motion.div
-      exit={{ opacity: 0 }}
-      // Responsive Size: w-8 on mobile, w-12 on desktop
-      className="absolute w-8 h-8 md:w-12 md:h-12 rounded-full blur-md mix-blend-screen bg-white"
+      exit={{ opacity: 0 }}      className="absolute w-8 h-8 md:w-12 md:h-12 rounded-full blur-md mix-blend-screen bg-white"
       style={{ top: `${topOffset}%`, left: `${leftPos}%`, opacity: opacity, scale: scale, boxShadow: `0 0 30px 10px white` }}
     >
       <div className="w-full h-full bg-white rounded-full" />
     </motion.div>
   );
-};
-
-// --- LASERS (RESPONSIVE UPDATE) ---
-const LaserArray = ({ count, color, volume, isReactive }) => {
+};const LaserArray = ({ count, color, volume, isReactive }) => {
   const fallback = useMotionValue(0);
   const activeVolume = volume || fallback;
 
@@ -197,9 +168,7 @@ const LiquidLaser = ({ index, total, color, height }) => {
   const angleStep = (maxAngle * 2) / (total - 1 || 1);
   const baseAngle = -maxAngle + (angleStep * index);
   
-  return (
-    // Responsive Width: w-[2px] mobile, w-[4px] desktop
-    <motion.div className="absolute bottom-[-10vh] w-[2px] md:w-[4px] origin-bottom mix-blend-screen" style={{ left: "50%", x: "-50%", height: height }}>
+  return (    <motion.div className="absolute bottom-[-10vh] w-[2px] md:w-[4px] origin-bottom mix-blend-screen" style={{ left: "50%", x: "-50%", height: height }}>
       <motion.div
         animate={{ rotate: [baseAngle, baseAngle + 5, baseAngle - 5, baseAngle] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: index * 0.05 }}

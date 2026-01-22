@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* --- EXISTING VARIABLES --- */
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -43,12 +43,12 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   
-  /* --- NEW ADDITIONS FOR EVENT PAGE --- */
-  /* Fonts */
+  
+  
   --font-display: var(--font-space-grotesk), "sans-serif";
   --font-body: var(--font-noto-sans), "sans-serif";
 
-  /* Custom Colors (Hex codes mapped directly for the new page) */
+  
   --color-background-light: #f5f7f8;
   --color-background-dark: #101b22;
   --color-surface-dark: #182934;
@@ -57,10 +57,10 @@
 }
 
 :root {
-  /* Common Radius */
+  
   --radius: 0.5rem;
 
-  /* LIGHT MODE */
+  
   --background: hsl(0 0% 100%);
   --foreground: hsl(222.2 84% 4.9%);
 
@@ -89,14 +89,14 @@
   --input: hsl(214.3 31.8% 91.4%);
   --ring: hsl(221.2 83.2% 53.3%);
 
-  /* Chart Colors (Default placeholders kept for safety) */
+  
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
 
-  /* Sidebar (Mapped to Light Mode variables) */
+  
   --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -108,20 +108,20 @@
 }
 
 .dark {
-  /* DARK MODE (Stageverse Vibe) */
+  
 
-  /* Deep Black Background (#0a0a0a) */
+  
   --background: hsl(240 10% 3.9%);
   --foreground: hsl(210 40% 98%);
 
-  /* Slightly lighter black for Cards (#121212) */
+  
   --card: hsl(240 10% 5.9%);
   --card-foreground: hsl(210 40% 98%);
 
   --popover: hsl(222.2 84% 4.9%);
   --popover-foreground: hsl(210 40% 98%);
 
-  /* THE ELECTRIC BLUE ACCENT (Cyan-ish Blue) */
+  
   --primary: hsl(190 100% 50%);
   --primary-foreground: hsl(222.2 47.4% 11.2%);
 
@@ -140,17 +140,17 @@
   --border: hsl(217.2 32.6% 17.5%);
   --input: hsl(217.2 32.6% 17.5%);
 
-  /* Ring matches the electric blue */
+  
   --ring: hsl(190 100% 50%);
 
-  /* Chart Colors (Dark Mode Defaults) */
+  
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
-  /* Sidebar (Mapped to Dark Mode variables) */
+  
   --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -161,35 +161,33 @@
   --sidebar-ring: var(--ring);
 }
 
-/* --- CUSTOM DARK SCROLLBARS --- */
 @layer base {
-  /* This targets the Main Browser Window Scrollbar */
+  
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #0b1219; /* Matches your app background */
+    background: #0b1219; 
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #334155; /* Dark Slate */
+    background: #334155; 
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #475569; /* Lighter on hover */
+    background: #475569; 
   }
 
-  /* Firefox Support */
+  
   * {
     scrollbar-width: thin;
     scrollbar-color: #334155 #0b1219;
   }
 }
 
-/* Optional: Keep this if you want a specific "invisible track" version for internal lists */
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent; 

@@ -5,14 +5,8 @@ import { PlayCircle, AlertTriangle, Eye, Crosshair, Wind, CheckCircle2, Megaphon
 import EncoreScreen from '@/components/EncoreScreen'; // Import the new screen
 
 export default function LiveControls({ currentSong, currentCue, pollStats, winner, onRevealEncore, showWarning, onCloseWarning }) {
-  if (!currentSong) return <div className="p-8 text-gray-500">No song active</div>;
-
-  // --- SHOW WINNER IF DECLARED ---
-  const [showEncoreScreen, setShowEncoreScreen] = useState(false);
-  const [encoreWinner, setEncoreWinner] = useState(null);
-
-  // Use real data or fallback
-  const activePoll = pollStats ? {
+  if (!currentSong) return <div className="p-8 text-gray-500">No song active</div>;  const [showEncoreScreen, setShowEncoreScreen] = useState(false);
+  const [encoreWinner, setEncoreWinner] = useState(null);  const activePoll = pollStats ? {
     isActive: true,
     title: pollStats.question,
     options: pollStats.options.map(o => ({
@@ -25,14 +19,9 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
 
   const tech = currentCue.technical || {
     visual: '-', visualDetail: '-', spots: '-', spotsDetail: '-', haze: '-', hazeDetail: '-'
-  };
-
-  // Handler to reveal with actual winner
-  const handleRevealEncore = (winnerName) => {
+  };  const handleRevealEncore = (winnerName) => {
     setEncoreWinner(winnerName);
-    setShowEncoreScreen(true);
-    // Auto-close after 10 seconds
-    setTimeout(() => {
+    setShowEncoreScreen(true);    setTimeout(() => {
       setShowEncoreScreen(false);
     }, 10000);
   };
@@ -40,7 +29,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
   return (
     <main className="flex-1 flex flex-col overflow-hidden p-4 gap-4 bg-[#0F0F10] relative">
 
-      {/* --- WARNING OVERLAY --- */}
+      {}
       {showWarning && (
         <div className="absolute inset-0 z-50 bg-red-600/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 backdrop-blur-md">
           <button
@@ -59,7 +48,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
         </div>
       )}
 
-      {/* --- RENDER FULL SCREEN OVERLAY IF ACTIVE --- */}
+      {}
       {showEncoreScreen && (
         <EncoreScreen
           winnerName={encoreWinner || "ENCORE"}
@@ -68,7 +57,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
         />
       )}
 
-      {/* 1. Song Header */}
+      {}
       <div className="flex flex-col gap-2 shrink-0">
         <div className="flex flex-wrap justify-between items-end gap-3">
           <div className="flex flex-col">
@@ -82,7 +71,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {}
         <div className="flex flex-col gap-1.5 pt-1">
           <div className="flex gap-6 justify-between items-end">
             <p className="text-[#0d93f2] text-xs font-bold tracking-widest uppercase">{currentSong.section}</p>
@@ -97,7 +86,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
         </div>
       </div>
 
-      {/* 2. DYNAMIC CUE CARD */}
+      {}
       <div className="flex-1 min-h-[220px] flex flex-col relative rounded-xl overflow-hidden border-2 border-[#0d93f2]/50 shadow-[0_0_20px_rgba(13,147,242,0.1)] group">
         <div className="absolute inset-0 z-0">
           <div
@@ -126,7 +115,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
         </div>
       </div>
 
-      {/* 3. POLL MONITOR SECTION */}
+      {}
       <div className="h-auto md:h-40 shrink-0">
         {activePoll && activePoll.isActive ? (
           <PollMonitor
@@ -147,17 +136,8 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
 
     </main>
   );
-}
-
-// --- UPDATED POLL MONITOR - Shows ALL options with percentages ---
-function PollMonitor({ poll, onReveal }) {
-  const [isRevealed, setIsRevealed] = useState(false);
-
-  // Calculate total votes and find winner
-  const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
-
-  // Sort options by votes (highest first) and mark winner
-  const sortedOptions = [...poll.options]
+}function PollMonitor({ poll, onReveal }) {
+  const [isRevealed, setIsRevealed] = useState(false);  const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);  const sortedOptions = [...poll.options]
     .map(opt => ({
       ...opt,
       percent: totalVotes > 0 ? Math.round((opt.votes || 0) / totalVotes * 100) : 0
@@ -175,7 +155,7 @@ function PollMonitor({ poll, onReveal }) {
   return (
     <div className="h-auto grid grid-cols-1 md:grid-cols-12 gap-4 flex-none">
 
-      {/* LEFT: ALL OPTIONS WITH PERCENTAGES */}
+      {}
       <div className="md:col-span-8 bg-[#16222b] border border-[#223949] rounded-xl p-4 shadow-lg">
         <div className="flex items-center gap-2 mb-3">
           <BarChart3 className="w-4 h-4 text-[#0d93f2]" />
@@ -209,7 +189,7 @@ function PollMonitor({ poll, onReveal }) {
         </div>
       </div>
 
-      {/* RIGHT: REVEAL BUTTON */}
+      {}
       <button
         onClick={handleRevealClick}
         disabled={isRevealed || totalVotes === 0}
@@ -239,10 +219,7 @@ function PollMonitor({ poll, onReveal }) {
       </button>
     </div>
   );
-}
-
-// --- HELPER: TECH INFO CARD ---
-function InfoCard({ icon: Icon, title, value, sub, accent }) {
+}function InfoCard({ icon: Icon, title, value, sub, accent }) {
   return (
     <div className={`bg-[#16222b] border border-[#223949] rounded-lg p-3 flex flex-col justify-center group transition-colors hover:border-[#0d93f2]/30 ${accent ? 'bg-[#0d93f2]/5 border-[#0d93f2]/20' : ''}`}>
       <div className="flex items-center gap-2 mb-1">

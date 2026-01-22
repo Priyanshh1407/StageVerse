@@ -12,10 +12,7 @@ export async function GET() {
 
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token.value, secret);
-
-    // Return the user data needed for the Navbar
-    const user = {
+    const { payload } = await jwtVerify(token.value, secret);    const user = {
       id: payload.userId,
       name: payload.name || "User", // Ensure these were saved in your JWT payload during login
       email: payload.email,
@@ -23,8 +20,6 @@ export async function GET() {
     };
 
     return NextResponse.json({ user }, { status: 200 });
-  } catch (error) {
-    // If token is invalid/expired
-    return NextResponse.json({ user: null }, { status: 401 });
+  } catch (error) {    return NextResponse.json({ user: null }, { status: 401 });
   }
 }

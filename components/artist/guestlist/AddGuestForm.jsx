@@ -9,19 +9,14 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
   const [email, setEmail] = useState('');
   const [tier, setTier] = useState('VIP');
   const [status, setStatus] = useState('Pending');
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  // --- POPULATE FORM WHEN EDITING STARTS ---
-  useEffect(() => {
+  const [isSuccess, setIsSuccess] = useState(false);  useEffect(() => {
     if (editingGuest) {
       setName(editingGuest.name);
       setEmail(editingGuest.email || '');
       setTier(editingGuest.tier);
       setStatus(editingGuest.status);
       setQty(1); 
-    } else {
-      // Reset form
-      setName('');
+    } else {      setName('');
       setEmail('');
       setTier('VIP');
       setStatus('Pending');
@@ -50,14 +45,9 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
     }
   };
 
-  return (
-    // Responsive Wrapper: Full width on mobile, Col-span-1 on desktop
-    <div className="w-full lg:col-span-1 mb-8 lg:mb-0">
+  return (    <div className="w-full lg:col-span-1 mb-8 lg:mb-0">
       
-      {/* Container: 
-          - Mobile: Relative positioning (flows with page)
-          - Desktop: Sticky positioning (stays on side) 
-      */}
+      {}
       <div className={`
         relative md:sticky md:top-24 
         bg-white dark:bg-[#182934] 
@@ -65,7 +55,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
         ${editingGuest ? 'border-[#0d93f2] ring-1 ring-[#0d93f2]' : 'border-slate-200 dark:border-[#315168]'}
       `}>
         
-        {/* Header Image */}
+        {}
         <div 
           className="h-24 md:h-32 bg-cover bg-center relative" 
           style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop")' }}
@@ -86,10 +76,10 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
           )}
         </div>
 
-        {/* Form Content */}
+        {}
         <div className="p-4 md:p-5 flex flex-col gap-3 md:gap-4">
           
-          {/* Inputs */}
+          {}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Guest Name</label>
             <input 
@@ -112,7 +102,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
             />
           </div>
 
-          {/* Status Selector */}
+          {}
           <div>
              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Current Status</label>
              <div className="grid grid-cols-2 gap-2">
@@ -131,7 +121,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
              </div>
           </div>
 
-          {/* Access Tier */}
+          {}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Access Tier</label>
             <div className="grid grid-cols-1 gap-2">
@@ -141,7 +131,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
             </div>
           </div>
 
-          {/* Actions */}
+          {}
           <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 mt-2">
             {!editingGuest && (
                 <div className="w-full sm:w-1/3 flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#101b23] h-10 md:h-11 px-1">

@@ -14,8 +14,6 @@ export default function Home() {
   const [trendingData, setTrendingData] = useState([]);
   const [localData, setLocalData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // --- SIMULATE API CALL ---
   useEffect(() => {
     async function fetchData() {
       try {
@@ -23,7 +21,6 @@ export default function Home() {
         const json = await res.json();
 
         if (json.success) {
-          // Map API data to component props
           const realEvents = json.events.map(e => ({
             id: e._id,
             name: e.title,
@@ -62,18 +59,13 @@ export default function Home() {
 
         <main className="flex-1 relative pt-0">
 
-          {/* Hero takes full height usually, so no extra padding needed here if Hero is h-screen */}
+          {}
           <Hero />
 
-          {/* WRAPPER FOR CONTENT SECTIONS:
-             - relative z-10: Ensures this sits above any fixed Hero backgrounds if they overlap.
-             - space-y-16: Adds consistent vertical gaps (4rem) between sections on mobile.
-             - md:space-y-24: Larger gaps (6rem) on desktop for a cleaner look.
-             - pb-20: Adds bottom padding so the footer doesn't feel jammed.
-          */}
+          {}
           <div className="relative z-10 flex flex-col space-y-16 md:space-y-24 pb-20 bg-transparent">
 
-            {/* Dynamic Sections */}
+            {}
             <div className="w-full">
               <TrendingEvents events={trendingData} isLoading={isLoading} />
             </div>
@@ -82,7 +74,7 @@ export default function Home() {
               <LocalEvents events={localData} isLoading={isLoading} />
             </div>
 
-            {/* Static Promo */}
+            {}
             <div className="w-full">
               <PromoSection />
             </div>

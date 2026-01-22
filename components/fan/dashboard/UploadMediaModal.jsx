@@ -4,7 +4,6 @@ import { X, UploadCloud, Ticket, Calendar, UserPlus, Lock, Loader2, CheckCircle,
 import { toast } from "sonner";
 
 export default function UploadMediaModal({ isOpen, onClose }) {
-  // --- FORM STATE ---
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [eventQuery, setEventQuery] = useState('');
   const [eventResults, setEventResults] = useState([]);
@@ -17,21 +16,14 @@ export default function UploadMediaModal({ isOpen, onClose }) {
   const [date, setDate] = useState('');
   const [notes, setNotes] = useState('');
   const [privacy, setPrivacy] = useState('Public');
-
-  // --- FILE UPLOAD STATE ---
   const [files, setFiles] = useState([]); // Array of File objects
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0); // 0 to 100
   const fileInputRef = useRef(null);
-
-  // --- REFS ---
   const eventInputRef = useRef(null);
   const friendInputRef = useRef(null);
-
-  // --- 1. HANDLE FILE SELECTION ---
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files);
-    // Append new files to existing selection
     setFiles(prev => [...prev, ...selected]);
   };
 
@@ -42,29 +34,20 @@ export default function UploadMediaModal({ isOpen, onClose }) {
   const triggerFileSelect = () => {
     fileInputRef.current.click();
   };
-
-  // --- 2. UPLOAD LOGIC (Cloudinary -> DB) ---
   const handleUpload = async () => {
     if (files.length === 0) return toast.error("Please select files first!");
 
     setIsUploading(true);
     let completedCount = 0;
-
-    // CLOUDINARY CONFIG (Replace these with your actual keys if not using env vars for testing)
     const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_PRESET || 'stageverse_unsigned';
 
     try {
-      // Loop through every file selected
       for (const file of files) {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('upload_preset', UPLOAD_PRESET);
-
-        // A. Determine resource type (image or video)
         const resourceType = file.type.startsWith('video') ? 'video' : 'image';
-
-        // B. Upload to Cloudinary
         const cloudinaryRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, {
           method: 'POST',
           body: formData
@@ -75,8 +58,6 @@ export default function UploadMediaModal({ isOpen, onClose }) {
         }
 
         if (!cloudinaryData.secure_url) throw new Error('Cloudinary upload failed');
-
-        // C. Save to MongoDB via our API
         const payload = {
           imageUrl: resourceType === 'image' ? cloudinaryData.secure_url : cloudinaryData.secure_url.replace('.mp4', '.jpg'), // Simple thumbnail logic
           videoSrc: resourceType === 'video' ? cloudinaryData.secure_url : null,
@@ -86,8 +67,6 @@ export default function UploadMediaModal({ isOpen, onClose }) {
           artist: selectedEvent?.artist || "Unknown Artist",
           venue: selectedEvent?.venue?.name || selectedEvent?.venue || "Unknown Venue",
           eventId: selectedEvent?._id
-          // Note: We aren't saving 'taggedFriends' or 'privacy' in the simple Model yet, 
-          // but the UI collects them for future expansion.
         };
 
         const dbRes = await fetch('/api/memory-vault', {
@@ -97,13 +76,9 @@ export default function UploadMediaModal({ isOpen, onClose }) {
         });
 
         if (!dbRes.ok) throw new Error('Database save failed');
-
-        // Update Progress
         completedCount++;
         setUploadProgress(Math.round((completedCount / files.length) * 100));
       }
-
-      // D. Cleanup and Close
       setIsUploading(false);
       onClose(); // Close modal
       toast.success("Upload Complete!");
@@ -115,8 +90,6 @@ export default function UploadMediaModal({ isOpen, onClose }) {
       toast.error("Upload failed. Check console.");
     }
   };
-
-  // --- EVENT & FRIEND SEARCH LOGIC (Existing) ---
   useEffect(() => {
     const fetchEvents = async () => {
       if (eventQuery.length < 2) { setEventResults([]); return; }
@@ -127,8 +100,6 @@ export default function UploadMediaModal({ isOpen, onClose }) {
     const timeout = setTimeout(fetchEvents, 300);
     return () => clearTimeout(timeout);
   }, [eventQuery]);
-
-  // Mock Friends Logic
   useEffect(() => {
     if (friendQuery.length < 1) { setEventResults([]); return; }
     const MOCK_FRIENDS = [
@@ -136,10 +107,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
       { id: 'u3', name: 'Jessica Alverez' }, { id: 'u4', name: 'David Ross' },
     ];
     setFriendQuery(prev => prev); // minor ref hack
-    // ... filtering logic ...
   }, [friendQuery]);
-
-  // Close dropdowns
   useEffect(() => {
     const handleClick = (e) => {
       if (eventInputRef.current && !eventInputRef.current.contains(e.target)) setShowEventDropdown(false);
@@ -168,7 +136,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-2xl bg-white dark:bg-[#1a2632] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden">
 
-        {/* Header */}
+        { }
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Upload New Memories</h2>
           <button onClick={onClose} disabled={isUploading} className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
@@ -176,16 +144,14 @@ export default function UploadMediaModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Body */}
+        { }
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
-          {/* 1. DRAG & DROP ZONE */}
           <div
             onClick={triggerFileSelect}
             className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-colors cursor-pointer group
             ${files.length > 0 ? 'border-[#0d93f2] bg-[#0d93f2]/5' : 'border-slate-300 dark:border-slate-600 hover:border-[#0d93f2] hover:bg-slate-50 dark:hover:bg-slate-800'}`}
           >
-            {/* HIDDEN INPUT - Only accepts Image and Video */}
             <input
               type="file"
               ref={fileInputRef}
@@ -194,32 +160,21 @@ export default function UploadMediaModal({ isOpen, onClose }) {
               accept="image/*,video/*"
               onChange={handleFileChange}
             />
-
-            <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <UploadCloud className="w-8 h-8 text-slate-500 dark:text-slate-400" />
-            </div>
-
-            {files.length === 0 ? (
-              <>
-                <p className="text-slate-900 dark:text-white font-medium mb-2">Click to select photos & videos</p>
-                <p className="text-slate-500 text-sm">JPG, PNG, MP4 supported</p>
-              </>
+            <UploadCloud className={`w-12 h-12 mb-4 transition-colors ${files.length > 0 ? 'text-[#0d93f2]' : 'text-slate-400 group-hover:text-[#0d93f2]'}`} />
+            {files.length > 0 ? (
+              <div className="flex flex-col gap-1">
+                <span className="font-bold text-slate-900 dark:text-white text-lg">{files.length} files selected</span>
+                <span className="text-sm text-slate-500">Click to add more</span>
+              </div>
             ) : (
-              <div className="w-full">
-                <p className="text-[#0d93f2] font-bold mb-4">{files.length} files selected</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {files.map((f, i) => (
-                    <div key={i} className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm text-sm text-slate-700 dark:text-slate-300">
-                      <span className="max-w-[100px] truncate">{f.name}</span>
-                      <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} className="text-red-500 hover:text-red-700"><X className="w-3 h-3" /></button>
-                    </div>
-                  ))}
-                </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-bold text-slate-700 dark:text-slate-300 text-lg">Click to upload</span>
+                <span className="text-sm text-slate-500">or drag and drop</span>
+                <span className="text-xs text-slate-400 mt-2">Supports JPG, PNG, MP4</span>
               </div>
             )}
           </div>
 
-          {/* 2. FORM FIELDS */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 relative" ref={eventInputRef}>
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Event Name</label>
@@ -270,12 +225,12 @@ export default function UploadMediaModal({ isOpen, onClose }) {
             ></textarea>
           </div>
 
-          {/* Privacy and Friends inputs are UI only for now in this snippet for brevity */}
+          { }
 
-        </div>
+        </div >
 
-        {/* Footer */}
-        <div className="p-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-[#151f28]/50">
+        { }
+        < div className="p-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-[#151f28]/50" >
           <button onClick={onClose} disabled={isUploading} className="px-6 py-2.5 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
             Cancel
           </button>
@@ -294,9 +249,9 @@ export default function UploadMediaModal({ isOpen, onClose }) {
               <>Upload {files.length > 0 && `(${files.length})`}</>
             )}
           </button>
-        </div>
+        </div >
 
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

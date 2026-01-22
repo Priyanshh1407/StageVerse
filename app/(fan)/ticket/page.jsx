@@ -13,22 +13,14 @@ import {
     Share2, Info, QrCode, ArrowRight, Clock, FileText, Loader2
 } from 'lucide-react';
 
-export default function TicketsPage() {
-    // --- STATE ---
-    const [tickets, setTickets] = useState({ upcoming: [], past: [] });
+export default function TicketsPage() {    const [tickets, setTickets] = useState({ upcoming: [], past: [] });
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('upcoming');
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-    // Modal States
-    const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);    const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
     const [selectedVenue, setSelectedVenue] = useState(null);
     const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState(null);
-    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-
-    // --- FETCH DATA ---
-    useEffect(() => {
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);    useEffect(() => {
         const fetchTickets = async () => {
             try {
                 const res = await fetch('/api/fan/ticket');
@@ -43,12 +35,7 @@ export default function TicketsPage() {
             }
         };
         fetchTickets();
-    }, []);
-
-    // --- HANDLERS ---
-
-    // Open Venue Modal (Now uses dynamic data object)
-    const handleOpenVenue = (venueData) => {
+    }, []);    const handleOpenVenue = (venueData) => {
         setSelectedVenue(venueData || {
             name: "Unknown Venue",
             address: "Address unavailable",
@@ -60,19 +47,13 @@ export default function TicketsPage() {
     const handleOpenTicket = (ticket) => {
         setSelectedTicket(ticket);
         setIsTicketModalOpen(true);
-    };
-
-    // --- RENDER LOADING ---
-    if (loading) {
+    };    if (loading) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-[#f5f7f8] dark:bg-[#101b22]">
                 <Loader2 className="w-10 h-10 text-[#0d93f2] animate-spin" />
             </div>
         );
-    }
-
-    // Safely access upcoming tickets
-    const primaryTicket = tickets.upcoming[0];
+    }    const primaryTicket = tickets.upcoming[0];
     const secondaryTicket = tickets.upcoming[1];
 
     return (
@@ -115,7 +96,7 @@ export default function TicketsPage() {
                                     </div>
                                 ) : (
                                     <>
-                                        {/* --- LARGE TICKET CARD (Primary) --- */}
+                                        {}
                                         {primaryTicket && (
                                             <div className="flex flex-col lg:flex-row bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-md group relative">
                                                 <div className="absolute top-0 left-0 w-1 h-full bg-[#0d93f2] z-20"></div>
@@ -168,7 +149,7 @@ export default function TicketsPage() {
                                             </div>
                                         )}
 
-                                        {/* --- SECONDARY TICKET CARD (Only if exists) --- */}
+                                        {}
                                         {secondaryTicket && (
                                             <div className="flex flex-col md:flex-row bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:border-[#0d93f2]/50 transition-colors cursor-pointer group">
                                                 <div className="w-full md:w-32 h-32 relative bg-slate-800 shrink-0">
@@ -202,7 +183,7 @@ export default function TicketsPage() {
                             </div>
                         )}
 
-                        {/* Past Events */}
+                        {}
                         <div className="flex flex-col gap-6 pt-6 border-t border-slate-200 dark:border-slate-800/50">
                             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Past Events</h2>
                             {tickets.past.length === 0 ? (
@@ -263,10 +244,7 @@ export default function TicketsPage() {
 
         </div>
     );
-}
-
-// ... Helper components ...
-function InfoItem({ icon: Icon, label, value }) {
+}function InfoItem({ icon: Icon, label, value }) {
     return (
         <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-[#0d93f2]">

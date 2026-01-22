@@ -8,10 +8,7 @@ export default function LDSelector({ selectedLD, onSelect }) {
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const wrapperRef = useRef(null);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
+    const wrapperRef = useRef(null);    useEffect(() => {
         function handleClickOutside(event) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
                 setIsOpen(false);
@@ -19,10 +16,7 @@ export default function LDSelector({ selectedLD, onSelect }) {
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [wrapperRef]);
-
-    // Search Debounce
-    useEffect(() => {
+    }, [wrapperRef]);    useEffect(() => {
         const timer = setTimeout(async () => {
             if (query.length >= 2) {
                 setIsLoading(true);

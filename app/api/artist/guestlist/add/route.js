@@ -8,10 +8,7 @@ import { verifyAuth } from '@/lib/auth';
 
 export async function POST(req) {
     try {
-        await dbConnect();
-
-        // 1. Authenticate Artist
-        const artist = await verifyAuth(req);
+        await dbConnect();        const artist = await verifyAuth(req);
         if (!artist) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
@@ -21,19 +18,12 @@ export async function POST(req) {
 
         if (!userId || !eventId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }
-
-        // 2. Fetch Details for Notification
-        const event = await Event.findById(eventId);
+        }        const event = await Event.findById(eventId);
         const fan = await User.findById(userId);
 
         if (!event || !fan) {
             return NextResponse.json({ error: 'Event or Fan not found' }, { status: 404 });
-        }
-
-        // 3. Add to Guestlist (Upsert to prevent duplicates)
-        // Adjusting schema usage based on assumption, usually guestlist has name, email, +1s, status
-        const newGuest = await Guest.findOneAndUpdate(
+        }        const newGuest = await Guest.findOneAndUpdate(
             { eventId: eventId, email: fan.email },
             {
                 name: fan.name,
@@ -47,10 +37,7 @@ export async function POST(req) {
                 artistId: artist.userId // NEW: Save explicit artistId
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-
-        // 4. Create Notification for Fan
-        await Notification.create({
+        );        await Notification.create({
             userId: fan._id,
             type: 'guestlist',
             title: 'You made the Guestlist! 🎉',

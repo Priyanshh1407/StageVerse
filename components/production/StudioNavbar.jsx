@@ -13,42 +13,21 @@ import GlobalSearchModal from './GlobalSearchModal';
 export default function StudioNavbar({ projectId }) {
   const pathname = usePathname();
   const router = useRouter();
-  const params = useParams();
-
-  // --- STATE ---
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const params = useParams();  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-
-  // Projects State
-  const [projects, setProjects] = useState([]);
+  const [notifications, setNotifications] = useState([]);  const [projects, setProjects] = useState([]);
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
-  const projectDropdownRef = useRef(null);
-
-  // --- 1. INITIALIZE CONTEXT ID ---
-  // Priority: Prop > URL Param > LocalStorage(optional) > NULL
-  const contextId = projectId || params?.id;
-
-  // We utilize a lazy initializer or effect to set the initial ID (to valid null handling)
-  const [currentId, setCurrentId] = useState(contextId || null);
-
-  // --- 2. FETCH DATA (Projects & Notifications) ---
-  useEffect(() => {
+  const projectDropdownRef = useRef(null);  const contextId = projectId || params?.id;  const [currentId, setCurrentId] = useState(contextId || null);  useEffect(() => {
     async function loadData() {
-      try {
-        // Fetch Projects (re-using dashboard endpoint for simplicity as planned)
-        const resDash = await fetch('/api/production/dashboard');
+      try {        const resDash = await fetch('/api/production/dashboard');
         if (resDash.ok) {
           const json = await resDash.json();
           if (json.success && json.data.shows) {
             setProjects(json.data.shows);
           }
-        }
-
-        // Fetch Notifications
-        const resNotif = await fetch('/api/notifications');
+        }        const resNotif = await fetch('/api/notifications');
         const jsonNotif = await resNotif.json();
         if (jsonNotif.success) setNotifications(jsonNotif.data);
 
@@ -56,10 +35,7 @@ export default function StudioNavbar({ projectId }) {
         console.error("Failed to load navbar data", e);
       }
     }
-    loadData();
-
-    // Poll Notifications
-    const interval = setInterval(async () => {
+    loadData();    const interval = setInterval(async () => {
       try {
         const res = await fetch('/api/notifications');
         const json = await res.json();
@@ -67,15 +43,9 @@ export default function StudioNavbar({ projectId }) {
       } catch (e) { }
     }, 30000);
     return () => clearInterval(interval);
-  }, []);
-
-  // Update State if URL changes
-  useEffect(() => {
+  }, []);  useEffect(() => {
     if (contextId) setCurrentId(contextId);
-  }, [contextId]);
-
-  // Keyboard and Click Outside Handlers
-  useEffect(() => {
+  }, [contextId]);  useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
@@ -101,10 +71,7 @@ export default function StudioNavbar({ projectId }) {
   }, []);
 
   const dropdownRef = useRef(null);
-  const mobileMenuRef = useRef(null);
-
-  // --- ACTIONS ---
-  const handleLogout = async () => {
+  const mobileMenuRef = useRef(null);  const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       localStorage.removeItem('user');
@@ -115,26 +82,12 @@ export default function StudioNavbar({ projectId }) {
 
   const handleProjectSelect = (proj) => {
     setCurrentId(proj.eventId || proj.id);
-    setIsProjectDropdownOpen(false);
-
-    // IMPORTANT: If we are on a project-specific page, redirect to the new project
-    // If we are on the dashboard, just stay there but update context (maybe useful for 'Patch Sheet' click next)
-    if (pathname.includes('/patch-sheet') || pathname.includes('/patch-studio') || pathname.includes('/logistics')) {
-      // Replace the ID in the URL. Assuming structure /page/[id]
-      // We'll just construct the new URL based on the current root
-      const root = pathname.split('/')[1]; // e.g., 'patch-sheet'
+    setIsProjectDropdownOpen(false);    if (pathname.includes('/patch-sheet') || pathname.includes('/patch-studio') || pathname.includes('/logistics')) {      const root = pathname.split('/')[1]; // e.g., 'patch-sheet'
       router.push(`/${root}/${proj.eventId || proj.id}`);
       toast.success(`Switched to ${proj.title}`);
     } else {
-      toast.success(`Selected ${proj.title}`);
-      // If on dashboard, maybe redirect to patch sheet? User didn't ask for that.
-      // But clicking "Patch Sheet" next will now work.
-    }
-  };
-
-  // --- NAVIGATION ITEMS ---
-  // Using a function to handle the click logic
-  const handleProtectedNav = (e, pathRoot) => {
+      toast.success(`Selected ${proj.title}`);    }
+  };  const handleProtectedNav = (e, pathRoot) => {
     if (!currentId) {
       e.preventDefault();
       toast.error("Please select a project first", {
@@ -165,14 +118,8 @@ export default function StudioNavbar({ projectId }) {
       onClick: (e) => handleProtectedNav(e, 'logistics')
     },
     { label: 'Live Show', href: `/live`, isActive: (path) => path.includes('/live') },
-  ];
-
-  // Current Project Display
-  const currentProject = projects.find(p => (p.eventId || p.id) == currentId); // eslint-disable-line eqeqeq
-  const projectTitle = currentProject ? currentProject.title : "Select Project";
-
-  // Message Artist Logic
-  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
+  ];  const currentProject = projects.find(p => (p.eventId || p.id) == currentId); // eslint-disable-line eqeqeq
+  const projectTitle = currentProject ? currentProject.title : "Select Project";  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
   const [msgContent, setMsgContent] = useState('');
   const [msgStatus, setMsgStatus] = useState('idle');
 
@@ -212,10 +159,10 @@ export default function StudioNavbar({ projectId }) {
     <>
       <nav className="h-[64px] bg-[#0d131a] border-b border-[#2c3e50] flex items-center justify-between px-4 md:px-6 shrink-0 relative z-50 shadow-lg select-none" ref={mobileMenuRef}>
 
-        {/* LEFT SECTION: Hamburger + Logo + PROJECT DROPDOWN + Desktop Nav */}
+        {}
         <div className="flex items-center gap-4 md:gap-6 h-full">
 
-          {/* Mobile Menu Toggle */}
+          {}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden text-[#90b2cb] hover:text-white transition-colors"
@@ -223,15 +170,15 @@ export default function StudioNavbar({ projectId }) {
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
-          {/* Logo */}
+          {}
           <Link href="/prod-dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <div className="w-8 h-8 rounded bg-gradient-to-br from-[#00d4ff] to-blue-600 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.3)]">
               <span className="font-bold text-black text-xl">#</span>
             </div>
-            {/* <span className="text-white font-bold text-lg tracking-tight hidden md:block">Production Suite</span> */}
+            {}
           </Link>
 
-          {/* PROJECT SELECTOR (NEW) */}
+          {}
           <div className="relative hidden md:block" ref={projectDropdownRef}>
             <button
               onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
@@ -275,7 +222,7 @@ export default function StudioNavbar({ projectId }) {
 
           <div className="h-6 w-px bg-[#2c3e50] hidden lg:block mx-2"></div>
 
-          {/* Desktop Navigation Links */}
+          {}
           <div className="hidden lg:flex items-center gap-1 h-full">
             {navItems.map((item) => {
               const active = item.isActive(pathname);
@@ -297,10 +244,10 @@ export default function StudioNavbar({ projectId }) {
           </div>
         </div>
 
-        {/* RIGHT SECTION: Search + Notifications + Profile */}
+        {}
         <div className="flex items-center gap-3 md:gap-5">
 
-          {/* Desktop Search Bar */}
+          {}
           <div
             onClick={() => setIsSearchOpen(true)}
             className="hidden md:flex items-center bg-[#0b1219] border border-[#2c3e50] rounded-full px-3 py-1.5 gap-2 group cursor-pointer hover:border-gray-500 transition-colors"
@@ -313,7 +260,7 @@ export default function StudioNavbar({ projectId }) {
 
           <div className="flex items-center gap-3 md:gap-4">
 
-            {/* Message Artist Button */}
+            {}
             <button
               onClick={() => setIsMsgModalOpen(true)}
               className="text-[#90b2cb] hover:text-[#00d4ff] transition-colors p-1"
@@ -322,7 +269,7 @@ export default function StudioNavbar({ projectId }) {
               <MessageSquare className="w-5 h-5" />
             </button>
 
-            {/* Notifications */}
+            {}
             <div className="relative">
               <button
                 onClick={() => setIsNotificationOpen(!isNotificationOpen)}
@@ -361,7 +308,7 @@ export default function StudioNavbar({ projectId }) {
               )}
             </div>
 
-            {/* PROFILE DROPDOWN */}
+            {}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -377,10 +324,10 @@ export default function StudioNavbar({ projectId }) {
                 <ChevronDown className={`hidden sm:block w-3 h-3 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180 text-white' : ''}`} />
               </button>
 
-              {/* The Dropdown Menu */}
+              {}
               {isProfileOpen && (
                 <div className="absolute right-0 top-12 w-64 bg-[#18181B] border border-[#2c3e50] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                  {/* Mobile-only profile info in dropdown */}
+                  {}
                   <div className="p-4 border-b border-[#2c3e50] bg-[#1d2b36] sm:hidden">
                     <p className="text-white font-bold text-sm">Alex Morrison</p>
                     <p className="text-xs text-gray-400 mt-0.5 truncate">Lighting Designer</p>
@@ -401,19 +348,19 @@ export default function StudioNavbar({ projectId }) {
           </div>
         </div>
 
-        {/* ============================== */}
-        {/* MOBILE NAVIGATION MENU DRAWER */}
-        {/* ============================== */}
+        {}
+        {}
+        {}
         {isMobileMenuOpen && (
           <div className="absolute top-[64px] left-0 w-full bg-[#0d131a] border-b border-[#2c3e50] shadow-2xl lg:hidden flex flex-col animate-in slide-in-from-top-2 duration-200">
 
-            {/* Mobile Project Selector */}
+            {}
             <div className="p-4 pb-2 border-b border-[#2c3e50]">
               <div className="text-xs text-gray-500 uppercase font-bold mb-2">Current Project</div>
               <div className="bg-[#0b1219] border border-[#2c3e50] rounded-lg p-3 text-white font-bold text-sm flex justify-between items-center" onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}>
                 {projectTitle}
               </div>
-              {/* Mobile Project List simplified */}
+              {}
               {isProjectDropdownOpen && (
                 <div className="flex flex-col gap-1 mt-2">
                   {projects.map(p => (
@@ -423,7 +370,7 @@ export default function StudioNavbar({ projectId }) {
               )}
             </div>
 
-            {/* Mobile Search */}
+            {}
             <div className="p-4 pb-2">
               <div
                 onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
@@ -434,7 +381,7 @@ export default function StudioNavbar({ projectId }) {
               </div>
             </div>
 
-            {/* Links */}
+            {}
             <div className="flex flex-col p-2">
               {navItems.map((item) => {
                 const active = item.isActive(pathname);
@@ -462,7 +409,7 @@ export default function StudioNavbar({ projectId }) {
 
         <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
-        {/* Msg Modal... (same as before) */}
+        {}
         {isMsgModalOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsMsgModalOpen(false)}>
             <div className="bg-[#18181B] border border-[#2c3e50] rounded-xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>

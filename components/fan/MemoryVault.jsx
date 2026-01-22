@@ -45,7 +45,7 @@ const memories = [
 export default function MemoryVault() {
   return (
     <section className="flex flex-col gap-6 pt-4">
-      {/* Header */}
+      {}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
           <h3 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-2 text-slate-900 dark:text-white">
@@ -62,15 +62,15 @@ export default function MemoryVault() {
         </button>
       </div>
 
-      {/* The Gallery Grid */}
-      {/* auto-rows-[200px] ensures every row height is consistent */}
+      {}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
         {memories.map((memory) => (
           <MemoryCard key={memory.id} memory={memory} />
         ))}
       </div>
 
-      {/* Footer Action */}
+      {}
       <div className="flex justify-center mt-2">
         <button className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-blue-500 transition-colors flex items-center gap-1">
           View All Memories
@@ -79,12 +79,7 @@ export default function MemoryVault() {
       </div>
     </section>
   );
-}
-
-// --- Individual Memory Card Component ---
-function MemoryCard({ memory }) {
-  // Determine spans based on 'size' prop
-  const spanClasses = {
+}function MemoryCard({ memory }) {  const spanClasses = {
     featured: 'col-span-2 row-span-2',   // Big Square
     vertical: 'row-span-2 col-span-1',   // Tall Portrait
     horizontal: 'col-span-2 row-span-1', // Wide Landscape
@@ -92,10 +87,7 @@ function MemoryCard({ memory }) {
     ticket: 'col-span-1 row-span-1',     // Standard Square
   };
 
-  const currentSpan = spanClasses[memory.size] || spanClasses.standard;
-
-  // Render Ticket Stub Style
-  if (memory.type === 'ticket') {
+  const currentSpan = spanClasses[memory.size] || spanClasses.standard;  if (memory.type === 'ticket') {
     return (
       <div className={`group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed transition-transform hover:scale-[1.02] ${currentSpan}`}>
         <TicketIcon className="text-slate-500 w-10 h-10 mb-2" />
@@ -103,12 +95,9 @@ function MemoryCard({ memory }) {
         <p className="text-white font-bold text-center mt-1 text-lg">{memory.title}</p>
       </div>
     );
-  }
-
-  // Render Image/Video Style
-  return (
+  }  return (
     <div className={`group relative rounded-xl overflow-hidden cursor-pointer bg-slate-800 ${currentSpan}`}>
-      {/* Background Image */}
+      {}
       <div className="relative w-full h-full">
         <Image
           src={memory.image}
@@ -117,7 +106,7 @@ function MemoryCard({ memory }) {
           className="object-cover transition-transform duration-700 group-hover:scale-110"
         />
         
-        {/* Overlay Gradient (Only shows on hover or if it has text) */}
+        {}
         <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300 flex flex-col justify-end p-4 md:p-6 ${memory.title ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
           {memory.title && (
             <>
@@ -127,7 +116,7 @@ function MemoryCard({ memory }) {
           )}
         </div>
 
-        {/* Play Button Overlay for Videos */}
+        {}
         {memory.type === 'video' && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black/30 backdrop-blur-sm rounded-full p-3 group-hover:scale-110 transition-transform duration-300">

@@ -30,10 +30,7 @@ export default function EventDetailsForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false); // Internal State
-
-  // --- FORM STATE ---
-  const [formData, setFormData] = useState({
+  const [isGenerating, setIsGenerating] = useState(false); // Internal State  const [formData, setFormData] = useState({
     title: '',
     artist: '',
     artistId: null, // Store ID
@@ -44,17 +41,11 @@ export default function EventDetailsForm({
     time: '',
     city: '',
     description: ''
-  });
-
-  // --- VENUE STATE ---
-  const [venueSearch, setVenueSearch] = useState('');
+  });  const [venueSearch, setVenueSearch] = useState('');
   const [venuesList, setVenuesList] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [cityMismatch, setCityMismatch] = useState(false);
-
-  // 1. DETECT EDIT MODE & FETCH DATA
-  useEffect(() => {
+  const [cityMismatch, setCityMismatch] = useState(false);  useEffect(() => {
     if (editId) {
       fetchEventDetails(editId);
     }
@@ -67,10 +58,7 @@ export default function EventDetailsForm({
       const json = await res.json();
 
       if (json.success) {
-        const data = json.data;
-
-        // Populate Form
-        setFormData({
+        const data = json.data;        setFormData({
           title: data.title,
           artist: data.artist, // Name
           artistId: data.artistId, // ID
@@ -81,10 +69,7 @@ export default function EventDetailsForm({
           time: data.time || '',
           city: data.city || '',
           description: data.description || ''
-        });
-
-        // Populate Venue
-        if (data.venue) {
+        });        if (data.venue) {
           setSelectedVenue(data.venue); // Assuming populate returned the object
           setVenueSearch(data.venue.name);
         }
@@ -94,51 +79,31 @@ export default function EventDetailsForm({
     } finally {
       setIsFetching(false);
     }
-  };
-
-  // Helper: Convert Vibe String back to Number (Approximate)
-  const getVibeValue = (label) => {
+  };  const getVibeValue = (label) => {
     if (label === "Chill / Relaxed") return 10;
     if (label === "Casual / Lounge") return 30;
     if (label === "Upbeat") return 50;
     if (label === "Energetic / Party") return 70;
     if (label === "High Voltage / Raging") return 90;
     return 50; // Default
-  };
-
-  // Helper: Convert Number to Label
-  const getVibeLabel = (val) => {
+  };  const getVibeLabel = (val) => {
     if (val < 20) return "Chill / Relaxed";
     if (val < 40) return "Casual / Lounge";
     if (val < 60) return "Upbeat";
     if (val < 80) return "Energetic / Party";
     return "High Voltage / Raging";
-  };
-
-  // 2. LISTEN FOR AUTO-SELECT (From Modal)
-  useEffect(() => {
+  };  useEffect(() => {
     if (autoSelectVenue) {
       handleSelectVenue(autoSelectVenue);
     }
-  }, [autoSelectVenue]);
-
-  // 2b. LISTEN FOR AI REQUESTS (From Preview)
-  useEffect(() => {
+  }, [autoSelectVenue]);  useEffect(() => {
     if (aiRequest?.ts) {
       let modifier = "";
       if (aiRequest.type === 'hype') modifier = "Make it extremely HYPE, EXCITING, and use strong adjectives!";
-      if (aiRequest.type === 'seo') modifier = "Include relevant SEO keywords for this artist/genre naturally.";
-
-      // We pass modifier to handleAiGenerate. Note handleAiGenerate shouldn't rely on being an event handler only.
-      handleAiGenerate(null, modifier);
+      if (aiRequest.type === 'seo') modifier = "Include relevant SEO keywords for this artist/genre naturally.";      handleAiGenerate(null, modifier);
     }
-  }, [aiRequest]);
-
-  // 3. SEARCH VENUES
-  useEffect(() => {
-    const delayDebounce = setTimeout(async () => {
-      // Don't search if we are just displaying the pre-filled venue
-      if (venueSearch.length > 1 && (!selectedVenue || venueSearch !== selectedVenue.name)) {
+  }, [aiRequest]);  useEffect(() => {
+    const delayDebounce = setTimeout(async () => {      if (venueSearch.length > 1 && (!selectedVenue || venueSearch !== selectedVenue.name)) {
         try {
           const res = await fetch(`/api/venues?search=${venueSearch}`);
           const data = await res.json();
@@ -177,13 +142,8 @@ export default function EventDetailsForm({
   const handleCreateNewClick = () => {
     setShowDropdown(false);
     onOpenVenueModal(venueSearch);
-  };
-
-  // 3b. AI GENERATE DESCRIPTION
-  const handleAiGenerate = async (e, modifier = "") => {
+  };  const handleAiGenerate = async (e, modifier = "") => {
     if (e && e.preventDefault) e.preventDefault();
-
-    // If called via useEffect, e is null, logic holds.
 
     if (!formData.artist) {
       toast.error("Please enter an Artist name first.");
@@ -198,9 +158,7 @@ export default function EventDetailsForm({
         body: JSON.stringify({
           artist: formData.artist,
           genre: formData.genre,
-          vibe: getVibeLabel(formData.vibe) + (modifier ? `. IMPORTANT: ${modifier}` : ""),
-          // New Context Fields
-          title: formData.title,
+          vibe: getVibeLabel(formData.vibe) + (modifier ? `. IMPORTANT: ${modifier}` : ""),          title: formData.title,
           date: formData.date,
           city: formData.city,
           venue: selectedVenue?.name || venueSearch
@@ -225,10 +183,7 @@ export default function EventDetailsForm({
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  // 4. SUBMIT (Create OR Update)
-  const handleSubmit = async () => {
+  };  const handleSubmit = async () => {
     if (!selectedVenue?._id) return toast.error("Please select a valid venue.");
     if (!formData.title || !formData.date) return toast.error("Required fields missing.");
 
@@ -238,14 +193,8 @@ export default function EventDetailsForm({
       const payload = {
         ...formData,
         venue: selectedVenue._id,
-        vibe: getVibeLabel(formData.vibe),
-        // Only include ticket tiers on creation to avoid overwriting sales data on edit
-        // (Unless you build a specific UI to manage tiers)
-        ...(!editId && { ticketTiers: [{ name: "General Admission", price: 0, capacity: selectedVenue.capacity || 100 }] })
-      };
-
-      // DYNAMIC URL & METHOD
-      const url = editId ? `/api/events/${editId}` : '/api/events';
+        vibe: getVibeLabel(formData.vibe),        ...(!editId && { ticketTiers: [{ name: "General Admission", price: 0, capacity: selectedVenue.capacity || 100 }] })
+      };      const url = editId ? `/api/events/${editId}` : '/api/events';
       const method = editId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -269,13 +218,8 @@ export default function EventDetailsForm({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // SWITCH TO CREATE MODE (Clear Form)
-  const handleCancelEdit = () => {
-    router.push('/manage/create-event'); // Removes ?id=...
-    // Reset state manually (optional, as router push might not remount immediately depending on config)
-    setFormData({ title: '', artist: '', genre: '', status: 'Scheduled', vibe: 50, date: '', time: '', city: '', description: '' });
+  };  const handleCancelEdit = () => {
+    router.push('/manage/create-event'); // Removes ?id=...    setFormData({ title: '', artist: '', genre: '', status: 'Scheduled', vibe: 50, date: '', time: '', city: '', description: '' });
     setSelectedVenue(null);
     setVenueSearch('');
   };
@@ -292,7 +236,7 @@ export default function EventDetailsForm({
   return (
     <div className="flex flex-col gap-6 bg-[#101622] p-6 rounded-xl border border-[#314368] relative">
 
-      {/* HEADER WITH TOGGLE */}
+      {}
       <div className="flex items-center justify-between border-b border-[#314368] pb-4">
         <h3 className="text-xl font-bold text-white">
           {editId ? 'Edit Event Details' : 'Create New Event'}
@@ -308,10 +252,10 @@ export default function EventDetailsForm({
         )}
       </div>
 
-      {/* --- FORM INPUTS (Same as before) --- */}
+      {}
       <div className="flex flex-col gap-5">
 
-        {/* Title */}
+        {}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-[#90a4cb]">Event Title</label>
           <input
@@ -322,15 +266,12 @@ export default function EventDetailsForm({
           />
         </div>
 
-        {/* Artist Search */}
-        <div className="flex flex-col gap-2 relative z-[60]"> {/* High Z-Index for Dropdown */}
+        {}
+        <div className="flex flex-col gap-2 relative z-[60]"> {}
           <UserSearchInput
             label="Artist"
             role="artist"
-            initialValue={formData.artist} // Pass name string OR object if you had full user.
-            // Logic: If edit mode, we might only have name if legacy, or ID if new. 
-            // Best to fetch full user details if ID exists, but for now we trust name.
-            onSelect={(user) => {
+            initialValue={formData.artist} // Pass name string OR object if you had full user.            onSelect={(user) => {
               if (user) {
                 setFormData({ ...formData, artist: user.name, artistId: user._id });
               } else {
@@ -341,7 +282,7 @@ export default function EventDetailsForm({
           />
         </div>
 
-        {/* Grid: Genre, Status, Vibe */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-[#90a4cb]">Genre</label>
@@ -398,7 +339,7 @@ export default function EventDetailsForm({
         </div>
       </div>
 
-      {/* City */}
+      {}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-[#90a4cb]">Event City</label>
         <input
@@ -413,7 +354,7 @@ export default function EventDetailsForm({
         {cityMismatch && <p className="text-xs text-yellow-500 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Warning: Venue is in {selectedVenue?.city}</p>}
       </div>
 
-      {/* Venue Search */}
+      {}
       <div className="flex flex-col gap-2 relative z-50">
         <label className="text-sm font-medium text-[#90a4cb]">Venue</label>
         <div className="relative">
@@ -433,7 +374,7 @@ export default function EventDetailsForm({
           {selectedVenue && !showDropdown && <div className="absolute right-3 top-3.5 text-green-400"><MapPin className="w-5 h-5" /></div>}
         </div>
 
-        {/* Dropdown Results */}
+        {}
         {showDropdown && venueSearch && !selectedVenue && (
           <div className="absolute top-full left-0 w-full mt-2 bg-[#182234] border border-[#314368] rounded-lg shadow-xl overflow-hidden z-50">
             {venuesList.length > 0 ? (

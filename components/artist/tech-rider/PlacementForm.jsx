@@ -19,7 +19,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Main Inputs */}
+        {}
         <div className="md:col-span-2 bg-[#1a2632] p-6 rounded-xl border border-[#223949] shadow-sm">
           <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
             <PenLine className="text-[#0d93f2] w-5 h-5" />
@@ -73,10 +73,10 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
           </div>
         </div>
 
-        {/* Toggles & Read-only */}
+        {}
         <div className="flex flex-col gap-4">
 
-          {/* Interactive Toggle */}
+          {}
           <label className="relative flex items-center justify-between bg-[#1a2632] p-5 rounded-xl border border-[#223949] cursor-pointer group hover:border-[#0d93f2]/50 transition-colors shadow-sm h-min select-none">
             <div className="flex items-center gap-3">
               <div className="bg-[#0d93f2]/10 p-2 rounded-lg text-[#0d93f2]">
@@ -95,7 +95,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
             </div>
           </label>
 
-          {/* Static Info Cards */}
+          {}
           <div className="bg-[#1a2632] p-5 rounded-xl border border-[#223949] flex flex-col gap-3 opacity-80 hover:opacity-100 transition-opacity">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

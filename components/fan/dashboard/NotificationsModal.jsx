@@ -32,12 +32,12 @@ export default function NotificationsModal({ isOpen, onClose }) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-end sm:justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-end sm:justify-center p-0 sm:p-4">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
             <div className="relative w-full h-full sm:h-auto sm:max-w-md bg-white dark:bg-[#1a2632] sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right sm:slide-in-from-bottom duration-300">
 
-                {/* Header */}
+                { }
                 <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-[#1a2632] z-10">
                     <h2 className="text-lg font-bold flex items-center gap-2">
                         <Bell className="w-5 h-5 text-[#0d93f2]" />
@@ -48,7 +48,7 @@ export default function NotificationsModal({ isOpen, onClose }) {
                     </button>
                 </div>
 
-                {/* List */}
+                { }
                 <div className="flex-1 overflow-y-auto p-0 bg-slate-50 dark:bg-[#101b22]">
                     {loading ? (
                         <div className="p-10 text-center text-slate-500">Loading updates...</div>

@@ -9,8 +9,6 @@ import AddGuestForm from '@/components/artist/guestlist/AddGuestForm';
 import GuestTable from '@/components/artist/guestlist/GuestTable';
 import { Loader2 } from 'lucide-react';
 
-// MOCK_DB_GUESTS removed. We fetch real data now.
-
 export default function GuestListPage() {
   const [guests, setGuests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,8 +45,6 @@ export default function GuestListPage() {
       afterparty: guests.filter(g => g.tier === 'Afterparty').length,
     };
   }, [guests]);
-
-  // --- ACTIONS ---
 
   const handleAddGuest = async (formData) => {
     try {
@@ -109,10 +105,7 @@ export default function GuestListPage() {
       setGuests(prev => prev.filter(guest => guest.id !== id));
       if (editingGuest?.id === id) setEditingGuest(null);
     }
-  };
-
-  // NEW: Handle New List (Clear All)
-  const handleNewList = async () => {
+  };  const handleNewList = async () => {
     if (confirm('Are you sure you want to clear the entire list? This action cannot be undone.')) {
       try {
         const res = await fetch('/api/artist/guest-list', {
@@ -130,10 +123,7 @@ export default function GuestListPage() {
         console.error("Failed to clear list", e);
       }
     }
-  };
-
-  // NEW: Handle CSV Export
-  const handleExportCSV = () => {
+  };  const handleExportCSV = () => {
     if (guests.length === 0) return toast.error("List is empty!");
 
     const headers = ["Name", "Email", "Tier", "Status", "Added At"];
@@ -160,9 +150,7 @@ export default function GuestListPage() {
 
   const handleCheckIn = async (guestId, currentStatus) => {
     const newStatus = currentStatus === 'Checked In' ? 'Pending' : 'Checked In'; // Toggle
-    try {
-      // Optimistic Update
-      setGuests(prev => prev.map(g =>
+    try {      setGuests(prev => prev.map(g =>
         g.id === guestId ? { ...g, status: newStatus } : g
       ));
 
@@ -175,9 +163,7 @@ export default function GuestListPage() {
       if (!res.ok) throw new Error("Failed to update");
 
     } catch (e) {
-      console.error("Check-in failed", e);
-      // Revert on failure
-      setGuests(prev => prev.map(g =>
+      console.error("Check-in failed", e);      setGuests(prev => prev.map(g =>
         g.id === guestId ? { ...g, status: currentStatus } : g
       ));
       toast.error("Failed to update status");
@@ -190,7 +176,7 @@ export default function GuestListPage() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto p-6 flex flex-col gap-6">
 
-        {/* Pass the handler to the header */}
+        {}
         <GuestListHeader onNewList={handleNewList} onExport={handleExportCSV} />
 
         <StatsGrid stats={stats} isLoading={isLoading} />

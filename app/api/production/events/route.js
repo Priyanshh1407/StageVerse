@@ -4,10 +4,7 @@ import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
 import { verifyAuth } from '@/lib/auth';
-import { logActivity } from '@/lib/logger';
-
-// Helper to determine color based on type
-function getTypeColor(type) {
+import { logActivity } from '@/lib/logger';function getTypeColor(type) {
     switch (type) {
         case 'Touring': return 'bg-blue-500';
         case 'Festival': return 'bg-indigo-500';
@@ -19,23 +16,14 @@ function getTypeColor(type) {
 
 export async function POST(req) {
     try {
-        await dbConnect();
-
-        // 1. Auth Check
-        const user = await verifyAuth(req);
+        await dbConnect();        const user = await verifyAuth(req);
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const body = await req.json();
-
-        // Basic Validation
-        if (!body.title || !body.date) {
+        const body = await req.json();        if (!body.title || !body.date) {
             return NextResponse.json({ error: 'Title and Date are required' }, { status: 400 });
-        }
-
-        // Validate or Create Venue 
-        let venueDoc = await Venue.findOne({ name: body.venue });
+        }        let venueDoc = await Venue.findOne({ name: body.venue });
         if (!venueDoc) {
             venueDoc = await Venue.create({
                 name: body.venue || 'Unknown Venue',
@@ -43,13 +31,7 @@ export async function POST(req) {
                 capacity: 1000,
                 location: 'Unknown Address'
             });
-        }
-
-        // Generate a random 4-digit Event ID if not provided
-        const newEventId = Math.floor(1000 + Math.random() * 9000);
-
-        // Create the Event
-        const newEvent = await Event.create({
+        }        const newEventId = Math.floor(1000 + Math.random() * 9000);        const newEvent = await Event.create({
             eventId: newEventId,
             title: body.title,
             description: 'Created via Production Dashboard',
@@ -66,10 +48,7 @@ export async function POST(req) {
             },
             ticketTiers: [],
             discounts: []
-        });
-
-        // LOG ACTIVITY
-        await logActivity(
+        });        await logActivity(
             user.userId,
             'create',
             'Event',

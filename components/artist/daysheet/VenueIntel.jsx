@@ -6,10 +6,7 @@ import { toast } from "sonner";
 
 export default function VenueIntel({ intel, onUpdate }) {
   const [data, setData] = useState(intel || {});
-  const [isEditing, setIsEditing] = useState(false);
-
-  // Sync props
-  useEffect(() => {
+  const [isEditing, setIsEditing] = useState(false);  useEffect(() => {
     if (intel) setData(intel);
   }, [intel]);
 
@@ -21,10 +18,7 @@ export default function VenueIntel({ intel, onUpdate }) {
   const handleSave = () => {
     onUpdate(data);
     setIsEditing(false);
-  };
-
-  // Helper input
-  const Input = ({ val, field, label }) => (
+  };  const Input = ({ val, field, label }) => (
     <div className="mb-2">
       <label className="text-xs text-slate-400 block mb-1">{label}</label>
       <input
@@ -55,7 +49,7 @@ export default function VenueIntel({ intel, onUpdate }) {
         </button>
       </div>
 
-      {/* WIFI CARD */}
+      {}
       <div className="flex flex-col gap-4 rounded-xl border border-[#315168] bg-white dark:bg-[#1c2a35] p-5 shadow-sm hover:border-[#0d93f2]/50 transition-colors">
         <div className="flex items-start gap-3">
           <div className="p-2 bg-slate-100 dark:bg-[#101b23] rounded-lg text-[#0d93f2]">
@@ -84,7 +78,7 @@ export default function VenueIntel({ intel, onUpdate }) {
         </div>
       </div>
 
-      {/* GREEN ROOM CARD */}
+      {}
       <div className="flex flex-col gap-4 rounded-xl border border-[#315168] bg-white dark:bg-[#1c2a35] p-5 shadow-sm hover:border-[#0d93f2]/50 transition-colors">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-slate-100 dark:bg-[#101b23] rounded-lg text-green-500">
@@ -108,7 +102,7 @@ export default function VenueIntel({ intel, onUpdate }) {
         </div>
       </div>
 
-      {/* MAP / COFFEE CARD */}
+      {}
       <div className="rounded-xl border border-[#315168] bg-white dark:bg-[#1c2a35] overflow-hidden group">
         <div className="relative h-32 w-full bg-slate-800">
           <div

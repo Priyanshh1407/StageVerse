@@ -4,10 +4,7 @@ import { RotateCcw, X, Check } from 'lucide-react';
 
 export default function EventsFilter({ filters, setFilters, onReset, isOpen, onClose }) {
   
-  const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
-
-  // Helper for Arrays (Vibes and Genres)
-  const toggleArrayItem = (field, item) => {
+  const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));  const toggleArrayItem = (field, item) => {
     setFilters(prev => {
       const list = prev[field];
       const exists = list.includes(item);
@@ -50,7 +47,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
 
           <div className="space-y-6">
             
-            {/* Genre List */}
+            {}
             <div>
               <label className="mb-3 block text-sm font-medium text-slate-300">Genres</label>
               <div className="space-y-2">
@@ -76,7 +73,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
 
             <hr className="border-white/10" />
 
-            {/* City Select */}
+            {}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-300">City</label>
               <select 
@@ -94,7 +91,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
               </select>
             </div>
 
-            {/* Date Picker */}
+            {}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-300">Date</label>
               <input 
@@ -105,7 +102,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
               />
             </div>
 
-            {/* Price Range */}
+            {}
             <div>
               <div className="mb-2 flex justify-between text-sm text-slate-300">
                 <span>Max Price</span>
@@ -125,7 +122,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
               </div>
             </div>
 
-            {/* Vibe Tags */}
+            {}
             <div>
               <label className="mb-3 block text-sm font-medium text-slate-300">Vibe</label>
               <div className="flex flex-wrap gap-2">

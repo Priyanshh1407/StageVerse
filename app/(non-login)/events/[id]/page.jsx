@@ -21,10 +21,7 @@ export default function EventDetailPage() {
 
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    // Scroll Animation Hooks
-    const ref = useRef(null);
+    const [error, setError] = useState(null);    const ref = useRef(null);
     const { scrollY } = useScroll();
     const heroY = useTransform(scrollY, [0, 500], [0, 200]);
     const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.3]);
@@ -89,10 +86,7 @@ export default function EventDetailPage() {
                 <MainFooter isLoggedIn={false} />
             </div>
         );
-    }
-
-    // --- DATA MAPPING ---
-    const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
+    }    const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -114,9 +108,9 @@ export default function EventDetailPage() {
 
             <main className="flex-1 flex flex-col relative w-full">
 
-                {/* 1. IMMERSIVE HERO SECTION */}
+                {}
                 <div className="relative w-full h-[85vh] overflow-hidden" ref={ref}>
-                    {/* Background Parallax Image */}
+                    {}
                     <motion.div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                         style={{
@@ -126,11 +120,11 @@ export default function EventDetailPage() {
                         }}
                     />
 
-                    {/* Dramatic Gradients */}
+                    {}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
                     <div className="absolute inset-0 bg-gradient-to-tr from-[#050505] via-transparent to-[#00d4ff]/10 mix-blend-overlay" />
 
-                    {/* Content Container */}
+                    {}
                     <div className="absolute inset-0 flex flex-col justify-end px-6 md:px-12 lg:px-24 pb-24 z-10">
                         <motion.div
                             initial={{ opacity: 0, y: 50 }}
@@ -138,7 +132,7 @@ export default function EventDetailPage() {
                             transition={{ duration: 0.8, ease: "easeOut" }}
                             className="max-w-5xl"
                         >
-                            {/* Badges */}
+                            {}
                             <div className="flex flex-wrap items-center gap-4 mb-6">
                                 <span className="bg-[#00d4ff] text-black text-xs font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm shadow-[0_0_15px_rgba(0,212,255,0.6)]">
                                     {event.type || 'Concert'}
@@ -150,7 +144,7 @@ export default function EventDetailPage() {
                                 )}
                             </div>
 
-                            {/* Massive Title */}
+                            {}
                             <h1 className="text-5xl md:text-7xl lg:text-9xl font-black text-white tracking-tighter leading-[0.9] mb-4 drop-shadow-2xl mix-blend-screen text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-slate-400">
                                 {event.title}
                             </h1>
@@ -158,7 +152,7 @@ export default function EventDetailPage() {
                                 {event.subtitle}
                             </h2>
 
-                            {/* Floating Info Details */}
+                            {}
                             <div className="flex flex-wrap items-center gap-8 md:gap-16 text-white/90 glass-panel p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md inline-flex">
                                 <div className="flex items-center gap-4 group cursor-default">
                                     <div className="p-3 bg-white/10 rounded-full group-hover:bg-[#00d4ff] group-hover:text-black transition-colors duration-300">
@@ -184,14 +178,14 @@ export default function EventDetailPage() {
                     </div>
                 </div>
 
-                {/* 2. MAIN CONTENT GRID */}
+                {}
                 <div className="relative z-20 -mt-12 px-6 md:px-12 lg:px-24 pb-20">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-                        {/* LEFT COLUMN: Story & Details */}
+                        {}
                         <div className="lg:col-span-8 flex flex-col gap-16">
 
-                            {/* ABOUT SECTION (Immersive Text) */}
+                            {}
                             <motion.section
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -204,7 +198,7 @@ export default function EventDetailPage() {
                                 </div>
 
                                 <div className="bg-[#111] p-8 md:p-10 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
-                                    {/* Ambient Glow */}
+                                    {}
                                     <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-blue-500/10 transition-colors duration-700" />
 
                                     <div className="prose prose-invert prose-lg max-w-none text-slate-300 relative z-10 leading-relaxed">
@@ -237,7 +231,7 @@ export default function EventDetailPage() {
                                 </div>
                             </motion.section>
 
-                            {/* LINEUP SECTION (Artist Cards) */}
+                            {}
                             <motion.section
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -263,7 +257,7 @@ export default function EventDetailPage() {
                                 </div>
                             </motion.section>
 
-                            {/* VENUE MAP */}
+                            {}
                             <motion.section
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -293,11 +287,11 @@ export default function EventDetailPage() {
 
                         </div>
 
-                        {/* RIGHT COLUMN: Sticky Sidebar Actions */}
+                        {}
                         <div className="lg:col-span-4 relative">
                             <div className="sticky top-28 flex flex-col gap-6">
 
-                                {/* TICKET WIDGET */}
+                                {}
                                 <motion.div
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -307,7 +301,7 @@ export default function EventDetailPage() {
                                     <TicketSelection eventId={event._id} tiers={tiers} />
                                 </motion.div>
 
-                                {/* ARTIST PROFILE MINI */}
+                                {}
                                 <div className="bg-[#111]/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 flex items-center gap-5 hover:bg-[#111] transition-colors">
                                     <div className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-[#00d4ff]" style={{ backgroundImage: `url("${artistImage}")` }} />
                                     <div>
@@ -321,7 +315,7 @@ export default function EventDetailPage() {
                                     </div>
                                 </div>
 
-                                {/* SHARE BAR */}
+                                {}
                                 <div className="flex justify-between items-center px-4 py-2 border-t border-white/10 mt-4">
                                     <span className="text-slate-500 text-sm font-bold uppercase">Share Event</span>
                                     <div className="flex gap-4">
@@ -339,7 +333,7 @@ export default function EventDetailPage() {
                     </div>
                 </div>
 
-                {/* SIMILAR EVENTS SLIDER */}
+                {}
                 <section className="py-20 bg-[#080808] border-t border-white/5">
                     <div className="px-6 md:px-12 lg:px-24">
                         <div className="flex items-end justify-between mb-12">
@@ -372,10 +366,7 @@ export default function EventDetailPage() {
             </main>
         </div>
     );
-}
-
-// Sub-component tailored for the new dark theme
-function SimilarEventCard({ event }) {
+}function SimilarEventCard({ event }) {
     return (
         <Link href={`/events/${event.id}`} className="group block bg-[#111] rounded-2xl overflow-hidden border border-white/5 hover:border-[#00d4ff]/50 transition-all duration-500 hover:-translate-y-2">
             <div className="h-64 bg-cover bg-center relative overflow-hidden">

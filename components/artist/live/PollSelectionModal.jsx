@@ -7,29 +7,21 @@ export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId 
   if (!isOpen) return null;
 
   const [availablePolls, setAvailablePolls] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch Polls from DB
-  useEffect(() => {
+  const [loading, setLoading] = useState(true);  useEffect(() => {
     if (!isOpen || !eventId) return;
 
     const fetchPolls = async () => {
       try {
         const res = await fetch(`/api/fan/poll?eventId=${eventId}&all=true`);
         const json = await res.json();
-        if (json.success) {
-          // Map DB polls to UI format
-          const dbPolls = (json.polls || []).map(p => ({
+        if (json.success) {          const dbPolls = (json.polls || []).map(p => ({
             id: p._id,
             title: p.question,
             type: p.isActive ? 'Active' : 'Ready',
             options: p.options.length,
             trigger: 'Manual',
             data: p // Keep full object
-          }));
-
-          // ALWAYS Add Template (Create New) option first
-          const templatePoll = {
+          }));          const templatePoll = {
             id: 'new-encore',
             title: 'Create New Poll (Template)',
             type: 'Template',
@@ -57,7 +49,7 @@ export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId 
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050505]/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-lg bg-[#101b22] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
 
-        {/* Header */}
+        {}
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#15232d]">
           <div>
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -71,7 +63,7 @@ export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId 
           </button>
         </div>
 
-        {/* Poll List */}
+        {}
         <div className="p-4 flex flex-col gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
           {availablePolls.map((poll) => (
             <button

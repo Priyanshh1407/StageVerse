@@ -15,10 +15,7 @@ export default function CreateShowModal({ onClose, onSave }) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
-  const [selectedRequestId, setSelectedRequestId] = useState(null);
-
-  // Fetch pending requests on mount
-  React.useEffect(() => {
+  const [selectedRequestId, setSelectedRequestId] = useState(null);  React.useEffect(() => {
     async function fetchPending() {
       try {
         const res = await fetch('/api/production/events/pending');
@@ -56,9 +53,7 @@ export default function CreateShowModal({ onClose, onSave }) {
     e.preventDefault();
     setIsSubmitting(true);
 
-    try {
-      // If we selected a request, we UPDATE it to 'active' instead of creating new
-      const url = selectedRequestId
+    try {      const url = selectedRequestId
         ? `/api/production/events/${selectedRequestId}`
         : '/api/production/events';
 
@@ -89,7 +84,7 @@ export default function CreateShowModal({ onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-[#18181B] border border-[#27272A] w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
-        {/* Header */}
+        {}
         <div className="flex justify-between items-center p-6 border-b border-[#27272A]">
           <div>
             <h2 className="text-white font-bold text-xl tracking-tight">
@@ -104,10 +99,10 @@ export default function CreateShowModal({ onClose, onSave }) {
           </button>
         </div>
 
-        {/* Body */}
+        {}
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5 overflow-y-auto">
 
-          {/* PENDING REQUESTS DROPDOWN */}
+          {}
           {pendingRequests.length > 0 && (
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-2">
               <label className="block text-xs font-bold text-blue-400 uppercase mb-2">
@@ -127,7 +122,7 @@ export default function CreateShowModal({ onClose, onSave }) {
             </div>
           )}
 
-          {/* Show Title */}
+          {}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Show Name / Tour Title</label>
             <input
@@ -142,7 +137,7 @@ export default function CreateShowModal({ onClose, onSave }) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Type Selector */}
+            {}
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Production Type</label>
               <div className="relative">
@@ -160,7 +155,7 @@ export default function CreateShowModal({ onClose, onSave }) {
               </div>
             </div>
 
-            {/* Date */}
+            {}
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Start Date</label>
               <div className="relative">
@@ -174,7 +169,7 @@ export default function CreateShowModal({ onClose, onSave }) {
             </div>
           </div>
 
-          {/* Venue */}
+          {}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Venue / Location</label>
             <div className="relative">
@@ -189,7 +184,7 @@ export default function CreateShowModal({ onClose, onSave }) {
             </div>
           </div>
 
-          {/* Rider Upload (Visual Only) */}
+          {}
           <div className="border-2 border-dashed border-[#27272A] rounded-lg p-6 flex flex-col items-center justify-center gap-2 hover:bg-[#0F0F10] hover:border-blue-500/50 transition-all cursor-pointer group">
             <div className="size-10 rounded-full bg-[#0F0F10] flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
               <Upload className="w-5 h-5 text-gray-500 group-hover:text-blue-500" />
@@ -198,7 +193,7 @@ export default function CreateShowModal({ onClose, onSave }) {
             <p className="text-xs text-gray-600">Optional • Max 10MB</p>
           </div>
 
-          {/* Footer Actions */}
+          {}
           <div className="pt-4 flex gap-3">
             <button
               type="button"

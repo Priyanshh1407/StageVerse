@@ -8,10 +8,7 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-        // Fetch All Events for Artist (where they are the performer)
-        const events = await Event.find({
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });        const events = await Event.find({
             artistId: user.userId
         })
             .sort({ date: 1 }) // Upcoming first

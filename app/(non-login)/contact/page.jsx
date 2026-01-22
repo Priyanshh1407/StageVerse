@@ -51,7 +51,7 @@ export default function ContactPage() {
 
   return (
     <>
-      {/* CSS FIX FOR CHROME AUTOFILL WHITE SCREEN */}
+      {}
       <style jsx global>{`
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
@@ -69,7 +69,7 @@ export default function ContactPage() {
 
         <main className="flex-grow">
 
-          {/* HERO SECTION */}
+          {}
           <div className="relative py-16 sm:py-24 bg-[#0F0F10]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
@@ -81,16 +81,16 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* MAIN CONTENT GRID */}
+          {}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
 
-              {/* LEFT COLUMN: INFO & MAP */}
+              {}
               <div className="space-y-8">
 
-                {/* Info Cards */}
+                {}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Email Card */}
+                  {}
                   <div className="bg-[#18181B] p-6 rounded-2xl border border-white/5 shadow-sm hover:border-[#00d4ff]/50 transition-colors group">
                     <div className="w-12 h-12 rounded-full bg-[#00d4ff]/10 flex items-center justify-center mb-4 group-hover:bg-[#00d4ff]/20 transition-colors">
                       <Mail className="w-6 h-6 text-[#00d4ff]" />
@@ -103,7 +103,7 @@ export default function ContactPage() {
                     </a>
                   </div>
 
-                  {/* Support Card */}
+                  {}
                   <div className="bg-[#18181B] p-6 rounded-2xl border border-white/5 shadow-sm hover:border-[#00d4ff]/50 transition-colors group">
                     <div className="w-12 h-12 rounded-full bg-[#00d4ff]/10 flex items-center justify-center mb-4 group-hover:bg-[#00d4ff]/20 transition-colors">
                       <LifeBuoy className="w-6 h-6 text-[#00d4ff]" />
@@ -117,7 +117,7 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* Map Card */}
+                {}
                 <div className="bg-[#18181B] p-2 rounded-2xl border border-white/5 shadow-sm h-64 relative overflow-hidden group">
                   <img
                     src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop"
@@ -144,7 +144,7 @@ export default function ContactPage() {
 
               </div>
 
-              {/* RIGHT COLUMN: FORM */}
+              {}
               <div className="bg-[#18181B] p-8 sm:p-10 rounded-3xl border border-white/5 shadow-xl">
                 <form className="space-y-6" onSubmit={handleSubmit}>
 

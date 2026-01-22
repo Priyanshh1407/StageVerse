@@ -6,10 +6,7 @@ import { BarChart2, PlusCircle, Edit, Trash2, ListMusic, List, Timer, X, Chevron
 
 export default function EncorePollConfig({ eventId }) { // Prop
   const [view, setView] = useState('grid'); // 'grid' | 'editor'
-  const [showPreview, setShowPreview] = useState(false);
-
-  // Toggle Views
-  const handleEdit = () => setView('editor');
+  const [showPreview, setShowPreview] = useState(false);  const handleEdit = () => setView('editor');
   const handleSave = () => setView('grid');
 
   return (
@@ -23,16 +20,9 @@ export default function EncorePollConfig({ eventId }) { // Prop
       {showPreview && <PollPreviewModal onClose={() => setShowPreview(false)} />}
     </div>
   );
-}
-
-// --- SUB-COMPONENT: POLL GRID (Unchanged) ---
-function PollGrid({ onEdit, onPreview }) {
-  // ... (Keep the exact same grid code from previous answer) ...
-  // For brevity, I am not repeating the Grid code here, assume it is the same as before.
-  // If you need it repeated, I can provide it, but the focus is on the Editor logic below.
-  return (
+}function PollGrid({ onEdit, onPreview }) {  return (
     <>
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex flex-col gap-1">
           <h3 className="text-xl text-white font-bold flex items-center gap-2">
@@ -48,7 +38,7 @@ function PollGrid({ onEdit, onPreview }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* CARD 1 */}
+        {}
         <div className="group bg-[#101b22] border border-[#223949] hover:border-purple-500/40 rounded-xl p-5 relative transition-all">
           <div className="flex justify-between items-start mb-4">
             <div>
@@ -73,21 +63,14 @@ function PollGrid({ onEdit, onPreview }) {
       </div>
     </>
   )
-}
-
-// --- SUB-COMPONENT: POLL EDITOR (Updated with Auto-Create Logic) ---
-// --- SUB-COMPONENT: POLL EDITOR (Connected to API) ---
-function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
+}function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
   const [question, setQuestion] = useState("Which song should we play next?");
   const [options, setOptions] = useState([
     { id: 1, value: "Wonderwall (Oasis Cover)" },
     { id: 2, value: "Don't Stop Believing" },
     { id: 3, value: "" }
   ]);
-  const [loading, setLoading] = useState(false); // Loading state
-
-  // ... (handleOptionChange and removeOption - Keep existing logic)
-  const handleOptionChange = (id, newValue) => {
+  const [loading, setLoading] = useState(false); // Loading state  const handleOptionChange = (id, newValue) => {
     const newOptions = options.map(opt => opt.id === id ? { ...opt, value: newValue } : opt);
     setOptions(newOptions);
     const lastOption = newOptions[newOptions.length - 1];
@@ -101,12 +84,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
     setOptions(options.filter(opt => opt.id !== id));
   };
 
-
-  const handleSavePoll = async () => {
-    // 1. Prepare Data
-    const validOptions = options.map(o => o.value.trim()).filter(v => v !== "");
-
-
+  const handleSavePoll = async () => {    const validOptions = options.map(o => o.value.trim()).filter(v => v !== "");
 
     if (validOptions.length < 2) {
       toast.error("Please provide at least 2 options.");
@@ -147,7 +125,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col h-full">
-      {/* Header */}
+      {}
       <div className="flex items-center gap-4 mb-6 border-b border-[#223949] pb-4">
         <button onClick={onCancel} className="p-2 hover:bg-[#223949] rounded-full text-[#90b2cb] hover:text-white transition-colors">
           <ArrowLeft className="w-5 h-5" />
@@ -159,9 +137,9 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left: Dynamic Inputs */}
+        {}
         <div className="flex flex-col gap-4">
-          {/* Question Input */}
+          {}
           <div className="flex flex-col gap-2">
             <label className="text-white text-sm font-bold uppercase tracking-wider">Poll Question</label>
             <input
@@ -196,7 +174,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
           </div>
         </div>
 
-        {/* Right: Preview */}
+        {}
         <div className="flex flex-col gap-6">
           <div className="bg-[#223949]/30 rounded-lg p-6 border border-[#223949]/50 text-center">
             <Smartphone className="w-8 h-8 text-[#90b2cb] mx-auto mb-2 opacity-50" />
@@ -223,10 +201,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
       </div>
     </div>
   );
-}
-
-// --- SUB-COMPONENT: POLL PREVIEW MODAL (Same as before) ---
-function PollPreviewModal({ onClose }) {
+}function PollPreviewModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="bg-[#101b22] p-6 rounded-xl border border-white/10 w-full max-w-md">

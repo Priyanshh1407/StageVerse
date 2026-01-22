@@ -11,16 +11,7 @@ import {
   Speaker, Beer, Shield, Filter, Smile, Frown, Menu, Bell, Loader2, FileText,
   Rocket, ArrowLeft // Added for Coming Soon screen
 } from 'lucide-react';
-import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
-
-// ==================================================================================
-// --- TEMPORARY: COMING SOON MODE ---
-// Change to `false` to view the actual page, or delete this section when ready.
-const IS_COMING_SOON = false;
-// ==================================================================================
-
-// --- MOCK DATA: TRENDS ---
-const TREND_DATA_EVENT = [
+import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';const IS_COMING_SOON = false;const TREND_DATA_EVENT = [
   { time: '12 PM', value: 40, type: 'positive' },
   { time: '1 PM', value: 45, type: 'positive' },
   { time: '2 PM', value: 55, type: 'positive' },
@@ -43,10 +34,7 @@ const TREND_DATA_POST = [
   { time: 'Day 5', value: 20, type: 'positive' },
   { time: 'Day 6', value: 10, type: 'positive' },
   { time: 'Day 7', value: 5, type: 'positive' },
-];
-
-// --- MOCK DATA: REVIEWS ---
-const REVIEWS = [
+];const REVIEWS = [
   { id: 1, user: "Sarah Jenkins", ticket: "Ticket #8492 • VIP Pass", text: "Honestly one of the best nights of my life. The transition between the opening act and the main event was seamless. The VIP area was worth every penny.", sentiment: "positive" },
   { id: 2, user: "Mike T.", ticket: "Ticket #1120 • GA Pass", text: "Missed the first 30 mins because the gates were a mess. No clear signage anywhere.", sentiment: "negative" },
   { id: 3, user: "Jessica Alverez", ticket: "Ticket #3391 • GA Pass", text: "The sound quality was insane! Could feel the bass in my chest. Lighting crew deserves a raise.", sentiment: "positive" },
@@ -69,15 +57,9 @@ const KEYWORDS = [
 
 export default function AnalysisPage() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  // --- STATE FOR INTERACTIVITY ---
-  const [chartView, setChartView] = useState('event');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);  const [chartView, setChartView] = useState('event');
   const [reviewFilter, setReviewFilter] = useState('all');
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  // --- HANDLERS ---
-  const handleGenerateReport = () => {
+  const [isGenerating, setIsGenerating] = useState(false);  const handleGenerateReport = () => {
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
@@ -93,10 +75,7 @@ export default function AnalysisPage() {
 
   const handleFullAnalysis = () => {
     toast.info("Navigating to full detailed analysis view...");
-  };
-
-  // --- DERIVED DATA ---
-  const currentChartData = chartView === 'event' ? TREND_DATA_EVENT : TREND_DATA_POST;
+  };  const currentChartData = chartView === 'event' ? TREND_DATA_EVENT : TREND_DATA_POST;
 
   const filteredReviews = useMemo(() => {
     if (reviewFilter === 'all') return REVIEWS;
@@ -106,15 +85,12 @@ export default function AnalysisPage() {
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30 relative">
 
-      {/* ========================================
-        COMING SOON OVERLAY - DELETE WHEN READY
-        ========================================
-      */}
+      {}
       {IS_COMING_SOON && (
         <div className="absolute inset-0 z-[100] bg-[#101b22]/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-500">
           <div className="bg-[#192734] p-8 rounded-2xl border border-[#2c3b47] shadow-2xl max-w-md w-full relative overflow-hidden group">
 
-            {/* Decoration */}
+            {}
             <div className="absolute top-0 right-0 p-12 bg-[#0d93f2]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
             <div className="relative z-10 flex flex-col items-center">
@@ -137,8 +113,7 @@ export default function AnalysisPage() {
           </div>
         </div>
       )}
-      {/* ======================================== */}
-
+      {}
 
       <OrganizerSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -153,10 +128,10 @@ export default function AnalysisPage() {
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-[#2c3b47] scrollbar-track-[#101b22]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-6">
 
-            {/* TOP ROW: OVERVIEW */}
+            {}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-              {/* Scorecard */}
+              {}
               <div className="lg:col-span-1 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col justify-center relative overflow-hidden">
                 <div className="flex justify-between items-center mb-4 z-10">
                   <h3 className="text-white text-lg font-bold">Overall Sentiment</h3>
@@ -172,7 +147,7 @@ export default function AnalysisPage() {
                 </div>
                 <p className="text-[#90b2cb] text-sm mb-6 z-10">Positive Experience Score</p>
 
-                {/* Progress Bar */}
+                {}
                 <div className="relative h-3 w-full bg-[#315168]/30 rounded-full overflow-hidden z-10">
                   <div className="absolute h-full bg-gradient-to-r from-blue-500 to-[#0d93f2] w-[84%] rounded-full shadow-[0_0_10px_rgba(13,147,242,0.5)]"></div>
                 </div>
@@ -182,7 +157,7 @@ export default function AnalysisPage() {
                 </div>
               </div>
 
-              {/* AI Summary */}
+              {}
               <div className="lg:col-span-2 bg-gradient-to-br from-[#18242e] to-[#1c2a35] rounded-xl border border-[#2c3b47] p-6 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                   <Sparkles className="w-32 h-32 text-[#0d93f2]" />
@@ -201,9 +176,9 @@ export default function AnalysisPage() {
               </div>
             </div>
 
-            {/* MIDDLE ROW: HIGHLIGHTS vs PAIN POINTS */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Highlights */}
+              {}
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between px-2">
                   <h3 className="text-white text-xl font-bold flex items-center gap-2">
@@ -225,7 +200,7 @@ export default function AnalysisPage() {
                 />
               </div>
 
-              {/* Pain Points */}
+              {}
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between px-2">
                   <h3 className="text-white text-xl font-bold flex items-center gap-2">
@@ -248,10 +223,10 @@ export default function AnalysisPage() {
               </div>
             </div>
 
-            {/* BOTTOM ROW: CHART & CLOUD */}
+            {}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-              {/* Sentiment Chart */}
+              {}
               <div className="lg:col-span-2 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-white text-lg font-bold">Sentiment Over Time</h3>
@@ -291,7 +266,7 @@ export default function AnalysisPage() {
                 </div>
               </div>
 
-              {/* Keyword Cloud */}
+              {}
               <div className="lg:col-span-1 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col">
                 <h3 className="text-white text-lg font-bold mb-4">Trending Keywords</h3>
                 <div className="flex-1 flex flex-wrap content-start gap-2">
@@ -318,7 +293,7 @@ export default function AnalysisPage() {
               </div>
             </div>
 
-            {/* REVIEWS FEED */}
+            {}
             <div className="bg-[#192734] rounded-xl border border-[#2c3b47] overflow-hidden">
               <div className="p-4 border-b border-[#2c3b47] flex justify-between items-center bg-white/5">
                 <div className="flex items-center gap-2">
@@ -375,10 +350,6 @@ export default function AnalysisPage() {
     </div>
   );
 }
-
-// ==========================================
-// SUB-COMPONENTS
-// ==========================================
 
 function Header({ onMenuClick, isGenerating, onGenerate }) {
   return (

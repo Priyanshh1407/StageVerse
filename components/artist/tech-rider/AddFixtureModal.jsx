@@ -14,10 +14,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
         e.preventDefault();
         if (!name) return;
 
-        onAdd({ name, type, iconType });
-
-        // Reset & Close
-        setName('');
+        onAdd({ name, type, iconType });        setName('');
         setType('Spot');
         onClose();
     };
@@ -26,7 +23,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-[#1a2632] border border-[#223949] w-full max-w-md rounded-xl shadow-2xl overflow-hidden">
 
-                {/* Header */}
+                {}
                 <div className="flex justify-between items-center p-5 border-b border-[#223949]">
                     <h3 className="text-white font-bold text-lg">Add Custom Fixture</h3>
                     <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
@@ -34,7 +31,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                     </button>
                 </div>
 
-                {/* Form */}
+                {}
                 <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
 
                     <div className="space-y-2">

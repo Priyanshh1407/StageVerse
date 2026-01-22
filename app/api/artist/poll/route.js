@@ -10,16 +10,9 @@ export async function POST(req) {
         if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
-        const { eventId, question, options } = body;
-
-        // Validation
-        if (!eventId || !question || !options || options.length < 2) {
+        const { eventId, question, options } = body;        if (!eventId || !question || !options || options.length < 2) {
             return NextResponse.json({ error: 'Invalid poll data' }, { status: 400 });
         }
-
-        // Check if a poll already exists for this event? 
-        // For now, let's assume one active poll per event or just create a new one.
-        // Let's create a new one.
 
         const newPoll = await Poll.create({
             eventId,

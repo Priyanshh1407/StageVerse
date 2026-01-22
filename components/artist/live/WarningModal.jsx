@@ -9,19 +9,19 @@ export default function WarningModal({ isOpen, onClose, onConfirm }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       <div className="w-full max-w-2xl bg-[#101b22] border-2 border-orange-500 rounded-2xl shadow-[0_0_50px_rgba(249,115,22,0.3)] overflow-hidden flex flex-col md:flex-row relative animate-in zoom-in-95 duration-300">
         
-        {/* Left Strip (Icon) */}
+        {}
         <div className="hidden md:flex w-24 bg-orange-500 items-center justify-center flex-col gap-2 p-4 text-black">
-          <Flag className="w-12 h-12 animate-pulse" /> {/* Changed to Flag for "Finish Line" */}
+          <Flag className="w-12 h-12 animate-pulse" /> {}
           <span className="font-black text-xs uppercase tracking-widest -rotate-90 whitespace-nowrap mt-8">Finale</span>
         </div>
         
-        {/* Mobile Header */}
+        {}
         <div className="md:hidden h-16 bg-orange-500 flex items-center px-6 gap-4 text-black">
           <Flag className="w-8 h-8 animate-pulse" />
           <span className="font-black text-lg uppercase tracking-wider">Finale Alert</span>
         </div>
 
-        {/* Content */}
+        {}
         <div className="p-8 md:p-10 flex-1 flex flex-col justify-center relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
           

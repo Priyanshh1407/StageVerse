@@ -14,13 +14,13 @@ export default function PollModal({ isOpen, onClose, onActivate, pollData }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050505]/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
 
-      {/* Background Ambience */}
+      {}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(0,240,255,0.15),transparent_70%)] pointer-events-none"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#00f0ff]/5 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="w-full max-w-md relative z-10 flex flex-col justify-between bg-[#121212] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
 
-        {/* Close Button */}
+        {}
         <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors z-20">
           <X className="w-6 h-6" />
         </button>

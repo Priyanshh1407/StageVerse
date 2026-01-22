@@ -28,7 +28,7 @@ export default function GuestListHeader({ onNewList, onExport }) {
           <span>Export CSV</span>
         </button>
 
-        {/* Connected the New List Button */}
+        {}
         <button
           onClick={onNewList}
           className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white text-sm font-bold shadow-sm transition-colors"

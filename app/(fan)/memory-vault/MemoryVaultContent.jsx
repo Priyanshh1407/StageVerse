@@ -11,115 +11,19 @@ import {
   MapPin, Ticket, ChevronDown, Filter, Loader2, ArrowUp 
 } from 'lucide-react';
 
-// --- BASE DATA ---
-// const BASE_MEMORIES = [
-//   { 
-//     id: 1, 
-//     type: 'video', 
-//     duration: '4:20 min', 
-//     title: "Electric Daisy Carnival Finale", 
-//     location: "Las Vegas, NV", 
-//     date: "2023-05-20", 
-//     artist: "Various",
-//     venue: "Las Vegas Motor Speedway",
-//     image: "https://images.unsplash.com/photo-1459749411177-3c0714b62437?q=80&w=800&auto=format&fit=crop",
-//     videoSrc: "https://videos.pexels.com/video-files/2022395/2022395-hd_1920_1080_30fps.mp4",
-//     featured: true 
-//   },
-//   { 
-//     id: 2, 
-//     type: 'photo', 
-//     title: "Tame Impala", 
-//     subtitle: "The Slow Rush Tour • 2022",
-//     date: "2022-03-15",
-//     artist: "Tame Impala",
-//     venue: "Barclays Center",
-//     image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop" 
-//   },
-//   { 
-//     id: 3, 
-//     type: 'ticket', 
-//     title: "Coachella 2022", 
-//     subtitle: "Weekend 1 • VIP Pass",
-//     date: "2022-04-15",
-//     venue: "Empire Polo Club"
-//   },
-//   { 
-//     id: 4, 
-//     type: 'photo', 
-//     title: "The Killers", 
-//     subtitle: "Imploding The Mirage • 2022",
-//     date: "2022-09-30",
-//     artist: "The Killers",
-//     venue: "Madison Square Garden",
-//     image: "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=800&auto=format&fit=crop" 
-//   },
-//   { 
-//     id: 5, 
-//     type: 'photo', 
-//     title: "Adele", 
-//     subtitle: "Hyde Park • 2022",
-//     date: "2022-07-01",
-//     artist: "Adele",
-//     venue: "Hyde Park",
-//     image: "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=800&auto=format&fit=crop" 
-//   },
-//   { 
-//     id: 6, 
-//     type: 'album', 
-//     title: "Radiohead", 
-//     subtitle: "A Moon Shaped Pool Tour",
-//     count: 42,
-//     date: "2018-07-10",
-//     artist: "Radiohead",
-//     venue: "Madison Square Garden",
-//     image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop" 
-//   },
-//   { 
-//     id: 10, 
-//     type: 'video', 
-//     duration: '0:15 sec', 
-//     title: "Guitar Solo Close-up", 
-//     location: "Denver, CO", 
-//     date: "2023-11-12", 
-//     artist: "John Mayer",
-//     venue: "Ball Arena",
-//     image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop",
-//     videoSrc: "https://videos.pexels.com/video-files/4763826/4763826-uhd_2560_1440_24fps.mp4" 
-//   }
-// ];
-
-// --- GENERATE LARGE DATASET ---
-// const ALL_MEMORIES = Array.from({ length: 5 }).flatMap((_, i) => 
-//   BASE_MEMORIES.map(item => ({
-//     ...item,
-//     id: `${item.id}-${i}`,
-//     title: i > 0 ? `${item.title} (Archived ${i})` : item.title
-//   }))
-// );
-
 export default function MemoryVaultPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  
-  // --- REFS & SCROLL STATE ---
-  const scrollContainerRef = useRef(null);
+  const router = useRouter();  const scrollContainerRef = useRef(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const [memories,setMemories]=useState([]);
-  const [isLoading,setIsLoading]=useState(true);
-
-  // --- FILTER STATE ---
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading,setIsLoading]=useState(true);  const [searchQuery, setSearchQuery] = useState('');
   const [selectedArtist, setSelectedArtist] = useState('All Artists');
   const [selectedVenue, setSelectedVenue] = useState('All Venues');
-  const [selectedYear, setSelectedYear] = useState('Any Date');
-
-  // --- PAGINATION STATE ---
-  const ITEMS_PER_PAGE = 8;
+  const [selectedYear, setSelectedYear] = useState('Any Date');  const ITEMS_PER_PAGE = 8;
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -140,17 +44,11 @@ export default function MemoryVaultPage() {
     };
 
     fetchMemories();
-  },[isUploadModalOpen])
-
-  // Open Modal from URL
-  useEffect(() => {
+  },[isUploadModalOpen])  useEffect(() => {
     if (searchParams.get('action') === 'upload') {
       setIsUploadModalOpen(true);
     }
-  }, [searchParams]);
-
-  // --- SCROLL HANDLER ---
-  const handleScroll = () => {
+  }, [searchParams]);  const handleScroll = () => {
     if (scrollContainerRef.current) {
       const { scrollTop } = scrollContainerRef.current;
       setShowScrollTop(scrollTop > 400); // Show button after scrolling down 400px
@@ -164,21 +62,7 @@ export default function MemoryVaultPage() {
   const handleCloseModal = () => {
     setIsUploadModalOpen(false);
     router.replace('/memory-vault', { scroll: false });
-  };
-
-  // --- FILTER LOGIC ---
-  // const filteredMemories = useMemo(()=>{})
-  //  ALL_MEMORIES.filter((item) => {
-  //   const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-  //   const matchesArtist = selectedArtist === 'All Artists' || item.artist === selectedArtist;
-  //   const matchesVenue = selectedVenue === 'All Venues' || item.venue === selectedVenue;
-    
-  //   const itemYear = new Date(item.date).getFullYear().toString();
-  //   const matchesYear = selectedYear === 'Any Date' || itemYear === selectedYear;
-
-  //   return matchesSearch && matchesArtist && matchesVenue && matchesYear;
-  // });
-  const filteredMemories= useMemo(()=>{
+  };  const filteredMemories= useMemo(()=>{
     return memories.filter((item)=>{
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesArtist = selectedArtist === 'All Artists' || item.artist === selectedArtist;
@@ -189,10 +73,7 @@ export default function MemoryVaultPage() {
 
     return matchesSearch && matchesArtist&&matchesVenue&&matchesYear;
     });
-  },[memories,searchQuery,selectedArtist,selectedVenue,selectedYear]);
-
-  // --- RESET PAGINATION ON FILTER CHANGE ---
-  useEffect(() => {
+  },[memories,searchQuery,selectedArtist,selectedVenue,selectedYear]);  useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
   }, [searchQuery, selectedArtist, selectedVenue, selectedYear]);
 
@@ -218,7 +99,7 @@ export default function MemoryVaultPage() {
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         
-        {/* Mobile Header */}
+        {}
         <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632]">
           <span className="font-bold text-lg">Concert Passport</span>
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300">
@@ -226,9 +107,7 @@ export default function MemoryVaultPage() {
           </button>
         </div>
 
-        {/* MAIN SCROLL CONTAINER 
-            Added ref={scrollContainerRef} and onScroll={handleScroll}
-        */}
+        {}
         <div 
           ref={scrollContainerRef}
           onScroll={handleScroll}
@@ -236,7 +115,7 @@ export default function MemoryVaultPage() {
         >
           <div className="max-w-7xl mx-auto flex flex-col gap-8 pb-10">
             
-            {/* Header */}
+            {}
             <div className="flex flex-col md:flex-row justify-between md:items-end gap-6">
               <div className="flex flex-col gap-2">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Your Memory Vault</h2>
@@ -253,14 +132,12 @@ export default function MemoryVaultPage() {
               </button>
             </div>
 
-            {/* --- FILTERS --- 
-                Removed: sticky top-0 z-30 backdrop-blur-xl bg-opacity-95
-            */}
+            {}
             <div className="bg-white dark:bg-[#1a2632] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
               
               <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 no-scrollbar">
                 
-                {/* Artist Filter */}
+                {}
                 <div className="relative group min-w-[140px]">
                   <select 
                     className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
@@ -272,7 +149,7 @@ export default function MemoryVaultPage() {
                   <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-500 w-4 h-4" />
                 </div>
 
-                {/* Venue Filter */}
+                {}
                 <div className="relative group min-w-[140px]">
                   <select 
                     className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
@@ -284,7 +161,7 @@ export default function MemoryVaultPage() {
                   <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-500 w-4 h-4" />
                 </div>
 
-                {/* Date Filter */}
+                {}
                 <div className="relative group min-w-[140px]">
                   <select 
                     className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
@@ -314,10 +191,10 @@ export default function MemoryVaultPage() {
               </div>
             </div>
 
-            {/* --- MASONRY GRID --- */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[280px]">
               
-              {/* Static Add Button */}
+              {}
               <div 
                 onClick={() => setIsUploadModalOpen(true)}
                 className="group relative rounded-2xl overflow-hidden cursor-pointer border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center p-6 hover:bg-slate-50 dark:hover:bg-[#1e2a35] transition-colors"
@@ -341,7 +218,7 @@ export default function MemoryVaultPage() {
 
             </div>
 
-            {/* --- LOAD MORE BUTTON --- */}
+            {}
             {hasMore && (
               <div className="flex justify-center mt-6">
                 <button 
@@ -368,7 +245,7 @@ export default function MemoryVaultPage() {
         </div>
       </main>
 
-      {/* --- SCROLL TO TOP BUTTON --- */}
+      {}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
@@ -387,10 +264,6 @@ export default function MemoryVaultPage() {
     </div>
   );
 }
-
-// ==========================================
-// 2. MEMORY CARD (Unchanged)
-// ==========================================
 
 function MemoryCard({ item }) {
   const overlayClasses = "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6";
@@ -451,10 +324,7 @@ function MemoryCard({ item }) {
         </div>
       </div>
     );
-  }
-
-  // ... Ticket and Photo cards remain exactly the same ...
-  if (item.type === 'ticket') {
+  }  if (item.type === 'ticket') {
     return (
       <div className="group relative rounded-2xl overflow-hidden cursor-pointer bg-[#223949] border border-slate-700/50 border-dashed flex flex-col shadow-sm">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center relative z-10">

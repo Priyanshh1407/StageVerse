@@ -12,23 +12,15 @@ export async function GET(req, { params }) {
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const resolvedParams = await params;
-        const { id } = resolvedParams;
-
-        // 1. Find the specific Event
-        let event;
+        const { id } = resolvedParams;        let event;
         if (mongoose.Types.ObjectId.isValid(id)) {
             event = await Event.findById(id).populate('venue');
-        } else {
-            // Fallback for numeric ID if needed, though usually we use _id in URLs
-            event = await Event.findOne({ eventId: parseInt(id) }).populate('venue');
+        } else {            event = await Event.findOne({ eventId: parseInt(id) }).populate('venue');
         }
 
         if (!event) {
             return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-        }
-
-        // 2. Logic: Use DB DaySheet if exists, otherwise generate default
-        let schedule = event.daySheet;
+        }        let schedule = event.daySheet;
 
         if (!schedule || schedule.length === 0) {
             console.log("Generating Default Schedule...");
@@ -81,10 +73,7 @@ export async function GET(req, { params }) {
                     details: 'Setlist A. Pyrotechnics enabled.',
                     status: 'future'
                 }
-            ];
-
-            // Persist this default schedule so it can be edited
-            event.daySheet = schedule;
+            ];            event.daySheet = schedule;
             await event.save();
         }
 
@@ -107,19 +96,12 @@ export async function GET(req, { params }) {
     }
 }
 
-
 import fs from 'fs';
-import path from 'path';
-
-// Helper for file logging
-function logToFile(message) {
+import path from 'path';function logToFile(message) {
     const logPath = path.resolve(process.cwd(), 'debug_api.log');
     const timestamp = new Date().toISOString();
     fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`);
-}
-
-// PUT: Update Schedule or Venue Intel
-export async function PUT(req, { params }) {
+}export async function PUT(req, { params }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -135,17 +117,11 @@ export async function PUT(req, { params }) {
         logToFile(`Payload - Schedule Items: ${schedule?.length || 0}, VenueIntel: ${!!venueIntel}`);
 
         const updateData = {};
-        if (schedule) {
-            // Sanitize
-            updateData.daySheet = schedule.map(item => {
-                const newItem = { ...item };
-                // STRIP TEMPORARY IDs
-                if (newItem.id && String(newItem.id).startsWith('new-')) {
+        if (schedule) {            updateData.daySheet = schedule.map(item => {
+                const newItem = { ...item };                if (newItem.id && String(newItem.id).startsWith('new-')) {
                     delete newItem.id;
                     delete newItem._id;
-                }
-                // Ensure tasks don't have temporary IDs if any (though usually they don't have 'new-' ids)
-                return newItem;
+                }                return newItem;
             });
             logToFile(`Sanitized Schedule prepared.`);
         }
@@ -174,10 +150,7 @@ export async function PUT(req, { params }) {
             return NextResponse.json({ error: 'Event not found' }, { status: 404 });
         }
 
-        logToFile(`SUCCESS. Updated Event: ${event._id}. DaySheet Length: ${event.daySheet?.length}`);
-
-        // NOTIFICATION LOGIC
-        if (notifyTeam && schedule) {
+        logToFile(`SUCCESS. Updated Event: ${event._id}. DaySheet Length: ${event.daySheet?.length}`);        if (notifyTeam && schedule) {
             console.log("Creating Notification Task for Crew...");
             await Task.create({
                 eventId: event._id,

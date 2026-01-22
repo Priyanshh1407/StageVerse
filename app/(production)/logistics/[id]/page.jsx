@@ -16,16 +16,10 @@ export default function LogisticsPage(props) {
     const params = use(props.params);
     const showId = params.id;
     const [isLoading, setIsLoading] = useState(true);
-    const [showData, setShowData] = useState(null);
-
-    // Feature State
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showData, setShowData] = useState(null);    const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [viewMode, setViewMode] = useState('kanban'); // 'kanban', 'table'
-    const [isReportOpen, setIsReportOpen] = useState(false);
-
-    // Filter & Search State
-    const [searchQuery, setSearchQuery] = useState('');
+    const [isReportOpen, setIsReportOpen] = useState(false);    const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState('all'); // 'all', 'user', 'urgent'
 
     useEffect(() => {
@@ -57,31 +51,11 @@ export default function LogisticsPage(props) {
         }
 
         const startColumnId = source.droppableId;
-        const endColumnId = destination.droppableId;
-
-        // Clone state for optimistic update
-        const newData = { ...showData };
+        const endColumnId = destination.droppableId;        const newData = { ...showData };
         const startColumnFn = newData.kanban.find(c => c.id === startColumnId);
-        const endColumnFn = newData.kanban.find(c => c.id === endColumnId);
-
-        // Remove from source
-        const [movedCard] = startColumnFn.cards.splice(source.index, 1);
-
-        // Add to destination
-        endColumnFn.cards.splice(destination.index, 0, movedCard);
-
-        // Update counts
-        startColumnFn.count = startColumnFn.cards.length;
-        endColumnFn.count = endColumnFn.cards.length;
-
-        // Set state
-        setShowData(newData);
-
-        // API Call
-        if (startColumnId !== endColumnId) {
-            try {
-                // Determine status based on column logic if needed, or just update columnId
-                let newStatus = 'pending';
+        const endColumnFn = newData.kanban.find(c => c.id === endColumnId);        const [movedCard] = startColumnFn.cards.splice(source.index, 1);        endColumnFn.cards.splice(destination.index, 0, movedCard);        startColumnFn.count = startColumnFn.cards.length;
+        endColumnFn.count = endColumnFn.cards.length;        setShowData(newData);        if (startColumnId !== endColumnId) {
+            try {                let newStatus = 'pending';
                 if (endColumnId === 'loadout' || endColumnId === 'done') newStatus = 'completed'; // basic logic
 
                 await fetch('/api/production/logistics', {
@@ -112,10 +86,7 @@ export default function LogisticsPage(props) {
     };
 
     const handleDeleteTask = async (task) => {
-        if (!confirm('Are you sure you want to delete this task?')) return;
-
-        // Optimistic delete
-        const newData = { ...showData };
+        if (!confirm('Are you sure you want to delete this task?')) return;        const newData = { ...showData };
         newData.kanban.forEach(col => {
             col.cards = col.cards.filter(c => c.id !== task.id);
             col.count = col.cards.length;
@@ -130,9 +101,7 @@ export default function LogisticsPage(props) {
             });
             toast.success("Task deleted");
         } catch (e) {
-            console.error(e);
-            // toast.error("Failed to delete"); // Suppress if API not ready
-        }
+            console.error(e);        }
     };
 
     const handleSaveTask = async (taskData) => {
@@ -166,10 +135,7 @@ export default function LogisticsPage(props) {
 
             if (data.success || res.ok) {
                 toast.success(isEditing ? 'Task updated' : 'Task created');
-                setIsModalOpen(false);
-
-                // Refresh data
-                const res2 = await fetch(`/api/production/logistics/${showId}`);
+                setIsModalOpen(false);                const res2 = await fetch(`/api/production/logistics/${showId}`);
                 const refreshedData = await res2.json();
                 setShowData(refreshedData);
             } else {
@@ -188,17 +154,11 @@ export default function LogisticsPage(props) {
 
     const handleExport = () => {
         setIsReportOpen(true);
-    };
-
-    // Replaced with data-driven export using jsPDF AutoTable
-    const handleDownloadPDF = () => {
+    };    const handleDownloadPDF = () => {
         if (!showData) return;
         try {
             toast.info("Generating PDF...");
-            const doc = new jsPDF();
-
-            // Header
-            doc.setFontSize(22);
+            const doc = new jsPDF();            doc.setFontSize(22);
             doc.setTextColor(40);
             doc.text("Logistics Task Report", 14, 20);
 
@@ -206,11 +166,7 @@ export default function LogisticsPage(props) {
             doc.setTextColor(100);
             doc.text(`Show: ${showData.showName}`, 14, 30);
             doc.text(`Venue: ${showData.venue} | Phase: ${showData.phase}`, 14, 36);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 42);
-
-            // Data preparation
-            // Reuse the filtered list if possible, or flattened all tasks
-            const tasksToExport = filteredKanban.flatMap(col => col.cards);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 42);            const tasksToExport = filteredKanban.flatMap(col => col.cards);
 
             const tableHeaders = [['Title', 'Status', 'Tag', 'Priority', 'Assignee', 'Date']];
             const tableData = tasksToExport.map(task => [
@@ -260,9 +216,7 @@ export default function LogisticsPage(props) {
         }
 
         if (filterType === 'user') {
-            cols.forEach(col => {
-                // Filter for current user (Alex M. is hardcoded in Navbar)
-                col.cards = col.cards.filter(c => c.assignee === 'Alex M.' || c.assignee === 'Alex Morrison');
+            cols.forEach(col => {                col.cards = col.cards.filter(c => c.assignee === 'Alex M.' || c.assignee === 'Alex Morrison');
             });
         }
 
@@ -281,11 +235,9 @@ export default function LogisticsPage(props) {
 
     const allTasksFlat = filteredKanban.flatMap(col => col.cards);
 
-    return (
-        // FIX: Main Background #0F0F10
-        <div className="flex flex-col h-screen w-full bg-[#0F0F10] font-sans text-slate-300 overflow-hidden">
+    return (        <div className="flex flex-col h-screen w-full bg-[#0F0F10] font-sans text-slate-300 overflow-hidden">
 
-            {/* Scrollbar Styles Updated to match Dark Theme */}
+            {}
             <style jsx global>{`
                 ::-webkit-scrollbar { width: 6px; height: 6px; }
                 ::-webkit-scrollbar-track { background: #0F0F10; }
@@ -301,7 +253,7 @@ export default function LogisticsPage(props) {
                 }
             `}</style>
 
-            {/* Report Preview Modal (Printable) */}
+            {}
             {isReportOpen && (
                 <div className="fixed inset-0 z-[200] bg-white text-black overflow-y-auto print-only">
                     <div id="report-content" className="p-8 max-w-5xl mx-auto bg-white min-h-screen">
@@ -360,11 +312,11 @@ export default function LogisticsPage(props) {
 
             <div className={`flex flex-1 overflow-hidden relative no-print ${isReportOpen ? 'hidden' : ''}`}>
 
-                {/* CENTER CONTENT */}
+                {}
                 <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#0F0F10] relative">
 
-                    {/* Header Section */}
-                    {/* FIX: Borders #27272A, BG #0F0F10 */}
+                    {}
+                    {}
                     <div className="flex flex-col gap-0 border-b border-[#27272A] bg-[#0F0F10] z-10 shadow-sm">
                         <div className="px-6 py-5 flex flex-wrap justify-between items-end gap-4">
                             <div className="flex min-w-72 flex-col gap-2">
@@ -397,7 +349,7 @@ export default function LogisticsPage(props) {
                             </div>
                         </div>
 
-                        {/* Toolbar */}
+                        {}
                         <div className="px-6 pb-4 pt-2 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                             <div className="flex flex-1 w-full max-w-xl items-center gap-4">
                                 <div className="relative flex-1">

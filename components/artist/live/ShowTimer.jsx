@@ -1,15 +1,10 @@
 'use client';
-export default function ShowTimer({ time, status }) {
-  // Determine label based on status
-  const label = status === 'Standby' ? "Time To Showtime" : "Show Duration";
-  
-  // Dynamic color for seconds (Green when live, Red when paused)
-  const secondsColor = status === 'Paused' ? 'text-red-500' : 'text-[#0d93f2]';
+export default function ShowTimer({ time, status }) {  const label = status === 'Standby' ? "Time To Showtime" : "Show Duration";  const secondsColor = status === 'Paused' ? 'text-red-500' : 'text-[#0d93f2]';
   const labelColor = status === 'Paused' ? 'text-red-500/50' : 'text-[#587386]';
 
   return (
     <section className={`rounded-xl p-8 border relative overflow-hidden group transition-colors duration-500 ${status === 'Paused' ? 'bg-[#1a0505] border-red-900/30' : 'bg-black border-slate-800'}`}>
-      {/* Background Glow */}
+      {}
       <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 transition-colors duration-500 ${status === 'Paused' ? 'bg-red-500/10' : 'bg-[#0d93f2]/10'}`}></div>
       
       <div className="relative z-10 flex flex-col items-center justify-center">
@@ -18,7 +13,7 @@ export default function ShowTimer({ time, status }) {
         </p>
         
         <div className="flex items-end gap-2 md:gap-6 font-mono">
-          {/* HOURS */}
+          {}
           <div className="flex flex-col items-center">
             <span className="text-5xl md:text-8xl font-bold text-white leading-none tracking-tighter">
                 {time?.hours || "00"}
@@ -28,7 +23,7 @@ export default function ShowTimer({ time, status }) {
 
           <span className="text-3xl md:text-6xl text-[#315168] font-light mb-6 md:mb-8">:</span>
 
-          {/* MINUTES */}
+          {}
           <div className="flex flex-col items-center">
             <span className="text-5xl md:text-8xl font-bold text-white leading-none tracking-tighter">
                 {time?.minutes || "00"}
@@ -38,7 +33,7 @@ export default function ShowTimer({ time, status }) {
 
           <span className="text-3xl md:text-6xl text-[#315168] font-light mb-6 md:mb-8">:</span>
 
-          {/* SECONDS */}
+          {}
           <div className="flex flex-col items-center">
             <span className={`text-5xl md:text-8xl font-bold leading-none tracking-tighter transition-colors ${secondsColor}`}>
                 {time?.seconds || "00"}

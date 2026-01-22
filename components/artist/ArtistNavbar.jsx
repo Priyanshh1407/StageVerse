@@ -11,15 +11,7 @@ export default function ArtistNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      // 1. Ask Server to delete the Cookie
-      await fetch('/api/auth/logout', { method: 'POST' });
-
-      // 2. Clear Client-side User Info (for UI)
-      localStorage.removeItem('user');
-
-      // 3. Force Redirect to Login
-      router.push('/');
+    try {      await fetch('/api/auth/logout', { method: 'POST' });      localStorage.removeItem('user');      router.push('/');
       router.refresh(); // Important: Refreshes Server Components to see you are gone
     } catch (err) {
       console.error('Logout failed', err);
@@ -28,13 +20,7 @@ export default function ArtistNavbar() {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  // Helper to determine if a link is active
-  const isActive = (path) => pathname === path || pathname.startsWith(`${path}/`);
-
-  // Define nav items in an array for cleaner rendering in both desktop and mobile views
-  const navItems = [
+  };  const isActive = (path) => pathname === path || pathname.startsWith(`${path}/`);  const navItems = [
     { href: "/artist-dashboard", label: "Dashboard" },
     { href: "/tech-rider", label: "Tech Rider" },
     { href: "/setlist-builder", label: "Setlist Builder" },
@@ -44,10 +30,7 @@ export default function ArtistNavbar() {
   ];
 
   const [notifications, setNotifications] = useState([]);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
-  // Fetch Notifications (Crew Messages)
-  useEffect(() => {
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);  useEffect(() => {
     async function loadNotifications() {
       try {
         const res = await fetch('/api/artist/notifications');
@@ -82,9 +65,9 @@ export default function ArtistNavbar() {
     <nav className="sticky top-0 z-50 w-full bg-white dark:bg-[#101b23] border-b border-slate-200 dark:border-slate-800 px-6 py-3">
       <div className="flex items-center justify-between">
 
-        {/* LEFT SIDE: Brand & Desktop Nav */}
+        {}
         <div className="flex items-center gap-6">
-          {/* Same as before... */}
+          {}
           <div className="flex items-center gap-3 pr-6 lg:border-r lg:border-slate-200 lg:dark:border-slate-700">
             <div className="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 shadow-lg ring-2 ring-[#0d93f2]/20" style={{ backgroundImage: 'url("https://github.com/shadcn.png")' }}></div>
             <div className="hidden md:flex flex-col">
@@ -101,10 +84,10 @@ export default function ArtistNavbar() {
           </div>
         </div>
 
-        {/* RIGHT SIDE: Actions & Mobile Toggle */}
+        {}
         <div className="flex items-center gap-4">
 
-          {/* Notifications Dropdown */}
+          {}
           <div className="relative">
             <button
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
@@ -158,7 +141,7 @@ export default function ArtistNavbar() {
             <span>Log Out</span>
           </button>
 
-          {/* Mobile Menu Toggle (Keep as is) */}
+          {}
           <button
             onClick={toggleMobileMenu}
             className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
@@ -168,7 +151,7 @@ export default function ArtistNavbar() {
         </div>
       </div>
 
-      {/* MOBILE MENU DROPDOWN (Keep as is) */}
+      {}
       {isMobileMenuOpen && (
         <div className="lg:hidden mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col gap-2 animate-in slide-in-from-top-2 duration-200">
           {navItems.map((item) => (
@@ -185,7 +168,7 @@ export default function ArtistNavbar() {
             </Link>
           ))}
 
-          {/* Mobile Logout Button */}
+          {}
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-3 mt-2 text-sm font-medium text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors"
@@ -197,10 +180,7 @@ export default function ArtistNavbar() {
       )}
     </nav>
   );
-}
-
-// NavLink Component (Desktop)
-function NavLink({ href, children, active }) {
+}function NavLink({ href, children, active }) {
   return (
     <Link
       href={href}

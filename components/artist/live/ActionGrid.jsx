@@ -7,7 +7,7 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-[400px]">
 
-            {/* 1. START SHOW (Slider) */}
+            {}
             <ActionCard
                 icon={PlayCircle}
                 iconColor="text-[#0d93f2]"
@@ -25,7 +25,7 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
                 )}
             </ActionCard>
 
-            {/* 2. ENCORE POLL */}
+            {}
             <ActionCard
                 icon={Vote}
                 iconColor="text-purple-500"
@@ -41,7 +41,7 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
                 />
             </ActionCard>
 
-            {/* 3. LAST SONG ALERT */}
+            {}
             <ActionCard
                 icon={Bell}
                 iconColor="text-orange-500"
@@ -57,7 +57,7 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
                 />
             </ActionCard>
 
-            {/* 4. EMERGENCY PAUSE */}
+            {}
             <div className={`p-1 rounded-xl border flex flex-col relative overflow-hidden transition-colors ${status === 'Paused' ? 'bg-red-500/10 border-red-500' : 'bg-white dark:bg-[#15232d] border-red-900/30'}`}>
                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                     <AlertTriangle className="w-[120px] h-[120px] text-red-500" />
@@ -93,30 +93,17 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
 
         </div>
     );
-}
-
-// --- CUSTOM SLIDER COMPONENT (MOBILE FIXED) ---
-function SlideToConfirm({ onConfirm }) {
+}function SlideToConfirm({ onConfirm }) {
     const [sliderWidth, setSliderWidth] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
-    const containerRef = useRef(null);
-
-    // 1. Use Pointer events instead of Mouse events (Handles Touch + Mouse)
-    const handlePointerDown = (e) => {
-        setIsDragging(true);
-        // 2. Capture the pointer so dragging works even if finger leaves the button area
-        e.target.setPointerCapture(e.pointerId);
+    const containerRef = useRef(null);    const handlePointerDown = (e) => {
+        setIsDragging(true);        e.target.setPointerCapture(e.pointerId);
     };
 
     const handlePointerMove = (e) => {
         if (!isDragging || !containerRef.current) return;
         
-        const rect = containerRef.current.getBoundingClientRect();
-        // Calculate position relative to container
-        const offsetX = e.clientX - rect.left;
-        
-        // Limit slide between 0 and max width
-        const newWidth = Math.max(0, Math.min(offsetX, rect.width));
+        const rect = containerRef.current.getBoundingClientRect();        const offsetX = e.clientX - rect.left;        const newWidth = Math.max(0, Math.min(offsetX, rect.width));
         setSliderWidth(newWidth);
     };
 
@@ -124,10 +111,7 @@ function SlideToConfirm({ onConfirm }) {
         if (!isDragging || !containerRef.current) return;
         
         setIsDragging(false);
-        e.target.releasePointerCapture(e.pointerId);
-
-        // Threshold to confirm (e.g., 90%)
-        if (sliderWidth > containerRef.current.offsetWidth * 0.9) {
+        e.target.releasePointerCapture(e.pointerId);        if (sliderWidth > containerRef.current.offsetWidth * 0.9) {
             onConfirm();
         }
         setSliderWidth(0); // Reset
@@ -135,17 +119,15 @@ function SlideToConfirm({ onConfirm }) {
 
     return (
         <div
-            ref={containerRef}
-            // 3. 'touch-none' is CRITICAL: It prevents the mobile browser from scrolling the page while you drag
-            className="relative w-full h-14 rounded-lg overflow-hidden border border-[#0d93f2]/30 bg-[#0d93f2]/5 select-none touch-none"
+            ref={containerRef}            className="relative w-full h-14 rounded-lg overflow-hidden border border-[#0d93f2]/30 bg-[#0d93f2]/5 select-none touch-none"
         >
-            {/* Dragged Background */}
+            {}
             <div
                 style={{ width: `${sliderWidth}px` }}
                 className="absolute inset-y-0 left-0 bg-[#0d93f2] transition-all duration-75 ease-linear"
             ></div>
 
-            {/* Slider Handle (The Arrow) */}
+            {}
             <div
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
@@ -157,7 +139,7 @@ function SlideToConfirm({ onConfirm }) {
                 <ChevronsRight className="text-white w-6 h-6" />
             </div>
 
-            {/* Text Label */}
+            {}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
                 <span className="pl-10 text-[#0d93f2] font-bold uppercase tracking-wider text-sm opacity-80">
                     Slide to Start
@@ -165,10 +147,7 @@ function SlideToConfirm({ onConfirm }) {
             </div>
         </div>
     );
-}
-
-// --- HELPER COMPONENTS ---
-function ActionCard({ children, icon: Icon, iconColor, bgIcon, label, title, desc }) {
+}function ActionCard({ children, icon: Icon, iconColor, bgIcon, label, title, desc }) {
     return (
         <div className="bg-white dark:bg-[#15232d] p-1 rounded-xl border border-slate-200 dark:border-[#223949] flex flex-col">
             <div className="flex-1 p-5 flex flex-col justify-between">

@@ -27,7 +27,7 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-sm bg-white dark:bg-[#1a2632] rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-[85vh] md:h-auto">
         
-        {/* --- 1. TICKET HEADER (Blue Brand Color) --- */}
+        {}
         <div className="bg-[#0d93f2] p-6 text-white text-center relative shrink-0">
           <h3 className="text-xl font-bold">{ticket.artist}</h3>
           <p className="text-sm opacity-90">{ticket.date} • {ticket.time}</p>
@@ -41,9 +41,9 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
           </button>
         </div>
 
-        {/* --- 2. QR CODE SECTION (Live Scanner Effect) --- */}
+        {}
         <div className="flex-1 bg-white flex flex-col items-center justify-center p-8 relative overflow-hidden">
-          {/* Seat Info Row */}
+          {}
           <div className="flex justify-between w-full mb-8 text-slate-900">
             <div className="text-center">
               <p className="text-[10px] uppercase font-bold text-slate-400">Sec</p>
@@ -59,15 +59,15 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
             </div>
           </div>
 
-          {/* QR Container */}
+          {}
           <div className="relative w-48 h-48 bg-slate-900 rounded-xl flex items-center justify-center shadow-inner overflow-hidden group">
-            {/* The QR Code Icon (Placeholder for real QR) */}
+            {}
             <QrCode className="text-white w-32 h-32 relative z-10" />
             
-            {/* Moving Scanner Bar (Animation) */}
+            {}
             <div className="absolute top-0 left-0 w-full h-1 bg-[#0d93f2] shadow-[0_0_15px_rgba(13,147,242,0.8)] z-20 animate-scan"></div>
             
-            {/* Holographic BG Effect */}
+            {}
             <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 opacity-50"></div>
           </div>
 
@@ -81,7 +81,7 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
           </div>
         </div>
 
-        {/* --- 3. MANAGE ACTIONS FOOTER --- */}
+        {}
         <div className="bg-slate-50 dark:bg-[#151f28] p-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
           <button className="w-full mb-3 flex items-center justify-center gap-2 py-3 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-900 transition-colors">
             <Wallet className="w-4 h-4" /> Add to Apple Wallet
@@ -99,7 +99,7 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
 
       </div>
       
-      {/* CSS for Scanner Animation */}
+      {}
       <style jsx global>{`
         @keyframes scan {
           0% { top: 0%; opacity: 0; }

@@ -9,14 +9,9 @@ import { toast } from 'sonner';
 export default function SetlistCanvas({ items, setItems }) {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [aiCurated, setAiCurated] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
-
-  // --- CALCULATE DURATION ---
-  const totalDuration = useMemo(() => {
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal  const totalDuration = useMemo(() => {
     let totalSeconds = 0;
-    items.forEach(item => {
-      // Safety check for invalid/missing duration
-      if (!item.duration || typeof item.duration !== 'string') return;
+    items.forEach(item => {      if (!item.duration || typeof item.duration !== 'string') return;
 
       const parts = item.duration.split(':');
       if (parts.length < 2) return;
@@ -38,15 +33,9 @@ export default function SetlistCanvas({ items, setItems }) {
     const [reorderedItem] = newItems.splice(result.source.index, 1);
     newItems.splice(result.destination.index, 0, reorderedItem);
     setItems(newItems);
-  };
-
-  // 1. Open Modal instead of running immediately
-  const handleOptimizeClick = () => {
+  };  const handleOptimizeClick = () => {
     setIsModalOpen(true);
-  };
-
-  // 2. Actually run optimization after Modal Submit
-  const handleFinalSubmit = async (promptText) => {
+  };  const handleFinalSubmit = async (promptText) => {
     setIsModalOpen(false); // Close modal
 
     if (items.length < 2) {
@@ -57,9 +46,7 @@ export default function SetlistCanvas({ items, setItems }) {
     setIsOptimizing(true); // Start loading state
     setAiCurated(false);
 
-    try {
-      // Prepare simplified list for AI
-      const simplifiedList = items.map(item => ({
+    try {      const simplifiedList = items.map(item => ({
         id: item.id, // Ensure this exists and is unique
         title: item.title,
         bpm: item.bpm,
@@ -83,20 +70,13 @@ export default function SetlistCanvas({ items, setItems }) {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      // Clean JSON
-      let text = data.result;
+      if (!res.ok) throw new Error(data.error);      let text = data.result;
       if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
       else if (text.startsWith("```")) text = text.replace(/^```\s*/, "").replace(/\s*```$/, "");
 
       const optimizedIds = JSON.parse(text);
 
-      if (!Array.isArray(optimizedIds)) throw new Error("AI did not return an array");
-
-      // Reorder items based on IDs
-      // Create a map for O(1) lookup
-      const itemMap = new Map(items.map(item => [String(item.id), item]));
+      if (!Array.isArray(optimizedIds)) throw new Error("AI did not return an array");      const itemMap = new Map(items.map(item => [String(item.id), item]));
 
       const newOrder = [];
       optimizedIds.forEach(id => {
@@ -105,10 +85,7 @@ export default function SetlistCanvas({ items, setItems }) {
           newOrder.push(item);
           itemMap.delete(String(id)); // Remove so we know what's left
         }
-      });
-
-      // Append any items that weren't returned (safeguard against AI dropping songs)
-      itemMap.forEach(item => newOrder.push(item));
+      });      itemMap.forEach(item => newOrder.push(item));
 
       setItems(newOrder);
       setAiCurated(true);
@@ -253,7 +230,7 @@ export default function SetlistCanvas({ items, setItems }) {
         </div>
       </div>
 
-      {/* RENDER MODAL OUTSIDE THE MAIN FLOW */}
+      {}
       <PromptModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

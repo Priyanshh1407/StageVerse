@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { MessageSquare, Settings, Users, Music } from 'lucide-react';
+import { motion } from 'framer-motion';
 import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import {
   LiveShowCard,
@@ -49,18 +50,14 @@ export default function ArtistDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: taskId, status: 'Done' })
       });
-      if (res.ok) {
-        // Optimistic update
-        setData(prev => ({
+      if (res.ok) {        setData(prev => ({
           ...prev,
           alert: {
             ...prev.alert,
             tasks: prev.alert.tasks.filter(t => t._id !== taskId),
             message: `You have ${prev.alert.tasks.length - 1} Urgent Tasks Pending`
           }
-        }));
-        // If cleared, close modal after delay
-        if (data.alert.tasks.length <= 1) {
+        }));        if (data.alert.tasks.length <= 1) {
           setTimeout(() => setShowAlertModal(false), 500);
         }
       }
@@ -99,7 +96,7 @@ export default function ArtistDashboard() {
     <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] text-slate-900 dark:text-white font-sans relative">
       <ArtistNavbar />
 
-      {/* Revenue Breakdown Modal */}
+      {}
       {showRevenueModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowRevenueModal(false)}>
           <div className="bg-white dark:bg-[#1e2e38] rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-700/50" onClick={e => e.stopPropagation()}>
@@ -128,7 +125,7 @@ export default function ArtistDashboard() {
         </div>
       )}
 
-      {/* Alert Details Modal */}
+      {}
       {showAlertModal && data.alert && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowAlertModal(false)}>
           <div
@@ -169,9 +166,20 @@ export default function ArtistDashboard() {
         </div>
       )}
 
-      <main className="flex-1 w-full max-w-[1400px] mx-auto p-6 md:p-8 flex flex-col gap-8">
+      <motion.main
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+          }
+        }}
+        className="flex-1 w-full max-w-[1400px] mx-auto p-6 md:p-8 flex flex-col gap-8"
+      >
 
-        {/* Header Section with Quick Actions */}
+        {}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-slate-900 dark:text-white tracking-tight text-3xl md:text-4xl font-bold leading-tight">
@@ -212,9 +220,9 @@ export default function ArtistDashboard() {
           </div>
         </div>
 
-        {/* Hero & Logistics Grid */}
+        {}
         <div className="flex flex-col gap-6">
-          {/* ROW 1: Hero Show Card + Day Sheet */}
+          {}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             <div className="lg:col-span-2 h-full">
               <LiveShowCard data={data.currentShow} />
@@ -232,21 +240,18 @@ export default function ArtistDashboard() {
             </div>
           </div>
 
-          {/* ROW 2: Statistics & Alerts */}
-          {/* ROW 2: Statistics & Alerts - FULL WIDTH */}
+          {}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
             <TicketStatsCard data={data.ticketStats} />
             <MerchAlert data={data.alert} onClick={() => setShowAlertModal(true)} />
           </div>
         </div>
 
-        {/* Stats Grid */}
         <StatGrid data={data.quickStats} onAction={handleStatAction} />
 
-        {/* Upcoming Route */}
         <UpcomingStops data={data.stops} />
 
-      </main>
+      </motion.main>
     </div>
   );
 }

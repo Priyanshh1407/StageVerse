@@ -16,11 +16,7 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
 
-    useEffect(() => {
-        // Standard Socket Initialization
-        // Use 'undefined' to force relative path (auto-detects host:port)
-        // This fixes Mobile/LAN issues where localhost != IP
-        const socketInstance = io(undefined, {
+    useEffect(() => {        const socketInstance = io(undefined, {
             path: "/api/socket/io",
             addTrailingSlash: false,
             transports: ["polling", "websocket"],

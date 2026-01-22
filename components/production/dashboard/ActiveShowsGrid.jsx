@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Film, MapPin, Settings2, MoreVertical, Plus, Archive, PlayCircle, Loader2, Inbox, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import CreateShowModal from './CreateShowModal';
 
 export default function ActiveShowsGrid({ initialActiveShows = [] }) {
     const [view, setView] = useState('active'); // 'active', 'archived', 'requested'
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    // Filter shows based on the current view
     const displayedShows = initialActiveShows.filter(show => {
         if (view === 'active') return show.status === 'active'; // Strict active
         if (view === 'archived') return show.status === 'archived';
@@ -24,21 +24,44 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
         window.location.reload();
     };
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
+
     return (
         <>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    {view === 'active' && <Film className="w-5 h-5 text-blue-500" />}
-                    {view === 'archived' && <Archive className="w-5 h-5 text-gray-500" />}
-                    {view === 'requested' && <Inbox className="w-5 h-5 text-amber-500" />}
+                    <AnimatePresence mode="wait">
+                        <motion.span
+                            key={view}
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="flex items-center gap-2"
+                        >
+                            {view === 'active' && <Film className="w-5 h-5 text-blue-500" />}
+                            {view === 'archived' && <Archive className="w-5 h-5 text-gray-500" />}
+                            {view === 'requested' && <Inbox className="w-5 h-5 text-amber-500" />}
 
-                    {view === 'active' && 'Active Shows'}
-                    {view === 'archived' && 'Show Archive'}
-                    {view === 'requested' && 'Pending Requests'}
+                            {view === 'active' && 'Active Shows'}
+                            {view === 'archived' && 'Show Archive'}
+                            {view === 'requested' && 'Pending Requests'}
+                        </motion.span>
+                    </AnimatePresence>
                 </h2>
 
-                {/* TAB SWITCHER */}
+                {/* Scope Filter Tabs */}
                 <div className="bg-[#18181B] p-1 rounded-lg border border-[#27272A] flex self-start sm:self-auto gap-1">
                     <TabButton
                         active={view === 'active'}
@@ -47,7 +70,7 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
                         label="Active"
                     />
 
-                    {/* REQUESTS TAB (with Badge) */}
+                    {/* Badge for Requests */}
                     <button
                         onClick={() => setView('requested')}
                         className={`relative flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold transition-all ${view === 'requested'
@@ -73,31 +96,46 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
                 </div>
             </div>
 
-            {/* CONTENT AREA */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* List Grid */}
+            <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                key={view} // Re-animate on toggle
+            >
 
-                {displayedShows.length > 0 ? (
-                    displayedShows.map((show) => (
-                        <ShowCard key={show.id} show={show} isRequested={view === 'requested'} />
-                    ))
-                ) : (
-                    view !== 'active' && (
-                        <div className="col-span-full py-12 text-center text-gray-500 bg-[#18181B] border border-[#27272A] border-dashed rounded-xl">
-                            <p>No {view} found.</p>
-                        </div>
-                    )
-                )}
+                <AnimatePresence mode='popLayout'>
+                    {displayedShows.length > 0 ? (
+                        displayedShows.map((show) => (
+                            <ShowCard key={show.id} show={show} isRequested={view === 'requested'} variants={itemVariants} />
+                        ))
+                    ) : (
+                        view !== 'active' && (
+                            <motion.div
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                className="col-span-full py-12 text-center text-gray-500 bg-[#18181B] border border-[#27272A] border-dashed rounded-xl"
+                            >
+                                <p>No {view} found.</p>
+                            </motion.div>
+                        )
+                    )}
+                </AnimatePresence>
 
-                {/* Only show 'Create New' if we are in Active View */}
+                {/* Create Card (Always last in active view) */}
                 {view === 'active' && (
-                    <button onClick={() => setIsCreateModalOpen(true)} className="group flex flex-col items-center justify-center rounded-xl bg-transparent border-2 border-dashed border-[#27272A] hover:border-blue-500 hover:bg-blue-500/5 transition-all min-h-[250px] gap-3">
+                    <motion.button
+                        variants={itemVariants}
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="group flex flex-col items-center justify-center rounded-xl bg-transparent border-2 border-dashed border-[#27272A] hover:border-blue-500 hover:bg-blue-500/5 transition-all min-h-[250px] gap-3"
+                    >
                         <div className="size-12 rounded-full bg-[#18181B] group-hover:bg-blue-500/20 flex items-center justify-center text-gray-500 group-hover:text-blue-500 transition-colors">
                             <Plus className="w-7 h-7" />
                         </div>
                         <p className="text-gray-500 font-bold group-hover:text-blue-500 transition-colors">Create New Show</p>
-                    </button>
+                    </motion.button>
                 )}
-            </div>
+            </motion.div>
 
             {isCreateModalOpen && (
                 <CreateShowModal
@@ -123,7 +161,7 @@ function TabButton({ active, onClick, icon: Icon, label }) {
     );
 }
 
-function ShowCard({ show, isRequested }) {
+function ShowCard({ show, isRequested, variants }) {
     const isArchived = show.status === 'archived';
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -165,7 +203,14 @@ function ShowCard({ show, isRequested }) {
     };
 
     return (
-        <div className={`group flex flex-col rounded-xl bg-[#18181B] border border-[#27272A] overflow-hidden transition-all shadow-sm ${isArchived ? 'opacity-75 hover:opacity-100' : 'hover:border-blue-500/50'}`}>
+        <motion.div
+            layout
+            variants={variants}
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0, scale: 0.95 }}
+            className={`group flex flex-col rounded-xl bg-[#18181B] border border-[#27272A] overflow-hidden transition-all shadow-sm ${isArchived ? 'opacity-75 hover:opacity-100' : 'hover:border-blue-500/50'}`}
+        >
             <div className="h-32 w-full bg-cover bg-center relative" style={{ backgroundImage: `url(${show.image})` }}>
                 <div className="absolute inset-0 bg-linear-to-t from-[#18181B] to-transparent opacity-90"></div>
                 <div className="absolute bottom-3 left-4">
@@ -254,6 +299,6 @@ function ShowCard({ show, isRequested }) {
                     )}
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }

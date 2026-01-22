@@ -7,30 +7,18 @@ import Event from '@/models/Event';
 import Review from '@/models/Review'; // Ensure this model exists!
 
 export async function GET(req) {
-  try {
-    // 1. Connect to DB
-    await dbConnect();
-
-    // 2. Authentication Check (Protect Analytics Data)
-    const token = req.cookies.get('token')?.value;
+  try {    await dbConnect();    const token = req.cookies.get('token')?.value;
     if (!token) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret); // payload.userId contains the organizerId
-
-    // 3. Get Event ID from URL
-    const { searchParams } = new URL(req.url);
+    const { payload } = await jwtVerify(token, secret); // payload.userId contains the organizerId    const { searchParams } = new URL(req.url);
     const eventId = searchParams.get('eventId'); // Expecting the MongoDB _id
 
     if (!eventId) {
       return NextResponse.json({ message: 'Event ID is required' }, { status: 400 });
-    }
-
-    // 4. Verification: Ensure this event belongs to the logged-in Organizer
-    // We cast eventId to ObjectId to ensure valid format
-    const objectId = new mongoose.Types.ObjectId(eventId);
+    }    const objectId = new mongoose.Types.ObjectId(eventId);
     
     const eventExists = await Event.findOne({ 
       _id: objectId, 
@@ -39,13 +27,7 @@ export async function GET(req) {
 
     if (!eventExists) {
       return NextResponse.json({ message: 'Event not found or access denied' }, { status: 403 });
-    }
-
-    // =================================================================
-    // AGGREGATION 1: SALES ANALYTICS (Tickets)
-    // =================================================================
-    // This pipeline assumes your Ticket model has fields: 'event' (ObjectId), 'price' (Number), 'purchaseDate' (Date)
-    
+    }    
     const salesStats = await Ticket.aggregate([
       { 
         $match: { 
@@ -54,9 +36,7 @@ export async function GET(req) {
         } 
       },
       {
-        $facet: {
-          // A. KPI Totals
-          "totalSales": [
+        $facet: {          "totalSales": [
             {
               $group: {
                 _id: null,
@@ -64,17 +44,12 @@ export async function GET(req) {
                 totalRevenue: { $sum: "$price" }
               }
             }
-          ],
-          // B. Monthly Trend (For the Line/Bar Chart)
-          "monthlyTrend": [
+          ],          "monthlyTrend": [
             {
               $group: {
                 _id: { 
                   month: { $month: "$purchaseDate" }, 
-                  year: { $year: "$purchaseDate" },
-                  // Optional: if you want day granularity for short events:
-                  // day: { $dayOfMonth: "$purchaseDate" } 
-                },
+                  year: { $year: "$purchaseDate" },                },
                 count: { $sum: 1 },
                 revenue: { $sum: "$price" }
               }
@@ -82,9 +57,7 @@ export async function GET(req) {
             { $sort: { "_id.year": 1, "_id.month": 1 } },
             {
               $project: { 
-                _id: 0,
-                // Format label for frontend (e.g., "9/2023")
-                time: { 
+                _id: 0,                time: { 
                   $concat: [
                     { $toString: "$_id.month" }, "/", 
                     { $toString: "$_id.year" }
@@ -97,39 +70,24 @@ export async function GET(req) {
           ]
         }
       }
-    ]);
-
-    // =================================================================
-    // AGGREGATION 2: SENTIMENT ANALYTICS (Reviews)
-    // =================================================================
-    // If you don't have a Review model yet, this section will return empty arrays safely.
-    
-    let sentimentStats = [{ sentimentCounts: [], trendingKeywords: [], recentReviews: [] }];
-
-    // Only run if Review model is imported and exists
-    if (Review) {
+    ]);    
+    let sentimentStats = [{ sentimentCounts: [], trendingKeywords: [], recentReviews: [] }];    if (Review) {
       sentimentStats = await Review.aggregate([
         { $match: { event: objectId } },
         {
-          $facet: {
-            // A. Breakdown (Positive/Negative counts)
-            "sentimentCounts": [
+          $facet: {            "sentimentCounts": [
               {
                 $group: {
                   _id: "$sentiment", // 'positive', 'negative', 'neutral'
                   count: { $sum: 1 }
                 }
               }
-            ],
-            // B. Keywords (Unwinding tags array)
-            "trendingKeywords": [
+            ],            "trendingKeywords": [
               { $unwind: "$tags" },
               {
                 $group: {
                   _id: "$tags",
-                  count: { $sum: 1 },
-                  // Calculate average sentiment for this tag (1=pos, 0=neg)
-                  avgScore: { 
+                  count: { $sum: 1 },                  avgScore: { 
                     $avg: { $cond: [{ $eq: ["$sentiment", "positive"] }, 1, 0] } 
                   }
                 }
@@ -147,9 +105,7 @@ export async function GET(req) {
                   }
                 }
               }
-            ],
-            // C. Recent 5 Reviews
-            "recentReviews": [
+            ],            "recentReviews": [
               { $sort: { createdAt: -1 } },
               { $limit: 5 },
               {
@@ -165,28 +121,17 @@ export async function GET(req) {
           }
         }
       ]);
-    }
-
-    // =================================================================
-    // FORMAT RESPONSE
-    // =================================================================
-    
+    }    
     const salesData = salesStats[0];
     const reviewData = sentimentStats[0];
 
     return NextResponse.json({
-      success: true,
-      // Sales Data
-      kpi: {
+      success: true,      kpi: {
         totalTickets: salesData.totalSales[0]?.totalTickets || 0,
         totalRevenue: salesData.totalSales[0]?.totalRevenue || 0,
       },
-      charts: {
-        // This maps directly to your <BarChart data={...} />
-        salesOverTime: salesData.monthlyTrend || [], 
-      },
-      // Sentiment Data
-      sentiment: {
+      charts: {        salesOverTime: salesData.monthlyTrend || [], 
+      },      sentiment: {
         breakdown: reviewData.sentimentCounts || [],
         keywords: reviewData.trendingKeywords || [],
         recent: reviewData.recentReviews || []

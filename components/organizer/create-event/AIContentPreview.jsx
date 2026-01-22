@@ -4,14 +4,8 @@ import React from 'react';
 import { Copy, RefreshCw, Bookmark, CheckCircle, Info, Megaphone, Edit3 } from 'lucide-react';
 import { toast } from "sonner";
 
-export default function AIContentPreview({ content, onRequestAI }) {
-
-  // Simple Parser for the structured AI output
-  const parsed = React.useMemo(() => {
-    if (!content) return null;
-
-    // Default fallback
-    const data = {
+export default function AIContentPreview({ content, onRequestAI }) {  const parsed = React.useMemo(() => {
+    if (!content) return null;    const data = {
       headline: "Event Preview",
       hook: content,
       atmosphere: "",
@@ -19,9 +13,7 @@ export default function AIContentPreview({ content, onRequestAI }) {
       closing: ""
     };
 
-    try {
-      // Regex for new Labelled format
-      const headlineMatch = content.match(/HEADLINE:\s*(.*)/i);
+    try {      const headlineMatch = content.match(/HEADLINE:\s*(.*)/i);
       const hookMatch = content.match(/HOOK:\s*([\s\S]*?)(?=ATMOSPHERE:)/i);
       const atmosMatch = content.match(/ATMOSPHERE:\s*([\s\S]*?)(?=HIGHLIGHTS:)/i);
       const highlightSection = content.match(/HIGHLIGHTS:\s*([\s\S]*?)(?=CLOSING:)/i);
@@ -31,9 +23,7 @@ export default function AIContentPreview({ content, onRequestAI }) {
       if (hookMatch) data.hook = hookMatch[1].trim();
       if (atmosMatch) data.atmosphere = atmosMatch[1].trim();
 
-      if (highlightSection) {
-        // Extract bullet points (-, *, or just lines)
-        const lines = highlightSection[1].split('\n').map(l => l.trim()).filter(l => l.length > 0 && l !== '-');
+      if (highlightSection) {        const lines = highlightSection[1].split('\n').map(l => l.trim()).filter(l => l.length > 0 && l !== '-');
         data.highlights = lines.map(l => l.replace(/^[-*]\s*/, ''));
       }
 
@@ -45,19 +35,11 @@ export default function AIContentPreview({ content, onRequestAI }) {
   }, [content]);
 
   const handleCopy = () => {
-    if (!content) return;
-    // Copy the raw plain text content (or formatted? User likely wants the generation result text)
-    // The "content" prop holds the formatted string from the API.
-    navigator.clipboard.writeText(content);
+    if (!content) return;    navigator.clipboard.writeText(content);
     toast.success("Content copied to clipboard!");
-  };
-
-  // If no content, show placeholder or static example (for now, keeping static if empty)
-  if (!parsed) {
-    // Return existing static mockup as "Example"
-    return (
+  };  if (!parsed) {    return (
       <div className="flex flex-col h-full gap-4 opacity-50 pointer-events-none filter blur-[1px]">
-        {/* ... keeping structure but indicating it's waiting ... */}
+        {}
         <div className="flex-1 bg-white dark:bg-[#192734] rounded-xl border border-slate-200 dark:border-[#2c3b47] flex items-center justify-center text-slate-500">
           <div className="text-center p-8">
             <RefreshCw className="w-12 h-12 mx-auto mb-4 text-[#0d93f2] animate-pulse" />
@@ -71,10 +53,10 @@ export default function AIContentPreview({ content, onRequestAI }) {
 
   return (
     <div className="flex flex-col h-full gap-4">
-      {/* Main Output Box */}
+      {}
       <div className="flex-1 bg-white dark:bg-[#192734] rounded-xl border border-slate-200 dark:border-[#2c3b47] relative overflow-hidden flex flex-col min-h-[500px]">
 
-        {/* Toolbar */}
+        {}
         <div className="border-b border-slate-200 dark:border-[#2c3b47] p-4 flex items-center justify-between bg-slate-50 dark:bg-[#101b22]/50">
           <h4 className="text-xs font-bold text-slate-500 dark:text-[#90b2cb] uppercase tracking-wider flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -87,7 +69,7 @@ export default function AIContentPreview({ content, onRequestAI }) {
           </div>
         </div>
 
-        {/* Content Area */}
+        {}
         <div className="flex-1 p-8 relative overflow-y-auto custom-scrollbar">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
 
@@ -118,7 +100,7 @@ export default function AIContentPreview({ content, onRequestAI }) {
           </div>
         </div>
 
-        {/* Footer */}
+        {}
         <div className="p-4 border-t border-slate-200 dark:border-[#2c3b47] flex justify-between items-center text-xs text-slate-400">
           <span>Words: {content.split(' ').length}</span>
           <span className="flex items-center gap-1">
@@ -127,7 +109,7 @@ export default function AIContentPreview({ content, onRequestAI }) {
         </div>
       </div>
 
-      {/* Quick Action Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SuggestionCard
           icon={Megaphone}
@@ -149,8 +131,6 @@ export default function AIContentPreview({ content, onRequestAI }) {
     </div>
   );
 }
-
-// --- SUB-COMPONENTS ---
 
 function ActionButton({ icon: Icon, title, onClick }) {
   return (

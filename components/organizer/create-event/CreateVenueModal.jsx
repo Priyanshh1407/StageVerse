@@ -15,10 +15,7 @@ import {
   Save,
   Map as MapIcon,
   CloudUpload
-} from 'lucide-react';
-
-// IMPORT YOUR SIDEBAR
-import OrganizerSidebar from '@/components/organizer/OrganizerSidebar'; // Adjusted path based on typical structure
+} from 'lucide-react';import OrganizerSidebar from '@/components/organizer/OrganizerSidebar'; // Adjusted path based on typical structure
 
 export default function CreateVenueModal({
   isOpen,
@@ -27,11 +24,7 @@ export default function CreateVenueModal({
   onSuccess
 }) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 1. UNIFIED FORM STATE
-  // Combined all fields from the UI into one state object
-  const [formData, setFormData] = useState({
+  const [isSubmitting, setIsSubmitting] = useState(false);  const [formData, setFormData] = useState({
     name: '',
     type: '',
     capacity: '',
@@ -40,35 +33,21 @@ export default function CreateVenueModal({
     description: '',
     bagPolicy: '',
     hasParking: true, // Default from your UI
-  });
-
-  // 2. PRE-FILL NAME EFFECT
-  // If the user typed a name in the parent search, fill it here automatically
-  useEffect(() => {
+  });  useEffect(() => {
     if (isOpen && initialName) {
       setFormData(prev => ({ ...prev, name: initialName }));
     }
-  }, [isOpen, initialName]);
-
-  // 3. GENERIC CHANGE HANDLER
-  const handleChange = (e) => {
+  }, [isOpen, initialName]);  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // 4. SUBMIT & REDIRECT LOGIC
-  const handleSaveVenue = async () => {
-    // Basic Validation
-    if (!formData.name || !formData.city || !formData.address) {
+  };  const handleSaveVenue = async () => {    if (!formData.name || !formData.city || !formData.address) {
       toast.error("Please fill in Venue Name, City, and Address");
       return;
     }
 
     setIsSubmitting(true);
 
-    try {
-      // A. API CALL
-      const res = await fetch('/api/venues', {
+    try {      const res = await fetch('/api/venues', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -76,20 +55,9 @@ export default function CreateVenueModal({
 
       const data = await res.json();
 
-      if (res.ok) {
-        // B. PASS DATA BACK (If parent requested it via prop)
-        if (onSuccess) {
+      if (res.ok) {        if (onSuccess) {
           onSuccess(data.data);
-        }
-
-        // C. REDIRECT (As requested)
-        router.push('/create-event');
-
-        // D. CLOSE MODAL
-        onClose();
-
-        // Reset form (Optional)
-        setFormData({
+        }        router.push('/create-event');        onClose();        setFormData({
           name: '', type: '', capacity: '', address: '', city: '',
           description: '', bagPolicy: '', hasParking: true
         });
@@ -107,11 +75,9 @@ export default function CreateVenueModal({
 
   if (!isOpen) return null;
 
-  return (
-    // MAIN WRAPPER: Fixed fullscreen, Flex row to put Sidebar next to Modal Area
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen overflow-hidden bg-black/80 backdrop-blur-sm">
+  return (    <div className="fixed inset-0 z-[100] flex h-screen w-screen overflow-hidden bg-black/80 backdrop-blur-sm">
 
-      {/* --- CSS FOR CUSTOM SCROLLBAR --- */}
+      {}
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
@@ -128,24 +94,24 @@ export default function CreateVenueModal({
         }
       `}</style>
 
-      {/* SIDEBAR SECTION */}
+      {}
       <div className="shrink-0 h-full hidden md:block">
         <OrganizerSidebar />
       </div>
 
-      {/* MODAL CONTENT AREA */}
+      {}
       <div className="flex-1 relative flex items-center justify-center p-4 sm:p-6">
 
-        {/* CLICKABLE BACKDROP */}
+        {}
         <div
           onClick={onClose}
           className="absolute inset-0 cursor-pointer"
         />
 
-        {/* MODAL CARD */}
+        {}
         <div className="relative w-full max-w-3xl bg-[#101622] border border-[#314368] rounded-xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 overflow-hidden z-10">
 
-          {/* 1. FIXED HEADER */}
+          {}
           <div className="flex items-center justify-between px-5 py-4 md:px-6 md:py-5 border-b border-[#314368] bg-[#101622] shrink-0 z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-[#0d59f2] shadow-lg shadow-[#0d59f2]/20 flex items-center justify-center text-white shrink-0">
@@ -164,10 +130,10 @@ export default function CreateVenueModal({
             </button>
           </div>
 
-          {/* 2. SCROLLABLE CONTENT BODY */}
+          {}
           <div className="overflow-y-auto p-5 md:p-8 flex flex-col gap-8 custom-scrollbar bg-[#101622]">
 
-            {/* SECTION 1: CORE DETAILS */}
+            {}
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2 pb-2 border-b border-[#314368]/50">
                 <Info className="w-5 h-5 text-[#0d59f2]" />
@@ -175,7 +141,7 @@ export default function CreateVenueModal({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Venue Name */}
+                {}
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <label className="text-white text-sm font-medium">Venue Name <span className="text-red-400">*</span></label>
                   <input
@@ -188,7 +154,7 @@ export default function CreateVenueModal({
                   />
                 </div>
 
-                {/* Venue Type */}
+                {}
                 <div className="flex flex-col gap-2">
                   <label className="text-white text-sm font-medium">Venue Type</label>
                   <div className="relative">
@@ -209,7 +175,7 @@ export default function CreateVenueModal({
                   </div>
                 </div>
 
-                {/* Capacity */}
+                {}
                 <div className="flex flex-col gap-2">
                   <label className="text-white text-sm font-medium">Capacity</label>
                   <div className="relative">
@@ -227,7 +193,7 @@ export default function CreateVenueModal({
               </div>
             </div>
 
-            {/* SECTION 2: LOCATION */}
+            {}
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2 pb-2 border-b border-[#314368]/50">
                 <MapPin className="w-5 h-5 text-[#0d59f2]" />
@@ -235,7 +201,7 @@ export default function CreateVenueModal({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Address */}
+                {}
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <label className="text-white text-sm font-medium">Street Address <span className="text-red-400">*</span></label>
                   <input
@@ -248,7 +214,7 @@ export default function CreateVenueModal({
                   />
                 </div>
 
-                {/* City */}
+                {}
                 <div className="flex flex-col gap-2">
                   <label className="text-white text-sm font-medium">City <span className="text-red-400">*</span></label>
                   <input
@@ -261,7 +227,7 @@ export default function CreateVenueModal({
                   />
                 </div>
 
-                {/* Map Preview */}
+                {}
                 <div className="md:col-span-1 h-32 md:h-auto rounded-lg overflow-hidden border border-[#314368] relative group">
                   <div
                     className="w-full h-full bg-cover bg-center opacity-60 group-hover:opacity-80 transition-opacity"
@@ -277,7 +243,7 @@ export default function CreateVenueModal({
               </div>
             </div>
 
-            {/* SECTION 3: POLICIES */}
+            {}
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2 pb-2 border-b border-[#314368]/50">
                 <Check className="w-5 h-5 text-[#0d59f2]" />
@@ -285,7 +251,7 @@ export default function CreateVenueModal({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Parking Toggle */}
+                {}
                 <div
                   onClick={() => setFormData(prev => ({ ...prev, hasParking: !prev.hasParking }))}
                   className="flex items-center justify-between p-4 rounded-lg border border-[#314368] bg-[#182234] h-20 cursor-pointer hover:border-[#314368]/80 transition-colors"
@@ -294,13 +260,13 @@ export default function CreateVenueModal({
                     <span className="text-white text-sm md:text-base font-medium">Parking Available</span>
                     <span className="text-[#90a4cb] text-xs">Can attendees park on-site?</span>
                   </div>
-                  {/* Toggle Switch Visual */}
+                  {}
                   <div className={`w-11 h-6 rounded-full relative transition-colors ${formData.hasParking ? 'bg-[#0d59f2]' : 'bg-gray-700'}`}>
                     <div className={`absolute top-[2px] left-[2px] bg-white w-5 h-5 rounded-full transition-transform ${formData.hasParking ? 'translate-x-full' : ''}`}></div>
                   </div>
                 </div>
 
-                {/* Bag Policy */}
+                {}
                 <div className="flex flex-col gap-2">
                   <label className="text-white text-sm font-medium">Bag Policy</label>
                   <input
@@ -313,7 +279,7 @@ export default function CreateVenueModal({
                   />
                 </div>
 
-                {/* Description */}
+                {}
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <label className="text-white text-sm font-medium">Venue Description</label>
                   <textarea
@@ -327,7 +293,7 @@ export default function CreateVenueModal({
               </div>
             </div>
 
-            {/* SECTION 4: MEDIA */}
+            {}
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2 pb-2 border-b border-[#314368]/50">
                 <ImageIcon className="w-5 h-5 text-[#0d59f2]" />
@@ -349,7 +315,7 @@ export default function CreateVenueModal({
 
           </div>
 
-          {/* 3. FIXED FOOTER */}
+          {}
           <div className="flex items-center justify-end gap-3 px-5 py-4 md:px-6 md:py-5 border-t border-[#314368] bg-[#182234]/50 backdrop-blur rounded-b-xl shrink-0 z-10">
             <button
               onClick={onClose}

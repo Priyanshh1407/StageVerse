@@ -16,7 +16,7 @@ export default function EventsFeed({
   return (
     <div className="flex-1">
       
-      {/* Header */}
+      {}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-white flex items-center">
           Events 
@@ -49,10 +49,10 @@ export default function EventsFeed({
         </div>
       </div>
 
-      {/* Content */}
+      {}
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {/* Show 6 Skeletons while loading */}
+          {}
           {[...Array(6)].map((_, i) => (
             <SkeletonCard key={i} />
           ))}
@@ -85,10 +85,7 @@ export default function EventsFeed({
       )}
     </div>
   );
-}
-
-// --- SKELETON COMPONENT ---
-function SkeletonCard() {
+}function SkeletonCard() {
   return (
     <div className="rounded-xl bg-[#121212] border border-white/5 overflow-hidden">
       <div className="aspect-[4/5] bg-white/5 animate-pulse relative">
