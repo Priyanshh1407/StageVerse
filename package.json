@@ -15,7 +15,8 @@
     "seed": "node --env-file=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed.mjs",
     "test:coverage": "vitest run --coverage",
     "bench": "cross-env BENCH=1 vitest run",
-    "eval:patch": "node --env-file-if-exists=.env.local evals/patch/run.mjs"
+    "eval:patch": "node --env-file-if-exists=.env.local evals/patch/run.mjs",
+    "analyse:song": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/analyse-song.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",
@@ -63,6 +64,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@vitest/coverage-v8": "^5.0.5",
+    "audio-decode": "^3.12.0",
     "babel-plugin-react-compiler": "1.0.0",
     "cross-env": "^10.1.0",
     "eslint": "^9",
