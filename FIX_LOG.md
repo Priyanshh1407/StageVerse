@@ -193,3 +193,21 @@ Interview version: "I moved the part that has to be correct out of the LLM. The 
 - **Not done (need the developer):** deployment target decision, demo GIF/video, live eval run, UPG-04 3D homepage (to discuss), then re-audit → interview report → mock interview.
 
 `npm test`: **173 passing** · lint: **0 errors** (35 warnings) · build: passes · prod audit: 1 high (xlsx, not reachable).
+
+---
+
+## LLM reliability (2026-10-27/28, after the first live eval)
+
+### Live eval findings
+- First live run: `gemini-3.8-flash` answered 503 "high demand" / 504 deadline; the harness crashed on the first upstream error. Fixed: retries with server-hinted waits, pacing (`--rpm`), and outages counted separately from wrong answers.
+- The free tier allows **5 requests/minute and 20/day per model**. A full eval (~60–70 calls per model) can't finish in a day on a free key, so partial results were discarded as not evidence. **Eval numbers: `<pending a billed key or a Groq-backed run>`.**
+- Live smoke test (1 call, `gemini-3.5-flash-lite`, the exact structured-output request `lib/llm.js` sends): schema-valid JSON on the first try, but **21.9 s** latency under current load.
+
+### Provider chain + non-AI fallbacks (commits 1f0484e, 6b960d3)
+Goal (developer's request): an AI request should always get an answer, never "not available".
+- Chain: `gemini-3.8-flash` → `gemini-3.5-flash-lite` → Groq `openai/gpt-oss-120b` (OpenAI-compatible endpoint, `json_schema` output; needs `GROQ_API_KEY`). Any provider error moves to the next. A 12 s per-provider timeout bounds the wait (the 21.9 s Flash-Lite call above would have moved on).
+- Circuit breaker: after overload or quota errors a model is benched (server "retry in Ns", 1 h for daily quotas, 30 s for 5xx/timeouts), so requests stop waiting on a dead provider; if every model is benched, all are tried anyway.
+- If every provider fails, each feature degrades with `degraded: true` instead of erroring: template copy (insight, event description), the artist's own song catalogue (never invented songs), a deterministic BPM energy curve for setlist order, and a rule-based reader for patch requests (29/30 on my own eval prompts, which is optimistic because I wrote both).
+- `/api/generate` became task-based (`insight` / `songs` / `reorder`). The three screens used to paste format instructions into one free-text prompt, which conflicted with the server's "under 50 words" system prompt; now the server owns each prompt, schema and fallback.
+- Not an outage message: our own abuse limit (10 AI requests/min per user) still returns 429 on purpose.
+Interview version: "The newest model was overloaded and my key had 20 requests a day, so 'just call the LLM' wasn't a reliability strategy. I built a provider chain with a circuit breaker so requests skip a model that's down, and behind it a deterministic fallback per feature, so users always get an answer and the response says when it's the simpler one."
