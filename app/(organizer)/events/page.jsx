@@ -18,6 +18,16 @@ export default function EventsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  function getCategoryIcon(genre) {
+    if (!genre) return Music;
+    const g = genre.toLowerCase();
+    if (g.includes('tech') || g.includes('business')) return Mic;
+    if (g.includes('art') || g.includes('theater')) return Palette;
+    if (g.includes('sport')) return Trophy;
+    if (g.includes('food')) return Utensils;
+    return Music;
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const fetchEvents = async () => {
@@ -67,6 +77,7 @@ export default function EventsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchEvents();
   }, []);
   const filteredEvents = useMemo(() => {
@@ -165,19 +176,14 @@ export default function EventsPage() {
       setCurrentPage(page);
     }
   };
-  useEffect(() => {
+  // Back to page 1 whenever the search or filter changes
+  const filterKey = `${searchQuery}\u0000${statusFilter}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  }
 
-  const getCategoryIcon = (genre) => {
-    if (!genre) return Music;
-    const g = genre.toLowerCase();
-    if (g.includes('tech') || g.includes('business')) return Mic;
-    if (g.includes('art') || g.includes('theater')) return Palette;
-    if (g.includes('sport')) return Trophy;
-    if (g.includes('food')) return Utensils;
-    return Music;
-  };
 
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30">

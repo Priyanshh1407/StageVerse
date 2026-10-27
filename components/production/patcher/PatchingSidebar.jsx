@@ -119,7 +119,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
     fetchProfiles();
   }, []);
 
-  const fetchProfiles = async () => {
+  async function fetchProfiles() {
     try {
       const res = await fetch('/api/production/fixture-profiles');
       const data = await res.json();

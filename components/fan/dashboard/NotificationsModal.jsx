@@ -8,13 +8,7 @@ export default function NotificationsModal({ isOpen, onClose }) {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchNotifications();
-        }
-    }, [isOpen]);
-
-    const fetchNotifications = async () => {
+    async function fetchNotifications() {
         try {
             setLoading(true);
             const res = await fetch('/api/fan/notifications');
@@ -28,6 +22,14 @@ export default function NotificationsModal({ isOpen, onClose }) {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
+            fetchNotifications();
+        }
+    }, [isOpen]);
+
 
     if (!isOpen) return null;
 

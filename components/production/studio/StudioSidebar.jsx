@@ -82,7 +82,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
       fetchProfiles();
    }, []);
 
-   const fetchProfiles = async () => {
+   async function fetchProfiles() {
       try {
          const res = await fetch('/api/production/fixture-profiles');
          const data = await res.json();

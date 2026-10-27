@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { BarChart2, PlusCircle, Edit, Trash2, ListMusic, List, Timer, X, ChevronDown, Info, Smartphone, Check, ArrowLeft } from 'lucide-react';
 
@@ -75,12 +75,14 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
     { id: 3, value: "" }
   ]);
   const [loading, setLoading] = useState(false); // Loading state
+  const nextOptionId = useRef(1000); // ids for newly added option rows
   const handleOptionChange = (id, newValue) => {
     const newOptions = options.map(opt => opt.id === id ? { ...opt, value: newValue } : opt);
     setOptions(newOptions);
     const lastOption = newOptions[newOptions.length - 1];
     if (lastOption.id === id && newValue.trim() !== "") {
-      setOptions([...newOptions, { id: Date.now(), value: "" }]);
+      nextOptionId.current += 1;
+      setOptions([...newOptions, { id: nextOptionId.current, value: "" }]);
     }
   };
 

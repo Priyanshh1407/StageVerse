@@ -27,7 +27,7 @@ export default function PatchStudioPage(props) {
       loadPatch();
    }, [showId]);
 
-   const loadPatch = async () => {
+   async function loadPatch() {
       try {
          setIsLoading(true);
          const res = await fetch(`/api/production/patch?eventId=${showId}`);

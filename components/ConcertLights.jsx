@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence, useTransform, useMotionValue } from 'framer-motion';
+import { useIsClient } from '@/lib/hooks/useIsClient';
 
 export const ConcertLights = ({ 
   masterOn,
@@ -10,12 +11,8 @@ export const ConcertLights = ({
   audio,
   isReactive 
 }) => {
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useIsClient();
   const [flashTrigger, setFlashTrigger] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
   useEffect(() => {
     if (isReactive) return; 
 
@@ -97,7 +94,8 @@ const MovingHead = ({ index, total, color }) => {
     >
       <motion.div
         animate={{ rotate: isBottom ? [-30, 30] : [-20, 20] }}
-        transition={{ duration: Math.random() * 4 + 4, repeat: Infinity, repeatType: "mirror", ease: "easeInOut", delay: index * 0.5 }}
+        // Stable per beam: a random value here changed on every re-render and restarted the sweep
+        transition={{ duration: 4 + ((index * 37) % 40) / 10, repeat: Infinity, repeatType: "mirror", ease: "easeInOut", delay: index * 0.5 }}
         className={`w-full h-full ${isBottom ? 'origin-bottom' : 'origin-top'}`}
       >
         <div 

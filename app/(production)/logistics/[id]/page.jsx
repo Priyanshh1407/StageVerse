@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use, useMemo } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { MapPin, FileText, Download, Search, Layout, Table, Loader2, Map, Grid, Cable, Clipboard, Box, Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { jsPDF } from 'jspdf';
@@ -210,34 +210,18 @@ export default function LogisticsPage(props) {
         }
     };
 
-    const filteredKanban = useMemo(() => {
+    // React Compiler (next.config reactCompiler) memoizes this; a manual useMemo blocked it
+    const filteredKanban = (() => {
         if (!showData) return [];
-        let cols = showData.kanban.map(col => ({ ...col, cards: [...col.cards] })); // Deep Copy for filtering
-
-        if (searchQuery) {
-            const q = searchQuery.toLowerCase();
-            cols.forEach(col => {
-                col.cards = col.cards.filter(c =>
-                    c.title.toLowerCase().includes(q) ||
-                    c.tag.toLowerCase().includes(q)
-                );
-            });
-        }
-
-        if (filterType === 'urgent') {
-            cols.forEach(col => {
-                col.cards = col.cards.filter(c => c.urgent);
-            });
-        }
-
-        if (filterType === 'user') {
-            cols.forEach(col => {
-                col.cards = col.cards.filter(c => c.assignee === 'Alex M.' || c.assignee === 'Alex Morrison');
-            });
-        }
-
-        return cols;
-    }, [showData, searchQuery, filterType]);
+        const q = searchQuery.toLowerCase();
+        const keep = (c) =>
+            (!q || c.title.toLowerCase().includes(q) || c.tag.toLowerCase().includes(q)) &&
+            (filterType !== 'urgent' || c.urgent) &&
+            // TODO(BUG-10): "My tasks" is hardcoded to one crew name; should use the logged-in user
+            (filterType !== 'user' || c.assignee === 'Alex M.' || c.assignee === 'Alex Morrison');
+        // Build new column objects instead of mutating copies, so the memo stays pure
+        return showData.kanban.map(col => ({ ...col, cards: col.cards.filter(keep) }));
+    })();
 
     if (isLoading) {
         return (

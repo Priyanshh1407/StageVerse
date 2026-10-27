@@ -8,16 +8,7 @@ export default function GuestlistPanel({ eventId }) {
     const [guests, setGuests] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedGuest, setSelectedGuest] = useState(null);
-    useEffect(() => {
-        if (eventId) {
-            fetchGuests();
-        } else {
-            setGuests([]);
-        }
-        setSelectedGuest(null);
-    }, [eventId]);
-
-    const fetchGuests = async () => {
+    async function fetchGuests() {
         try {
             setLoading(true);
             const res = await fetch(`/api/artist/guestlist?eventId=${eventId}`);
@@ -31,16 +22,30 @@ export default function GuestlistPanel({ eventId }) {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (eventId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
+            fetchGuests();
+        } else {
+            setGuests([]);
+        }
+        setSelectedGuest(null);
+    }, [eventId]);
+
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [notesBuffer, setNotesBuffer] = useState("");
     const [actionLoading, setActionLoading] = useState(false);
 
-    useEffect(() => {
+    // Load the selected guest's notes into the editor when the selection changes
+    const [prevSelectedGuest, setPrevSelectedGuest] = useState(selectedGuest);
+    if (selectedGuest !== prevSelectedGuest) {
+        setPrevSelectedGuest(selectedGuest);
         if (selectedGuest) {
             setNotesBuffer(selectedGuest.notes || "");
             setIsEditingNotes(false);
         }
-    }, [selectedGuest]);
+    }
 
     const handleSaveNotes = async () => {
         if (!selectedGuest) return;

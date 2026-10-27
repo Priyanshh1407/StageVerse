@@ -54,7 +54,7 @@ export default function EventDetailsForm({
     }
   }, [editId]);
 
-  const fetchEventDetails = async (id) => {
+  async function fetchEventDetails(id) {
     setIsFetching(true);
     try {
       const res = await fetch(`/api/events/${id}`);
@@ -131,7 +131,7 @@ export default function EventDetailsForm({
     return () => clearTimeout(delayDebounce);
   }, [venueSearch, selectedVenue]);
 
-  const handleSelectVenue = (venue) => {
+  function handleSelectVenue(venue) {
     setSelectedVenue(venue);
     setVenueSearch(venue.name);
     setShowDropdown(false);
@@ -155,7 +155,7 @@ export default function EventDetailsForm({
     setShowDropdown(false);
     onOpenVenueModal(venueSearch);
   };
-  const handleAiGenerate = async (e, modifier = "") => {
+  async function handleAiGenerate(e, modifier = "") {
     if (e && e.preventDefault) e.preventDefault();
 
     if (!formData.artist) {
