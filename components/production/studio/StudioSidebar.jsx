@@ -44,12 +44,12 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
          } else if (json.patch && Array.isArray(json.patch)) {
             const newFixtures = json.patch.map(item => ({
                profile: item.type || 'Generic',
-               mode: 'Standard', // Default
-               channels: 16,     // Default assumption
+               mode: item.mode || 'Standard',
+               channels: item.channels || 16, // footprint from the allocator (no longer forced to 16)
                quantity: 1,
                patch: 'Auto',
-               address: item.address,   // Critical: Passing AI Address
-               universe: item.universe, // Critical: Passing AI Universe
+               address: item.address,   // assigned by lib/dmx/allocate, collision-free
+               universe: item.universe,
                cue: 'Ready',
                cueColor: 'blue',
                status: 'ok'
