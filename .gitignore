@@ -43,3 +43,6 @@ next-env.d.ts
 
 # logs
 *.log
+
+# eval harness self-checks (not evidence)
+evals/patch/results/FAKE-*.json
