@@ -5,6 +5,7 @@ import Event from '@/models/Event';
 import Venue from '@/models/Venue'; // Registry
 import { verifyAuth } from '@/lib/auth';
 import { requireRole } from '@/lib/authz';
+import { nextEventId } from '@/lib/counters';
 export async function GET(req) {
   try {
     await dbConnect();
@@ -39,8 +40,7 @@ export async function POST(req) {
     requireRole(user, 'organizer');
 
     const body = await req.json();
-    const count = await Event.countDocuments();
-    const eventId = 1000 + count + 1;
+    const eventId = await nextEventId();
 
     // Server-owned fields can't be set by the client (mass assignment)
     const { _id, eventId: _ignoredId, organizerId, assignedTo, productionStatus, createdAt, updatedAt, ...fields } = body;

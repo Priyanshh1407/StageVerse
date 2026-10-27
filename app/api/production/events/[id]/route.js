@@ -48,7 +48,8 @@ export async function PUT(req, { params }) {
                 venueDoc = await Venue.create({
                     name: body.venue,
                     city: 'Unknown City',
-                    capacity: 1000
+                    capacity: '1000',
+                    address: 'TBA'
                 });
             }
             event.venue = venueDoc._id;

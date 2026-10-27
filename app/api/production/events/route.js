@@ -7,6 +7,7 @@ import Venue from '@/models/Venue';
 import { verifyAuth } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 import { requireRole } from '@/lib/authz';
+import { nextEventId } from '@/lib/counters';
 function getTypeColor(type) {
     switch (type) {
         case 'Touring': return 'bg-blue-500';
@@ -32,11 +33,11 @@ export async function POST(req) {
             venueDoc = await Venue.create({
                 name: body.venue || 'Unknown Venue',
                 city: 'Unknown City',
-                capacity: 1000,
-                location: 'Unknown Address'
+                capacity: '1000',
+                address: 'TBA' // required by the Venue schema; edited later
             });
         }
-        const newEventId = Math.floor(1000 + Math.random() * 9000);
+        const newEventId = await nextEventId();
         const newEvent = await Event.create({
             eventId: newEventId,
             title: body.title,
