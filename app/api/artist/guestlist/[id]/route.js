@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
 import Notification from '@/models/Notification';
@@ -8,7 +9,6 @@ export async function PATCH(req, { params }) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { id } = await params;
         const body = await req.json();
@@ -24,15 +24,13 @@ export async function PATCH(req, { params }) {
 
         return NextResponse.json({ success: true, guest });
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/artist/guestlist/[id]');
     }
 }
 export async function DELETE(req, { params }) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { id } = await params;
         const guest = await Guest.findById(id);
@@ -66,7 +64,6 @@ export async function DELETE(req, { params }) {
 
         return NextResponse.json({ success: true });
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/artist/guestlist/[id]');
     }
 }

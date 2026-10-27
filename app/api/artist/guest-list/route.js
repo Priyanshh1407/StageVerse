@@ -1,5 +1,6 @@
 import Event from '@/models/Event';
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
 import { verifyAuth } from '@/lib/auth';
@@ -7,7 +8,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
         let eventId = searchParams.get('eventId');
@@ -31,14 +31,13 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: guests });
 
     } catch (error) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guest-list');
     }
 }
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         let { eventId, name, tier, email } = body;
@@ -67,15 +66,13 @@ export async function POST(req) {
         console.log(`[Guest POST] Created Guest ${newGuest.name} for Event ${numericEventId}`);
         return NextResponse.json({ success: true, data: newGuest });
     } catch (error) {
-        console.error("Guest Add Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guest-list');
     }
 }
 export async function PUT(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         const { id, status, name, email, tier } = body;
@@ -99,15 +96,13 @@ export async function PUT(req) {
         return NextResponse.json({ success: true, data: updatedGuest });
 
     } catch (error) {
-        console.error("Guest Update Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guest-list');
     }
 }
 export async function DELETE(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         const { id, eventId, clearAll } = body;
@@ -129,7 +124,6 @@ export async function DELETE(req) {
         return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
 
     } catch (error) {
-        console.error("Guest Delete Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guest-list');
     }
 }

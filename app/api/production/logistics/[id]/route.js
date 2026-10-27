@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Logistics from '@/models/Logistics';
 import Task from '@/models/Task';
@@ -68,7 +69,6 @@ export async function GET(request, { params }) {
         return NextResponse.json(responseData);
 
     } catch (error) {
-        console.error('API Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/production/logistics/[id]');
     }
 }

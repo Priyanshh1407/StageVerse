@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Contact from '@/models/Contact';
 
@@ -21,7 +22,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: newContact });
 
     } catch (error) {
-        console.error('Contact API Error:', error);
-        return NextResponse.json({ success: false, error: 'Failed to send message' }, { status: 500 });
+        return apiError(error, '/api/contact');
     }
 }

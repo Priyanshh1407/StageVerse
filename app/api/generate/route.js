@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { apiError } from '@/lib/api';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -28,7 +29,6 @@ export async function POST(req) {
 
         return NextResponse.json({ result: text });
     } catch (error) {
-        console.error("Gemini Error:", error);
 
         if (error.status === 429 || error.message?.includes("429")) {
             return NextResponse.json(
@@ -44,9 +44,6 @@ export async function POST(req) {
             );
         }
 
-        return NextResponse.json(
-            { error: "Failed to generate content" },
-            { status: 500 }
-        );
+        return apiError(error, '/api/generate');
     }
 }

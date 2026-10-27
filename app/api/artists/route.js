@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 
@@ -33,7 +34,6 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: formattedArtists });
 
     } catch (error) {
-        console.error('Failed to fetch artists:', error);
-        return NextResponse.json({ success: false, error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/artists');
     }
 }

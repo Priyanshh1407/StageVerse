@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiError } from '@/lib/api';
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
@@ -44,10 +45,6 @@ export async function POST(req) {
         }, { status: 201 });
 
     } catch (error) {
-        console.log('SignUp Error:', error);
-        return NextResponse.json(
-            { message: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return apiError(error, '/api/auth/signup');
     }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
 import { verifyAuth } from '@/lib/auth';
@@ -9,7 +10,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         const notifications = await Task.find({
             status: { $ne: 'Done' },
             urgent: true,
@@ -19,7 +19,6 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: notifications });
 
     } catch (error) {
-        console.error("Artist Notifications Error:", error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/notifications');
     }
 }

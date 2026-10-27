@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
@@ -18,7 +19,6 @@ export async function PUT(req, { params }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { id } = await params;
         const body = await req.json();
@@ -79,14 +79,13 @@ export async function PUT(req, { params }) {
         });
 
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError(error, '/api/production/events/[id]');
     }
 }
 export async function DELETE(req, { params }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { id } = await params;
         const query = id.match(/^[0-9a-fA-F]{24}$/) ? { _id: id } : { eventId: id };
@@ -111,6 +110,6 @@ export async function DELETE(req, { params }) {
         return NextResponse.json({ success: true, message: 'Event deleted' });
 
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError(error, '/api/production/events/[id]');
     }
 }

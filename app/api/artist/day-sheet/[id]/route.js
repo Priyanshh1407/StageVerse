@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
@@ -9,7 +10,6 @@ export async function GET(req, { params }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const resolvedParams = await params;
         const { id } = resolvedParams;
@@ -95,8 +95,7 @@ export async function GET(req, { params }) {
         });
 
     } catch (error) {
-        console.error("Day Sheet ID API Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/day-sheet/[id]');
     }
 }
 
@@ -111,7 +110,6 @@ export async function PUT(req, { params }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const resolvedParams = await params;
         const { id } = resolvedParams;
@@ -179,7 +177,6 @@ export async function PUT(req, { params }) {
 
     } catch (error) {
         if (typeof logToFile === 'function') logToFile(`ERROR: ${error.message}`);
-        console.error("Day Sheet Update Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/day-sheet/[id]');
     }
 }

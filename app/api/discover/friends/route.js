@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { apiError } from '@/lib/api';
+import { verifyAuth } from '@/lib/auth';
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import Ticket from "@/models/Ticket";
@@ -10,10 +11,7 @@ export async function GET(req) {
     try {
         await dbConnect();
 
-        const token = req.cookies.get('token')?.value;
-        if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret);
+        const payload = await verifyAuth(req);
 
         const currentUser = await User.findById(payload.userId).select('following');
         if (!currentUser || !currentUser.following.length) {
@@ -76,6 +74,6 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: result });
     } catch (error) {
         nsole.error('Friends API Error:', error);
-        return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/discover/friends');
     }
 }

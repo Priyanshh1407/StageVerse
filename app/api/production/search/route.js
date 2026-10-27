@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Task from '@/models/Task';
@@ -10,10 +11,7 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
+        
         const { searchParams } = new URL(req.url);
         const query = searchParams.get('q');
 
@@ -53,7 +51,6 @@ export async function GET(req) {
         });
 
     } catch (error) {
-        console.error("Search Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/production/search');
     }
 }

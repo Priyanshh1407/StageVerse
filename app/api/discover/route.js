@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiError } from '@/lib/api';
 import dbConnect from "@/lib/db";
 import Event from "@/models/Event";
 import Venue from "@/models/Venue"; // Import to ensure model registration
@@ -134,7 +135,6 @@ export async function GET(req) {
             }
         });
     } catch (error) {
-        console.error('Discover API error: ', error);
-        return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/discover');
     }
 }

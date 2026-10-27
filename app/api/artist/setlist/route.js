@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
@@ -10,7 +11,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
         let eventIdInput = searchParams.get('eventId');
@@ -36,15 +36,13 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: setlist });
 
     } catch (error) {
-        console.error("[Setlist GET] Error:", error);
-        return NextResponse.json({ error: `Internal Server Error: ${error.message}` }, { status: 500 });
+        return apiError(error, '/api/artist/setlist');
     }
 }
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         let { eventId, items } = body;
@@ -98,7 +96,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: updatedSetlist });
 
     } catch (error) {
-        console.error("Setlist Save Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/setlist');
     }
 }

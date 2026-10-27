@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 import bcrypt from 'bcryptjs';
 import User from '@/models/User';
 import Venue from '@/models/Venue';
@@ -8,16 +8,19 @@ import Setlist from '@/models/Setlist';
 import Poll from '@/models/Poll';
 
 export function tokenFor(user) {
-    return jwt.sign({ userId: String(user._id), role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return new SignJWT({ userId: String(user._id), role: user.role })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setExpirationTime('1h')
+        .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 }
 
 /**
  * Build a NextRequest. Pass `as: user` to send that user's session cookie.
  * Also exposes the cookie to the mocked next/headers cookies().
  */
-export function req(method, path, { body, as, token } = {}) {
+export async function req(method, path, { body, as, token } = {}) {
     const headers = { 'content-type': 'application/json' };
-    const cookieToken = token ?? (as ? tokenFor(as) : undefined);
+    const cookieToken = token ?? (as ? await tokenFor(as) : undefined);
     globalThis.__testCookies = cookieToken ? { token: cookieToken } : {};
     if (cookieToken) headers.cookie = `token=${cookieToken}`;
     return new NextRequest(new URL(path, 'http://localhost:3000'), {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue'; // Registry
@@ -10,7 +11,6 @@ export async function GET(req) {
     const mode = searchParams.get('mode'); // 'organizer' or null
     if (mode === 'organizer') {
       const user = await verifyAuth(req);
-      if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
       const events = await Event.find({ organizerId: user.userId })
         .populate('venue')
@@ -28,8 +28,7 @@ export async function GET(req) {
     return NextResponse.json({ success: true, events });
 
   } catch (error) {
-    console.error('Failed to fetch events', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return apiError(error, '/api/events');
   }
 }
 export async function POST(req) {
@@ -58,7 +57,6 @@ export async function POST(req) {
     return NextResponse.json({ success: true, data: savedEvent });
 
   } catch (error) {
-    console.error("Create Event Error:", error);
-    return NextResponse.json({ error: error.message || 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/events');
   }
 }

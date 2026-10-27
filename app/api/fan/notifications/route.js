@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Notification from '@/models/Notification';
 import { verifyAuth } from '@/lib/auth';
@@ -7,7 +8,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const notifications = await Notification.find({ userId: user.userId })
             .sort({ createdAt: -1 })
@@ -16,7 +16,6 @@ export async function GET(req) {
 
         return NextResponse.json({ success: true, notifications });
     } catch (error) {
-        console.error("Notifications Fetch Error:", error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/fan/notifications');
     }
 }

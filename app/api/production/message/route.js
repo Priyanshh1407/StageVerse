@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
 import Event from '@/models/Event';
@@ -8,7 +9,6 @@ export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { message } = await req.json();
         const event = await Event.findOne({
@@ -34,7 +34,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: newTask });
 
     } catch (error) {
-        console.error("Crew Message API Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/production/message');
     }
 }

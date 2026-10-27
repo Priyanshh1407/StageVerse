@@ -9,7 +9,7 @@ import Setlist from '@/models/Setlist';
 describe('authorization (characterization)', () => {
     it('the artist can save the setlist for their own event', async () => {
         const { artist, event } = await makeWorld();
-        const { status } = await json(await saveSetlist(req('POST', '/api/artist/setlist', {
+        const { status } = await json(await saveSetlist(await req('POST', '/api/artist/setlist', {
             as: artist,
             body: { eventId: String(event._id), items: [{ title: 'Opener' }] },
         })));
@@ -21,7 +21,7 @@ describe('authorization (characterization)', () => {
     // SEC-03: any logged-in user can overwrite any event's setlist
     it.fails('a fan cannot overwrite an artist\'s setlist', async () => {
         const { fan, event } = await makeWorld();
-        const res = await saveSetlist(req('POST', '/api/artist/setlist', {
+        const res = await saveSetlist(await req('POST', '/api/artist/setlist', {
             as: fan,
             body: { eventId: String(event._id), items: [{ title: 'Hacked' }] },
         }));
@@ -32,7 +32,7 @@ describe('authorization (characterization)', () => {
     it.fails('voting without a session is rejected', async () => {
         const { event } = await makeWorld();
         const poll = await makePoll(event._id);
-        const res = await votePoll(req('POST', '/api/fan/poll', {
+        const res = await votePoll(await req('POST', '/api/fan/poll', {
             body: { pollId: String(poll._id), optionId: String(poll.options[0]._id) },
         }));
         expect(res.status).toBe(401);
@@ -41,7 +41,7 @@ describe('authorization (characterization)', () => {
     // SEC-02: anyone can change a live show's status
     it.fails('changing live show status without a session is rejected', async () => {
         const { event } = await makeWorld();
-        const res = await setLiveStatus(req('PUT', '/api/production/live', {
+        const res = await setLiveStatus(await req('PUT', '/api/production/live', {
             body: { eventId: String(event._id), status: 'Live' },
         }));
         expect(res.status).toBe(401);
@@ -51,7 +51,7 @@ describe('authorization (characterization)', () => {
     it.fails('an organizer cannot read another organizer\'s reports', async () => {
         const { event } = await makeWorld();
         const otherOrganizer = await makeUser('organizer');
-        const res = await reports(req('GET', `/api/reports?eventId=${event._id}`, { as: otherOrganizer }));
+        const res = await reports(await req('GET', `/api/reports?eventId=${event._id}`, { as: otherOrganizer }));
         expect(res.status).toBe(403);
     });
 });

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
 import Notification from '@/models/Notification';
@@ -10,10 +11,7 @@ export async function POST(req) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
+        
         const body = await req.json();
         const { userId, eventId } = body;
 
@@ -60,7 +58,6 @@ export async function POST(req) {
         });
 
     } catch (error) {
-        console.error("Guestlist Add Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guestlist/add');
     }
 }

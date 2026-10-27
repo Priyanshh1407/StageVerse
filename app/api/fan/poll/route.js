@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Poll from '@/models/Poll';
 import { verifyAuth } from '@/lib/auth'; // Ensure fan is logged in
@@ -27,15 +28,13 @@ export async function GET(req) {
 
         return NextResponse.json({ success: true, polls });
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/fan/poll');
     }
 }
 export async function PUT(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         const { pollId, isActive } = body;
@@ -57,8 +56,7 @@ export async function PUT(req) {
         return NextResponse.json({ success: true, poll });
 
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/fan/poll');
     }
 }
 export async function POST(req) {
@@ -69,7 +67,6 @@ export async function POST(req) {
         const { pollId, optionId, create } = body;
         if (create) {
             const user = await verifyAuth(req); // Only check auth for creation
-            if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
             const { question, options, eventId } = body;
             await Poll.updateMany({ eventId, isActive: true }, { isActive: false });
@@ -94,7 +91,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, poll });
 
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/fan/poll');
     }
 }

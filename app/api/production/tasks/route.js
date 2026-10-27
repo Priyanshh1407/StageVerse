@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
 import { verifyAuth } from '@/lib/auth';
@@ -7,7 +8,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
         let query = {};
@@ -30,8 +30,7 @@ export async function GET(req) {
 
         return NextResponse.json({ success: true, data: formatted });
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/production/tasks');
     }
 }
 
@@ -39,7 +38,6 @@ export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
 
@@ -59,8 +57,7 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: newTask });
 
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
+        return apiError(e, '/api/production/tasks');
     }
 }
 
@@ -68,7 +65,6 @@ export async function PUT(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         const { id, ...updates } = body;
@@ -81,8 +77,7 @@ export async function PUT(req) {
         return NextResponse.json({ success: true, data: updatedTask });
 
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
+        return apiError(e, '/api/production/tasks');
     }
 }
 
@@ -90,7 +85,6 @@ export async function DELETE(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
@@ -100,7 +94,6 @@ export async function DELETE(req) {
         return NextResponse.json({ success: true });
 
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
+        return apiError(e, '/api/production/tasks');
     }
 }

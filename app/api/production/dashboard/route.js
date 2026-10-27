@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import mongoose from 'mongoose';
 import Event from '@/models/Event';
@@ -13,10 +14,7 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-        const events = await Event.find({
+                const events = await Event.find({
             $or: [{ organizerId: user.userId }, { assignedTo: user.userId }]
         }).populate('venue').sort({ date: 1 });
         const shows = events.map(event => {
@@ -98,8 +96,7 @@ export async function GET(req) {
         });
 
     } catch (error) {
-        console.error("Dashboard API Error:", error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/production/dashboard');
     }
 }
 

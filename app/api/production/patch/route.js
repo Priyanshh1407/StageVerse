@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Patch from '@/models/Patch';
 import Event from '@/models/Event';
@@ -26,7 +27,7 @@ export async function GET(req) {
 
         return NextResponse.json({ success: true, data: patch });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError(error, '/api/production/patch');
     }
 }
 
@@ -102,6 +103,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: updatedPatch }, { status: 200 });
 
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError(error, '/api/production/patch');
     }
 }

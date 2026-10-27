@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue'; // Import Venue to ensure schema is registered
@@ -24,7 +25,6 @@ export async function GET(req) {
     return NextResponse.json({ success: true, data: releases });
 
   } catch (error) {
-    console.error("New Releases Error:", error);
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/discover/release');
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Prediction from '@/models/Prediction';
 import Event from '@/models/Event';
@@ -7,7 +8,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
         const eventId = searchParams.get('eventId');
@@ -30,15 +30,13 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: prediction });
 
     } catch (error) {
-        console.error("Prediction Fetch Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/fan/predict');
     }
 }
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         const { eventId, songs } = body;
@@ -86,7 +84,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: savedPrediction });
 
     } catch (error) {
-        console.error("Prediction Save Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/fan/predict');
     }
 }

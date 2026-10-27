@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import cloudinary from '@/lib/cloudinary';
 
@@ -21,13 +22,12 @@ export async function GET() {
     return NextResponse.json(status, { status: 200 });
 
   } catch (error) {
-    console.error('❌ Connection Error:', error);
     if (status.mongodb === 'Testing...') {
       status.mongodb = `❌ Failed: ${error.message}`;
     } else {
       status.cloudinary = `❌ Failed: ${error.message}`;
     }
 
-    return NextResponse.json(status, { status: 500 });
+    return apiError(error, '/api/health-check');
   }
 }

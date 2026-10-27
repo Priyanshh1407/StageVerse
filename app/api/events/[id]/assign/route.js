@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Notification from '@/models/Notification'; // Add this
@@ -9,10 +10,7 @@ export async function PUT(req, props) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
+        
         const { id } = params;
         const body = await req.json();
         const { assignedTo } = body; // User ID of Production Crew
@@ -51,7 +49,6 @@ export async function PUT(req, props) {
         return NextResponse.json({ success: true, data: targetEvent });
 
     } catch (error) {
-        console.error("Assign Event Error:", error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/events/[id]/assign');
     }
 }

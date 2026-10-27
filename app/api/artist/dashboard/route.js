@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
@@ -10,10 +11,7 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-        console.log("ARTIST DASHBOARD FETCH - Artist ID:", user.userId); // DEBUG LOG
+                console.log("ARTIST DASHBOARD FETCH - Artist ID:", user.userId); // DEBUG LOG
         const allEvents = await Event.find({ artistId: user.userId }).select('title city ticketTiers date');
 
         let totalTicketsSold = 0;
@@ -170,7 +168,6 @@ export async function GET(req) {
         });
 
     } catch (error) {
-        console.error("Artist Dashboard Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/dashboard');
     }
 }

@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
@@ -19,10 +20,7 @@ export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
+        
         const body = await req.json();
         if (!body.title || !body.date) {
             return NextResponse.json({ error: 'Title and Date are required' }, { status: 400 });
@@ -78,7 +76,6 @@ export async function POST(req) {
         });
 
     } catch (error) {
-        console.error("Create Event Error:", error);
-        return NextResponse.json({ error: error.message || 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/production/events');
     }
 }

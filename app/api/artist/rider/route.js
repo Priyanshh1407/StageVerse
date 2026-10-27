@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
@@ -9,7 +10,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
         const eventId = searchParams.get('eventId');
@@ -28,8 +28,7 @@ export async function GET(req) {
         });
 
     } catch (error) {
-        console.error("Rider Fetch Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/rider');
     }
 }
 
@@ -71,7 +70,6 @@ export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         const { eventId, gear, stageLocation, mountingPreference, placementNotes, hazer, assigneeId, assigneeName } = body;
@@ -176,7 +174,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: updatedEvent.rider, changes, assignedTo: updatedEvent.assignedTo });
 
     } catch (error) {
-        console.error("Rider Update Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/rider');
     }
 }

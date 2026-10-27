@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
 import mongoose from 'mongoose';
-import { jwtVerify } from 'jose';
+import { verifyAuth } from '@/lib/auth';
 const getQuery = (id) => {
   if (mongoose.Types.ObjectId.isValid(id)) {
     return { _id: id };
@@ -58,16 +59,13 @@ export async function GET(req, { params }) {
       }
     }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/events/[id]');
   }
 }
 export async function PUT(req, { params }) {
   try {
     await dbConnect();
-    const token = req.cookies.get('token')?.value;
-    if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = await verifyAuth(req);
 
     const { id } = await params;
     const body = await req.json();
@@ -76,6 +74,7 @@ export async function PUT(req, { params }) {
     if (!query) return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
 
     const event = await Event.findOne(query);
+    if (!event) return NextResponse.json({ message: 'Event not found' }, { status: 404 });
     if (event.organizerId.toString() !== payload.userId) {
       return NextResponse.json({ message: 'Forbidden: Not your event' }, { status: 403 });
     }
@@ -90,16 +89,13 @@ export async function PUT(req, { params }) {
 
     return NextResponse.json({ success: true, data: updatedEvent }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/events/[id]');
   }
 }
 export async function DELETE(req, { params }) {
   try {
     await dbConnect();
-    const token = req.cookies.get('token')?.value;
-    if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = await verifyAuth(req);
 
     const { id } = await params;
 
@@ -107,6 +103,7 @@ export async function DELETE(req, { params }) {
     if (!query) return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
 
     const event = await Event.findOne(query);
+    if (!event) return NextResponse.json({ message: 'Event not found' }, { status: 404 });
     if (event.organizerId.toString() !== payload.userId) {
       return NextResponse.json({ message: 'Forbidden: Not your event' }, { status: 403 });
     }
@@ -119,7 +116,6 @@ export async function DELETE(req, { params }) {
 
     return NextResponse.json({ success: true, message: 'Event deleted successfully' }, { status: 200 });
   } catch (error) {
-    console.error("Delete Error:", error);
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/events/[id]');
   }
 }

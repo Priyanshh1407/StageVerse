@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import FixtureProfile from '@/models/FixtureProfile';
 
@@ -8,8 +9,7 @@ export async function GET() {
         const profiles = await FixtureProfile.find({}).sort({ manufacturer: 1, model: 1 });
         return NextResponse.json({ success: true, data: profiles });
     } catch (error) {
-        console.error('Failed to fetch fixture profiles', error);
-        return NextResponse.json({ success: false, error: 'Failed to fetch profiles' }, { status: 500 });
+        return apiError(error, '/api/production/fixture-profiles');
     }
 }
 
@@ -31,7 +31,6 @@ export async function POST(req) {
 
         return NextResponse.json({ success: true, data: newProfile });
     } catch (error) {
-        console.error('Failed to create fixture profile', error);
-        return NextResponse.json({ success: false, error: 'Failed to create profile' }, { status: 500 });
+        return apiError(error, '/api/production/fixture-profiles');
     }
 }

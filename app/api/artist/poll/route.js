@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Poll from '@/models/Poll';
 import { verifyAuth } from '@/lib/auth';
@@ -7,7 +8,6 @@ export async function POST(req) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         const { eventId, question, options } = body;
@@ -25,8 +25,7 @@ export async function POST(req) {
         return NextResponse.json({ success: true, poll: newPoll });
 
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/artist/poll');
     }
 }
 
@@ -34,7 +33,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
         const eventId = searchParams.get('eventId');
@@ -45,7 +43,6 @@ export async function GET(req) {
 
         return NextResponse.json({ success: true, polls });
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/artist/poll');
     }
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
-import { cookies } from "next/headers";
+import { apiError } from '@/lib/api';
+import { verifyAuth } from '@/lib/auth';
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import Ticket from "@/models/Ticket";
@@ -11,15 +11,10 @@ import Song from "@/models/Song";
 import Prediction from "@/models/Prediction";
 import Setlist from "@/models/Setlist";
 
-export async function GET() {
+export async function GET(req) {
     try {
         await dbConnect();
-        const cookieStore = await cookies();
-        const token = cookieStore.get("token");
-        if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token.value, secret);
+        const payload = await verifyAuth(req);
         const userId = payload.userId;
         const [user, tickets, memories] = await Promise.all([
             User.findById(userId).populate('following', 'name image'),
@@ -163,7 +158,6 @@ export async function GET() {
         return NextResponse.json({ success: true, data: dashboardData });
 
     } catch (error) {
-        console.error("Dashboard API Error:", error);
-        return NextResponse.json({ message: "Server Error" }, { status: 500 });
+        return apiError(error, '/api/fan-dashboard');
     }
 }

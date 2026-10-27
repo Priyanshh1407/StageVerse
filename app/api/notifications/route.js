@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
 import Event from '@/models/Event'; // Needed if we want to filter by user's events
@@ -11,7 +12,6 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         const events = await Event.find({
             $or: [{ organizerId: user.userId }, { assignedTo: user.userId }]
         }).select('_id');
@@ -27,7 +27,6 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: notifications });
 
     } catch (error) {
-        console.error("Notifications API Error:", error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/notifications');
     }
 }

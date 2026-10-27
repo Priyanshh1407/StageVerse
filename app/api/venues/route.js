@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Venue from '@/models/Venue';
 export async function GET(req) {
@@ -24,8 +25,7 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: venues }, { status: 200 });
 
     } catch (error) {
-        console.error('Venue Fetch Error:', error);
-        return NextResponse.json({ message: 'Failed to fetch venues' }, { status: 500 });
+        return apiError(error, '/api/venues');
     }
 }
 export async function POST(req) {
@@ -56,10 +56,9 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: newVenue }, { status: 201 });
 
     } catch (error) {
-        console.error('Venue Creation Error:', error);
         if (error.code === 11000) {
             return NextResponse.json({ message: 'Venue name must be unique' }, { status: 409 });
         }
-        return NextResponse.json({ message: error.message || 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/venues');
     }
 }   

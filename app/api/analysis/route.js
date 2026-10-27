@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import mongoose from 'mongoose';
-import { jwtVerify } from 'jose';
+import { verifyAuth } from '@/lib/auth';
 import dbConnect from '@/lib/db'; // Your DB connection utility
 import Ticket from '@/models/Ticket';
 import Event from '@/models/Event';
@@ -9,13 +10,7 @@ import Review from '@/models/Review'; // Ensure this model exists!
 export async function GET(req) {
   try {
     await dbConnect();
-    const token = req.cookies.get('token')?.value;
-    if (!token) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret); // payload.userId contains the organizerId
+    const payload = await verifyAuth(req); // payload.userId contains the organizerId
     const { searchParams } = new URL(req.url);
     const eventId = searchParams.get('eventId'); // Expecting the MongoDB _id
 
@@ -158,7 +153,6 @@ export async function GET(req) {
     });
 
   } catch (error) {
-    console.error('Analysis API Error:', error);
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/analysis');
   }
 }

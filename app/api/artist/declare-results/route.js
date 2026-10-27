@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Setlist from '@/models/Setlist';
 import Prediction from '@/models/Prediction';
@@ -9,7 +10,6 @@ export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
         const { eventId } = body;
@@ -93,7 +93,6 @@ export async function POST(req) {
         });
 
     } catch (error) {
-        console.error("Declare Results Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/declare-results');
     }
 }

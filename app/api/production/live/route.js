@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Setlist from '@/models/Setlist';
@@ -138,6 +139,6 @@ export async function PUT(req) {
 
         return NextResponse.json({ success: true, status: setlist.showStatus });
     } catch (e) {
-        return NextResponse.json({ success: false, error: e.message }, { status: 500 });
+        return apiError(e, '/api/production/live');
     }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue'; // Ensure Venue is registered
@@ -9,10 +10,7 @@ export async function GET(req) {
         await dbConnect();
         const user = await verifyAuth(req);
         console.log("ARTIST FETCH - User:", user); // DEBUG LOG
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
+        
         const events = await Event.find({
             $or: [
                 { artistId: user.userId },
@@ -25,7 +23,6 @@ export async function GET(req) {
 
         return NextResponse.json({ success: true, events });
     } catch (error) {
-        console.error("Fetch Events Error:", error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/events');
     }
 }

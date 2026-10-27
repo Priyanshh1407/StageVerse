@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { apiError } from '@/lib/api';
+import { verifyAuth } from '@/lib/auth';
 import dbConnect from "@/lib/db";
 import Memory from "@/models/Memory";
 export async function POST(req) {
     try {
         await dbConnect();
 
-        const token = req.cookies.get('token')?.value;
-        if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret);
+        const payload = await verifyAuth(req);
         
         const body = await req.json();
         const { imageUrl, videoSrc, title, date, location, artist, venue } = body;
@@ -33,28 +30,22 @@ export async function POST(req) {
 
         return NextResponse.json({ success: true, data: newMemory });
     } catch (error) {
-        console.error('Memory Vault POST error: ', error);
-        return NextResponse.json({ message: 'Server error' }, { status: 500 });
+        return apiError(error, '/api/memory-vault');
     }
 }
 export async function GET(req) {
     try {
         await dbConnect();
 
-        const token = req.cookies.get('token')?.value;
-        if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret); 
+        const payload = await verifyAuth(req); 
 
         const memories = await Memory.find({ userId: payload.userId }).sort({ date: -1 });
 
         return NextResponse.json({ success: true, data: memories });
     } catch (error) {
-        console.error('Memory Vault GET error: ', error);
         if (error.code === 'ERR_JWS_INVALID') {
              return NextResponse.json({ message: 'Invalid Token' }, { status: 401 });
         }
-        return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/memory-vault');
     }
 }

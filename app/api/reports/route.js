@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import mongoose from 'mongoose';
-import { jwtVerify } from 'jose';
+import { verifyAuth } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Ticket from '@/models/Ticket';
 import Event from '@/models/Event';
@@ -9,10 +10,7 @@ import User from '@/models/User';
 export async function GET(req) {
   try {
     await dbConnect();
-    const token = req.cookies.get('token')?.value;
-    if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = await verifyAuth(req);
 
     const { searchParams } = new URL(req.url);
     const eventIdParam = searchParams.get('eventId');
@@ -176,7 +174,6 @@ export async function GET(req) {
     return NextResponse.json({ success: true, data: responseData });
 
   } catch (error) {
-    console.error("Reports API Error:", error);
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/reports');
   }
 }

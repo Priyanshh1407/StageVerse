@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
@@ -9,7 +10,6 @@ export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { message, priority } = await req.json();
         const nextShow = await Event.findOne({
@@ -35,7 +35,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: newTask });
 
     } catch (error) {
-        console.error("Message API Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/message');
     }
 }
