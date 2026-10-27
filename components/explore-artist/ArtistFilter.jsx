@@ -2,7 +2,8 @@
 
 import { RotateCcw, X, Check } from 'lucide-react';
 
-export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, onClose }) {  const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
+export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, onClose }) {
+  const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
   
   const toggleArrayItem = (field, item) => {
     setFilters(prev => {

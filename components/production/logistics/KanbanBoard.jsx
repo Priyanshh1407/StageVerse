@@ -5,7 +5,8 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useState, useRef, useEffect } from 'react';
 
 export default function KanbanBoard({ columns = [], onDragEnd, onEditTask, onDeleteTask }) {
-  return (    <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 bg-[#0F0F10]">
+  return (
+    <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 bg-[#0F0F10]">
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex h-full gap-6 min-w-max pb-4">
           {columns.map((col) => (
@@ -18,7 +19,8 @@ export default function KanbanBoard({ columns = [], onDragEnd, onEditTask, onDel
 }
 
 function KanbanColumn({ data, onEditTask, onDeleteTask }) {
-  return (    <div className={`flex flex-col w-80 bg-[#121214] rounded-xl border border-[#27272A] h-full max-h-full ${data.isGhost ? 'opacity-60' : ''}`}>
+  return (
+    <div className={`flex flex-col w-80 bg-[#121214] rounded-xl border border-[#27272A] h-full max-h-full ${data.isGhost ? 'opacity-60' : ''}`}>
 
       <div className="p-4 flex items-center justify-between border-b border-[#27272A]">
         <div className="flex items-center gap-2">

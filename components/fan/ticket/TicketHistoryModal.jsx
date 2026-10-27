@@ -4,7 +4,8 @@ import { X, Search, FileText, Calendar, MapPin } from 'lucide-react';
 import Image from 'next/image';
 
 export default function TicketHistoryModal({ isOpen, onClose, tickets = [], onSelectTicket }) {
-  const [searchQuery, setSearchQuery] = useState('');  useEffect(() => {
+  const [searchQuery, setSearchQuery] = useState('');
+  useEffect(() => {
     if (isOpen) setSearchQuery('');
   }, [isOpen]);
 
@@ -24,7 +25,8 @@ export default function TicketHistoryModal({ isOpen, onClose, tickets = [], onSe
     }
   },[isOpen, onClose]);
 
-  if (!isOpen) return null;  const filteredTickets = tickets.filter(ticket => 
+  if (!isOpen) return null;
+  const filteredTickets = tickets.filter(ticket => 
     ticket.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
     ticket.venue.toLowerCase().includes(searchQuery.toLowerCase())
   );

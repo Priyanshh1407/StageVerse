@@ -11,10 +11,13 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });        const events = await Event.find({
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const events = await Event.find({
             $or: [{ organizerId: user.userId }, { assignedTo: user.userId }]
         }).select('_id');
-        const eventIds = events.map(e => e._id);        const notifications = await Task.find({            status: { $ne: 'Done' },
+        const eventIds = events.map(e => e._id);
+        const notifications = await Task.find({
+            status: { $ne: 'Done' },
             urgent: true,
             title: { $regex: '^Artist Message:', $options: 'i' }
         }).sort({ createdAt: -1 }).limit(10);

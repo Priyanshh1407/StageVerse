@@ -11,10 +11,12 @@ import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 
 export default function TicketingSelectionPage() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);  const [events, setEvents] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");  useEffect(() => {
+  const [statusFilter, setStatusFilter] = useState("All");
+  useEffect(() => {
     const fetchEvents = async () => {
       setIsLoading(true);
       try {
@@ -30,13 +32,16 @@ export default function TicketingSelectionPage() {
       }
     };
     fetchEvents();
-  }, []);  const filteredEvents = useMemo(() => {
+  }, []);
+  const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "All" || event.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [events, searchQuery, statusFilter]);  const handleSelectEvent = (event) => {    const id = event.eventId || event._id;
+  }, [events, searchQuery, statusFilter]);
+  const handleSelectEvent = (event) => {
+    const id = event.eventId || event._id;
     router.push(`/ticketing/${id}`);
   };
 

@@ -67,7 +67,8 @@ export default function EventsPage() {
       const matchesCity = filters.city === 'All' || event.city.includes(filters.city.split(',')[0]);
       const matchesDate = !filters.date || event.date === filters.date;
       const matchesPrice = event.priceVal <= filters.maxPrice;
-      const matchesVibe = filters.vibes.length === 0 || event.vibes.some(v => filters.vibes.includes(v));      const matchesGenre = filters.genres.length === 0 || filters.genres.includes(event.category);
+      const matchesVibe = filters.vibes.length === 0 || event.vibes.some(v => filters.vibes.includes(v));
+      const matchesGenre = filters.genres.length === 0 || filters.genres.includes(event.category);
 
       return matchesSearch && matchesCity && matchesDate && matchesPrice && matchesGenre && matchesVibe;
     });

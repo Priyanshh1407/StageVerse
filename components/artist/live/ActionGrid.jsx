@@ -93,17 +93,22 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
 
         </div>
     );
-}function SlideToConfirm({ onConfirm }) {
+}
+function SlideToConfirm({ onConfirm }) {
     const [sliderWidth, setSliderWidth] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
-    const containerRef = useRef(null);    const handlePointerDown = (e) => {
-        setIsDragging(true);        e.target.setPointerCapture(e.pointerId);
+    const containerRef = useRef(null);
+    const handlePointerDown = (e) => {
+        setIsDragging(true);
+        e.target.setPointerCapture(e.pointerId);
     };
 
     const handlePointerMove = (e) => {
         if (!isDragging || !containerRef.current) return;
         
-        const rect = containerRef.current.getBoundingClientRect();        const offsetX = e.clientX - rect.left;        const newWidth = Math.max(0, Math.min(offsetX, rect.width));
+        const rect = containerRef.current.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const newWidth = Math.max(0, Math.min(offsetX, rect.width));
         setSliderWidth(newWidth);
     };
 
@@ -111,7 +116,8 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
         if (!isDragging || !containerRef.current) return;
         
         setIsDragging(false);
-        e.target.releasePointerCapture(e.pointerId);        if (sliderWidth > containerRef.current.offsetWidth * 0.9) {
+        e.target.releasePointerCapture(e.pointerId);
+        if (sliderWidth > containerRef.current.offsetWidth * 0.9) {
             onConfirm();
         }
         setSliderWidth(0); // Reset
@@ -119,7 +125,8 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
 
     return (
         <div
-            ref={containerRef}            className="relative w-full h-14 rounded-lg overflow-hidden border border-[#0d93f2]/30 bg-[#0d93f2]/5 select-none touch-none"
+            ref={containerRef}
+            className="relative w-full h-14 rounded-lg overflow-hidden border border-[#0d93f2]/30 bg-[#0d93f2]/5 select-none touch-none"
         >
             {}
             <div
@@ -147,7 +154,8 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
             </div>
         </div>
     );
-}function ActionCard({ children, icon: Icon, iconColor, bgIcon, label, title, desc }) {
+}
+function ActionCard({ children, icon: Icon, iconColor, bgIcon, label, title, desc }) {
     return (
         <div className="bg-white dark:bg-[#15232d] p-1 rounded-xl border border-slate-200 dark:border-[#223949] flex flex-col">
             <div className="flex-1 p-5 flex flex-col justify-between">

@@ -4,7 +4,8 @@ import { Sparkles, Save, Trash2, ChevronDown, Calendar, Ticket } from 'lucide-re
 
 export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, onSave, onDeclareResults }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);  useEffect(() => {
+  const dropdownRef = useRef(null);
+  useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);

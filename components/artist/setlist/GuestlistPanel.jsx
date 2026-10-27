@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 export default function GuestlistPanel({ eventId }) {
     const [guests, setGuests] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [selectedGuest, setSelectedGuest] = useState(null);    useEffect(() => {
+    const [selectedGuest, setSelectedGuest] = useState(null);
+    useEffect(() => {
         if (eventId) {
             fetchGuests();
         } else {
@@ -29,7 +30,8 @@ export default function GuestlistPanel({ eventId }) {
         } finally {
             setLoading(false);
         }
-    };    const [isEditingNotes, setIsEditingNotes] = useState(false);
+    };
+    const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [notesBuffer, setNotesBuffer] = useState("");
     const [actionLoading, setActionLoading] = useState(false);
 
@@ -50,7 +52,8 @@ export default function GuestlistPanel({ eventId }) {
                 body: JSON.stringify({ notes: notesBuffer })
             });
             const json = await res.json();
-            if (json.success) {                setGuests(prev => prev.map(g => g._id === selectedGuest._id ? json.guest : g));
+            if (json.success) {
+                setGuests(prev => prev.map(g => g._id === selectedGuest._id ? json.guest : g));
                 setSelectedGuest(json.guest);
                 setIsEditingNotes(false);
                 toast.success("Notes updated successfully");
@@ -74,7 +77,8 @@ export default function GuestlistPanel({ eventId }) {
                 method: 'DELETE'
             });
             const json = await res.json();
-            if (json.success) {                setGuests(prev => prev.filter(g => g._id !== selectedGuest._id));
+            if (json.success) {
+                setGuests(prev => prev.filter(g => g._id !== selectedGuest._id));
                 setSelectedGuest(null);
                 toast.success("Access revoked");
             } else {

@@ -15,7 +15,8 @@ export default function CreateShowModal({ onClose, onSave }) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
-  const [selectedRequestId, setSelectedRequestId] = useState(null);  React.useEffect(() => {
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  React.useEffect(() => {
     async function fetchPending() {
       try {
         const res = await fetch('/api/production/events/pending');
@@ -53,7 +54,8 @@ export default function CreateShowModal({ onClose, onSave }) {
     e.preventDefault();
     setIsSubmitting(true);
 
-    try {      const url = selectedRequestId
+    try {
+      const url = selectedRequestId
         ? `/api/production/events/${selectedRequestId}`
         : '/api/production/events';
 

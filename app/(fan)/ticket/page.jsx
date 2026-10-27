@@ -13,14 +13,17 @@ import {
     Share2, Info, QrCode, ArrowRight, Clock, FileText, Loader2
 } from 'lucide-react';
 
-export default function TicketsPage() {    const [tickets, setTickets] = useState({ upcoming: [], past: [] });
+export default function TicketsPage() {
+    const [tickets, setTickets] = useState({ upcoming: [], past: [] });
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('upcoming');
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);    const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
     const [selectedVenue, setSelectedVenue] = useState(null);
     const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState(null);
-    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);    useEffect(() => {
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    useEffect(() => {
         const fetchTickets = async () => {
             try {
                 const res = await fetch('/api/fan/ticket');
@@ -35,7 +38,8 @@ export default function TicketsPage() {    const [tickets, setTickets] = useSta
             }
         };
         fetchTickets();
-    }, []);    const handleOpenVenue = (venueData) => {
+    }, []);
+    const handleOpenVenue = (venueData) => {
         setSelectedVenue(venueData || {
             name: "Unknown Venue",
             address: "Address unavailable",
@@ -47,13 +51,15 @@ export default function TicketsPage() {    const [tickets, setTickets] = useSta
     const handleOpenTicket = (ticket) => {
         setSelectedTicket(ticket);
         setIsTicketModalOpen(true);
-    };    if (loading) {
+    };
+    if (loading) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-[#f5f7f8] dark:bg-[#101b22]">
                 <Loader2 className="w-10 h-10 text-[#0d93f2] animate-spin" />
             </div>
         );
-    }    const primaryTicket = tickets.upcoming[0];
+    }
+    const primaryTicket = tickets.upcoming[0];
     const secondaryTicket = tickets.upcoming[1];
 
     return (
@@ -244,7 +250,8 @@ export default function TicketsPage() {    const [tickets, setTickets] = useSta
 
         </div>
     );
-}function InfoItem({ icon: Icon, label, value }) {
+}
+function InfoItem({ icon: Icon, label, value }) {
     return (
         <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-[#0d93f2]">

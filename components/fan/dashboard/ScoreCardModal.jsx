@@ -7,18 +7,21 @@ import { X, CheckCircle2, AlertCircle, XCircle, Trophy } from 'lucide-react';
 export default function ScorecardModal({ isOpen, onClose, artistName = "Artist", prediction = [], actualSetlist = [], totalScore = 0 }) {
 
   const results = actualSetlist.map((actualSong, index) => {
-    const actualTitle = actualSong.title;    const userGuess = prediction[index];
+    const actualTitle = actualSong.title;
+    const userGuess = prediction[index];
 
     let status = 'wrong';
     let guessTitle = userGuess ? userGuess.title : '-';
 
-    if (userGuess) {      const isExactMatch =
+    if (userGuess) {
+      const isExactMatch =
         (userGuess.id && actualSong.songId && userGuess.id.toString() === actualSong.songId.toString()) ||
         (userGuess.title.trim().toLowerCase() === actualTitle.trim().toLowerCase());
 
       if (isExactMatch) {
         status = 'correct';
-      } else {        const existsElsewhere = actualSetlist.some(s =>
+      } else {
+        const existsElsewhere = actualSetlist.some(s =>
           (userGuess.id && s.songId && s.songId.toString() === userGuess.id.toString()) ||
           (s.title.trim().toLowerCase() === userGuess.title.trim().toLowerCase())
         );
@@ -37,7 +40,8 @@ export default function ScorecardModal({ isOpen, onClose, artistName = "Artist",
       actual: actualTitle,
       status: status
     };
-  });  useEffect(() => {
+  });
+  useEffect(() => {
     if (isOpen) {
       const duration = 3000;
       const end = Date.now() + duration;

@@ -9,7 +9,8 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer 
-} from 'recharts';const DEFAULT_DATA = [
+} from 'recharts';
+const DEFAULT_DATA = [
   { date: 'Aug 01', velocity: 20 },
   { date: 'Aug 05', velocity: 45 },
   { date: 'Aug 10', velocity: 30 },

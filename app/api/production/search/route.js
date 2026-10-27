@@ -21,7 +21,9 @@ export async function GET(req) {
             return NextResponse.json({ success: true, data: { events: [], tasks: [], patches: [] } });
         }
 
-        const regex = new RegExp(query, 'i'); // Case-insensitive partial match        const [events, tasks, patches] = await Promise.all([            Event.find({
+        const regex = new RegExp(query, 'i'); // Case-insensitive partial match
+        const [events, tasks, patches] = await Promise.all([
+            Event.find({
                 $or: [
                     { title: regex },
                     { artist: regex },
@@ -29,11 +31,14 @@ export async function GET(req) {
                     { venue: regex } // Assuming venue is populated or simple string? (Schema check needed, but robust enough for now)
                 ],
                 $or: [{ organizerId: user.userId }, { assignedTo: user.userId }] // Security: Only show my events
-            }).select('title artist city date eventId status').limit(5),            Task.find({
+            }).select('title artist city date eventId status').limit(5),
+            Task.find({
                 $or: [
                     { title: regex },
                     { assignee: regex }
-                ],            }).populate('eventId', 'title eventId').limit(5),            Patch.find({
+                ],
+            }).populate('eventId', 'title eventId').limit(5),
+            Patch.find({
                 showName: regex
             }).select('showName version').populate('eventId', 'eventId').limit(3)
         ]);

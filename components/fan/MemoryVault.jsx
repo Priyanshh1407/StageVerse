@@ -79,7 +79,9 @@ export default function MemoryVault() {
       </div>
     </section>
   );
-}function MemoryCard({ memory }) {  const spanClasses = {
+}
+function MemoryCard({ memory }) {
+  const spanClasses = {
     featured: 'col-span-2 row-span-2',   // Big Square
     vertical: 'row-span-2 col-span-1',   // Tall Portrait
     horizontal: 'col-span-2 row-span-1', // Wide Landscape
@@ -87,7 +89,8 @@ export default function MemoryVault() {
     ticket: 'col-span-1 row-span-1',     // Standard Square
   };
 
-  const currentSpan = spanClasses[memory.size] || spanClasses.standard;  if (memory.type === 'ticket') {
+  const currentSpan = spanClasses[memory.size] || spanClasses.standard;
+  if (memory.type === 'ticket') {
     return (
       <div className={`group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed transition-transform hover:scale-[1.02] ${currentSpan}`}>
         <TicketIcon className="text-slate-500 w-10 h-10 mb-2" />
@@ -95,7 +98,8 @@ export default function MemoryVault() {
         <p className="text-white font-bold text-center mt-1 text-lg">{memory.title}</p>
       </div>
     );
-  }  return (
+  }
+  return (
     <div className={`group relative rounded-xl overflow-hidden cursor-pointer bg-slate-800 ${currentSpan}`}>
       {}
       <div className="relative w-full h-full">

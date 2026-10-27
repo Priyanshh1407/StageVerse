@@ -7,21 +7,24 @@ export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId 
   if (!isOpen) return null;
 
   const [availablePolls, setAvailablePolls] = useState([]);
-  const [loading, setLoading] = useState(true);  useEffect(() => {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
     if (!isOpen || !eventId) return;
 
     const fetchPolls = async () => {
       try {
         const res = await fetch(`/api/fan/poll?eventId=${eventId}&all=true`);
         const json = await res.json();
-        if (json.success) {          const dbPolls = (json.polls || []).map(p => ({
+        if (json.success) {
+          const dbPolls = (json.polls || []).map(p => ({
             id: p._id,
             title: p.question,
             type: p.isActive ? 'Active' : 'Ready',
             options: p.options.length,
             trigger: 'Manual',
             data: p // Keep full object
-          }));          const templatePoll = {
+          }));
+          const templatePoll = {
             id: 'new-encore',
             title: 'Create New Poll (Template)',
             type: 'Template',

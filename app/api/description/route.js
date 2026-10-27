@@ -40,21 +40,24 @@ export async function POST(req) {
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        let text = response.text().trim();        if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+        let text = response.text().trim();
+        if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
         else if (text.startsWith("```")) text = text.replace(/^```\s*/, "").replace(/\s*```$/, "");
 
         let data;
         try {
             data = JSON.parse(text);
         } catch (jsonError) {
-            console.error("JSON Parse Error. Raw Text:", text);            data = {
+            console.error("JSON Parse Error. Raw Text:", text);
+            data = {
                 headline: `${artist} Live!`,
                 hook: text.substring(0, 150) + "...",
                 atmosphere: "Experience the vibe.",
                 highlights: ["Live Performance", "Great Music", "Unforgettable Night"],
                 closing: "Don't miss out."
             };
-        }        const formattedDescription = `HEADLINE: ${data.headline || 'Live Event'}\n\nHOOK: ${data.hook || text}\n\nATMOSPHERE: ${data.atmosphere || ''}\n\nHIGHLIGHTS:\n- ${(data.highlights || []).join('\n- ')}\n\nCLOSING: ${data.closing || ''}`;
+        }
+        const formattedDescription = `HEADLINE: ${data.headline || 'Live Event'}\n\nHOOK: ${data.hook || text}\n\nATMOSPHERE: ${data.atmosphere || ''}\n\nHIGHLIGHTS:\n- ${(data.highlights || []).join('\n- ')}\n\nCLOSING: ${data.closing || ''}`;
 
         return NextResponse.json({ description: formattedDescription });
     } catch (error) {

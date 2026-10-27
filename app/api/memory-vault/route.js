@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import dbConnect from "@/lib/db";
-import Memory from "@/models/Memory";export async function POST(req) {
+import Memory from "@/models/Memory";
+export async function POST(req) {
     try {
         await dbConnect();
 
@@ -35,20 +36,23 @@ import Memory from "@/models/Memory";export async function POST(req) {
         console.error('Memory Vault POST error: ', error);
         return NextResponse.json({ message: 'Server error' }, { status: 500 });
     }
-}export async function GET(req) {
+}
+export async function GET(req) {
     try {
         await dbConnect();
 
         const token = req.cookies.get('token')?.value;
         if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);        const { payload } = await jwtVerify(token, secret); 
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        const { payload } = await jwtVerify(token, secret); 
 
         const memories = await Memory.find({ userId: payload.userId }).sort({ date: -1 });
 
         return NextResponse.json({ success: true, data: memories });
     } catch (error) {
-        console.error('Memory Vault GET error: ', error);        if (error.code === 'ERR_JWS_INVALID') {
+        console.error('Memory Vault GET error: ', error);
+        if (error.code === 'ERR_JWS_INVALID') {
              return NextResponse.json({ message: 'Invalid Token' }, { status: 401 });
         }
         return NextResponse.json({ message: 'Server Error' }, { status: 500 });

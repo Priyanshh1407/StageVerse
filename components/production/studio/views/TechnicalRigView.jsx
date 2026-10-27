@@ -6,7 +6,8 @@ import { MoreHorizontal, Pencil, Trash2, Info, Loader2, X, Save } from 'lucide-r
 export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixture }) {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [editingFixture, setEditingFixture] = useState(null);
-  const [viewingFixture, setViewingFixture] = useState(null);  useEffect(() => {
+  const [viewingFixture, setViewingFixture] = useState(null);
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.action-menu-container')) {
         setActiveMenuId(null);
@@ -14,7 +15,8 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
     };
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {        setEditingFixture(null);
+      if (event.key === 'Escape') {
+        setEditingFixture(null);
         setViewingFixture(null);
         setActiveMenuId(null);
       }
@@ -130,7 +132,8 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                 <label className="block text-xs font-bold text-gray-400 mb-1">Role / Cue</label>
                 <select
                   value={editingFixture.cue}
-                  onChange={e => {                    const colors = { "Intro Sequence": "blue", "Drum Solo": "red", "Main Wash": "orange", "Audience Blinders": "orange", "Specials": "blue" };
+                  onChange={e => {
+                    const colors = { "Intro Sequence": "blue", "Drum Solo": "red", "Main Wash": "orange", "Audience Blinders": "orange", "Specials": "blue" };
                     setEditingFixture({ ...editingFixture, cue: e.target.value, cueColor: colors[e.target.value] || 'blue' })
                   }}
                   className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
@@ -216,7 +219,9 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
 
     </div>
   );
-}function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConflict, isOpen, onToggle, onDelete, onEdit, onView }) {  const getCueColors = (color) => {
+}
+function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConflict, isOpen, onToggle, onDelete, onEdit, onView }) {
+  const getCueColors = (color) => {
     const map = {
       blue: { bg: 'bg-blue-900/20', text: 'text-blue-400', border: 'border-blue-500/20', dot: 'bg-blue-500' },
       orange: { bg: 'bg-orange-900/20', text: 'text-orange-400', border: 'border-orange-500/20', dot: 'bg-orange-500' },

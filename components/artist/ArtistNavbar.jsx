@@ -11,7 +11,10 @@ export default function ArtistNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    try {      await fetch('/api/auth/logout', { method: 'POST' });      localStorage.removeItem('user');      router.push('/');
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      localStorage.removeItem('user');
+      router.push('/');
       router.refresh(); // Important: Refreshes Server Components to see you are gone
     } catch (err) {
       console.error('Logout failed', err);
@@ -20,7 +23,9 @@ export default function ArtistNavbar() {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-  };  const isActive = (path) => pathname === path || pathname.startsWith(`${path}/`);  const navItems = [
+  };
+  const isActive = (path) => pathname === path || pathname.startsWith(`${path}/`);
+  const navItems = [
     { href: "/artist-dashboard", label: "Dashboard" },
     { href: "/tech-rider", label: "Tech Rider" },
     { href: "/setlist-builder", label: "Setlist Builder" },
@@ -30,7 +35,8 @@ export default function ArtistNavbar() {
   ];
 
   const [notifications, setNotifications] = useState([]);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);  useEffect(() => {
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  useEffect(() => {
     async function loadNotifications() {
       try {
         const res = await fetch('/api/artist/notifications');
@@ -180,7 +186,8 @@ export default function ArtistNavbar() {
       )}
     </nav>
   );
-}function NavLink({ href, children, active }) {
+}
+function NavLink({ href, children, active }) {
   return (
     <Link
       href={href}

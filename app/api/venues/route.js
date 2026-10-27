@@ -1,19 +1,23 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
-import Venue from '@/models/Venue';export async function GET(req) {
+import Venue from '@/models/Venue';
+export async function GET(req) {
     try {
-        await dbConnect();        const { searchParams } = new URL(req.url);
+        await dbConnect();
+        const { searchParams } = new URL(req.url);
         const query = searchParams.get('search');
 
         let filter = {};
 
-        if (query) {            filter = {
+        if (query) {
+            filter = {
                 $or: [
                     { name: { $regex: query, $options: 'i' } },
                     { city: { $regex: query, $options: 'i' } }
                 ]
             };
-        }        const venues = await Venue.find(filter)
+        }
+        const venues = await Venue.find(filter)
             .sort({ name: 1 })
             .limit(10);
 
@@ -23,16 +27,19 @@ import Venue from '@/models/Venue';export async function GET(req) {
         console.error('Venue Fetch Error:', error);
         return NextResponse.json({ message: 'Failed to fetch venues' }, { status: 500 });
     }
-}export async function POST(req) {
+}
+export async function POST(req) {
     try {
         await dbConnect();
 
-        const body = await req.json();        if (!body.name || !body.city || !body.address) {
+        const body = await req.json();
+        if (!body.name || !body.city || !body.address) {
             return NextResponse.json(
                 { message: 'Missing required fields (Name, City, Address)' },
                 { status: 400 }
             );
-        }        const existingVenue = await Venue.findOne({
+        }
+        const existingVenue = await Venue.findOne({
             name: body.name,
             city: body.city
         });
@@ -49,7 +56,8 @@ import Venue from '@/models/Venue';export async function GET(req) {
         return NextResponse.json({ success: true, data: newVenue }, { status: 201 });
 
     } catch (error) {
-        console.error('Venue Creation Error:', error);        if (error.code === 11000) {
+        console.error('Venue Creation Error:', error);
+        if (error.code === 11000) {
             return NextResponse.json({ message: 'Venue name must be unique' }, { status: 409 });
         }
         return NextResponse.json({ message: error.message || 'Server Error' }, { status: 500 });

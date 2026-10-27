@@ -7,18 +7,22 @@ import Event from '@/models/Event';
 import Review from '@/models/Review'; // Ensure this model exists!
 
 export async function GET(req) {
-  try {    await dbConnect();    const token = req.cookies.get('token')?.value;
+  try {
+    await dbConnect();
+    const token = req.cookies.get('token')?.value;
     if (!token) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret); // payload.userId contains the organizerId    const { searchParams } = new URL(req.url);
+    const { payload } = await jwtVerify(token, secret); // payload.userId contains the organizerId
+    const { searchParams } = new URL(req.url);
     const eventId = searchParams.get('eventId'); // Expecting the MongoDB _id
 
     if (!eventId) {
       return NextResponse.json({ message: 'Event ID is required' }, { status: 400 });
-    }    const objectId = new mongoose.Types.ObjectId(eventId);
+    }
+    const objectId = new mongoose.Types.ObjectId(eventId);
     
     const eventExists = await Event.findOne({ 
       _id: objectId, 
@@ -27,7 +31,8 @@ export async function GET(req) {
 
     if (!eventExists) {
       return NextResponse.json({ message: 'Event not found or access denied' }, { status: 403 });
-    }    
+    }
+    
     const salesStats = await Ticket.aggregate([
       { 
         $match: { 
@@ -36,7 +41,8 @@ export async function GET(req) {
         } 
       },
       {
-        $facet: {          "totalSales": [
+        $facet: {
+          "totalSales": [
             {
               $group: {
                 _id: null,
@@ -44,12 +50,14 @@ export async function GET(req) {
                 totalRevenue: { $sum: "$price" }
               }
             }
-          ],          "monthlyTrend": [
+          ],
+          "monthlyTrend": [
             {
               $group: {
                 _id: { 
                   month: { $month: "$purchaseDate" }, 
-                  year: { $year: "$purchaseDate" },                },
+                  year: { $year: "$purchaseDate" },
+                },
                 count: { $sum: 1 },
                 revenue: { $sum: "$price" }
               }
@@ -57,7 +65,8 @@ export async function GET(req) {
             { $sort: { "_id.year": 1, "_id.month": 1 } },
             {
               $project: { 
-                _id: 0,                time: { 
+                _id: 0,
+                time: { 
                   $concat: [
                     { $toString: "$_id.month" }, "/", 
                     { $toString: "$_id.year" }
@@ -70,24 +79,29 @@ export async function GET(req) {
           ]
         }
       }
-    ]);    
-    let sentimentStats = [{ sentimentCounts: [], trendingKeywords: [], recentReviews: [] }];    if (Review) {
+    ]);
+    
+    let sentimentStats = [{ sentimentCounts: [], trendingKeywords: [], recentReviews: [] }];
+    if (Review) {
       sentimentStats = await Review.aggregate([
         { $match: { event: objectId } },
         {
-          $facet: {            "sentimentCounts": [
+          $facet: {
+            "sentimentCounts": [
               {
                 $group: {
                   _id: "$sentiment", // 'positive', 'negative', 'neutral'
                   count: { $sum: 1 }
                 }
               }
-            ],            "trendingKeywords": [
+            ],
+            "trendingKeywords": [
               { $unwind: "$tags" },
               {
                 $group: {
                   _id: "$tags",
-                  count: { $sum: 1 },                  avgScore: { 
+                  count: { $sum: 1 },
+                  avgScore: { 
                     $avg: { $cond: [{ $eq: ["$sentiment", "positive"] }, 1, 0] } 
                   }
                 }
@@ -105,7 +119,8 @@ export async function GET(req) {
                   }
                 }
               }
-            ],            "recentReviews": [
+            ],
+            "recentReviews": [
               { $sort: { createdAt: -1 } },
               { $limit: 5 },
               {
@@ -121,17 +136,21 @@ export async function GET(req) {
           }
         }
       ]);
-    }    
+    }
+    
     const salesData = salesStats[0];
     const reviewData = sentimentStats[0];
 
     return NextResponse.json({
-      success: true,      kpi: {
+      success: true,
+      kpi: {
         totalTickets: salesData.totalSales[0]?.totalTickets || 0,
         totalRevenue: salesData.totalSales[0]?.totalRevenue || 0,
       },
-      charts: {        salesOverTime: salesData.monthlyTrend || [], 
-      },      sentiment: {
+      charts: {
+        salesOverTime: salesData.monthlyTrend || [], 
+      },
+      sentiment: {
         breakdown: reviewData.sentimentCounts || [],
         keywords: reviewData.trendingKeywords || [],
         recent: reviewData.recentReviews || []

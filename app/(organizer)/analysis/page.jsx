@@ -11,7 +11,9 @@ import {
   Speaker, Beer, Shield, Filter, Smile, Frown, Menu, Bell, Loader2, FileText,
   Rocket, ArrowLeft // Added for Coming Soon screen
 } from 'lucide-react';
-import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';const IS_COMING_SOON = false;const TREND_DATA_EVENT = [
+import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
+const IS_COMING_SOON = false;
+const TREND_DATA_EVENT = [
   { time: '12 PM', value: 40, type: 'positive' },
   { time: '1 PM', value: 45, type: 'positive' },
   { time: '2 PM', value: 55, type: 'positive' },
@@ -34,7 +36,8 @@ const TREND_DATA_POST = [
   { time: 'Day 5', value: 20, type: 'positive' },
   { time: 'Day 6', value: 10, type: 'positive' },
   { time: 'Day 7', value: 5, type: 'positive' },
-];const REVIEWS = [
+];
+const REVIEWS = [
   { id: 1, user: "Sarah Jenkins", ticket: "Ticket #8492 • VIP Pass", text: "Honestly one of the best nights of my life. The transition between the opening act and the main event was seamless. The VIP area was worth every penny.", sentiment: "positive" },
   { id: 2, user: "Mike T.", ticket: "Ticket #1120 • GA Pass", text: "Missed the first 30 mins because the gates were a mess. No clear signage anywhere.", sentiment: "negative" },
   { id: 3, user: "Jessica Alverez", ticket: "Ticket #3391 • GA Pass", text: "The sound quality was insane! Could feel the bass in my chest. Lighting crew deserves a raise.", sentiment: "positive" },
@@ -57,9 +60,11 @@ const KEYWORDS = [
 
 export default function AnalysisPage() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);  const [chartView, setChartView] = useState('event');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [chartView, setChartView] = useState('event');
   const [reviewFilter, setReviewFilter] = useState('all');
-  const [isGenerating, setIsGenerating] = useState(false);  const handleGenerateReport = () => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const handleGenerateReport = () => {
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
@@ -75,7 +80,8 @@ export default function AnalysisPage() {
 
   const handleFullAnalysis = () => {
     toast.info("Navigating to full detailed analysis view...");
-  };  const currentChartData = chartView === 'event' ? TREND_DATA_EVENT : TREND_DATA_POST;
+  };
+  const currentChartData = chartView === 'event' ? TREND_DATA_EVENT : TREND_DATA_POST;
 
   const filteredReviews = useMemo(() => {
     if (reviewFilter === 'all') return REVIEWS;

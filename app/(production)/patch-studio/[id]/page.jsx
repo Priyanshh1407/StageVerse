@@ -2,23 +2,27 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { Search, FolderOpen, Save, Loader2, RefreshCw } from 'lucide-react';
-import { toast } from 'sonner';import StudioNavbar from '@/components/production/StudioNavbar';
+import { toast } from 'sonner';
+import StudioNavbar from '@/components/production/StudioNavbar';
 
 import StudioSidebar from '@/components/production/studio/StudioSidebar';
 import CreativeRigView from '@/components/production/studio/views/CreativeRigView';
 import TechnicalRigView from '@/components/production/studio/views/TechnicalRigView';
 
-const INITIAL_FIXTURES = [   { id: 101, fixtureId: 101, profile: "Martin MAC Aura XB", universe: 2, address: 1, channels: 25, mode: "Standard (25ch)", cue: "Intro Sequence", cueColor: "blue", status: "ok" },
+const INITIAL_FIXTURES = [
+   { id: 101, fixtureId: 101, profile: "Martin MAC Aura XB", universe: 2, address: 1, channels: 25, mode: "Standard (25ch)", cue: "Intro Sequence", cueColor: "blue", status: "ok" },
 ];
 
 export default function PatchStudioPage(props) {
    const params = use(props.params);
-   const showId = params.id;   const [viewMode, setViewMode] = useState('creative'); // 'creative' or 'technical'
+   const showId = params.id;
+   const [viewMode, setViewMode] = useState('creative'); // 'creative' or 'technical'
    const [fixtures, setFixtures] = useState([]);
    const [isLoading, setIsLoading] = useState(true);
    const [isSaving, setIsSaving] = useState(false);
    const [searchQuery, setSearchQuery] = useState("");
-   const [lastSaved, setLastSaved] = useState(null);   useEffect(() => {
+   const [lastSaved, setLastSaved] = useState(null);
+   useEffect(() => {
       if (!showId) return;
       loadPatch();
    }, [showId]);
@@ -76,9 +80,11 @@ export default function PatchStudioPage(props) {
 
          if (res.ok) {
             toast.success('Patch saved successfully');
-            setLastSaved(new Date());            if (data.data && data.data.fixtures) {
+            setLastSaved(new Date());
+            if (data.data && data.data.fixtures) {
                setFixtures(data.data.fixtures);
-            } else {               loadPatch();
+            } else {
+               loadPatch();
             }
 
          } else {
@@ -92,8 +98,10 @@ export default function PatchStudioPage(props) {
       }
    };
 
-   const handleAddFixtures = (newFixtures) => {      let currentUniverse = 1;
-      let nextAddress = 1;      const fixturesInUniv1 = fixtures.filter(f => parseInt(f.universe) === 1);
+   const handleAddFixtures = (newFixtures) => {
+      let currentUniverse = 1;
+      let nextAddress = 1;
+      const fixturesInUniv1 = fixtures.filter(f => parseInt(f.universe) === 1);
       if (fixturesInUniv1.length > 0) {
          fixturesInUniv1.forEach(f => {
             const endAddr = parseInt(f.address) + (parseInt(f.channels) || 0);
@@ -101,17 +109,22 @@ export default function PatchStudioPage(props) {
                nextAddress = endAddr;
             }
          });
-      }      const maxId = fixtures.length > 0 ? Math.max(...fixtures.map(f => f.fixtureId || 0)) : 100;
+      }
+      const maxId = fixtures.length > 0 ? Math.max(...fixtures.map(f => f.fixtureId || 0)) : 100;
 
-      const prepareToAdd = newFixtures.map((f, i) => {         if (f.address && f.universe) {
+      const prepareToAdd = newFixtures.map((f, i) => {
+         if (f.address && f.universe) {
             return {
                ...f,
                fixtureId: maxId + i + 1,
                id: maxId + i + 1,
-               status: 'ok',               address: parseInt(f.address),
+               status: 'ok',
+               address: parseInt(f.address),
                universe: parseInt(f.universe)
             };
-         }         const startAddr = nextAddress;         const channelCount = parseInt(f.channels) || 0;
+         }
+         const startAddr = nextAddress;
+         const channelCount = parseInt(f.channels) || 0;
          nextAddress += channelCount;
 
          return {
@@ -128,7 +141,8 @@ export default function PatchStudioPage(props) {
       toast.success(`Added ${newFixtures.length} fixtures starting at Address ${prepareToAdd[0].address}`);
    };
 
-   const handleReplaceFixtures = (newFixtures) => {      const mapped = newFixtures.map((f, i) => ({
+   const handleReplaceFixtures = (newFixtures) => {
+      const mapped = newFixtures.map((f, i) => ({
          ...f,
          fixtureId: f.fixtureId || (1000 + i), // ensuring IDs
          id: f.id || (1000 + i),
@@ -138,13 +152,16 @@ export default function PatchStudioPage(props) {
       }));
       setFixtures(mapped);
       toast.success("Patch Repatched by AI");
-   };   const handleDeleteFixture = (fixtureId) => {
+   };
+   const handleDeleteFixture = (fixtureId) => {
       setFixtures(prev => prev.filter(f => (f.fixtureId || f.id) !== fixtureId));
       toast.success("Fixture deleted (unsaved)");
-   };   const handleDeleteGroup = (cueName, profileName = null) => {
+   };
+   const handleDeleteGroup = (cueName, profileName = null) => {
       let count = 0;
 
-      if (profileName) {         count = fixtures.filter(f => {
+      if (profileName) {
+         count = fixtures.filter(f => {
             const fCue = f.cue || 'Unassigned';
             const fProfile = f.profile || 'Unknown Fixture';
             return fCue === cueName && fProfile === profileName;
@@ -158,7 +175,8 @@ export default function PatchStudioPage(props) {
 
          toast.success(`Deleted batch of ${count} '${profileName}' fixtures`);
 
-      } else {         count = fixtures.filter(f => {
+      } else {
+         count = fixtures.filter(f => {
             const fCue = f.cue || 'Unassigned';
             return fCue === cueName;
          }).length;
@@ -173,12 +191,14 @@ export default function PatchStudioPage(props) {
    };
 
    const handleEditFixture = (updatedFixture) => {
-      setFixtures(prev => prev.map(f => {         const fId = String(f.fixtureId || f.id);
+      setFixtures(prev => prev.map(f => {
+         const fId = String(f.fixtureId || f.id);
          const uId = String(updatedFixture.fixtureId || updatedFixture.id);
          return fId === uId ? { ...f, ...updatedFixture } : f;
       }));
       toast.success("Fixture updated (unsaved)");
-   };   const filteredFixtures = fixtures.filter(f => {
+   };
+   const filteredFixtures = fixtures.filter(f => {
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
       return (

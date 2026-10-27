@@ -6,11 +6,15 @@ import { AudioWaveform, X } from 'lucide-react';
 export default function EncoreScreen({ winnerName, onClose }) {
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {    const enterTimer = setTimeout(() => setVisible(true), 100);    const exitAnimTimer = setTimeout(() => {
+  useEffect(() => {
+    const enterTimer = setTimeout(() => setVisible(true), 100);
+    const exitAnimTimer = setTimeout(() => {
       setVisible(false);
-    }, 19000);    const closeTimer = setTimeout(() => {
+    }, 19000);
+    const closeTimer = setTimeout(() => {
       if (onClose) onClose();
-    }, 20000);    return () => {
+    }, 20000);
+    return () => {
       clearTimeout(enterTimer);
       clearTimeout(exitAnimTimer);
       clearTimeout(closeTimer);

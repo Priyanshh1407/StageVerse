@@ -1,6 +1,7 @@
 'use client';
 
-export default function StatsGrid({ stats, isLoading }) {  const display = (val) => isLoading ? '-' : val;
+export default function StatsGrid({ stats, isLoading }) {
+  const display = (val) => isLoading ? '-' : val;
 
   const cards = [
     { label: 'Total Guests', value: display(stats?.total), change: '+12%', isPositive: true },

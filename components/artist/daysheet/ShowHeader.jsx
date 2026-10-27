@@ -5,13 +5,15 @@ import Link from 'next/link';
 export default function ShowHeader({ city, venue, date }) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [events, setEvents] = useState([]);
-  const [currentMonth, setCurrentMonth] = useState(new Date());  useEffect(() => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isCalendarOpen) setIsCalendarOpen(false);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isCalendarOpen]);  useEffect(() => {
+  }, [isCalendarOpen]);
+  useEffect(() => {
     if (isCalendarOpen && events.length === 0) {
       fetch('/api/artist/day-sheet', { cache: 'no-store' })
         .then(res => res.json())
@@ -20,7 +22,8 @@ export default function ShowHeader({ city, venue, date }) {
         })
         .catch(err => console.error("Calendar fetch error:", err));
     }
-  }, [isCalendarOpen]);  const getDaysInMonth = (date) => {
+  }, [isCalendarOpen]);
+  const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const days = new Date(year, month + 1, 0).getDate();
@@ -98,7 +101,8 @@ export default function ShowHeader({ city, venue, date }) {
 
               {}
               {Array.from({ length: days }).map((_, i) => {
-                const dayNum = i + 1;                const thisDateStr = new Date(year, month, dayNum).toDateString();
+                const dayNum = i + 1;
+                const thisDateStr = new Date(year, month, dayNum).toDateString();
                 const eventOnDay = events.find(e => new Date(e.date).toDateString() === thisDateStr);
 
                 return (

@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { MoreVertical, Sun, CheckCircle, Target, Layers, Trash2 } from 'lucide-react';
 
 export default function CreativeRigView({ fixtures, onDeleteGroup }) {
-   const [activeMenuId, setActiveMenuId] = useState(null);   useEffect(() => {
+   const [activeMenuId, setActiveMenuId] = useState(null);
+   useEffect(() => {
       const handleClickOutside = (event) => {
          if (!event.target.closest('.action-menu-container')) {
             setActiveMenuId(null);
@@ -15,7 +16,8 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
 
    const toggleMenu = (id) => {
       setActiveMenuId(activeMenuId === id ? null : id);
-   };   const groups = fixtures ? fixtures.reduce((acc, f) => {
+   };
+   const groups = fixtures ? fixtures.reduce((acc, f) => {
       const cueName = f.cue || 'Unassigned';
 
       if (!acc[cueName]) {
@@ -24,7 +26,8 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
             color: f.cueColor || 'blue',
             subgroups: {}
          };
-      }      const profileKey = f.profile || 'Unknown Fixture';
+      }
+      const profileKey = f.profile || 'Unknown Fixture';
       if (!acc[cueName].subgroups[profileKey]) {
          acc[cueName].subgroups[profileKey] = {
             profile: profileKey,
@@ -36,7 +39,8 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
       }
 
       const sub = acc[cueName].subgroups[profileKey];
-      sub.items.push(f);      const addr = parseInt(f.address);
+      sub.items.push(f);
+      const addr = parseInt(f.address);
       if (!isNaN(addr)) {
          if (addr < sub.minAddr) sub.minAddr = addr;
          if (addr > sub.maxAddr) sub.maxAddr = addr + (parseInt(f.channels) || 0) - 1;
@@ -84,7 +88,8 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                      {subGroups.map((sub) => {
                         const uniqueId = `${group.role}-${sub.profile}`;
-                        const count = sub.items.length;                        const displayName = sub.profile.split('(')[0];
+                        const count = sub.items.length;
+                        const displayName = sub.profile.split('(')[0];
                         const patchLabel = `Univ ${sub.universe || '?'} • CH ${sub.minAddr !== Infinity ? String(sub.minAddr).padStart(3, '0') : '???'}-${sub.maxAddr !== -Infinity ? String(sub.maxAddr).padStart(3, '0') : '???'}`;
 
                         const isOpen = activeMenuId === uniqueId;

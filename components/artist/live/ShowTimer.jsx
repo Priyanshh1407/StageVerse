@@ -1,5 +1,7 @@
 'use client';
-export default function ShowTimer({ time, status }) {  const label = status === 'Standby' ? "Time To Showtime" : "Show Duration";  const secondsColor = status === 'Paused' ? 'text-red-500' : 'text-[#0d93f2]';
+export default function ShowTimer({ time, status }) {
+  const label = status === 'Standby' ? "Time To Showtime" : "Show Duration";
+  const secondsColor = status === 'Paused' ? 'text-red-500' : 'text-[#0d93f2]';
   const labelColor = status === 'Paused' ? 'text-red-500/50' : 'text-[#587386]';
 
   return (

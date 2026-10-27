@@ -8,13 +8,15 @@ import Venue from "@/models/Venue"; // Ensure models are registered
 
 export async function GET() {
   try {
-    await dbConnect();    const cookieStore = await cookies();
+    await dbConnect();
+    const cookieStore = await cookies();
     const token = cookieStore.get("token");
     if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token.value, secret);
-    const userId = payload.userId;    const tickets = await Ticket.find({ userId })
+    const userId = payload.userId;
+    const tickets = await Ticket.find({ userId })
       .populate({
         path: 'eventId',
         select: 'title artist genre date time image description', // Fields from Event
@@ -24,17 +26,20 @@ export async function GET() {
           select: 'name city address capacity type bagPolicy image description' // Fields from Venue
         }
       })
-      .lean();    const now = new Date();
+      .lean();
+    const now = new Date();
     const upcoming = [];
     const past = [];
 
     tickets.forEach(t => {
       if (!t.eventId) return; // Skip if event was deleted
 
-      const eventDate = new Date(t.eventId.date);      const formattedTicket = {
+      const eventDate = new Date(t.eventId.date);
+      const formattedTicket = {
         id: t._id.toString(),
         artist: t.eventId.artist,
-        tour: t.eventId.title, // Using Event Title as Tour Name        dateRaw: eventDate, 
+        tour: t.eventId.title, // Using Event Title as Tour Name
+        dateRaw: eventDate, 
         dateDisplay: eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase(),
         dateFull: eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         day: eventDate.getDate(),
@@ -54,7 +59,9 @@ export async function GET() {
       } else {
         past.push(formattedTicket);
       }
-    });    upcoming.sort((a, b) => a.dateRaw - b.dateRaw);    past.sort((a, b) => b.dateRaw - a.dateRaw);
+    });
+    upcoming.sort((a, b) => a.dateRaw - b.dateRaw);
+    past.sort((a, b) => b.dateRaw - a.dateRaw);
 
     return NextResponse.json({ 
       success: true, 

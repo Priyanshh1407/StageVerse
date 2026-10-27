@@ -13,21 +13,28 @@ import GlobalSearchModal from './GlobalSearchModal';
 export default function StudioNavbar({ projectId }) {
   const pathname = usePathname();
   const router = useRouter();
-  const params = useParams();  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const params = useParams();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);  const [projects, setProjects] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
-  const projectDropdownRef = useRef(null);  const contextId = projectId || params?.id;  const [currentId, setCurrentId] = useState(contextId || null);  useEffect(() => {
+  const projectDropdownRef = useRef(null);
+  const contextId = projectId || params?.id;
+  const [currentId, setCurrentId] = useState(contextId || null);
+  useEffect(() => {
     async function loadData() {
-      try {        const resDash = await fetch('/api/production/dashboard');
+      try {
+        const resDash = await fetch('/api/production/dashboard');
         if (resDash.ok) {
           const json = await resDash.json();
           if (json.success && json.data.shows) {
             setProjects(json.data.shows);
           }
-        }        const resNotif = await fetch('/api/notifications');
+        }
+        const resNotif = await fetch('/api/notifications');
         const jsonNotif = await resNotif.json();
         if (jsonNotif.success) setNotifications(jsonNotif.data);
 
@@ -35,7 +42,8 @@ export default function StudioNavbar({ projectId }) {
         console.error("Failed to load navbar data", e);
       }
     }
-    loadData();    const interval = setInterval(async () => {
+    loadData();
+    const interval = setInterval(async () => {
       try {
         const res = await fetch('/api/notifications');
         const json = await res.json();
@@ -43,9 +51,11 @@ export default function StudioNavbar({ projectId }) {
       } catch (e) { }
     }, 30000);
     return () => clearInterval(interval);
-  }, []);  useEffect(() => {
+  }, []);
+  useEffect(() => {
     if (contextId) setCurrentId(contextId);
-  }, [contextId]);  useEffect(() => {
+  }, [contextId]);
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
@@ -71,7 +81,8 @@ export default function StudioNavbar({ projectId }) {
   }, []);
 
   const dropdownRef = useRef(null);
-  const mobileMenuRef = useRef(null);  const handleLogout = async () => {
+  const mobileMenuRef = useRef(null);
+  const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       localStorage.removeItem('user');
@@ -82,12 +93,16 @@ export default function StudioNavbar({ projectId }) {
 
   const handleProjectSelect = (proj) => {
     setCurrentId(proj.eventId || proj.id);
-    setIsProjectDropdownOpen(false);    if (pathname.includes('/patch-sheet') || pathname.includes('/patch-studio') || pathname.includes('/logistics')) {      const root = pathname.split('/')[1]; // e.g., 'patch-sheet'
+    setIsProjectDropdownOpen(false);
+    if (pathname.includes('/patch-sheet') || pathname.includes('/patch-studio') || pathname.includes('/logistics')) {
+      const root = pathname.split('/')[1]; // e.g., 'patch-sheet'
       router.push(`/${root}/${proj.eventId || proj.id}`);
       toast.success(`Switched to ${proj.title}`);
     } else {
-      toast.success(`Selected ${proj.title}`);    }
-  };  const handleProtectedNav = (e, pathRoot) => {
+      toast.success(`Selected ${proj.title}`);
+    }
+  };
+  const handleProtectedNav = (e, pathRoot) => {
     if (!currentId) {
       e.preventDefault();
       toast.error("Please select a project first", {
@@ -118,8 +133,10 @@ export default function StudioNavbar({ projectId }) {
       onClick: (e) => handleProtectedNav(e, 'logistics')
     },
     { label: 'Live Show', href: `/live`, isActive: (path) => path.includes('/live') },
-  ];  const currentProject = projects.find(p => (p.eventId || p.id) == currentId); // eslint-disable-line eqeqeq
-  const projectTitle = currentProject ? currentProject.title : "Select Project";  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
+  ];
+  const currentProject = projects.find(p => (p.eventId || p.id) == currentId); // eslint-disable-line eqeqeq
+  const projectTitle = currentProject ? currentProject.title : "Select Project";
+  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
   const [msgContent, setMsgContent] = useState('');
   const [msgStatus, setMsgStatus] = useState('idle');
 

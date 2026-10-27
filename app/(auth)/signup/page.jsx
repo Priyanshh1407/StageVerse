@@ -28,7 +28,8 @@ const SignupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);    if (!formData.name) { setIsLoading(false); return setError('ERR_MISSING_FIELD: Full_Name is required.'); }
+    setIsLoading(true);
+    if (!formData.name) { setIsLoading(false); return setError('ERR_MISSING_FIELD: Full_Name is required.'); }
     if (!formData.email.includes('@')) { setIsLoading(false); return setError('CRITICAL: Invalid_Email_Format.'); }
     if (formData.password.length < 6) { setIsLoading(false); return setError('SECURITY_WARN: Password too weak.'); }
 
@@ -36,14 +37,17 @@ const SignupPage = () => {
     if (role === 'production' && !formData.jobTitle) { setIsLoading(false); return setError('ERR_ROLE: Job_Title not selected.'); }
     if (role === 'artist' && !formData.genre) { setIsLoading(false); return setError('ERR_ARTIST: Genre is required.'); }
 
-    try {      const payload = {
+    try {
+      const payload = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: role,        ...(role === 'organizer' && { organization: formData.orgName }), // Ensure Schema has this field
+        role: role,
+        ...(role === 'organizer' && { organization: formData.orgName }), // Ensure Schema has this field
         ...(role === 'production' && { jobTitle: formData.jobTitle }),   // Ensure Schema has this field
         ...(role === 'artist' && { genre: formData.genre }),             // Ensure Schema has this field
-      };      const res = await fetch('/api/auth/signup', {
+      };
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -53,7 +57,9 @@ const SignupPage = () => {
 
       if (!res.ok) {
         throw new Error(data.message || 'Signup failed');
-      }      console.log('Signup Successful!');      router.push('/login'); 
+      }
+      console.log('Signup Successful!');
+      router.push('/login'); 
 
     } catch (err) {
       console.error('Signup Error:', err);
@@ -235,7 +241,8 @@ const SignupPage = () => {
       </motion.div>
     </div>
   );
-};const RoleButton = ({ active, onClick, icon: Icon, label }) => (
+};
+const RoleButton = ({ active, onClick, icon: Icon, label }) => (
   <button
     type="button"
     onClick={onClick}

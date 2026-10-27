@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Prediction from '@/models/Prediction';
 import Event from '@/models/Event';
-import { verifyAuth } from '@/lib/auth';export async function GET(req) {
+import { verifyAuth } from '@/lib/auth';
+export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -13,7 +14,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
 
         if (!eventId) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
-        }        let queryEventId = eventId;
+        }
+        let queryEventId = eventId;
         if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
             const event = await Event.findOne({ eventId: eventId });
             if (event) queryEventId = event._id;
@@ -31,7 +33,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
         console.error("Prediction Fetch Error:", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}export async function POST(req) {
+}
+export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -48,7 +51,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
             return NextResponse.json({ error: 'Max 10 songs allowed' }, { status: 400 });
         }
 
-        console.log("[API] Received Prediction:", { userId: user.userId, eventId, songCount: songs.length });        let queryEventId = eventId;
+        console.log("[API] Received Prediction:", { userId: user.userId, eventId, songCount: songs.length });
+        let queryEventId = eventId;
         if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
             const event = await Event.findOne({ eventId: eventId });
             if (event) {
@@ -58,8 +62,10 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
                 console.error("[API] Event Not Found:", eventId);
                 return NextResponse.json({ error: 'Event not found' }, { status: 404 });
             }
-        }        const existingPrediction = await Prediction.findOne({ userId: user.userId, eventId: queryEventId });
-        if (existingPrediction && existingPrediction.status !== 'submitted') {            if (existingPrediction.status === 'graded') {
+        }
+        const existingPrediction = await Prediction.findOne({ userId: user.userId, eventId: queryEventId });
+        if (existingPrediction && existingPrediction.status !== 'submitted') {
+            if (existingPrediction.status === 'graded') {
                 return NextResponse.json({ error: 'Prediction is already graded and locked.' }, { status: 403 });
             }
         }

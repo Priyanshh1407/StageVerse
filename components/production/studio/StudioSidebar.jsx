@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { PlusCircle, Wand2, Info, ChevronDown, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtures = [] }) {   const [profiles, setProfiles] = useState([]);
-   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);   const [selectedProfileId, setSelectedProfileId] = useState("");
+export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtures = [] }) {
+   const [profiles, setProfiles] = useState([]);
+   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
+   const [selectedProfileId, setSelectedProfileId] = useState("");
    const [quantity, setQuantity] = useState(8);
    const [role, setRole] = useState("Intro Sequence");
    const [logic, setLogic] = useState("");
@@ -18,7 +20,8 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
       }
 
       setIsGenerating(true);
-      try {         const currentPatch = fixtures.map(f => ({
+      try {
+         const currentPatch = fixtures.map(f => ({
             u: f.universe,
             a: f.address,
             c: f.channels,
@@ -68,12 +71,14 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
       } finally {
          setIsGenerating(false);
       }
-   };   const [showModal, setShowModal] = useState(false);
+   };
+   const [showModal, setShowModal] = useState(false);
    const [newManufacturer, setNewManufacturer] = useState("");
    const [newModel, setNewModel] = useState("");
    const [newModeName, setNewModeName] = useState("Standard");
    const [newChannels, setNewChannels] = useState(16);
-   const [isCreating, setIsCreating] = useState(false);   useEffect(() => {
+   const [isCreating, setIsCreating] = useState(false);
+   useEffect(() => {
       fetchProfiles();
    }, []);
 
@@ -115,7 +120,8 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
             toast.success("Profile created!");
             await fetchProfiles(); // Reload
             setSelectedProfileId(data.data._id); // Select new
-            setShowModal(false);            setNewManufacturer("");
+            setShowModal(false);
+            setNewManufacturer("");
             setNewModel("");
             setNewChannels(16);
          } else {
@@ -138,8 +144,10 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
       }
 
       const profile = profiles.find(p => p._id === selectedProfileId);
-      if (!profile) return;      const modeData = profile.modes[0] || { name: 'Standard', channels: 16 };
-      const channels = modeData.channels;      let cueColor = "blue";
+      if (!profile) return;
+      const modeData = profile.modes[0] || { name: 'Standard', channels: 16 };
+      const channels = modeData.channels;
+      let cueColor = "blue";
       if (role.includes("Drum")) cueColor = "red";
       if (role.includes("Wash")) cueColor = "orange";
       if (role.includes("Blinder")) cueColor = "orange"; // Added logic

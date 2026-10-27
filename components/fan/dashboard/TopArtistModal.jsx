@@ -4,7 +4,8 @@ import { X, Search, Ticket, ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 
 export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
-  const [searchQuery, setSearchQuery] = useState('');  useEffect(() => {
+  const [searchQuery, setSearchQuery] = useState('');
+  useEffect(() => {
     if (isOpen) setSearchQuery('');
   }, [isOpen]);
 
@@ -22,7 +23,8 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;  const filteredArtists = artists.filter((artist) => {
+  if (!isOpen) return null;
+  const filteredArtists = artists.filter((artist) => {
     const query = searchQuery.toLowerCase();
     return (
       artist.name.toLowerCase().includes(query) ||

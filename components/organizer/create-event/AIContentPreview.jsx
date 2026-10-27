@@ -4,8 +4,10 @@ import React from 'react';
 import { Copy, RefreshCw, Bookmark, CheckCircle, Info, Megaphone, Edit3 } from 'lucide-react';
 import { toast } from "sonner";
 
-export default function AIContentPreview({ content, onRequestAI }) {  const parsed = React.useMemo(() => {
-    if (!content) return null;    const data = {
+export default function AIContentPreview({ content, onRequestAI }) {
+  const parsed = React.useMemo(() => {
+    if (!content) return null;
+    const data = {
       headline: "Event Preview",
       hook: content,
       atmosphere: "",
@@ -13,7 +15,8 @@ export default function AIContentPreview({ content, onRequestAI }) {  const par
       closing: ""
     };
 
-    try {      const headlineMatch = content.match(/HEADLINE:\s*(.*)/i);
+    try {
+      const headlineMatch = content.match(/HEADLINE:\s*(.*)/i);
       const hookMatch = content.match(/HOOK:\s*([\s\S]*?)(?=ATMOSPHERE:)/i);
       const atmosMatch = content.match(/ATMOSPHERE:\s*([\s\S]*?)(?=HIGHLIGHTS:)/i);
       const highlightSection = content.match(/HIGHLIGHTS:\s*([\s\S]*?)(?=CLOSING:)/i);
@@ -23,7 +26,8 @@ export default function AIContentPreview({ content, onRequestAI }) {  const par
       if (hookMatch) data.hook = hookMatch[1].trim();
       if (atmosMatch) data.atmosphere = atmosMatch[1].trim();
 
-      if (highlightSection) {        const lines = highlightSection[1].split('\n').map(l => l.trim()).filter(l => l.length > 0 && l !== '-');
+      if (highlightSection) {
+        const lines = highlightSection[1].split('\n').map(l => l.trim()).filter(l => l.length > 0 && l !== '-');
         data.highlights = lines.map(l => l.replace(/^[-*]\s*/, ''));
       }
 
@@ -35,9 +39,12 @@ export default function AIContentPreview({ content, onRequestAI }) {  const par
   }, [content]);
 
   const handleCopy = () => {
-    if (!content) return;    navigator.clipboard.writeText(content);
+    if (!content) return;
+    navigator.clipboard.writeText(content);
     toast.success("Content copied to clipboard!");
-  };  if (!parsed) {    return (
+  };
+  if (!parsed) {
+    return (
       <div className="flex flex-col h-full gap-4 opacity-50 pointer-events-none filter blur-[1px]">
         {}
         <div className="flex-1 bg-white dark:bg-[#192734] rounded-xl border border-slate-200 dark:border-[#2c3b47] flex items-center justify-center text-slate-500">

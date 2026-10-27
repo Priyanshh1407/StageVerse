@@ -9,7 +9,8 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });        const notifications = await Task.find({
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const notifications = await Task.find({
             status: { $ne: 'Done' },
             urgent: true,
             title: { $regex: '^Crew Message:', $options: 'i' }

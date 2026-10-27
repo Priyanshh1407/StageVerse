@@ -6,7 +6,8 @@ import { Activity, RefreshCw } from 'lucide-react';
 export default function LiveHeader({ showName, status, bpm, showTime }) {
   const [time, setTime] = useState("00:00:00");
 
-  useEffect(() => {    const updateTime = () => setTime(new Date().toLocaleTimeString('en-GB', { hour12: false }));
+  useEffect(() => {
+    const updateTime = () => setTime(new Date().toLocaleTimeString('en-GB', { hour12: false }));
     updateTime();
     const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
@@ -50,15 +51,18 @@ export default function LiveHeader({ showName, status, bpm, showTime }) {
       </div>
     </div>
   );
-}function ConnectionStatus({ onResync }) {
+}
+function ConnectionStatus({ onResync }) {
   const { socket, isConnected } = require("@/components/providers/SocketProvider").useSocket();
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleResync = async () => {
-    setIsSyncing(true);    if (socket) {
+    setIsSyncing(true);
+    if (socket) {
       socket.disconnect();
       socket.connect();
-    }    if (onResync) await onResync();
+    }
+    if (onResync) await onResync();
 
     setTimeout(() => setIsSyncing(false), 1000);
   };

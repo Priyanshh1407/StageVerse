@@ -12,7 +12,8 @@ export async function GET() {
 
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token.value, secret);    const user = {
+    const { payload } = await jwtVerify(token.value, secret);
+    const user = {
       id: payload.userId,
       name: payload.name || "User", // Ensure these were saved in your JWT payload during login
       email: payload.email,
@@ -20,6 +21,7 @@ export async function GET() {
     };
 
     return NextResponse.json({ user }, { status: 200 });
-  } catch (error) {    return NextResponse.json({ user: null }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json({ user: null }, { status: 401 });
   }
 }

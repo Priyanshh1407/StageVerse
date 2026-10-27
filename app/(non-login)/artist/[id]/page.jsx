@@ -18,7 +18,8 @@ export default function PublicArtistPage() {
 
   const [artist, setArtist] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);  const ref = useRef(null);
+  const [error, setError] = useState(null);
+  const ref = useRef(null);
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 200]);
   const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.3]);
@@ -72,7 +73,8 @@ export default function PublicArtistPage() {
         <MainFooter />
       </div>
     );
-  }  const heroImage = artist.image || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop";
+  }
+  const heroImage = artist.image || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop";
   const bio = artist.bio || ["No bio available."];
   const shows = artist.upcomingShows || [];
 

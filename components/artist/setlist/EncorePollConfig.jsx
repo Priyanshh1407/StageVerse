@@ -6,7 +6,8 @@ import { BarChart2, PlusCircle, Edit, Trash2, ListMusic, List, Timer, X, Chevron
 
 export default function EncorePollConfig({ eventId }) { // Prop
   const [view, setView] = useState('grid'); // 'grid' | 'editor'
-  const [showPreview, setShowPreview] = useState(false);  const handleEdit = () => setView('editor');
+  const [showPreview, setShowPreview] = useState(false);
+  const handleEdit = () => setView('editor');
   const handleSave = () => setView('grid');
 
   return (
@@ -20,7 +21,9 @@ export default function EncorePollConfig({ eventId }) { // Prop
       {showPreview && <PollPreviewModal onClose={() => setShowPreview(false)} />}
     </div>
   );
-}function PollGrid({ onEdit, onPreview }) {  return (
+}
+function PollGrid({ onEdit, onPreview }) {
+  return (
     <>
       {}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -63,14 +66,16 @@ export default function EncorePollConfig({ eventId }) { // Prop
       </div>
     </>
   )
-}function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
+}
+function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
   const [question, setQuestion] = useState("Which song should we play next?");
   const [options, setOptions] = useState([
     { id: 1, value: "Wonderwall (Oasis Cover)" },
     { id: 2, value: "Don't Stop Believing" },
     { id: 3, value: "" }
   ]);
-  const [loading, setLoading] = useState(false); // Loading state  const handleOptionChange = (id, newValue) => {
+  const [loading, setLoading] = useState(false); // Loading state
+  const handleOptionChange = (id, newValue) => {
     const newOptions = options.map(opt => opt.id === id ? { ...opt, value: newValue } : opt);
     setOptions(newOptions);
     const lastOption = newOptions[newOptions.length - 1];
@@ -84,7 +89,8 @@ export default function EncorePollConfig({ eventId }) { // Prop
     setOptions(options.filter(opt => opt.id !== id));
   };
 
-  const handleSavePoll = async () => {    const validOptions = options.map(o => o.value.trim()).filter(v => v !== "");
+  const handleSavePoll = async () => {
+    const validOptions = options.map(o => o.value.trim()).filter(v => v !== "");
 
     if (validOptions.length < 2) {
       toast.error("Please provide at least 2 options.");
@@ -201,7 +207,8 @@ export default function EncorePollConfig({ eventId }) { // Prop
       </div>
     </div>
   );
-}function PollPreviewModal({ onClose }) {
+}
+function PollPreviewModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="bg-[#101b22] p-6 rounded-xl border border-white/10 w-full max-w-md">

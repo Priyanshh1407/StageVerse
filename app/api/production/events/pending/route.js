@@ -8,7 +8,8 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });        const pendingEvents = await Event.find({
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const pendingEvents = await Event.find({
             $or: [{ status: 'requested' }, { productionStatus: 'requested' }],
             assignedTo: user.userId
         }).populate('venue').sort({ date: 1 });

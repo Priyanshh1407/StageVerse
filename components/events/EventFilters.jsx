@@ -4,7 +4,8 @@ import { RotateCcw, X, Check } from 'lucide-react';
 
 export default function EventsFilter({ filters, setFilters, onReset, isOpen, onClose }) {
   
-  const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));  const toggleArrayItem = (field, item) => {
+  const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
+  const toggleArrayItem = (field, item) => {
     setFilters(prev => {
       const list = prev[field];
       const exists = list.includes(item);

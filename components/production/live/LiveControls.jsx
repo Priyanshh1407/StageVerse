@@ -5,8 +5,10 @@ import { PlayCircle, AlertTriangle, Eye, Crosshair, Wind, CheckCircle2, Megaphon
 import EncoreScreen from '@/components/EncoreScreen'; // Import the new screen
 
 export default function LiveControls({ currentSong, currentCue, pollStats, winner, onRevealEncore, showWarning, onCloseWarning }) {
-  if (!currentSong) return <div className="p-8 text-gray-500">No song active</div>;  const [showEncoreScreen, setShowEncoreScreen] = useState(false);
-  const [encoreWinner, setEncoreWinner] = useState(null);  const activePoll = pollStats ? {
+  if (!currentSong) return <div className="p-8 text-gray-500">No song active</div>;
+  const [showEncoreScreen, setShowEncoreScreen] = useState(false);
+  const [encoreWinner, setEncoreWinner] = useState(null);
+  const activePoll = pollStats ? {
     isActive: true,
     title: pollStats.question,
     options: pollStats.options.map(o => ({
@@ -19,9 +21,11 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
 
   const tech = currentCue.technical || {
     visual: '-', visualDetail: '-', spots: '-', spotsDetail: '-', haze: '-', hazeDetail: '-'
-  };  const handleRevealEncore = (winnerName) => {
+  };
+  const handleRevealEncore = (winnerName) => {
     setEncoreWinner(winnerName);
-    setShowEncoreScreen(true);    setTimeout(() => {
+    setShowEncoreScreen(true);
+    setTimeout(() => {
       setShowEncoreScreen(false);
     }, 10000);
   };
@@ -136,8 +140,11 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
 
     </main>
   );
-}function PollMonitor({ poll, onReveal }) {
-  const [isRevealed, setIsRevealed] = useState(false);  const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);  const sortedOptions = [...poll.options]
+}
+function PollMonitor({ poll, onReveal }) {
+  const [isRevealed, setIsRevealed] = useState(false);
+  const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+  const sortedOptions = [...poll.options]
     .map(opt => ({
       ...opt,
       percent: totalVotes > 0 ? Math.round((opt.votes || 0) / totalVotes * 100) : 0
@@ -219,7 +226,8 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
       </button>
     </div>
   );
-}function InfoCard({ icon: Icon, title, value, sub, accent }) {
+}
+function InfoCard({ icon: Icon, title, value, sub, accent }) {
   return (
     <div className={`bg-[#16222b] border border-[#223949] rounded-lg p-3 flex flex-col justify-center group transition-colors hover:border-[#0d93f2]/30 ${accent ? 'bg-[#0d93f2]/5 border-[#0d93f2]/20' : ''}`}>
       <div className="flex items-center gap-2 mb-1">

@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation'; // 1. Import useRouter
 import { Users, Calendar, Wrench, Power, Settings2, Sun, Zap, Music } from 'lucide-react';
-import { motion } from 'framer-motion';import { ConcertLights } from '@/components/ConcertLights';
+import { motion } from 'framer-motion';
+import { ConcertLights } from '@/components/ConcertLights';
 import hero from '@/public/images/hero.jpg';
 
 export default function Hero() {
@@ -16,14 +17,17 @@ export default function Hero() {
         on: false,
         count: 6,
         color: "#06b6d4" // Cyan
-    });    const [blinders, setBlinders] = useState({
+    });
+    const [blinders, setBlinders] = useState({
         on: false,
         count: 8
-    });    const [lasers, setLasers] = useState({
+    });
+    const [lasers, setLasers] = useState({
         on: false,
         count: 30,
         color: "#39ff14" // Laser Green
-    });    const updateBeams = (key, val) => setBeams(prev => ({ ...prev, [key]: val }));
+    });
+    const updateBeams = (key, val) => setBeams(prev => ({ ...prev, [key]: val }));
     const updateBlinders = (key, val) => setBlinders(prev => ({ ...prev, [key]: val }));
     const updateLasers = (key, val) => setLasers(prev => ({ ...prev, [key]: val }));
 
@@ -154,7 +158,8 @@ export default function Hero() {
 
                     </div>
                 )}
-            </div>            import {motion} from 'framer-motion';
+            </div>
+            import {motion} from 'framer-motion';
 
             {}
             <div className="relative z-20 h-full flex flex-col items-center justify-center px-4 py-20 pointer-events-none">

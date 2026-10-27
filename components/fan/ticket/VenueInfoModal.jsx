@@ -129,7 +129,8 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
       </div>
     </div>
   );
-}function StatItem({ icon: Icon, label, value }) {
+}
+function StatItem({ icon: Icon, label, value }) {
   return (
     <div className="p-3 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center text-center shadow-sm">
       <Icon className="w-5 h-5 text-slate-400 mb-1" />

@@ -9,14 +9,16 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
   const [email, setEmail] = useState('');
   const [tier, setTier] = useState('VIP');
   const [status, setStatus] = useState('Pending');
-  const [isSuccess, setIsSuccess] = useState(false);  useEffect(() => {
+  const [isSuccess, setIsSuccess] = useState(false);
+  useEffect(() => {
     if (editingGuest) {
       setName(editingGuest.name);
       setEmail(editingGuest.email || '');
       setTier(editingGuest.tier);
       setStatus(editingGuest.status);
       setQty(1); 
-    } else {      setName('');
+    } else {
+      setName('');
       setEmail('');
       setTier('VIP');
       setStatus('Pending');
@@ -45,7 +47,8 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
     }
   };
 
-  return (    <div className="w-full lg:col-span-1 mb-8 lg:mb-0">
+  return (
+    <div className="w-full lg:col-span-1 mb-8 lg:mb-0">
       
       {}
       <div className={`

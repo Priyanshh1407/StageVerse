@@ -10,7 +10,8 @@ import SetlistCanvas from '@/components/artist/setlist/SetlistCanvas';
 import EncorePollConfig from '@/components/artist/setlist/EncorePollConfig';
 import GuestlistPanel from '@/components/artist/setlist/GuestlistPanel';
 import LeaderboardModal from '@/components/artist/setlist/LeaderboardModal';
-import { toast } from 'sonner';const INITIAL_BANK = [
+import { toast } from 'sonner';
+const INITIAL_BANK = [
   { id: 1, title: "Mr. Brightside", duration: "03:42", bpm: "148 BPM", tag: "High Energy", tagColor: "orange" },
   { id: 2, title: "Someone Like You", duration: "04:45", bpm: "67 BPM", tag: "Sad/Chill", tagColor: "indigo" },
   { id: 3, title: "Uptown Funk", duration: "04:30", bpm: "115 BPM", tag: "Funky", tagColor: "purple" },
@@ -28,8 +29,10 @@ import { toast } from 'sonner';const INITIAL_BANK = [
 const INITIAL_SETLIST = [];
 
 function SetlistBuilderContent() {
-  const searchParams = useSearchParams();  const urlEventId = searchParams.get('eventId');
-  const [selectedEventId, setSelectedEventId] = useState(urlEventId);  useEffect(() => {
+  const searchParams = useSearchParams();
+  const urlEventId = searchParams.get('eventId');
+  const [selectedEventId, setSelectedEventId] = useState(urlEventId);
+  useEffect(() => {
     if (urlEventId) setSelectedEventId(urlEventId);
   }, [urlEventId]);
 
@@ -38,15 +41,19 @@ function SetlistBuilderContent() {
 
   const [bankSongs, setBankSongs] = useState(INITIAL_BANK);
   const [setlistItems, setSetlistItems] = useState([]);
-  const [loadingSetlist, setLoadingSetlist] = useState(false);  const [viewMode, setViewMode] = useState('builder');  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [loadingSetlist, setLoadingSetlist] = useState(false);
+  const [viewMode, setViewMode] = useState('builder');
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [winners, setWinners] = useState([]);
-  const [calculatingResults, setCalculatingResults] = useState(false);  useEffect(() => {
+  const [calculatingResults, setCalculatingResults] = useState(false);
+  useEffect(() => {
     async function fetchEvents() {
       try {
         const res = await fetch('/api/artist/events');
         const json = await res.json();
         if (json.success) {
-          setEvents(json.events);        }
+          setEvents(json.events);
+        }
       } catch (e) {
         console.error("Failed to fetch events", e);
       } finally {
@@ -54,7 +61,8 @@ function SetlistBuilderContent() {
       }
     }
     fetchEvents();
-  }, []);  useEffect(() => {
+  }, []);
+  useEffect(() => {
     if (!selectedEventId) return;
 
     async function loadSetlist() {
@@ -62,7 +70,8 @@ function SetlistBuilderContent() {
         setLoadingSetlist(true);
         const res = await fetch(`/api/artist/setlist?eventId=${selectedEventId}`);
         const json = await res.json();
-        if (json.success && json.data) {          setSetlistItems(json.data.items.map(item => ({
+        if (json.success && json.data) {
+          setSetlistItems(json.data.items.map(item => ({
             ...item,
             id: item._id || Date.now(), // Fallback ID
           })));
@@ -76,7 +85,8 @@ function SetlistBuilderContent() {
       }
     }
     loadSetlist();
-  }, [selectedEventId]);  const addToSetlist = (song) => {
+  }, [selectedEventId]);
+  const addToSetlist = (song) => {
     const newItem = {
       id: Date.now(),
       title: song.title,
@@ -161,16 +171,20 @@ function SetlistBuilderContent() {
     } finally {
       setCalculatingResults(false);
     }
-  };  const [isAiLoading, setIsAiLoading] = useState(false);
+  };
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState("Suggest 3 unique, high-energy hit songs that would fit a modern setlist.");  const handleAiSuggestClick = () => {
+  const [aiPrompt, setAiPrompt] = useState("Suggest 3 unique, high-energy hit songs that would fit a modern setlist.");
+  const handleAiSuggestClick = () => {
     setIsAiModalOpen(true);
-  };  const executeAiGeneration = async () => {
+  };
+  const executeAiGeneration = async () => {
     if (!aiPrompt) return;
     setIsAiLoading(true);
     setIsAiModalOpen(false); // Close modal during generation to show loading state in button or toast? 
 
-    try {      const fullPrompt = `${aiPrompt} 
+    try {
+      const fullPrompt = `${aiPrompt} 
       IMPORTANT: Return a JSON array ONLY. Format: [{"title": "Song Name", "duration": "03:30", "bpm": "120 BPM", "tag": "High Energy", "tagColor": "orange"}].`;
 
       const res = await fetch('/api/generate', {
@@ -180,7 +194,8 @@ function SetlistBuilderContent() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);      let text = data.result;
+      if (!res.ok) throw new Error(data.error);
+      let text = data.result;
       if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
       else if (text.startsWith("```")) text = text.replace(/^```\s*/, "").replace(/\s*```$/, "");
 
@@ -205,7 +220,8 @@ function SetlistBuilderContent() {
     } finally {
       setIsAiLoading(false);
     }
-  };  const [guestlistUser, setGuestlistUser] = useState(null);
+  };
+  const [guestlistUser, setGuestlistUser] = useState(null);
   const [isGuestlistLoading, setIsGuestlistLoading] = useState(false);
 
   const confirmAddToGuestlist = (user) => {
@@ -239,9 +255,11 @@ function SetlistBuilderContent() {
     } finally {
       setIsGuestlistLoading(false);
     }
-  };  if (loadingEvents) {
+  };
+  if (loadingEvents) {
     return <div className="flex h-screen items-center justify-center text-[#90b2cb]">Loading Your Events...</div>;
-  }  if (!selectedEventId) {
+  }
+  if (!selectedEventId) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] text-[#90b2cb] p-6">
         <h2 className="text-3xl font-bold text-white mb-6">Select an Event</h2>
@@ -277,7 +295,8 @@ function SetlistBuilderContent() {
         )}
       </div>
     );
-  }  const activeEvent = events.find(e => e._id === selectedEventId);
+  }
+  const activeEvent = events.find(e => e._id === selectedEventId);
 
   return (
     <main className="flex-1 flex flex-col items-center py-8 px-4 md:px-8 lg:px-12 xl:px-20 w-full overflow-y-auto custom-scrollbar">

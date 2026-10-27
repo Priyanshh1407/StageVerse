@@ -2,7 +2,8 @@
 
 import { Wifi, Battery, Settings, MapPin } from 'lucide-react';
 
-export default function LiveHeader({ status, onOpenSettings }) {  const getStatusStyles = () => {
+export default function LiveHeader({ status, onOpenSettings }) {
+  const getStatusStyles = () => {
     if (status === 'Live') return "bg-green-500/10 text-green-500 ring-green-500/20";
     if (status === 'Paused') return "bg-red-500/10 text-red-500 ring-red-500/20";
     return "bg-yellow-400/10 text-yellow-500 ring-yellow-400/20";

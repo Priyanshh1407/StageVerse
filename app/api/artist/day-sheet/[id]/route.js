@@ -12,15 +12,18 @@ export async function GET(req, { params }) {
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const resolvedParams = await params;
-        const { id } = resolvedParams;        let event;
+        const { id } = resolvedParams;
+        let event;
         if (mongoose.Types.ObjectId.isValid(id)) {
             event = await Event.findById(id).populate('venue');
-        } else {            event = await Event.findOne({ eventId: parseInt(id) }).populate('venue');
+        } else {
+            event = await Event.findOne({ eventId: parseInt(id) }).populate('venue');
         }
 
         if (!event) {
             return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-        }        let schedule = event.daySheet;
+        }
+        let schedule = event.daySheet;
 
         if (!schedule || schedule.length === 0) {
             console.log("Generating Default Schedule...");
@@ -73,7 +76,8 @@ export async function GET(req, { params }) {
                     details: 'Setlist A. Pyrotechnics enabled.',
                     status: 'future'
                 }
-            ];            event.daySheet = schedule;
+            ];
+            event.daySheet = schedule;
             await event.save();
         }
 
@@ -97,11 +101,13 @@ export async function GET(req, { params }) {
 }
 
 import fs from 'fs';
-import path from 'path';function logToFile(message) {
+import path from 'path';
+function logToFile(message) {
     const logPath = path.resolve(process.cwd(), 'debug_api.log');
     const timestamp = new Date().toISOString();
     fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`);
-}export async function PUT(req, { params }) {
+}
+export async function PUT(req, { params }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -117,11 +123,14 @@ import path from 'path';function logToFile(message) {
         logToFile(`Payload - Schedule Items: ${schedule?.length || 0}, VenueIntel: ${!!venueIntel}`);
 
         const updateData = {};
-        if (schedule) {            updateData.daySheet = schedule.map(item => {
-                const newItem = { ...item };                if (newItem.id && String(newItem.id).startsWith('new-')) {
+        if (schedule) {
+            updateData.daySheet = schedule.map(item => {
+                const newItem = { ...item };
+                if (newItem.id && String(newItem.id).startsWith('new-')) {
                     delete newItem.id;
                     delete newItem._id;
-                }                return newItem;
+                }
+                return newItem;
             });
             logToFile(`Sanitized Schedule prepared.`);
         }
@@ -150,7 +159,8 @@ import path from 'path';function logToFile(message) {
             return NextResponse.json({ error: 'Event not found' }, { status: 404 });
         }
 
-        logToFile(`SUCCESS. Updated Event: ${event._id}. DaySheet Length: ${event.daySheet?.length}`);        if (notifyTeam && schedule) {
+        logToFile(`SUCCESS. Updated Event: ${event._id}. DaySheet Length: ${event.daySheet?.length}`);
+        if (notifyTeam && schedule) {
             console.log("Creating Notification Task for Crew...");
             await Task.create({
                 eventId: event._id,

@@ -2,7 +2,8 @@ import Event from '@/models/Event';
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
-import { verifyAuth } from '@/lib/auth';export async function GET(req) {
+import { verifyAuth } from '@/lib/auth';
+export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -11,7 +12,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
         const { searchParams } = new URL(req.url);
         let eventId = searchParams.get('eventId');
 
-        if (!eventId) return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });        const numericEventId = parseInt(eventId);
+        if (!eventId) return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
+        const numericEventId = parseInt(eventId);
         console.log(`[Guest GET] Resolving Event ID: ${eventId} -> ${numericEventId}`);
 
         const event = await Event.findOne({ eventId: numericEventId });
@@ -20,7 +22,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
             console.log(`[Guest GET] Found Event: ${event._id}`);
             eventId = event._id;
         } else {
-            console.log(`[Guest GET] Event ${numericEventId} not found. Returning empty.`);            return NextResponse.json({ success: true, data: [] });
+            console.log(`[Guest GET] Event ${numericEventId} not found. Returning empty.`);
+            return NextResponse.json({ success: true, data: [] });
         }
 
         const guests = await Guest.find({ eventId }).sort({ addedAt: -1 });
@@ -30,7 +33,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
     } catch (error) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}export async function POST(req) {
+}
+export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -41,7 +45,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
 
         if (!eventId || !name) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }        console.log(`[Guest POST] Looking for Event ID: ${eventId}`);
+        }
+        console.log(`[Guest POST] Looking for Event ID: ${eventId}`);
         const numericEventId = parseInt(eventId);
 
         const event = await Event.findOne({ eventId: numericEventId });
@@ -65,7 +70,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
         console.error("Guest Add Error:", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}export async function PUT(req) {
+}
+export async function PUT(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -96,18 +102,22 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
         console.error("Guest Update Error:", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}export async function DELETE(req) {
+}
+export async function DELETE(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
-        const { id, eventId, clearAll } = body;        if (id) {
+        const { id, eventId, clearAll } = body;
+        if (id) {
             await Guest.findByIdAndDelete(id);
             return NextResponse.json({ success: true });
-        }        if (clearAll && eventId) {
-            console.log(`[Guest DELETE] Clearing list for Event: ${eventId}`);            const numericEventId = parseInt(eventId);
+        }
+        if (clearAll && eventId) {
+            console.log(`[Guest DELETE] Clearing list for Event: ${eventId}`);
+            const numericEventId = parseInt(eventId);
             const event = await Event.findOne({ eventId: numericEventId });
 
             if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });

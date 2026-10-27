@@ -15,9 +15,11 @@ export async function GET(req) {
                 { name: { $regex: search, $options: 'i' } },
                 { location: { $regex: search, $options: 'i' } }
             ];
-        }        const artists = await User.find(query)
+        }
+        const artists = await User.find(query)
             .select('name avatar bio location stats role')
-            .lean();        const formattedArtists = artists.map(a => ({
+            .lean();
+        const formattedArtists = artists.map(a => ({
             id: a._id,
             name: a.name,
             genre: 'Artist', // Schema doesn't have genre, defaulting

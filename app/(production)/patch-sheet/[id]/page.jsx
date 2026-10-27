@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, use } from 'react';
-import { Loader2, Table2, Calculator, Save, RefreshCw, Pencil, X } from 'lucide-react';import StudioNavbar from '@/components/production/StudioNavbar';
+import { Loader2, Table2, Calculator, Save, RefreshCw, Pencil, X } from 'lucide-react';
+import StudioNavbar from '@/components/production/StudioNavbar';
 import PatchingSidebar from '@/components/production/patcher/PatchingSidebar';
 import PatchMainArea from '@/components/production/patcher/PatchMainArea';
 
@@ -16,7 +17,8 @@ export default function PatchSheetPage(props) {
   const [patches, setPatches] = useState([]);
   const [mobileView, setMobileView] = useState('sheet');
   const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState(null);  const [editingFixture, setEditingFixture] = useState(null);
+  const [lastSaved, setLastSaved] = useState(null);
+  const [editingFixture, setEditingFixture] = useState(null);
 
   const fetchPatch = async () => {
     try {
@@ -56,7 +58,9 @@ export default function PatchSheetPage(props) {
   };
 
   useEffect(() => {
-    fetchPatch();    const handleFocus = () => {      if (!isSaving) fetchPatch();
+    fetchPatch();
+    const handleFocus = () => {
+      if (!isSaving) fetchPatch();
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
@@ -80,9 +84,11 @@ export default function PatchSheetPage(props) {
 
       if (res.ok) {
         toast.success('Patch saved successfully');
-        setLastSaved(new Date());        if (data.data && data.data.fixtures) {
+        setLastSaved(new Date());
+        if (data.data && data.data.fixtures) {
           setPatches(data.data.fixtures);
-        } else {          fetchPatch();
+        } else {
+          fetchPatch();
         }
 
       } else {
@@ -96,16 +102,20 @@ export default function PatchSheetPage(props) {
     }
   };
 
-  const handleAddFixtures = (newFixtures) => {    const maxId = patches.length > 0 ? Math.max(...patches.map(p => p.fixtureId || 0)) : 0;    const processedFixtures = newFixtures.map((f, index) => ({
+  const handleAddFixtures = (newFixtures) => {
+    const maxId = patches.length > 0 ? Math.max(...patches.map(p => p.fixtureId || 0)) : 0;
+    const processedFixtures = newFixtures.map((f, index) => ({
       ...f,
-      fixtureId: maxId + index + 1,      status: f.status || 'ok',
+      fixtureId: maxId + index + 1,
+      status: f.status || 'ok',
       cue: f.cue || 'General',
       cueColor: f.cueColor || 'blue'
     }));
 
     setPatches(prev => [...prev, ...processedFixtures]);
     toast.success(`Added ${newFixtures.length} new fixtures. Don't forget to save!`);
-  };  const handleEditSubmission = (e) => {
+  };
+  const handleEditSubmission = (e) => {
     e.preventDefault();
     if (editingFixture) {
       setPatches(prev => prev.map(p =>

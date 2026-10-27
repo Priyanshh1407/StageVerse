@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import UserSearchInput from '@/components/common/UserSearchInput';
-import { MapPin, ArrowRight, Ticket, AlertTriangle, Heart, TrendingUp, Sun, DollarSign, BarChart3, ChevronRight, CheckCircle, Lightbulb } from 'lucide-react';export function LiveShowCard({ data }) {
+import { MapPin, ArrowRight, Ticket, AlertTriangle, Heart, TrendingUp, Sun, DollarSign, BarChart3, ChevronRight, CheckCircle, Lightbulb } from 'lucide-react';
+export function LiveShowCard({ data }) {
   if (!data) return null; // Safety check
 
   return (
@@ -102,7 +103,8 @@ function AssignProductionOverlay({ eventId, currentAssignee }) {
       </div>
     </div>
   );
-}export function TicketStatsCard({ data }) {
+}
+export function TicketStatsCard({ data }) {
   if (!data) return null;
 
   const percentStyle = `${data.percentage}%`;
@@ -154,7 +156,8 @@ function AssignProductionOverlay({ eventId, currentAssignee }) {
       </div>
     </div>
   );
-}export function MerchAlert({ data, onClick }) {
+}
+export function MerchAlert({ data, onClick }) {
 
   if (!data || !data.active) return null;
 
@@ -192,7 +195,8 @@ function AssignProductionOverlay({ eventId, currentAssignee }) {
       <div className="absolute top-0 right-0 p-8 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-white/20 transition-colors"></div>
     </div>
   );
-}export function StatGrid({ data, onAction }) {
+}
+export function StatGrid({ data, onAction }) {
   const iconMap = {
     Heart: Heart,
     Sun: Sun,
@@ -235,7 +239,8 @@ function AssignProductionOverlay({ eventId, currentAssignee }) {
       })}
     </div>
   );
-}export function UpcomingStops({ data }) {
+}
+export function UpcomingStops({ data }) {
   if (!data || data.length === 0) return null;
 
   return (
@@ -272,7 +277,8 @@ function AssignProductionOverlay({ eventId, currentAssignee }) {
       </div>
     </div>
   );
-}export function DaySheetCard({ onClick, data }) {
+}
+export function DaySheetCard({ onClick, data }) {
   const defaultSchedule = [
     { time: "14:00", event: "Load In", status: "past" },
     { time: "16:00", event: "Soundcheck", status: "active" },

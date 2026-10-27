@@ -5,7 +5,8 @@ import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Setlist from '@/models/Setlist';
 import Song from '@/models/Song';
-import { verifyAuth } from '@/lib/auth';export async function GET(req) {
+import { verifyAuth } from '@/lib/auth';
+export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -15,11 +16,13 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
         let eventIdInput = searchParams.get('eventId');
         if (!eventIdInput) return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
 
-        let mongoEventId = eventIdInput;        const isValidObjectId = mongoose.Types.ObjectId.isValid(eventIdInput);
+        let mongoEventId = eventIdInput;
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(eventIdInput);
 
         if (isValidObjectId) {
             mongoEventId = eventIdInput;
-        } else {            const numericEventId = parseInt(eventIdInput);
+        } else {
+            const numericEventId = parseInt(eventIdInput);
             if (!isNaN(numericEventId)) {
                 const event = await Event.findOne({ eventId: numericEventId });
                 if (event) mongoEventId = event._id;
@@ -36,7 +39,8 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
         console.error("[Setlist GET] Error:", error);
         return NextResponse.json({ error: `Internal Server Error: ${error.message}` }, { status: 500 });
     }
-}export async function POST(req) {
+}
+export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -52,17 +56,21 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
         let mongoEventId = eventId;
         const isValidObjectId = mongoose.Types.ObjectId.isValid(eventId);
 
-        if (!isValidObjectId) {            const event = await Event.findOne({ eventId: eventId });
+        if (!isValidObjectId) {
+            const event = await Event.findOne({ eventId: eventId });
             if (!event) {
                 return NextResponse.json({ error: `Event ${eventId} not found` }, { status: 404 });
             }
             mongoEventId = event._id;
-        }        const processedItems = await Promise.all(items.map(async (item) => {            let song = await Song.findOne({
+        }
+        const processedItems = await Promise.all(items.map(async (item) => {
+            let song = await Song.findOne({
                 artistId: user.userId,
                 title: { $regex: new RegExp(`^${item.title}$`, 'i') }
             });
 
-            if (!song) {                song = await Song.create({
+            if (!song) {
+                song = await Song.create({
                     artistId: user.userId,
                     title: item.title,
                     duration: item.duration,
@@ -71,10 +79,13 @@ import { verifyAuth } from '@/lib/auth';export async function GET(req) {
                     color: item.tags && item.tags.length > 0 ? item.tags[0].color : 'blue'
                 });
                 console.log(`[Setlist Sync] Created new song: ${item.title}`);
-            }            return {
+            }
+            return {
                 ...item,
-                songId: song._id,            };
-        }));        const updatedSetlist = await Setlist.findOneAndUpdate(
+                songId: song._id,
+            };
+        }));
+        const updatedSetlist = await Setlist.findOneAndUpdate(
             { eventId: mongoEventId },
             {
                 artistId: user.userId,

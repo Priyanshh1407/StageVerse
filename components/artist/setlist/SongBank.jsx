@@ -8,16 +8,22 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [recentlyAdded, setRecentlyAdded] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState('');  const [newTitle, setNewTitle] = useState('');
+  const [error, setError] = useState('');
+  const [newTitle, setNewTitle] = useState('');
   const [newDuration, setNewDuration] = useState('');
   const [newGenre, setNewGenre] = useState('');
   const [newMood, setNewMood] = useState('');
-  const [newBpm, setNewBpm] = useState('');  const handleDurationChange = (e) => {    let value = e.target.value.replace(/\D/g, '');    if (value.length > 4) value = value.slice(0, 4);    if (value.length > 2) {
+  const [newBpm, setNewBpm] = useState('');
+  const handleDurationChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 4) value = value.slice(0, 4);
+    if (value.length > 2) {
       value = `${value.slice(0, 2)}:${value.slice(2)}`;
     }
 
     setNewDuration(value);
-  };  const filteredSongs = songs.filter((song) => {
+  };
+  const filteredSongs = songs.filter((song) => {
     const matchesFilter = activeFilter === 'All' || song.tag.includes(activeFilter);
     const matchesSearch = song.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           song.tag.toLowerCase().includes(searchQuery.toLowerCase());
@@ -50,7 +56,8 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
       genre: newGenre,
       bpm: newBpm.toUpperCase().includes('BPM') ? newBpm : `${newBpm} BPM`,
       tag: newMood 
-    });    setNewTitle('');
+    });
+    setNewTitle('');
     setNewDuration('');
     setNewGenre('');
     setNewMood('');

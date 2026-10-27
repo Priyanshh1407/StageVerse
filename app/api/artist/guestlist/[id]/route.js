@@ -3,7 +3,8 @@ import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
 import Notification from '@/models/Notification';
 import User from '@/models/User';
-import { verifyAuth } from '@/lib/auth';export async function PATCH(req, { params }) {
+import { verifyAuth } from '@/lib/auth';
+export async function PATCH(req, { params }) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
@@ -26,14 +27,17 @@ import { verifyAuth } from '@/lib/auth';export async function PATCH(req, { para
         console.error(e);
         return NextResponse.json({ error: 'Server Error' }, { status: 500 });
     }
-}export async function DELETE(req, { params }) {
+}
+export async function DELETE(req, { params }) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
         if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { id } = await params;        const guest = await Guest.findById(id);
-        if (!guest) return NextResponse.json({ error: 'Guest not found' }, { status: 404 });        let targetUserId = guest.userId;
+        const { id } = await params;
+        const guest = await Guest.findById(id);
+        if (!guest) return NextResponse.json({ error: 'Guest not found' }, { status: 404 });
+        let targetUserId = guest.userId;
 
         if (!targetUserId && guest.email) {
             const user = await User.findOne({ email: guest.email });
@@ -57,7 +61,8 @@ import { verifyAuth } from '@/lib/auth';export async function PATCH(req, { para
 
         } else {
             console.warn(`[Guestlist] Could not resolve User for guest ${id}. No notification sent.`);
-        }        await Guest.findByIdAndDelete(id);
+        }
+        await Guest.findByIdAndDelete(id);
 
         return NextResponse.json({ success: true });
     } catch (e) {

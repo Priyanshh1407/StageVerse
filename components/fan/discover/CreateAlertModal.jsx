@@ -22,7 +22,8 @@ export default function CreateAlertModal({ isOpen, onClose }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setSuccess(true);        setTimeout(() => {
+        setSuccess(true);
+        setTimeout(() => {
             setSuccess(false);
             onClose();
         }, 2000);

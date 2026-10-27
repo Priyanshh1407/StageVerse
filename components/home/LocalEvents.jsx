@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function LocalEvents({ events, isLoading }) {  const [startIndex, setStartIndex] = useState(0);
-  const itemsPerPage = 2;  const visibleEvents = events.slice(startIndex, startIndex + itemsPerPage);  const handleNext = () => {
+export default function LocalEvents({ events, isLoading }) {
+  const [startIndex, setStartIndex] = useState(0);
+  const itemsPerPage = 2;
+  const visibleEvents = events.slice(startIndex, startIndex + itemsPerPage);
+  const handleNext = () => {
     if (startIndex + itemsPerPage < events.length) {
       setStartIndex(prev => prev + itemsPerPage);
     }
@@ -16,7 +19,8 @@ export default function LocalEvents({ events, isLoading }) {  const [startIndex
     if (startIndex > 0) {
       setStartIndex(prev => prev - itemsPerPage);
     }
-  };  const isStart = startIndex === 0;
+  };
+  const isStart = startIndex === 0;
   const isEnd = startIndex + itemsPerPage >= events.length;
 
   return (

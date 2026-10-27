@@ -6,12 +6,14 @@ import { toast } from 'sonner';
 
 export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixtures, fixtures = [] }) {
   const [profiles, setProfiles] = useState([]);
-  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);  const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
+  const [selectedProfileId, setSelectedProfileId] = useState("");
   const [quantity, setQuantity] = useState(8);
   const [universe, setUniverse] = useState(1);
   const [address, setAddress] = useState(1);
   const [logic, setLogic] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);  const handleAiPatch = async () => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const handleAiPatch = async () => {
     if (!logic.trim()) {
       toast.error("Please enter a prompt (e.g. 'Patch 8 beams')");
       return;
@@ -67,12 +69,14 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
     }
   };
 
-  const handleCalculate = () => {    if (logic && logic.trim().length > 0) {
+  const handleCalculate = () => {
+    if (logic && logic.trim().length > 0) {
       handleAiPatch();
       return;
     }
 
-    if (!onAddFixtures) return;    if (!selectedProfileId) {
+    if (!onAddFixtures) return;
+    if (!selectedProfileId) {
       toast.error("Please select a fixture profile");
       return;
     }
@@ -110,7 +114,8 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
   const [newModel, setNewModel] = useState("");
   const [newModeName, setNewModeName] = useState("Standard");
   const [newChannels, setNewChannels] = useState(16);
-  const [isCreating, setIsCreating] = useState(false);  useEffect(() => {
+  const [isCreating, setIsCreating] = useState(false);
+  useEffect(() => {
     fetchProfiles();
   }, []);
 
@@ -152,7 +157,8 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
         toast.success("Profile created!");
         await fetchProfiles(); // Reload list
         setSelectedProfileId(data.data._id); // Select new profile
-        setShowModal(false);        setNewManufacturer("");
+        setShowModal(false);
+        setNewManufacturer("");
         setNewModel("");
         setNewChannels(16);
       } else {

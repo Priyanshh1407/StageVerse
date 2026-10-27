@@ -5,7 +5,8 @@ import MemoryVaultContent from './MemoryVaultContent';
 export const metadata = {
   title: 'Memory Vault | StageVerse',
   description: 'Your concert history and media collection.',
-};function VaultLoader() {
+};
+function VaultLoader() {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-[#f5f7f8] dark:bg-[#101b22]">
       <div className="flex flex-col items-center gap-3">

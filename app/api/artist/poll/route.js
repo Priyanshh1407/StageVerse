@@ -10,7 +10,8 @@ export async function POST(req) {
         if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
-        const { eventId, question, options } = body;        if (!eventId || !question || !options || options.length < 2) {
+        const { eventId, question, options } = body;
+        if (!eventId || !question || !options || options.length < 2) {
             return NextResponse.json({ error: 'Invalid poll data' }, { status: 400 });
         }
 

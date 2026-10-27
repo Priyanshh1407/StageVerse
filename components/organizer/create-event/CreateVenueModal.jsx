@@ -15,7 +15,8 @@ import {
   Save,
   Map as MapIcon,
   CloudUpload
-} from 'lucide-react';import OrganizerSidebar from '@/components/organizer/OrganizerSidebar'; // Adjusted path based on typical structure
+} from 'lucide-react';
+import OrganizerSidebar from '@/components/organizer/OrganizerSidebar'; // Adjusted path based on typical structure
 
 export default function CreateVenueModal({
   isOpen,
@@ -24,7 +25,8 @@ export default function CreateVenueModal({
   onSuccess
 }) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);  const [formData, setFormData] = useState({
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
     name: '',
     type: '',
     capacity: '',
@@ -33,21 +35,26 @@ export default function CreateVenueModal({
     description: '',
     bagPolicy: '',
     hasParking: true, // Default from your UI
-  });  useEffect(() => {
+  });
+  useEffect(() => {
     if (isOpen && initialName) {
       setFormData(prev => ({ ...prev, name: initialName }));
     }
-  }, [isOpen, initialName]);  const handleChange = (e) => {
+  }, [isOpen, initialName]);
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };  const handleSaveVenue = async () => {    if (!formData.name || !formData.city || !formData.address) {
+  };
+  const handleSaveVenue = async () => {
+    if (!formData.name || !formData.city || !formData.address) {
       toast.error("Please fill in Venue Name, City, and Address");
       return;
     }
 
     setIsSubmitting(true);
 
-    try {      const res = await fetch('/api/venues', {
+    try {
+      const res = await fetch('/api/venues', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -55,9 +62,13 @@ export default function CreateVenueModal({
 
       const data = await res.json();
 
-      if (res.ok) {        if (onSuccess) {
+      if (res.ok) {
+        if (onSuccess) {
           onSuccess(data.data);
-        }        router.push('/create-event');        onClose();        setFormData({
+        }
+        router.push('/create-event');
+        onClose();
+        setFormData({
           name: '', type: '', capacity: '', address: '', city: '',
           description: '', bagPolicy: '', hasParking: true
         });
@@ -75,7 +86,8 @@ export default function CreateVenueModal({
 
   if (!isOpen) return null;
 
-  return (    <div className="fixed inset-0 z-[100] flex h-screen w-screen overflow-hidden bg-black/80 backdrop-blur-sm">
+  return (
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen overflow-hidden bg-black/80 backdrop-blur-sm">
 
       {}
       <style jsx global>{`

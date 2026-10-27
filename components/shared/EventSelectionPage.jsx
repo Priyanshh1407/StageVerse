@@ -13,7 +13,8 @@ export default function EventSelectionPage({ role = 'artist' }) {
 
     useEffect(() => {
         const fetchEvents = async () => {
-            try {                const res = await fetch('/api/artist/events');
+            try {
+                const res = await fetch('/api/artist/events');
                 const json = await res.json();
                 if (json.success) {
                     setEvents(json.events || []);

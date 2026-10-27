@@ -21,7 +21,8 @@ export default function EventDetailPage() {
 
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);    const ref = useRef(null);
+    const [error, setError] = useState(null);
+    const ref = useRef(null);
     const { scrollY } = useScroll();
     const heroY = useTransform(scrollY, [0, 500], [0, 200]);
     const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.3]);
@@ -86,7 +87,8 @@ export default function EventDetailPage() {
                 <MainFooter isLoggedIn={false} />
             </div>
         );
-    }    const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
+    }
+    const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -366,7 +368,8 @@ export default function EventDetailPage() {
             </main>
         </div>
     );
-}function SimilarEventCard({ event }) {
+}
+function SimilarEventCard({ event }) {
     return (
         <Link href={`/events/${event.id}`} className="group block bg-[#111] rounded-2xl overflow-hidden border border-white/5 hover:border-[#00d4ff]/50 transition-all duration-500 hover:-translate-y-2">
             <div className="h-64 bg-cover bg-center relative overflow-hidden">

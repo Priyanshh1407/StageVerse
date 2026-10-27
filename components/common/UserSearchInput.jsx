@@ -14,16 +14,19 @@ export default function UserSearchInput({
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [showDropdown, setShowDropdown] = useState(false);    const [selectedUser, setSelectedUser] = useState(initialValue);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(initialValue);
     const wrapperRef = useRef(null);
 
     useEffect(() => {
         if (initialValue && typeof initialValue === 'object') {
             setSelectedUser(initialValue);
             setSearchTerm(initialValue.name);
-        } else if (initialValue && typeof initialValue === 'string') {            setSearchTerm(initialValue);
+        } else if (initialValue && typeof initialValue === 'string') {
+            setSearchTerm(initialValue);
         }
-    }, [initialValue]);    useEffect(() => {
+    }, [initialValue]);
+    useEffect(() => {
         function handleClickOutside(event) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
                 setShowDropdown(false);
@@ -31,7 +34,8 @@ export default function UserSearchInput({
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [wrapperRef]);    useEffect(() => {
+    }, [wrapperRef]);
+    useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             if (searchTerm.length >= 2 && !selectedUser) {
                 setIsLoading(true);
@@ -66,11 +70,13 @@ export default function UserSearchInput({
     const handleClear = () => {
         setSelectedUser(null);
         setSearchTerm('');
-        if (onSelect) onSelect(null);    };
+        if (onSelect) onSelect(null);
+    };
 
     const handleChange = (e) => {
         setSearchTerm(e.target.value);
-        if (selectedUser) {            setSelectedUser(null);
+        if (selectedUser) {
+            setSelectedUser(null);
             if (onSelect) onSelect(null);
         }
     };

@@ -45,7 +45,8 @@ function TaskItem({ task }) {
     red: { border: 'bg-red-500', badge: 'text-red-500 bg-red-500/10' },
     amber: { border: 'bg-amber-500', badge: 'text-amber-500 bg-amber-500/10' },
     blue: { border: 'bg-blue-500', badge: 'text-blue-500 bg-blue-500/10' },
-  };  const theme = isMessage
+  };
+  const theme = isMessage
     ? { border: 'bg-purple-500', badge: 'text-purple-400 bg-purple-500/10' }
     : (colorMap[task.color] || colorMap.blue);
 
@@ -79,7 +80,8 @@ function TaskItem({ task }) {
   );
 }
 
-function ActivityItem({ item }) {  const getStyle = (type) => {
+function ActivityItem({ item }) {
+  const getStyle = (type) => {
     switch (type) {
       case 'warning': return {
         icon: AlertTriangle, color: 'bg-red-500', ring: 'ring-red-500/20', text: 'text-red-400'

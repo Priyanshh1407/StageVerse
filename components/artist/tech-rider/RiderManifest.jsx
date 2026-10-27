@@ -2,7 +2,8 @@
 
 import { ScrollText, FileJson, File, Share2 } from 'lucide-react';
 
-export default function RiderManifest({ gear, hazer, onDownloadPDF }) {  const totalItems = gear.reduce((acc, item) => acc + item.count, 0) + (hazer ? 1 : 0);
+export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
+  const totalItems = gear.reduce((acc, item) => acc + item.count, 0) + (hazer ? 1 : 0);
   const activeGear = gear.filter(g => g.count > 0);
 
   return (

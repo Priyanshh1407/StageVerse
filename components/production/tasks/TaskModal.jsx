@@ -3,7 +3,8 @@ import { X, Loader2 } from 'lucide-react';
 
 export default function TaskModal({ task, showId, onClose, onSave }) {
     const [events, setEvents] = useState([]);
-    const [isLoadingEvents, setIsLoadingEvents] = useState(false);    const [formData, setFormData] = useState({
+    const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+    const [formData, setFormData] = useState({
         title: task ? task.title : '',
         eventId: task ? task.eventId : (showId || ''), // Use eventId, not "show" (name)
         venue: task ? task.venue : '',
@@ -18,7 +19,8 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
     useEffect(() => {
         const fetchEvents = async () => {
             setIsLoadingEvents(true);
-            try {                const res = await fetch('/api/events');
+            try {
+                const res = await fetch('/api/events');
                 if (res.ok) {
                     const data = await res.json();
                     setEvents(data.events || data); // Handle array or { events: [] }
@@ -30,7 +32,8 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
             }
         };
         fetchEvents();
-    }, []);    useEffect(() => {
+    }, []);
+    useEffect(() => {
         if (task) {
             setFormData({
                 title: task.title || '',
@@ -47,7 +50,8 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
     }, [task, showId]);
 
     const handleSubmit = async (e) => {
-        e.preventDefault();        await onSave(formData);
+        e.preventDefault();
+        await onSave(formData);
     };
 
     return (
@@ -82,7 +86,8 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
                                 value={formData.eventId} // Use eventId
                                 onChange={(e) => setFormData({ ...formData, eventId: e.target.value })}
-                                disabled={!!showId} // Lock if we are on a specific page? User request implies they want to see/select. Let's unlock if that's the request, BUT parent overrides it.                            >
+                                disabled={!!showId} // Lock if we are on a specific page? User request implies they want to see/select. Let's unlock if that's the request, BUT parent overrides it.
+                            >
                                 <option value="">Select Event...</option>
                                 {events.map(ev => (
                                     <option key={ev._id} value={ev._id || ev.eventId}>

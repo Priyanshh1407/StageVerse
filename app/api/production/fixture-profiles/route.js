@@ -4,7 +4,8 @@ import FixtureProfile from '@/models/FixtureProfile';
 
 export async function GET() {
     try {
-        await dbConnect();        const profiles = await FixtureProfile.find({}).sort({ manufacturer: 1, model: 1 });
+        await dbConnect();
+        const profiles = await FixtureProfile.find({}).sort({ manufacturer: 1, model: 1 });
         return NextResponse.json({ success: true, data: profiles });
     } catch (error) {
         console.error('Failed to fetch fixture profiles', error);
@@ -16,7 +17,8 @@ export async function POST(req) {
     try {
         await dbConnect();
         const body = await req.json();
-        const { manufacturer, model, modes, type } = body;        if (!manufacturer || !model || !modes || modes.length === 0) {
+        const { manufacturer, model, modes, type } = body;
+        if (!manufacturer || !model || !modes || modes.length === 0) {
             return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
         }
 

@@ -6,9 +6,11 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import ScorecardModal from './ScoreCardModal';
 
-export default function SetListPredictor({ initialEventId, events = [] }) {  const [selectedEventId, setSelectedEventId] = useState(initialEventId || (events[0]?.event?._id));
+export default function SetListPredictor({ initialEventId, events = [] }) {
+  const [selectedEventId, setSelectedEventId] = useState(initialEventId || (events[0]?.event?._id));
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);  const currentEventData = events.find(e => e.event._id === selectedEventId) || events[0];
+  const dropdownRef = useRef(null);
+  const currentEventData = events.find(e => e.event._id === selectedEventId) || events[0];
   const { event, songs: availableSongs = [], prediction: initialPrediction = null, setlist: actualSetlist = null } = currentEventData || {};
 
   const [prediction, setPrediction] = useState(initialPrediction?.songs || []);
@@ -16,10 +18,13 @@ export default function SetListPredictor({ initialEventId, events = [] }) {  co
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScorecard, setShowScorecard] = useState(false);
 
-  const isGraded = initialPrediction?.status === 'graded';  useEffect(() => {
+  const isGraded = initialPrediction?.status === 'graded';
+  useEffect(() => {
     setPrediction(initialPrediction?.songs || []);
-    setSearchQuery("");    setShowScorecard(false);
-  }, [selectedEventId, initialPrediction]);  useEffect(() => {
+    setSearchQuery("");
+    setShowScorecard(false);
+  }, [selectedEventId, initialPrediction]);
+  useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
@@ -27,10 +32,12 @@ export default function SetListPredictor({ initialEventId, events = [] }) {  co
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);  const filteredPool = availableSongs.filter(song =>
+  }, []);
+  const filteredPool = availableSongs.filter(song =>
     !prediction.find(p => (p.id === song._id || p.id === song.id)) && // Handle _id vs id
     song.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );  const addToPrediction = (song) => {
+  );
+  const addToPrediction = (song) => {
     if (prediction.length >= 10) return;
     setPrediction([...prediction, { id: song._id || song.id, title: song.title, album: song.album || "Single" }]);
   };
@@ -67,7 +74,8 @@ export default function SetListPredictor({ initialEventId, events = [] }) {  co
 
       const json = await res.json();
       if (json.success) {
-        toast.success("Prediction Locked In!");      } else {
+        toast.success("Prediction Locked In!");
+      } else {
         toast.error(json.error || "Failed to save");
       }
     } catch (e) {
@@ -78,7 +86,9 @@ export default function SetListPredictor({ initialEventId, events = [] }) {  co
     }
   };
 
-  if (!event) return <div className="p-10 text-white">Loading Event...</div>;  if (isGraded && !showScorecard) {  }
+  if (!event) return <div className="p-10 text-white">Loading Event...</div>;
+  if (isGraded && !showScorecard) {
+  }
 
   return (
     <div className="flex flex-col w-full h-[85vh] sm:max-w-6xl mx-auto bg-[#101b23] rounded-xl border border-[#315168] shadow-2xl overflow-hidden relative">

@@ -12,7 +12,8 @@ export default function Navbar() {
   
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state  useEffect(() => {
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  useEffect(() => {
     const checkSession = async () => {
       try {
         const res = await fetch('/api/auth/me');
@@ -31,7 +32,8 @@ export default function Navbar() {
     };
 
     checkSession();
-  }, []);  const handleLogout = async () => {
+  }, []);
+  const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' }); 
       setUser(null);
@@ -41,7 +43,8 @@ export default function Navbar() {
     } catch (err) {
       console.error('Logout failed', err);
     }
-  };  const getDashboardLink = () => {
+  };
+  const getDashboardLink = () => {
     if (!user) return '/login';
     const role = (user.role || '').toLowerCase();
     
@@ -111,7 +114,8 @@ export default function Navbar() {
             {}
             {isLoading ? (
                <div className="hidden sm:block w-24 h-8 bg-white/5 animate-pulse rounded-full"></div>
-            ) : user ? (              <div className="hidden sm:flex items-center gap-4 pl-4 border-l border-white/10">
+            ) : user ? (
+              <div className="hidden sm:flex items-center gap-4 pl-4 border-l border-white/10">
                 <div className="flex flex-col items-end leading-tight">
                     <span className="text-xs text-slate-400 uppercase tracking-wider">Welcome</span>
                     <span className="text-sm font-bold text-white">Hi, <span className="text-[#00d4ff]">{user.name?.split(' ')[0]}</span>!</span>
@@ -132,7 +136,8 @@ export default function Navbar() {
                   <LogOut className="w-5 h-5" />
                 </button>
               </div>
-            ) : (              <div className="hidden sm:flex items-center gap-4">
+            ) : (
+              <div className="hidden sm:flex items-center gap-4">
                 <Link href="/login" className="text-sm font-bold text-slate-300 uppercase transition-colors hover:text-white hover:underline decoration-[#00d4ff] underline-offset-4">
                   Login
                 </Link>
@@ -187,7 +192,8 @@ export default function Navbar() {
               })}
               
               <div className="pt-6 flex flex-col gap-4 border-t border-white/10">
-                {user ? (                   <div className="flex flex-col gap-4">
+                {user ? (
+                   <div className="flex flex-col gap-4">
                       <Link 
                         href={getDashboardLink()}
                         onClick={() => setIsOpen(false)}
@@ -208,7 +214,8 @@ export default function Navbar() {
                         <LogOut className="w-4 h-4" /> LOGOUT
                       </button>
                    </div>
-                ) : (                   <div className="grid grid-cols-2 gap-4">
+                ) : (
+                   <div className="grid grid-cols-2 gap-4">
                     <Link href="/login" onClick={() => setIsOpen(false)} className="py-3 rounded-lg border border-white/10 text-white font-bold text-center hover:bg-white/5 transition-colors uppercase">
                       Login
                     </Link>

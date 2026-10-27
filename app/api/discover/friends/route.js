@@ -42,7 +42,8 @@ export async function GET(req) {
             if (!ticket.eventId || !ticket.userId) return;
             const eventId = ticket.eventId._id.toString();
 
-            if (!groupedEvents[eventId]) {                const eventDate = new Date(ticket.eventId.date);
+            if (!groupedEvents[eventId]) {
+                const eventDate = new Date(ticket.eventId.date);
                 const daysDiff = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
                 let statusText = "Upcoming";
                 if (daysDiff === 0) statusText = "Today";

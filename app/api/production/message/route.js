@@ -10,14 +10,16 @@ export async function POST(req) {
         const user = await verifyAuth(req);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { message } = await req.json();        const event = await Event.findOne({
+        const { message } = await req.json();
+        const event = await Event.findOne({
             $or: [{ organizerId: user.userId }, { assignedTo: user.userId }],
             date: { $gte: new Date() }
         }).sort({ date: 1 });
 
         if (!event) {
             return NextResponse.json({ error: "No active event found to attach message to." }, { status: 400 });
-        }        const newTask = await Task.create({
+        }
+        const newTask = await Task.create({
             eventId: event._id,
             title: `Crew Message: ${message}`,
             assignee: "Artist Management", // Assigned back to them

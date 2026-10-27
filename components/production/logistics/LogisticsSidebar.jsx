@@ -3,7 +3,8 @@
 import React from 'react';
 
 export default function LogisticsSidebar({ crew = [], docs = [] }) {
-  return (    <aside className="w-80 border-l border-[#27272A] bg-[#0F0F10] hidden xl:flex flex-col gap-0 z-10 h-full">
+  return (
+    <aside className="w-80 border-l border-[#27272A] bg-[#0F0F10] hidden xl:flex flex-col gap-0 z-10 h-full">
 
       <div className="p-6 border-b border-[#27272A]">
         <div className="flex items-center justify-between mb-4">
@@ -45,14 +46,16 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
 
 import { Lightbulb, Map, Grid, Box } from 'lucide-react';
 
-function DocItem({ title, type, url }) {  let Icon = Box;
+function DocItem({ title, type, url }) {
+  let Icon = Box;
   let color = "text-blue-400";
   let bgColor = "bg-blue-500/10";
 
   if (type === 'Map') { Icon = Map; color = "text-purple-400"; bgColor = "bg-purple-500/10"; }
   if (type === 'Grid') { Icon = Grid; color = "text-green-400"; bgColor = "bg-green-500/10"; }
 
-  return (    <a className="group flex items-center p-3 rounded-lg bg-[#18181B] border border-transparent hover:border-blue-500/50 transition-all" href={url || '#'}>
+  return (
+    <a className="group flex items-center p-3 rounded-lg bg-[#18181B] border border-transparent hover:border-blue-500/50 transition-all" href={url || '#'}>
       <div className={`size-10 rounded ${bgColor} flex items-center justify-center ${color} mr-3 group-hover:text-white transition-colors`}>
         <Icon className="w-5 h-5" />
       </div>

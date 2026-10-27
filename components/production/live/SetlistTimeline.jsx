@@ -31,7 +31,8 @@ export default function SetlistTimeline({ items = [] }) {
 }
 
 function TimelineItem({ item, index }) {
-  const displayId = (index + 1).toString().padStart(2, '0');  if (item.status === 'completed') {
+  const displayId = (index + 1).toString().padStart(2, '0');
+  if (item.status === 'completed') {
     return (
       <div className="opacity-40 select-none pointer-events-none">
         <div className="flex gap-4 p-3 rounded-lg border border-transparent">
@@ -43,7 +44,8 @@ function TimelineItem({ item, index }) {
         </div>
       </div>
     );
-  }  if (item.status === 'live') {
+  }
+  if (item.status === 'live') {
     return (
       <div className="relative">
         <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#0d93f2] rounded-r"></div>
@@ -56,7 +58,8 @@ function TimelineItem({ item, index }) {
         </div>
       </div>
     );
-  }  return (
+  }
+  return (
     <div className="group">
       <div className="flex gap-4 p-3 rounded-lg border border-[#223949] bg-[#101b22] hover:border-slate-600 transition-colors cursor-pointer">
         <span className="text-slate-400 font-mono text-sm pt-1 group-hover:text-white">{displayId}</span>

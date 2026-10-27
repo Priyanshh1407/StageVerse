@@ -15,12 +15,15 @@ export async function PUT(req, props) {
 
         const { id } = params;
         const body = await req.json();
-        const { assignedTo } = body; // User ID of Production Crew        let targetEvent = null;        if (!isNaN(id)) {
+        const { assignedTo } = body; // User ID of Production Crew
+        let targetEvent = null;
+        if (!isNaN(id)) {
             targetEvent = await Event.findOne({
                 eventId: id,
                 $or: [{ artistId: user.userId }, { organizerId: user.userId }]
             });
-        }        if (!targetEvent) {
+        }
+        if (!targetEvent) {
             targetEvent = await Event.findOne({
                 _id: id,
                 $or: [{ artistId: user.userId }, { organizerId: user.userId }]
@@ -33,7 +36,8 @@ export async function PUT(req, props) {
 
         targetEvent.assignedTo = assignedTo;
         targetEvent.productionStatus = 'requested'; // Trigger LD Request
-        await targetEvent.save();        if (assignedTo) {
+        await targetEvent.save();
+        if (assignedTo) {
             await Notification.create({
                 userId: assignedTo,
                 type: 'system',

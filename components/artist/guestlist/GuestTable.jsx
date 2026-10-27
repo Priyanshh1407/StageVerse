@@ -101,7 +101,8 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
       </div>
     </div>
   );
-}function GuestRow({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
+}
+function GuestRow({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
   const tierStyles = {
     'All Access': 'text-amber-600 dark:text-amber-500 bg-amber-500/10 border-amber-500/20',
     'VIP': 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
@@ -158,7 +159,8 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
       </td>
     </tr>
   );
-}function MobileGuestCard({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
+}
+function MobileGuestCard({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
   const tierStyles = {
     'All Access': 'text-amber-600 dark:text-amber-500 bg-amber-500/10 border-amber-500/20',
     'VIP': 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',

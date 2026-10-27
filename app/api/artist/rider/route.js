@@ -4,7 +4,8 @@ import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
 import Task from '@/models/Task';
 import User from '@/models/User'; // Ensure User model is registered
-import { riderTemplates } from '@/lib/riderTemplates'; // Import the new templatesexport async function GET(req) {
+import { riderTemplates } from '@/lib/riderTemplates'; // Import the new templates
+export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -34,9 +35,12 @@ import { riderTemplates } from '@/lib/riderTemplates'; // Import the new templat
 
 function generateDiff(oldRider, newPayload) {
     const changes = [];
-    if (!oldRider || !oldRider.gear) return ["Initial Rider Created"];    const oldGear = oldRider.gear || [];
-    const newGear = newPayload.gear || [];    const oldMap = new Map(oldGear.map(g => [g.id, g]));
-    const newMap = new Map(newGear.map(g => [g.id, g]));    newGear.forEach(newItem => {
+    if (!oldRider || !oldRider.gear) return ["Initial Rider Created"];
+    const oldGear = oldRider.gear || [];
+    const newGear = newPayload.gear || [];
+    const oldMap = new Map(oldGear.map(g => [g.id, g]));
+    const newMap = new Map(newGear.map(g => [g.id, g]));
+    newGear.forEach(newItem => {
         const oldItem = oldMap.get(newItem.id);
         if (!oldItem) {
             changes.push(`• Added: ${newItem.count}x ${newItem.name}`);
@@ -45,11 +49,13 @@ function generateDiff(oldRider, newPayload) {
                 changes.push(`• Changed ${newItem.name}: ${oldItem.count} ➝ ${newItem.count}`);
             }
         }
-    });    oldGear.forEach(oldItem => {
+    });
+    oldGear.forEach(oldItem => {
         if (!newMap.has(oldItem.id)) {
             changes.push(`• Removed: ${oldItem.name}`);
         }
-    });    if (newPayload.stageLocation && newPayload.stageLocation !== oldRider.stageLocation) {
+    });
+    if (newPayload.stageLocation && newPayload.stageLocation !== oldRider.stageLocation) {
         changes.push(`• Stage Location: ${oldRider.stageLocation || 'None'} ➝ ${newPayload.stageLocation}`);
     }
     if (newPayload.mountingPreference && newPayload.mountingPreference !== oldRider.mountingPreference) {
@@ -60,7 +66,8 @@ function generateDiff(oldRider, newPayload) {
     }
 
     return changes;
-}export async function POST(req) {
+}
+export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -71,24 +78,32 @@ function generateDiff(oldRider, newPayload) {
 
         if (!eventId) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
-        }        const oldEvent = await Event.findById(eventId);
+        }
+        const oldEvent = await Event.findById(eventId);
         if (!oldEvent) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
-        const oldRider = oldEvent.rider ? oldEvent.rider.toObject() : {};        const updateData = {};
+        const oldRider = oldEvent.rider ? oldEvent.rider.toObject() : {};
+        const updateData = {};
         if (gear) updateData['rider.gear'] = gear;
         if (stageLocation !== undefined) updateData['rider.stageLocation'] = stageLocation;
         if (mountingPreference !== undefined) updateData['rider.mountingPreference'] = mountingPreference;
         if (placementNotes !== undefined) updateData['rider.placementNotes'] = placementNotes;
-        if (hazer !== undefined) updateData['rider.hazer'] = hazer;        if (assigneeId) {
+        if (hazer !== undefined) updateData['rider.hazer'] = hazer;
+        if (assigneeId) {
             updateData['assignedTo'] = assigneeId;
             updateData['status'] = 'requested';
-        }        const changes = generateDiff(oldRider, { gear, stageLocation, mountingPreference, placementNotes, hazer });        const updatedEvent = await Event.findByIdAndUpdate(
+        }
+        const changes = generateDiff(oldRider, { gear, stageLocation, mountingPreference, placementNotes, hazer });
+        const updatedEvent = await Event.findByIdAndUpdate(
             eventId,
             { $set: updateData },
             { new: true }
-        ).populate('assignedTo', 'name role');        const isNewAssignment = assigneeId && (!oldEvent.assignedTo || oldEvent.assignedTo.toString() !== assigneeId);
+        ).populate('assignedTo', 'name role');
+        const isNewAssignment = assigneeId && (!oldEvent.assignedTo || oldEvent.assignedTo.toString() !== assigneeId);
 
-        if (changes.length > 0 || isNewAssignment) {            const lang = 'English';            if (isNewAssignment) {
+        if (changes.length > 0 || isNewAssignment) {
+            const lang = 'English';
+            if (isNewAssignment) {
                 const title = riderTemplates.new_assignment[lang]();
                 await Task.create({
                     eventId: eventId,
@@ -104,7 +119,8 @@ function generateDiff(oldRider, newPayload) {
                     dueDate: 'Review ASAP',
                     status: 'pending'
                 });
-            }            for (const change of changes) {
+            }
+            for (const change of changes) {
                 let title = '';
                 let description = change; // The specific change line
 
@@ -128,7 +144,8 @@ function generateDiff(oldRider, newPayload) {
                         title = riderTemplates.count_updated[lang]('Item', '?', '?');
                     }
                 }
-                else if (change.startsWith('• Stage Location:') || change.startsWith('• Mounting:')) {                    const [feature, values] = change.replace('• ', '').split(': ');
+                else if (change.startsWith('• Stage Location:') || change.startsWith('• Mounting:')) {
+                    const [feature, values] = change.replace('• ', '').split(': ');
                     const [oldVal, newVal] = values ? values.split(' ➝ ') : ['?', '?'];
                     title = riderTemplates.stage_plot_updated[lang](feature, oldVal, newVal);
                 }
@@ -137,7 +154,8 @@ function generateDiff(oldRider, newPayload) {
                     const [oldVal, newVal] = parts.length > 1 ? parts[1].split(' ➝ ') : ['?', '?'];
                     title = riderTemplates.hazer_updated[lang](oldVal, newVal);
                 }
-                else title = riderTemplates.general_update[lang](1); // Fallback                await Task.create({
+                else title = riderTemplates.general_update[lang](1); // Fallback
+                await Task.create({
                     eventId: eventId,
                     title: title,
                     description: description,

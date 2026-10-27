@@ -7,8 +7,10 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });        const { searchParams } = new URL(req.url);
-        const status = searchParams.get('status');        let query = {};
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get('status');
+        let query = {};
         if (status && status !== 'all') {
             query.status = status;
         }
@@ -69,7 +71,8 @@ export async function PUT(req) {
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
-        const { id, ...updates } = body;        if (updates.status) {
+        const { id, ...updates } = body;
+        if (updates.status) {
             updates.status = updates.status === 'completed' ? 'Done' : 'Pending';
         }
 

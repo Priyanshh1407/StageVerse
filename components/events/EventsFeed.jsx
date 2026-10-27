@@ -85,7 +85,8 @@ export default function EventsFeed({
       )}
     </div>
   );
-}function SkeletonCard() {
+}
+function SkeletonCard() {
   return (
     <div className="rounded-xl bg-[#121212] border border-white/5 overflow-hidden">
       <div className="aspect-[4/5] bg-white/5 animate-pulse relative">

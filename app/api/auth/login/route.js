@@ -23,17 +23,20 @@ export async function POST(req) {
                 { message: 'Invalid credentials.' },
                 { status: 401 }
             );
-        }        const isMatch = await bcrypt.compare(password, user.password);
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return NextResponse.json(
                 { message: 'Invalid credentials.' },
                 { status: 401 }
             );
-        }        const token = jwt.sign(
+        }
+        const token = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
-        );        const response = NextResponse.json(
+        );
+        const response = NextResponse.json(
             {
                 message: 'Login successful',
                 user: {
@@ -44,7 +47,8 @@ export async function POST(req) {
                 }
             }, {
                 status: 200
-        });        response.cookies.set('token', token, {
+        });
+        response.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',

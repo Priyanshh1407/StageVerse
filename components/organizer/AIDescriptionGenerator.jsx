@@ -9,7 +9,8 @@ export default function AIDescriptionGenerator() {
   const [prompt, setPrompt] = useState("");
 
   const handleGenerate = () => {
-    setIsGenerating(true);    setTimeout(() => {
+    setIsGenerating(true);
+    setTimeout(() => {
       setDescription("Experience an electrifying night of sonic brilliance as [Artist Name] takes over [Venue]. Featuring immersive visuals and a setlist of chart-topping hits, this is the event of the summer you don't want to miss. Secure your tickets now before they sell out!");
       setIsGenerating(false);
     }, 2000);

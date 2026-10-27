@@ -2,10 +2,12 @@
 
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { History, Zap, ArrowLeft, RefreshCw } from 'lucide-react';import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
+import { History, Zap, ArrowLeft, RefreshCw } from 'lucide-react';
+import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 import EventDetailsForm from '@/components/organizer/create-event/EventDetailsForm';
 import AIContentPreview from '@/components/organizer/create-event/AIContentPreview';
-import CreateVenueModal from '@/components/organizer/create-event/CreateVenueModal';function FormLoading() {
+import CreateVenueModal from '@/components/organizer/create-event/CreateVenueModal';
+function FormLoading() {
   return (
     <div className="flex flex-col items-center justify-center h-96 bg-[#101622] rounded-xl border border-[#314368] text-[#90a4cb] gap-3">
       <RefreshCw className="w-8 h-8 animate-spin text-[#0d93f2]" />
@@ -20,9 +22,11 @@ export default function CreateEventPage() {
 
   const handleAiRequest = (type) => {
     setAiRequest({ type, ts: Date.now() });
-  };  const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
+  };
+  const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
-  const [newlyCreatedVenue, setNewlyCreatedVenue] = useState(null);  const handleOpenVenueModal = (searchTerm) => {
+  const [newlyCreatedVenue, setNewlyCreatedVenue] = useState(null);
+  const handleOpenVenueModal = (searchTerm) => {
     setVenueSearchTerm(searchTerm);
     setIsVenueModalOpen(true);
   };

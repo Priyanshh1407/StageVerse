@@ -13,17 +13,20 @@ import {
 
 export default function MemoryVaultPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();  const scrollContainerRef = useRef(null);
+  const router = useRouter();
+  const scrollContainerRef = useRef(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const [memories,setMemories]=useState([]);
-  const [isLoading,setIsLoading]=useState(true);  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading,setIsLoading]=useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedArtist, setSelectedArtist] = useState('All Artists');
   const [selectedVenue, setSelectedVenue] = useState('All Venues');
-  const [selectedYear, setSelectedYear] = useState('Any Date');  const ITEMS_PER_PAGE = 8;
+  const [selectedYear, setSelectedYear] = useState('Any Date');
+  const ITEMS_PER_PAGE = 8;
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -44,11 +47,13 @@ export default function MemoryVaultPage() {
     };
 
     fetchMemories();
-  },[isUploadModalOpen])  useEffect(() => {
+  },[isUploadModalOpen])
+  useEffect(() => {
     if (searchParams.get('action') === 'upload') {
       setIsUploadModalOpen(true);
     }
-  }, [searchParams]);  const handleScroll = () => {
+  }, [searchParams]);
+  const handleScroll = () => {
     if (scrollContainerRef.current) {
       const { scrollTop } = scrollContainerRef.current;
       setShowScrollTop(scrollTop > 400); // Show button after scrolling down 400px
@@ -62,7 +67,8 @@ export default function MemoryVaultPage() {
   const handleCloseModal = () => {
     setIsUploadModalOpen(false);
     router.replace('/memory-vault', { scroll: false });
-  };  const filteredMemories= useMemo(()=>{
+  };
+  const filteredMemories= useMemo(()=>{
     return memories.filter((item)=>{
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesArtist = selectedArtist === 'All Artists' || item.artist === selectedArtist;
@@ -73,7 +79,8 @@ export default function MemoryVaultPage() {
 
     return matchesSearch && matchesArtist&&matchesVenue&&matchesYear;
     });
-  },[memories,searchQuery,selectedArtist,selectedVenue,selectedYear]);  useEffect(() => {
+  },[memories,searchQuery,selectedArtist,selectedVenue,selectedYear]);
+  useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
   }, [searchQuery, selectedArtist, selectedVenue, selectedYear]);
 
@@ -324,7 +331,8 @@ function MemoryCard({ item }) {
         </div>
       </div>
     );
-  }  if (item.type === 'ticket') {
+  }
+  if (item.type === 'ticket') {
     return (
       <div className="group relative rounded-2xl overflow-hidden cursor-pointer bg-[#223949] border border-slate-700/50 border-dashed flex flex-col shadow-sm">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center relative z-10">

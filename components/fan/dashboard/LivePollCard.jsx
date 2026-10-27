@@ -9,7 +9,8 @@ export default function LivePollCard({ eventId, onComplete }) {
     const [votedOptionId, setVotedOptionId] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [timeLeft, setTimeLeft] = useState(60);
-    const [isVisible, setIsVisible] = useState(false); // Default to false to prevent flashing    const { socket } = useSocket();
+    const [isVisible, setIsVisible] = useState(false); // Default to false to prevent flashing
+    const { socket } = useSocket();
     const listenerAttached = useRef(false);
 
     useEffect(() => {
@@ -19,10 +20,12 @@ export default function LivePollCard({ eventId, onComplete }) {
         console.log("[LivePollCard] Attaching socket listeners");
 
         const onPollStart = (data) => {
-            console.log("[Socket RX Fan] poll:start FULL DATA:", JSON.stringify(data));            const newPoll = {
+            console.log("[Socket RX Fan] poll:start FULL DATA:", JSON.stringify(data));
+            const newPoll = {
                 _id: data.pollId || 'temp-id',
                 question: data.question || "Live Poll",
-                options: (data.options || []).map((o, idx) => ({                    _id: o._id || o.id || `opt-${idx}`,
+                options: (data.options || []).map((o, idx) => ({
+                    _id: o._id || o.id || `opt-${idx}`,
                     text: o.text || `Option ${idx + 1}`,
                     votes: 12
                 })),
@@ -47,7 +50,8 @@ export default function LivePollCard({ eventId, onComplete }) {
             socket.off("poll:end", onPollEnd);
             listenerAttached.current = false;
         };
-    }, [socket]);    const fetchPoll = async (forceShow = false) => {
+    }, [socket]);
+    const fetchPoll = async (forceShow = false) => {
         try {
             const res = await fetch(`/api/fan/poll?eventId=${eventId}`);
             const json = await res.json();
@@ -66,12 +70,15 @@ export default function LivePollCard({ eventId, onComplete }) {
     };
 
     useEffect(() => {
-        if (!eventId) return;    }, [eventId]);    useEffect(() => {
+        if (!eventId) return;
+    }, [eventId]);
+    useEffect(() => {
         if (!poll) return;
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
-                    clearInterval(timer);                    setTimeout(() => {
+                    clearInterval(timer);
+                    setTimeout(() => {
                         setPoll(null); // This closes the popup
                         toast.info("Poll closed - Time's up!");
                     }, 1000);
@@ -84,7 +91,8 @@ export default function LivePollCard({ eventId, onComplete }) {
     }, [poll]);
 
     const handleVote = async (optionId) => {
-        if (votedOptionId || isSubmitting) return;        setVotedOptionId(optionId);
+        if (votedOptionId || isSubmitting) return;
+        setVotedOptionId(optionId);
         setIsSubmitting(true);
         toast.success("🎉 Vote Submitted!", { duration: 3000 });
 
@@ -100,7 +108,8 @@ export default function LivePollCard({ eventId, onComplete }) {
 
             if (!data.success) {
                 console.error("Vote failed:", data.error);
-            }            if (socket) {
+            }
+            if (socket) {
                 socket.emit("poll:vote", { pollId: poll._id, optionId });
             }
         } catch (e) {

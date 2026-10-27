@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Chrome, AlertTriangle, ArrowLeft } from 'lucide-react';const ROLE_PATHS = {
+import { Mail, Lock, Chrome, AlertTriangle, ArrowLeft } from 'lucide-react';
+const ROLE_PATHS = {
   fan: '/dashboard',
   organizer: '/manage/dashboard',
   crew: '/prod-dashboard',
@@ -21,13 +22,15 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);    if (!email.includes('@') || password.length < 6) {
+    setIsLoading(true);
+    if (!email.includes('@') || password.length < 6) {
       setError('Invalid credentials format.');
       setIsLoading(false);
       return;
     }
 
-    try {      const response = await fetch('/api/auth/login', {
+    try {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,12 +38,16 @@ const LoginPage = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();      if (!response.ok) {
+      const data = await response.json();
+      if (!response.ok) {
         throw new Error(data.message || 'Login Failed');
-      }      localStorage.setItem('user', JSON.stringify(data.user));      const userRole = data.user.role;
+      }
+      localStorage.setItem('user', JSON.stringify(data.user));
+      const userRole = data.user.role;
       const destination = ROLE_PATHS[userRole] || '/dashboard';
 
-      console.log(`✅ Login Success! User is a ${userRole}. Redirecting to ${destination}...`);      setTimeout(() => {
+      console.log(`✅ Login Success! User is a ${userRole}. Redirecting to ${destination}...`);
+      setTimeout(() => {
         router.push(destination);
         router.refresh();
       }, 500);

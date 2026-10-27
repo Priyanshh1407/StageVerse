@@ -14,7 +14,8 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
         e.preventDefault();
         if (!name) return;
 
-        onAdd({ name, type, iconType });        setName('');
+        onAdd({ name, type, iconType });
+        setName('');
         setType('Spot');
         onClose();
     };

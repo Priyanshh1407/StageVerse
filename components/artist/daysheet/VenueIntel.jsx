@@ -6,7 +6,8 @@ import { toast } from "sonner";
 
 export default function VenueIntel({ intel, onUpdate }) {
   const [data, setData] = useState(intel || {});
-  const [isEditing, setIsEditing] = useState(false);  useEffect(() => {
+  const [isEditing, setIsEditing] = useState(false);
+  useEffect(() => {
     if (intel) setData(intel);
   }, [intel]);
 
@@ -18,7 +19,8 @@ export default function VenueIntel({ intel, onUpdate }) {
   const handleSave = () => {
     onUpdate(data);
     setIsEditing(false);
-  };  const Input = ({ val, field, label }) => (
+  };
+  const Input = ({ val, field, label }) => (
     <div className="mb-2">
       <label className="text-xs text-slate-400 block mb-1">{label}</label>
       <input

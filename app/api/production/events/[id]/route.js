@@ -4,7 +4,8 @@ import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
 import { verifyAuth } from '@/lib/auth';
-import { logActivity } from '@/lib/logger';function getTypeColor(type) {
+import { logActivity } from '@/lib/logger';
+function getTypeColor(type) {
     switch (type) {
         case 'Touring': return 'bg-blue-500';
         case 'Festival': return 'bg-indigo-500';
@@ -12,30 +13,36 @@ import { logActivity } from '@/lib/logger';function getTypeColor(type) {
         case 'Theatre': return 'bg-amber-600';
         default: return 'bg-gray-500';
     }
-}export async function PUT(req, { params }) {
+}
+export async function PUT(req, { params }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { id } = await params;
-        const body = await req.json();        const query = id.match(/^[0-9a-fA-F]{24}$/) ? { _id: id } : { eventId: id };
+        const body = await req.json();
+        const query = id.match(/^[0-9a-fA-F]{24}$/) ? { _id: id } : { eventId: id };
         const event = await Event.findOne(query);
 
-        if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });        const isOrganizer = event.organizerId.toString() === user.userId;
+        if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        const isOrganizer = event.organizerId.toString() === user.userId;
         const isAssigned = event.assignedTo && event.assignedTo.toString() === user.userId;
-        if (!isOrganizer && !isAssigned) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });        let actionDetails = `Updated ${event.title}`;
+        if (!isOrganizer && !isAssigned) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        let actionDetails = `Updated ${event.title}`;
         if (body.title) event.title = body.title;
         if (body.date) event.date = new Date(body.date);
         if (body.type || body.genre) event.genre = body.type || body.genre;
 
-        if (body.status) {            if (body.status === 'active' && isAssigned) {
+        if (body.status) {
+            if (body.status === 'active' && isAssigned) {
                 event.productionStatus = 'active';
             } else {
                 event.status = body.status;
             }
             actionDetails = `Changed status to ${body.status}: ${event.title}`;
-        }        if (body.venue && body.venue !== event.city) {
+        }
+        if (body.venue && body.venue !== event.city) {
             let venueDoc = await Venue.findOne({ name: body.venue });
             if (!venueDoc) {
                 venueDoc = await Venue.create({
@@ -48,7 +55,8 @@ import { logActivity } from '@/lib/logger';function getTypeColor(type) {
             event.city = venueDoc.city;
         }
 
-        await event.save();        await logActivity(
+        await event.save();
+        await logActivity(
             user.userId,
             'update',
             'Event',
@@ -73,7 +81,8 @@ import { logActivity } from '@/lib/logger';function getTypeColor(type) {
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
-}export async function DELETE(req, { params }) {
+}
+export async function DELETE(req, { params }) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -90,7 +99,8 @@ import { logActivity } from '@/lib/logger';function getTypeColor(type) {
         }
 
         const title = event.title;
-        await Event.deleteOne({ _id: event._id });        await logActivity(
+        await Event.deleteOne({ _id: event._id });
+        await logActivity(
             user.userId,
             'delete',
             'Event',

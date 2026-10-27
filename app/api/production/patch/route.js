@@ -45,7 +45,8 @@ export async function POST(req) {
             $or: [{ _id: eventId.match(/^[0-9a-fA-F]{24}$/) ? eventId : null }, { eventId: eventId }]
         });
 
-        if (!eventDoc) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });        const processedFixtures = fixtures.map(f => ({ ...f, status: 'ok' }));
+        if (!eventDoc) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        const processedFixtures = fixtures.map(f => ({ ...f, status: 'ok' }));
 
         const universeMap = {};
         for (const fixture of processedFixtures) {
@@ -73,7 +74,8 @@ export async function POST(req) {
                     collisionCount++;
                 }
             }
-        }        const updatedPatch = await Patch.findOneAndUpdate(
+        }
+        const updatedPatch = await Patch.findOneAndUpdate(
             { eventId: eventDoc._id },
             {
                 eventId: eventDoc._id,
@@ -82,7 +84,8 @@ export async function POST(req) {
                 ...(body.showName && { showName: body.showName })
             },
             { upsert: true, new: true }
-        );        const logType = collisionCount > 0 ? 'warning' : 'success';
+        );
+        const logType = collisionCount > 0 ? 'warning' : 'success';
         const logMsg = collisionCount > 0
             ? `Saved Patch with ${collisionCount} collisions`
             : `Saved Patch: ${fixtures.length} fixtures`;

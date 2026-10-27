@@ -16,10 +16,12 @@ export default function LogisticsPage(props) {
     const params = use(props.params);
     const showId = params.id;
     const [isLoading, setIsLoading] = useState(true);
-    const [showData, setShowData] = useState(null);    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showData, setShowData] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [viewMode, setViewMode] = useState('kanban'); // 'kanban', 'table'
-    const [isReportOpen, setIsReportOpen] = useState(false);    const [searchQuery, setSearchQuery] = useState('');
+    const [isReportOpen, setIsReportOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState('all'); // 'all', 'user', 'urgent'
 
     useEffect(() => {
@@ -51,11 +53,18 @@ export default function LogisticsPage(props) {
         }
 
         const startColumnId = source.droppableId;
-        const endColumnId = destination.droppableId;        const newData = { ...showData };
+        const endColumnId = destination.droppableId;
+        const newData = { ...showData };
         const startColumnFn = newData.kanban.find(c => c.id === startColumnId);
-        const endColumnFn = newData.kanban.find(c => c.id === endColumnId);        const [movedCard] = startColumnFn.cards.splice(source.index, 1);        endColumnFn.cards.splice(destination.index, 0, movedCard);        startColumnFn.count = startColumnFn.cards.length;
-        endColumnFn.count = endColumnFn.cards.length;        setShowData(newData);        if (startColumnId !== endColumnId) {
-            try {                let newStatus = 'pending';
+        const endColumnFn = newData.kanban.find(c => c.id === endColumnId);
+        const [movedCard] = startColumnFn.cards.splice(source.index, 1);
+        endColumnFn.cards.splice(destination.index, 0, movedCard);
+        startColumnFn.count = startColumnFn.cards.length;
+        endColumnFn.count = endColumnFn.cards.length;
+        setShowData(newData);
+        if (startColumnId !== endColumnId) {
+            try {
+                let newStatus = 'pending';
                 if (endColumnId === 'loadout' || endColumnId === 'done') newStatus = 'completed'; // basic logic
 
                 await fetch('/api/production/logistics', {
@@ -86,7 +95,8 @@ export default function LogisticsPage(props) {
     };
 
     const handleDeleteTask = async (task) => {
-        if (!confirm('Are you sure you want to delete this task?')) return;        const newData = { ...showData };
+        if (!confirm('Are you sure you want to delete this task?')) return;
+        const newData = { ...showData };
         newData.kanban.forEach(col => {
             col.cards = col.cards.filter(c => c.id !== task.id);
             col.count = col.cards.length;
@@ -101,7 +111,8 @@ export default function LogisticsPage(props) {
             });
             toast.success("Task deleted");
         } catch (e) {
-            console.error(e);        }
+            console.error(e);
+        }
     };
 
     const handleSaveTask = async (taskData) => {
@@ -135,7 +146,8 @@ export default function LogisticsPage(props) {
 
             if (data.success || res.ok) {
                 toast.success(isEditing ? 'Task updated' : 'Task created');
-                setIsModalOpen(false);                const res2 = await fetch(`/api/production/logistics/${showId}`);
+                setIsModalOpen(false);
+                const res2 = await fetch(`/api/production/logistics/${showId}`);
                 const refreshedData = await res2.json();
                 setShowData(refreshedData);
             } else {
@@ -154,11 +166,13 @@ export default function LogisticsPage(props) {
 
     const handleExport = () => {
         setIsReportOpen(true);
-    };    const handleDownloadPDF = () => {
+    };
+    const handleDownloadPDF = () => {
         if (!showData) return;
         try {
             toast.info("Generating PDF...");
-            const doc = new jsPDF();            doc.setFontSize(22);
+            const doc = new jsPDF();
+            doc.setFontSize(22);
             doc.setTextColor(40);
             doc.text("Logistics Task Report", 14, 20);
 
@@ -166,7 +180,8 @@ export default function LogisticsPage(props) {
             doc.setTextColor(100);
             doc.text(`Show: ${showData.showName}`, 14, 30);
             doc.text(`Venue: ${showData.venue} | Phase: ${showData.phase}`, 14, 36);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 42);            const tasksToExport = filteredKanban.flatMap(col => col.cards);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 42);
+            const tasksToExport = filteredKanban.flatMap(col => col.cards);
 
             const tableHeaders = [['Title', 'Status', 'Tag', 'Priority', 'Assignee', 'Date']];
             const tableData = tasksToExport.map(task => [
@@ -216,7 +231,8 @@ export default function LogisticsPage(props) {
         }
 
         if (filterType === 'user') {
-            cols.forEach(col => {                col.cards = col.cards.filter(c => c.assignee === 'Alex M.' || c.assignee === 'Alex Morrison');
+            cols.forEach(col => {
+                col.cards = col.cards.filter(c => c.assignee === 'Alex M.' || c.assignee === 'Alex Morrison');
             });
         }
 
@@ -235,7 +251,8 @@ export default function LogisticsPage(props) {
 
     const allTasksFlat = filteredKanban.flatMap(col => col.cards);
 
-    return (        <div className="flex flex-col h-screen w-full bg-[#0F0F10] font-sans text-slate-300 overflow-hidden">
+    return (
+        <div className="flex flex-col h-screen w-full bg-[#0F0F10] font-sans text-slate-300 overflow-hidden">
 
             {}
             <style jsx global>{`

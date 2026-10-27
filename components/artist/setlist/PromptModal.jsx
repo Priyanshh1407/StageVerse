@@ -6,7 +6,8 @@ import { X, Sparkles } from 'lucide-react';
 const DEFAULT_PROMPT = "Create a setlist curve that starts with high energy, has a slow emotional middle section, and ends with a banger.";
 
 export default function PromptModal({ isOpen, onClose, onSubmit }) {
-  const [prompt, setPrompt] = useState(DEFAULT_PROMPT);  useEffect(() => {
+  const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
+  useEffect(() => {
     if (isOpen) setPrompt(DEFAULT_PROMPT);
   }, [isOpen]);
 

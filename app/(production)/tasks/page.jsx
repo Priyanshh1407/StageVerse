@@ -12,8 +12,10 @@ export default function GlobalTasksPage() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState(null);  const fetchTasks = async () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const fetchTasks = async () => {
     try {
       const res = await fetch('/api/production/tasks');
       const json = await res.json();
@@ -31,13 +33,15 @@ export default function GlobalTasksPage() {
 
   const handleSaveTask = async (taskData) => {
     try {
-      if (editingTask) {        const res = await fetch('/api/production/tasks', {
+      if (editingTask) {
+        const res = await fetch('/api/production/tasks', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editingTask.id, ...taskData })
         });
         if (res.ok) fetchTasks(); // Refresh
-      } else {        const res = await fetch('/api/production/tasks', {
+      } else {
+        const res = await fetch('/api/production/tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(taskData)
@@ -59,7 +63,8 @@ export default function GlobalTasksPage() {
 
   const handleToggleComplete = async (id) => {
     const task = tasks.find(t => t.id === id);
-    if (!task) return;    setTasks(tasks.map(t => t.id === id ? { ...t, status: t.status === 'completed' ? 'pending' : 'completed' } : t));
+    if (!task) return;
+    setTasks(tasks.map(t => t.id === id ? { ...t, status: t.status === 'completed' ? 'pending' : 'completed' } : t));
 
     try {
       await fetch('/api/production/tasks', {
@@ -86,7 +91,8 @@ export default function GlobalTasksPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTask(null);
-  };  const filteredTasks = tasks.filter(task => {
+  };
+  const filteredTasks = tasks.filter(task => {
     const matchesFilter = filter === 'all' || (filter === 'completed' && task.status === 'completed') || (filter === 'pending' && task.status === 'pending');
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) || task.show.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
@@ -200,7 +206,8 @@ export default function GlobalTasksPage() {
 
 function TaskRow({ task, onToggle, onDelete, onEdit }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);  useEffect(() => {
+  const menuRef = useRef(null);
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setMenuOpen(false);
@@ -296,7 +303,8 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
   );
 }
 
-function TaskModal({ task, onClose, onSave }) {  const [formData, setFormData] = useState({
+function TaskModal({ task, onClose, onSave }) {
+  const [formData, setFormData] = useState({
     title: task ? task.title : '',
     show: task ? task.show : 'General',
     venue: task ? task.venue : '',

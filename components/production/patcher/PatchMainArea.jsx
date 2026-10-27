@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { FileCode, FileJson, AlertTriangle, Wrench } from 'lucide-react';export default function PatchMainArea({ patches = [], onEditFixture }) {
+import { FileCode, FileJson, AlertTriangle, Wrench } from 'lucide-react';
+export default function PatchMainArea({ patches = [], onEditFixture }) {
   return (
     <main className="flex-1 flex flex-col bg-[#0F0F10] relative overflow-hidden h-full min-w-0">
       {}

@@ -13,12 +13,14 @@ import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 
 export default function EventsPage() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);  const [events, setEvents] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;  const fetchEvents = async () => {
+  const itemsPerPage = 6;
+  const fetchEvents = async () => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/events?mode=organizer');
@@ -66,18 +68,22 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEvents();
-  }, []);  const filteredEvents = useMemo(() => {
+  }, []);
+  const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.venue.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "All" || event.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [events, searchQuery, statusFilter]);  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  }, [events, searchQuery, statusFilter]);
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
   const currentData = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );  const handleCreateRedirect = () => {    router.push('/create-event');
+  );
+  const handleCreateRedirect = () => {
+    router.push('/create-event');
   };
 
   const handleViewLive = (eventId) => {
@@ -97,11 +103,13 @@ export default function EventsPage() {
     if (!confirm(`Duplicate "${event.name}"?`)) return;
 
     setIsLoading(true);
-    try {      const res = await fetch(`/api/events/${event.id}`); // Using the Long ID
+    try {
+      const res = await fetch(`/api/events/${event.id}`); // Using the Long ID
       const json = await res.json();
 
       if (!json.success) throw new Error("Failed to fetch original event");
-      const originalEvent = json.data;      const payload = {
+      const originalEvent = json.data;
+      const payload = {
         title: `${originalEvent.title} (Copy)`,
         description: originalEvent.description,
         artist: originalEvent.artist,
@@ -119,7 +127,8 @@ export default function EventsPage() {
           sold: 0, // Reset sold count
           status: 'Active'
         }))
-      };      const createRes = await fetch('/api/events', {
+      };
+      const createRes = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -141,7 +150,8 @@ export default function EventsPage() {
 
   const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this event permanently?")) {
-      try {        setEvents(prev => prev.filter(e => e.id !== id));
+      try {
+        setEvents(prev => prev.filter(e => e.id !== id));
         await fetch(`/api/events/${id}`, { method: 'DELETE' });
       } catch (err) {
         toast.error("Failed to delete event");
@@ -154,7 +164,8 @@ export default function EventsPage() {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
-  };  useEffect(() => {
+  };
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter]);
 
@@ -370,7 +381,8 @@ function EventsTable({ data, onDuplicate, onDelete, onEdit, onAnalytics, onViewL
 }
 
 function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLive }) {
-  const [showMenu, setShowMenu] = useState(false);  const getStatusStyles = (status) => {
+  const [showMenu, setShowMenu] = useState(false);
+  const getStatusStyles = (status) => {
     switch (status) {
       case 'Live': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
       case 'Draft': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';

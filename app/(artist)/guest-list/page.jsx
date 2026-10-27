@@ -105,7 +105,8 @@ export default function GuestListPage() {
       setGuests(prev => prev.filter(guest => guest.id !== id));
       if (editingGuest?.id === id) setEditingGuest(null);
     }
-  };  const handleNewList = async () => {
+  };
+  const handleNewList = async () => {
     if (confirm('Are you sure you want to clear the entire list? This action cannot be undone.')) {
       try {
         const res = await fetch('/api/artist/guest-list', {
@@ -123,7 +124,8 @@ export default function GuestListPage() {
         console.error("Failed to clear list", e);
       }
     }
-  };  const handleExportCSV = () => {
+  };
+  const handleExportCSV = () => {
     if (guests.length === 0) return toast.error("List is empty!");
 
     const headers = ["Name", "Email", "Tier", "Status", "Added At"];
@@ -150,7 +152,8 @@ export default function GuestListPage() {
 
   const handleCheckIn = async (guestId, currentStatus) => {
     const newStatus = currentStatus === 'Checked In' ? 'Pending' : 'Checked In'; // Toggle
-    try {      setGuests(prev => prev.map(g =>
+    try {
+      setGuests(prev => prev.map(g =>
         g.id === guestId ? { ...g, status: newStatus } : g
       ));
 
@@ -163,7 +166,8 @@ export default function GuestListPage() {
       if (!res.ok) throw new Error("Failed to update");
 
     } catch (e) {
-      console.error("Check-in failed", e);      setGuests(prev => prev.map(g =>
+      console.error("Check-in failed", e);
+      setGuests(prev => prev.map(g =>
         g.id === guestId ? { ...g, status: currentStatus } : g
       ));
       toast.error("Failed to update status");

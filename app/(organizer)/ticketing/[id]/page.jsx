@@ -19,17 +19,21 @@ export default function TicketingPage() {
     }, [eventId]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);    const [data, setData] = useState({
+    const [isLoading, setIsLoading] = useState(true);
+    const [data, setData] = useState({
         eventTitle: "Loading...",
         events: [],
         stats: { revenue: 0, sold: 0, inventory: 0 },
         tiers: [],
         orders: [],
         discounts: []
-    });    const [pricingMode, setPricingMode] = useState(false); // Controls the "Adjust Pricing" inputs
-    const [tierFilter, setTierFilter] = useState("All");    const [activeDropdown, setActiveDropdown] = useState(null);
+    });
+    const [pricingMode, setPricingMode] = useState(false); // Controls the "Adjust Pricing" inputs
+    const [tierFilter, setTierFilter] = useState("All");
+    const [activeDropdown, setActiveDropdown] = useState(null);
     const [activeModal, setActiveModal] = useState(null);
-    const [selectedItem, setSelectedItem] = useState(null);    const fetchData = async () => {
+    const [selectedItem, setSelectedItem] = useState(null);
+    const fetchData = async () => {
         if (!eventId) return;
         setIsLoading(true);
         try {
@@ -43,7 +47,8 @@ export default function TicketingPage() {
         } finally {
             setIsLoading(false);
         }
-    };    const toggleDropdown = (name, e) => {
+    };
+    const toggleDropdown = (name, e) => {
         e?.stopPropagation();
         setActiveDropdown(activeDropdown === name ? null : name);
     };
@@ -57,7 +62,9 @@ export default function TicketingPage() {
     const closeModal = () => {
         setActiveModal(null);
         setSelectedItem(null);
-    };    const handleApiAction = async (type, action, payload) => {        try {
+    };
+    const handleApiAction = async (type, action, payload) => {
+        try {
             const res = await fetch(`/api/events/${eventId}/ticketing`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -75,11 +82,13 @@ export default function TicketingPage() {
             console.error(err);
             toast.error("Error processing request.");
         }
-    };    const handleSaveTier = (formData) => {
+    };
+    const handleSaveTier = (formData) => {
         const action = selectedItem ? 'update' : 'create';
         const payload = { ...formData, _id: selectedItem?._id };
         handleApiAction('tier', action, payload);
-    };    const handleQuickTierUpdate = (id, updates) => {
+    };
+    const handleQuickTierUpdate = (id, updates) => {
         handleApiAction('tier', 'update', { _id: id, ...updates });
     };
 
@@ -99,7 +108,8 @@ export default function TicketingPage() {
                 capacity: tier.capacity
             });
         }
-    };    const handleSaveDiscount = (formData) => {
+    };
+    const handleSaveDiscount = (formData) => {
         const action = selectedItem ? 'update' : 'create';
         const payload = { ...formData, _id: selectedItem?._id };
         handleApiAction('discount', action, payload);
@@ -111,7 +121,8 @@ export default function TicketingPage() {
         else if (action === 'Delete') {
             if (confirm(`Delete code ${discount.code}?`)) handleApiAction('discount', 'delete', { _id: discount._id });
         }
-    };    useEffect(() => {
+    };
+    useEffect(() => {
         const handleClickOutside = () => setActiveDropdown(null);
         window.addEventListener('click', handleClickOutside);
         return () => window.removeEventListener('click', handleClickOutside);
@@ -297,8 +308,11 @@ export default function TicketingPage() {
             </GenericModal>
         </div>
     );
-}function TicketTierRow({ tier, isEditing, activeDropdown, onToggleDropdown, onAction, onQuickUpdate }) {
-    const percentSold = tier.capacity > 0 ? (tier.sold / tier.capacity) * 100 : 0;    const [localPrice, setLocalPrice] = useState(tier.price);    useEffect(() => { setLocalPrice(tier.price) }, [tier.price]);
+}
+function TicketTierRow({ tier, isEditing, activeDropdown, onToggleDropdown, onAction, onQuickUpdate }) {
+    const percentSold = tier.capacity > 0 ? (tier.sold / tier.capacity) * 100 : 0;
+    const [localPrice, setLocalPrice] = useState(tier.price);
+    useEffect(() => { setLocalPrice(tier.price) }, [tier.price]);
 
     const handleInlineSave = () => {
         onQuickUpdate(tier._id, { price: Number(localPrice) });
@@ -349,9 +363,12 @@ export default function TicketingPage() {
             </td>
         </tr>
     );
-}function DiscountForm({ initialData, onSave }) {    const [code, setCode] = useState('');
+}
+function DiscountForm({ initialData, onSave }) {
+    const [code, setCode] = useState('');
     const [type, setType] = useState('percentage'); // Lowercase default
-    const [value, setValue] = useState('');    useEffect(() => {
+    const [value, setValue] = useState('');
+    useEffect(() => {
         if (initialData) {
             setCode(initialData.code || '');
             setType(initialData.type?.toLowerCase() || 'percentage');
@@ -394,7 +411,8 @@ export default function TicketingPage() {
             <button type="submit" className="w-full py-3 bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold rounded-xl mt-2">Save Discount</button>
         </form>
     );
-}function GenericModal({ isOpen, onClose, title, children }) {
+}
+function GenericModal({ isOpen, onClose, title, children }) {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>

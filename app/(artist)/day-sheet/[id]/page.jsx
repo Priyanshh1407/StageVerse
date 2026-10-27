@@ -33,7 +33,8 @@ export default function DaySheetDetailPage() {
             }
         }
         loadData();
-    }, [id]);    const handleUpdateSchedule = async (newSchedule, notify = false) => {
+    }, [id]);
+    const handleUpdateSchedule = async (newSchedule, notify = false) => {
         try {
             await fetch(`/api/artist/day-sheet/${id}`, {
                 method: 'PUT',
@@ -42,7 +43,8 @@ export default function DaySheetDetailPage() {
                     schedule: newSchedule,
                     notifyTeam: notify
                 })
-            });        } catch (e) {
+            });
+        } catch (e) {
             console.error("Failed to save schedule", e);
         }
     };

@@ -11,7 +11,8 @@ import PlacementForm from '@/components/artist/tech-rider/PlacementForm';
 import CrewMessenger from '@/components/artist/tech-rider/CrewMessenger';
 import RiderManifest from '@/components/artist/tech-rider/RiderManifest';
 import AddFixtureModal from '@/components/artist/tech-rider/AddFixtureModal';
-import { Grid, Scan, Zap, Waves, Sun, Columns, Lightbulb, Loader2, PlusCircle, Speaker, Radio } from 'lucide-react';const ICON_MAP = {
+import { Grid, Scan, Zap, Waves, Sun, Columns, Lightbulb, Loader2, PlusCircle, Speaker, Radio } from 'lucide-react';
+const ICON_MAP = {
   'Scan': Scan,
   'Zap': Zap,
   'Waves': Waves,
@@ -29,14 +30,17 @@ export default function TechRiderPage() {
   const [selectedLD, setSelectedLD] = useState(null); // New: Assigned LD
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);  const [events, setEvents] = useState([]);
-  const [selectedEventId, setSelectedEventId] = useState(null);  useEffect(() => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState(null);
+  useEffect(() => {
     async function loadEvents() {
       try {
         const res = await fetch('/api/artist/day-sheet', { cache: 'no-store' });
         const json = await res.json();
         if (json.success) {
-          setEvents(json.data);          if (json.data.length > 0 && !selectedEventId) {
+          setEvents(json.data);
+          if (json.data.length > 0 && !selectedEventId) {
             setSelectedEventId(json.data[0]._id);
           }
         }
@@ -45,7 +49,8 @@ export default function TechRiderPage() {
       }
     }
     loadEvents();
-  }, []);  useEffect(() => {
+  }, []);
+  useEffect(() => {
     if (!selectedEventId) {
       setIsLoading(false); // Fix: Stop loading if no event
       return;
@@ -57,7 +62,8 @@ export default function TechRiderPage() {
         const res = await fetch(`/api/artist/rider?eventId=${selectedEventId}`, { cache: 'no-store' });
         const json = await res.json();
 
-        if (json.success && json.data) {          if (json.data.gear) {
+        if (json.success && json.data) {
+          if (json.data.gear) {
             const processedData = json.data.gear.map(item => ({
               ...item,
               icon: ICON_MAP[item.iconKey] || Lightbulb
@@ -65,17 +71,20 @@ export default function TechRiderPage() {
             setGear(processedData);
           } else {
             setGear([]);
-          }          setHazer(json.data.hazer || false);
+          }
+          setHazer(json.data.hazer || false);
           setPlotData({
             stageLocation: json.data.stageLocation,
             mountingPreference: json.data.mountingPreference,
             placementNotes: json.data.placementNotes
-          });          if (json.assignedTo) {
+          });
+          if (json.assignedTo) {
             setSelectedLD(json.assignedTo);
           } else {
             setSelectedLD(null);
           }
-        } else {          setGear([]);
+        } else {
+          setGear([]);
           setHazer(false);
           setPlotData({});
           setSelectedLD(null);
@@ -87,7 +96,8 @@ export default function TechRiderPage() {
       }
     }
     loadRiderData();
-  }, [selectedEventId]);  const handleIncrement = (id) => {
+  }, [selectedEventId]);
+  const handleIncrement = (id) => {
     setGear(prev => prev.map(item =>
       item.id === id ? { ...item, count: item.count + 1 } : item
     ));
@@ -99,7 +109,8 @@ export default function TechRiderPage() {
     ));
   };
 
-  const handleAddNewFixture = (newItemData) => {    const newId = gear.length > 0 ? Math.max(...gear.map(g => g.id || 0)) + 1 : 1;
+  const handleAddNewFixture = (newItemData) => {
+    const newId = gear.length > 0 ? Math.max(...gear.map(g => g.id || 0)) + 1 : 1;
     const newItem = {
       id: newId,
       name: newItemData.name,
@@ -126,7 +137,8 @@ export default function TechRiderPage() {
       stageLocation: plotData.stageLocation,
       mountingPreference: plotData.mountingPreference,
       placementNotes: plotData.placementNotes,
-      hazer: hazer,      assigneeId: selectedLD ? selectedLD._id : null,
+      hazer: hazer,
+      assigneeId: selectedLD ? selectedLD._id : null,
       assigneeName: selectedLD ? selectedLD.name : null
     };
 
@@ -146,16 +158,20 @@ export default function TechRiderPage() {
     }
 
     setIsSaving(false);
-  };  const handleDownloadPDF = () => {
+  };
+  const handleDownloadPDF = () => {
     if (!selectedEventId) return;
     const event = events.find(e => e._id === selectedEventId);
     if (!event) return;
 
-    const doc = new jsPDF();    doc.setFontSize(22);
-    doc.text(`${event.title} - Tech Rider`, 14, 20);    doc.setFontSize(12);
+    const doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text(`${event.title} - Tech Rider`, 14, 20);
+    doc.setFontSize(12);
     doc.setTextColor(100);
     doc.text(`${event.city} • ${new Date(event.date).toLocaleDateString()}`, 14, 28);
-    doc.text(`Venue: ${event.venue || 'TBA'}`, 14, 34);    doc.setFontSize(14);
+    doc.text(`Venue: ${event.venue || 'TBA'}`, 14, 34);
+    doc.setFontSize(14);
     doc.setTextColor(0);
     doc.text("1. Fixture Manifest", 14, 45);
 
@@ -167,7 +183,8 @@ export default function TechRiderPage() {
       body: gearRows,
       theme: 'striped',
       headStyles: { fillColor: [13, 147, 242] } // Brand Blue
-    });    const finalY = doc.lastAutoTable.finalY + 15;
+    });
+    const finalY = doc.lastAutoTable.finalY + 15;
 
     doc.setFontSize(14);
     doc.text("2. Stage Plot & Requirements", 14, finalY);
@@ -183,7 +200,8 @@ export default function TechRiderPage() {
       doc.setTextColor(80);
       const splitNotes = doc.splitTextToSize(plotData.placementNotes, 180);
       doc.text(splitNotes, 14, finalY + 42);
-    }    doc.setFontSize(8);
+    }
+    doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text("Generated via StageVerse Digital Rider", 14, 285);
 

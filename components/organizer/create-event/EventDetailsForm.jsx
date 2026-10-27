@@ -30,7 +30,8 @@ export default function EventDetailsForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false); // Internal State  const [formData, setFormData] = useState({
+  const [isGenerating, setIsGenerating] = useState(false); // Internal State
+  const [formData, setFormData] = useState({
     title: '',
     artist: '',
     artistId: null, // Store ID
@@ -41,11 +42,13 @@ export default function EventDetailsForm({
     time: '',
     city: '',
     description: ''
-  });  const [venueSearch, setVenueSearch] = useState('');
+  });
+  const [venueSearch, setVenueSearch] = useState('');
   const [venuesList, setVenuesList] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [cityMismatch, setCityMismatch] = useState(false);  useEffect(() => {
+  const [cityMismatch, setCityMismatch] = useState(false);
+  useEffect(() => {
     if (editId) {
       fetchEventDetails(editId);
     }
@@ -58,7 +61,8 @@ export default function EventDetailsForm({
       const json = await res.json();
 
       if (json.success) {
-        const data = json.data;        setFormData({
+        const data = json.data;
+        setFormData({
           title: data.title,
           artist: data.artist, // Name
           artistId: data.artistId, // ID
@@ -69,7 +73,8 @@ export default function EventDetailsForm({
           time: data.time || '',
           city: data.city || '',
           description: data.description || ''
-        });        if (data.venue) {
+        });
+        if (data.venue) {
           setSelectedVenue(data.venue); // Assuming populate returned the object
           setVenueSearch(data.venue.name);
         }
@@ -79,31 +84,38 @@ export default function EventDetailsForm({
     } finally {
       setIsFetching(false);
     }
-  };  const getVibeValue = (label) => {
+  };
+  const getVibeValue = (label) => {
     if (label === "Chill / Relaxed") return 10;
     if (label === "Casual / Lounge") return 30;
     if (label === "Upbeat") return 50;
     if (label === "Energetic / Party") return 70;
     if (label === "High Voltage / Raging") return 90;
     return 50; // Default
-  };  const getVibeLabel = (val) => {
+  };
+  const getVibeLabel = (val) => {
     if (val < 20) return "Chill / Relaxed";
     if (val < 40) return "Casual / Lounge";
     if (val < 60) return "Upbeat";
     if (val < 80) return "Energetic / Party";
     return "High Voltage / Raging";
-  };  useEffect(() => {
+  };
+  useEffect(() => {
     if (autoSelectVenue) {
       handleSelectVenue(autoSelectVenue);
     }
-  }, [autoSelectVenue]);  useEffect(() => {
+  }, [autoSelectVenue]);
+  useEffect(() => {
     if (aiRequest?.ts) {
       let modifier = "";
       if (aiRequest.type === 'hype') modifier = "Make it extremely HYPE, EXCITING, and use strong adjectives!";
-      if (aiRequest.type === 'seo') modifier = "Include relevant SEO keywords for this artist/genre naturally.";      handleAiGenerate(null, modifier);
+      if (aiRequest.type === 'seo') modifier = "Include relevant SEO keywords for this artist/genre naturally.";
+      handleAiGenerate(null, modifier);
     }
-  }, [aiRequest]);  useEffect(() => {
-    const delayDebounce = setTimeout(async () => {      if (venueSearch.length > 1 && (!selectedVenue || venueSearch !== selectedVenue.name)) {
+  }, [aiRequest]);
+  useEffect(() => {
+    const delayDebounce = setTimeout(async () => {
+      if (venueSearch.length > 1 && (!selectedVenue || venueSearch !== selectedVenue.name)) {
         try {
           const res = await fetch(`/api/venues?search=${venueSearch}`);
           const data = await res.json();
@@ -142,7 +154,8 @@ export default function EventDetailsForm({
   const handleCreateNewClick = () => {
     setShowDropdown(false);
     onOpenVenueModal(venueSearch);
-  };  const handleAiGenerate = async (e, modifier = "") => {
+  };
+  const handleAiGenerate = async (e, modifier = "") => {
     if (e && e.preventDefault) e.preventDefault();
 
     if (!formData.artist) {
@@ -158,7 +171,8 @@ export default function EventDetailsForm({
         body: JSON.stringify({
           artist: formData.artist,
           genre: formData.genre,
-          vibe: getVibeLabel(formData.vibe) + (modifier ? `. IMPORTANT: ${modifier}` : ""),          title: formData.title,
+          vibe: getVibeLabel(formData.vibe) + (modifier ? `. IMPORTANT: ${modifier}` : ""),
+          title: formData.title,
           date: formData.date,
           city: formData.city,
           venue: selectedVenue?.name || venueSearch
@@ -183,7 +197,8 @@ export default function EventDetailsForm({
     } finally {
       setIsGenerating(false);
     }
-  };  const handleSubmit = async () => {
+  };
+  const handleSubmit = async () => {
     if (!selectedVenue?._id) return toast.error("Please select a valid venue.");
     if (!formData.title || !formData.date) return toast.error("Required fields missing.");
 
@@ -193,8 +208,10 @@ export default function EventDetailsForm({
       const payload = {
         ...formData,
         venue: selectedVenue._id,
-        vibe: getVibeLabel(formData.vibe),        ...(!editId && { ticketTiers: [{ name: "General Admission", price: 0, capacity: selectedVenue.capacity || 100 }] })
-      };      const url = editId ? `/api/events/${editId}` : '/api/events';
+        vibe: getVibeLabel(formData.vibe),
+        ...(!editId && { ticketTiers: [{ name: "General Admission", price: 0, capacity: selectedVenue.capacity || 100 }] })
+      };
+      const url = editId ? `/api/events/${editId}` : '/api/events';
       const method = editId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -218,8 +235,10 @@ export default function EventDetailsForm({
     } finally {
       setIsSubmitting(false);
     }
-  };  const handleCancelEdit = () => {
-    router.push('/manage/create-event'); // Removes ?id=...    setFormData({ title: '', artist: '', genre: '', status: 'Scheduled', vibe: 50, date: '', time: '', city: '', description: '' });
+  };
+  const handleCancelEdit = () => {
+    router.push('/manage/create-event'); // Removes ?id=...
+    setFormData({ title: '', artist: '', genre: '', status: 'Scheduled', vibe: 50, date: '', time: '', city: '', description: '' });
     setSelectedVenue(null);
     setVenueSearch('');
   };
@@ -271,7 +290,8 @@ export default function EventDetailsForm({
           <UserSearchInput
             label="Artist"
             role="artist"
-            initialValue={formData.artist} // Pass name string OR object if you had full user.            onSelect={(user) => {
+            initialValue={formData.artist} // Pass name string OR object if you had full user.
+            onSelect={(user) => {
               if (user) {
                 setFormData({ ...formData, artist: user.name, artistId: user._id });
               } else {

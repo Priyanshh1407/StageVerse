@@ -6,12 +6,15 @@ import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 
 export default function TicketSelection({ eventId, tiers = [] }) {
-  const router = useRouter();  const [step, setStep] = useState(1); // 1 = Select, 2 = Details/Pay
+  const router = useRouter();
+  const [step, setStep] = useState(1); // 1 = Select, 2 = Details/Pay
   const [selectedTierId, setSelectedTierId] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [buyerName, setBuyerName] = useState(""); // 🆕 Collect Name
-  const [isBuying, setIsBuying] = useState(false);  const selectedTier = tiers.find(t => t._id === selectedTierId);
-  const totalPrice = selectedTier ? (selectedTier.price * quantity) : 0;  const handleProceed = () => {
+  const [isBuying, setIsBuying] = useState(false);
+  const selectedTier = tiers.find(t => t._id === selectedTierId);
+  const totalPrice = selectedTier ? (selectedTier.price * quantity) : 0;
+  const handleProceed = () => {
     if (!selectedTierId) return toast.error("Please select a ticket");
     setStep(2);
   };
@@ -36,7 +39,8 @@ export default function TicketSelection({ eventId, tiers = [] }) {
 
       if (res.ok) {
         toast.success(`Success! Order ID: ${data.trxId}`);
-        router.refresh();        setStep(1);
+        router.refresh();
+        setStep(1);
         setQuantity(1);
         setSelectedTierId(null);
       } else {

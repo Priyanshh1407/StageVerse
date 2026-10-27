@@ -11,7 +11,8 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef(null);
-    const router = useRouter();    useEffect(() => {
+    const router = useRouter();
+    useEffect(() => {
         if (isOpen) {
             setTimeout(() => inputRef.current?.focus(), 50);
         } else {
@@ -19,7 +20,8 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
             setResults(null);
             setSelectedIndex(0);
         }
-    }, [isOpen]);    useEffect(() => {
+    }, [isOpen]);
+    useEffect(() => {
         if (!query || query.length < 2) {
             setResults(null);
             return;
@@ -42,7 +44,8 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
         }, 300); // 300ms debounce
 
         return () => clearTimeout(timer);
-    }, [query]);    const flatResults = useMemo(() => {
+    }, [query]);
+    const flatResults = useMemo(() => {
         if (!results) return [];
         const list = [];
 
@@ -51,7 +54,8 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
         results.patches?.forEach(item => list.push({ type: 'patch', data: item, path: `/patch-studio/${item.eventId?.eventId || item.eventId?._id || '101'}` }));
 
         return list;
-    }, [results]);    useEffect(() => {
+    }, [results]);
+    useEffect(() => {
         if (!isOpen) return;
 
         const handleKeyDown = (e) => {
@@ -126,7 +130,8 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                             {results.events.length > 0 && (
                                 <div>
                                     <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-3 py-2">Shows</h3>
-                                    {results.events.map((event, idx) => {                                        const absIndex = idx;
+                                    {results.events.map((event, idx) => {
+                                        const absIndex = idx;
                                         const isSelected = selectedIndex === absIndex;
 
                                         return (

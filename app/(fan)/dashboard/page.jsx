@@ -53,7 +53,8 @@ export default function FanDashboard() {
     fetchData();
   }, [isUploadModalOpen, isEditProfileOpen]); // Re-fetch if upload or edit happens
 
-  const handleUpdateProfile = (updatedUser) => {    setIsEditProfileOpen(false);
+  const handleUpdateProfile = (updatedUser) => {
+    setIsEditProfileOpen(false);
     window.location.reload();
   };
 
@@ -174,7 +175,8 @@ export default function FanDashboard() {
                     </div>
                   </div>
                 </div>
-              ) : (                <div className="flex flex-col gap-1 rounded-xl p-6 bg-[#1a2632] border border-slate-800 shadow-sm relative overflow-hidden opacity-75">
+              ) : (
+                <div className="flex flex-col gap-1 rounded-xl p-6 bg-[#1a2632] border border-slate-800 shadow-sm relative overflow-hidden opacity-75">
                   <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Predict Setlist</p>
                   <h3 className="text-slate-200 text-xl font-bold leading-tight mt-1">No Upcoming Shows</h3>
                   <p className="text-slate-500 text-xs mt-1">Buy a ticket to play!</p>
@@ -254,7 +256,10 @@ export default function FanDashboard() {
                 <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
-                {data.memories.length > 0 ? data.memories.slice(0, 5).map((memory) => {                  const safeImage = memory.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745";                  const isVideo = safeImage.includes(".mp4") || memory.type === 'video';                  const MediaContent = () => {
+                {data.memories.length > 0 ? data.memories.slice(0, 5).map((memory) => {
+                  const safeImage = memory.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745";
+                  const isVideo = safeImage.includes(".mp4") || memory.type === 'video';
+                  const MediaContent = () => {
                     if (isVideo) {
                       return (
                         <video
@@ -294,7 +299,8 @@ export default function FanDashboard() {
                         <p className="text-white font-bold text-center mt-1">{memory.title}</p>
                       </div>
                     );
-                  }                  return (
+                  }
+                  return (
                     <div key={memory.id} className="group relative rounded-xl overflow-hidden cursor-pointer">
                       <MediaContent />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">

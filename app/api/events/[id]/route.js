@@ -3,14 +3,16 @@ import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
 import mongoose from 'mongoose';
-import { jwtVerify } from 'jose';const getQuery = (id) => {
+import { jwtVerify } from 'jose';
+const getQuery = (id) => {
   if (mongoose.Types.ObjectId.isValid(id)) {
     return { _id: id };
   } else if (!isNaN(id)) {
     return { eventId: parseInt(id) };
   }
   return null;
-};export async function GET(req, { params }) {
+};
+export async function GET(req, { params }) {
   try {
     await dbConnect();
     const { id } = await params;
@@ -31,7 +33,8 @@ import { jwtVerify } from 'jose';const getQuery = (id) => {
       .populate('venue')
       .select('title date city venue images ticketTiers genre');
 
-    const similarEvents = similarEventsRaw.map(sim => {      const minPrice = sim.ticketTiers?.length > 0
+    const similarEvents = similarEventsRaw.map(sim => {
+      const minPrice = sim.ticketTiers?.length > 0
         ? Math.min(...sim.ticketTiers.map(t => t.price))
         : 0;
 
@@ -42,7 +45,8 @@ import { jwtVerify } from 'jose';const getQuery = (id) => {
         city: sim.city,
         venue: sim.venue?.name || 'TBA',
         price: minPrice,
-        genre: sim.genre,        image: sim.images?.hero || "https://images.unsplash.com/photo-1459749411177-2a2965bda36c?q=80&w=500&auto=format&fit=crop"
+        genre: sim.genre,
+        image: sim.images?.hero || "https://images.unsplash.com/photo-1459749411177-2a2965bda36c?q=80&w=500&auto=format&fit=crop"
       }
     })
 
@@ -56,9 +60,11 @@ import { jwtVerify } from 'jose';const getQuery = (id) => {
   } catch (error) {
     return NextResponse.json({ message: 'Server Error' }, { status: 500 });
   }
-}export async function PUT(req, { params }) {
+}
+export async function PUT(req, { params }) {
   try {
-    await dbConnect();    const token = req.cookies.get('token')?.value;
+    await dbConnect();
+    const token = req.cookies.get('token')?.value;
     if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
@@ -69,7 +75,8 @@ import { jwtVerify } from 'jose';const getQuery = (id) => {
     const query = getQuery(id);
     if (!query) return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
 
-    const event = await Event.findOne(query);    if (event.organizerId.toString() !== payload.userId) {
+    const event = await Event.findOne(query);
+    if (event.organizerId.toString() !== payload.userId) {
       return NextResponse.json({ message: 'Forbidden: Not your event' }, { status: 403 });
     }
 
@@ -85,9 +92,11 @@ import { jwtVerify } from 'jose';const getQuery = (id) => {
   } catch (error) {
     return NextResponse.json({ message: 'Server Error' }, { status: 500 });
   }
-}export async function DELETE(req, { params }) {
+}
+export async function DELETE(req, { params }) {
   try {
-    await dbConnect();    const token = req.cookies.get('token')?.value;
+    await dbConnect();
+    const token = req.cookies.get('token')?.value;
     if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
@@ -97,7 +106,8 @@ import { jwtVerify } from 'jose';const getQuery = (id) => {
     const query = getQuery(id);
     if (!query) return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
 
-    const event = await Event.findOne(query);    if (event.organizerId.toString() !== payload.userId) {
+    const event = await Event.findOne(query);
+    if (event.organizerId.toString() !== payload.userId) {
       return NextResponse.json({ message: 'Forbidden: Not your event' }, { status: 403 });
     }
 

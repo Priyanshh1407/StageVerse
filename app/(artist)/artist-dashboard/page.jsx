@@ -50,14 +50,16 @@ export default function ArtistDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: taskId, status: 'Done' })
       });
-      if (res.ok) {        setData(prev => ({
+      if (res.ok) {
+        setData(prev => ({
           ...prev,
           alert: {
             ...prev.alert,
             tasks: prev.alert.tasks.filter(t => t._id !== taskId),
             message: `You have ${prev.alert.tasks.length - 1} Urgent Tasks Pending`
           }
-        }));        if (data.alert.tasks.length <= 1) {
+        }));
+        if (data.alert.tasks.length <= 1) {
           setTimeout(() => setShowAlertModal(false), 500);
         }
       }

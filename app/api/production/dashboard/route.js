@@ -11,27 +11,34 @@ import { verifyAuth } from '@/lib/auth';
 
 export async function GET(req) {
     try {
-        await dbConnect();        const user = await verifyAuth(req);
+        await dbConnect();
+        const user = await verifyAuth(req);
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }        const events = await Event.find({
+        }
+        const events = await Event.find({
             $or: [{ organizerId: user.userId }, { assignedTo: user.userId }]
-        }).populate('venue').sort({ date: 1 });        const shows = events.map(event => {
+        }).populate('venue').sort({ date: 1 });
+        const shows = events.map(event => {
             return {
                 id: event.eventId || event._id.toString(),
                 eventId: event.eventId,
                 title: event.title,
                 venue: event.city || (event.venue?.name || 'Unknown Venue'),
                 date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),                status: (event.productionStatus && event.productionStatus !== 'none') ? event.productionStatus : event.status,
+                date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                status: (event.productionStatus && event.productionStatus !== 'none') ? event.productionStatus : event.status,
                 originalStatus: event.status, // Keep original for reference
                 type: event.genre || 'General',
                 typeColor: getColorForGenre(event.genre),
                 image: event.images?.hero || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
             };
-        });        const activeShows = shows.filter(s => s.status === 'active' || s.productionStatus === 'active');
+        });
+        const activeShows = shows.filter(s => s.status === 'active' || s.productionStatus === 'active');
         const archivedShows = shows.filter(s => s.status === 'archived');
-        const requestedShows = shows.filter(s => s.status === 'requested' || s.productionStatus === 'requested');        let conflictCount = 0;        const activeEventIds = events.filter(e => e.status === 'active' || e.status === 'requested').map(e => e._id);
+        const requestedShows = shows.filter(s => s.status === 'requested' || s.productionStatus === 'requested');
+        let conflictCount = 0;
+        const activeEventIds = events.filter(e => e.status === 'active' || e.status === 'requested').map(e => e._id);
         if (activeEventIds.length > 0) {
             const patches = await Patch.find({ eventId: { $in: activeEventIds } });
 
@@ -46,7 +53,8 @@ export async function GET(req) {
             archived: archivedShows.length,
             pending: requestedShows.length,
             conflicts: conflictCount
-        };        const logs = await Activity.find({ userId: user.userId })
+        };
+        const logs = await Activity.find({ userId: user.userId })
             .sort({ timestamp: -1 })
             .limit(10);
 
@@ -56,7 +64,8 @@ export async function GET(req) {
             time: formatTimeAgo(log.timestamp),
             type: log.type,
             link: log.link
-        }));        const taskColorMap = { High: 'red', Medium: 'amber', Low: 'blue', Done: 'green' };
+        }));
+        const taskColorMap = { High: 'red', Medium: 'amber', Low: 'blue', Done: 'green' };
 
         const dbTasks = await Task.find({
             eventId: { $in: activeEventIds },

@@ -8,7 +8,8 @@ import { verifyAuth } from '@/lib/auth';
 
 export async function POST(req) {
     try {
-        await dbConnect();        const artist = await verifyAuth(req);
+        await dbConnect();
+        const artist = await verifyAuth(req);
         if (!artist) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
@@ -18,12 +19,14 @@ export async function POST(req) {
 
         if (!userId || !eventId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }        const event = await Event.findById(eventId);
+        }
+        const event = await Event.findById(eventId);
         const fan = await User.findById(userId);
 
         if (!event || !fan) {
             return NextResponse.json({ error: 'Event or Fan not found' }, { status: 404 });
-        }        const newGuest = await Guest.findOneAndUpdate(
+        }
+        const newGuest = await Guest.findOneAndUpdate(
             { eventId: eventId, email: fan.email },
             {
                 name: fan.name,
@@ -37,7 +40,8 @@ export async function POST(req) {
                 artistId: artist.userId // NEW: Save explicit artistId
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
-        );        await Notification.create({
+        );
+        await Notification.create({
             userId: fan._id,
             type: 'guestlist',
             title: 'You made the Guestlist! 🎉',

@@ -14,7 +14,8 @@ import {
   TrendingUp, TrendingDown, MoreHorizontal, Filter, Search,
   ChevronLeft, ChevronRight, Menu, FileSpreadsheet, FileText, Check, CalendarDays
 } from 'lucide-react';
-import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';const formatCurrency = (amount) => {
+import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
+const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -35,18 +36,22 @@ const formatPercentage = (val) => {
 };
 
 export default function ReportsPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);  const [stats, setStats] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [stats, setStats] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [revenueTypes, setRevenueTypes] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [eventsList, setEventsList] = useState([]);
 
-  const [isGenerating, setIsGenerating] = useState(true); // Start true to trigger initial fetch  const [category, setCategory] = useState("Financial Overview");
+  const [isGenerating, setIsGenerating] = useState(true); // Start true to trigger initial fetch
+  const [category, setCategory] = useState("Financial Overview");
   const [eventScope, setEventScope] = useState("");
-  const [dateRange, setDateRange] = useState("Aug 01 - Aug 31, 2023");  const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState("Aug 01 - Aug 31, 2023");
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;  const fetchData = async () => {
+  const itemsPerPage = 5;
+  const fetchData = async () => {
     setIsGenerating(true);
 
     try {
@@ -77,9 +82,11 @@ export default function ReportsPage() {
     } finally {
       setIsGenerating(false);
     }
-  };  useEffect(() => {
+  };
+  useEffect(() => {
     fetchData();
-  }, [currentPage, searchQuery, eventScope, category]);  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  }, [currentPage, searchQuery, eventScope, category]);
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) setCurrentPage(newPage);
@@ -114,10 +121,13 @@ export default function ReportsPage() {
       toast.error("No data to export");
       return;
     }
-    const doc = new jsPDF();    doc.setFontSize(18);
-    doc.text("Event Sale Report", 14, 22);    doc.setFontSize(11);
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("Event Sale Report", 14, 22);
+    doc.setFontSize(11);
     doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);    autoTable(doc, {
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+    autoTable(doc, {
       startY: 40,
       head: [['ID', 'Date', 'Customer', 'Type', 'Qty', 'Amount', 'Status']],
       body: transactions.map(t => [
@@ -309,17 +319,20 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
   );
 }
 
-function StatCard({ data }) {  const isPositive = data.trend > 0;
+function StatCard({ data }) {
+  const isPositive = data.trend > 0;
   const isNeutral = data.trend === 0 || (data.trend < 0.2 && data.trend > -0.2); // Treat very small numbers as neutral
 
   let trendColors = isPositive
     ? "text-[#0bda5b] bg-[#0bda5b]/10 border-[#0bda5b]/20"
     : "text-red-400 bg-red-400/10 border-red-400/20";
 
-  let TrendIcon = isPositive ? TrendingUp : TrendingDown;  if (isNeutral) {
+  let TrendIcon = isPositive ? TrendingUp : TrendingDown;
+  if (isNeutral) {
     trendColors = "text-[#90b2cb] bg-[#2c3b47]";
     TrendIcon = null; // No icon for neutral
-  }  let displayValue;
+  }
+  let displayValue;
   if (data.type === 'currency') displayValue = formatCurrency(data.value);
   else if (data.type === 'percentage') displayValue = data.value + '%';
   else displayValue = formatNumber(data.value);

@@ -16,7 +16,8 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
 
-    useEffect(() => {        const socketInstance = io(undefined, {
+    useEffect(() => {
+        const socketInstance = io(undefined, {
             path: "/api/socket/io",
             addTrailingSlash: false,
             transports: ["polling", "websocket"],
