@@ -36,6 +36,7 @@ flowchart LR
 - **The server is the source of truth for live state.** Clients request changes over HTTP; the server writes to MongoDB and *then* broadcasts to the show's Socket.IO room. Details, sequence diagram and numbers: [`docs/live-sync.md`](docs/live-sync.md).
 - **AI requests are always answered.** Providers are tried in order (Gemini 3.8 Flash → Gemini 3.5 Flash-Lite → Groq `gpt-oss-120b`), and a provider that just hit overload or quota is skipped for a while (circuit breaker). If none answers, each feature falls back to something useful without AI: template copy, the artist's own song catalogue, a BPM energy curve for setlist order, or a rule-based reader for patch requests. Responses say `degraded: true` when that happens ([`lib/llm.js`](lib/llm.js)).
 - **The LLM interprets, code computes.** The DMX patch assistant asks Gemini only for intent (`{action, fixtures:[{type,count}]}`, JSON-schema constrained and validated, with one repair retry). A deterministic allocator assigns collision-free addresses ([`lib/dmx`](lib/dmx)).
+- **The homepage is a 3D concert that runs on integrated graphics.** Light is faked instead of computed: one instanced mesh of additive cones animated in a vertex shader (no real spotlights), about 12 draw calls, quality tiers with a live step-down and a 2D fallback. Scrolling runs a lighting cue stack, a lighting desk takes the lights over by hand, and concert mode plays a song with a show programmed from its own beats and sections ([`docs/homepage-show.md`](docs/homepage-show.md)).
 
 ## Run it locally (about 10 minutes)
 
@@ -71,11 +72,12 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 | `npm run lint` | ESLint (CI fails on any error) |
 | `npm run seed -- --yes` | Seed demo data into the database in `.env.local` |
 | `npm run bench` | Live-screen benchmark (endpoint latency, socket push latency) |
+| `npm run analyse:song -- <file> <slug> <title>` | Analyse a song (tempo, beats, sections) and program its homepage light show ([docs](docs/homepage-show.md)) |
 | `npm run eval:patch -- --provider groq` | AI patch-assistant evaluation, legacy vs current pipeline (~65 real API calls; `-- --fake` checks the harness without API calls) |
 
 ## Testing and quality
 
-- **201 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), and the AI patch route with a scripted model.
+- **233 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, and the homepage show's song analysis (against a synthetic click track) and cue engine.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, tests with coverage, a production build and a dependency audit on every push.
 - **Manual test guide:** [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md) walks through every upgraded feature in the browser (including how to force each AI fallback level) and lists the automated test commands.
 - The engineering history (each bug, how it was found, the fix and the trade-off) is in [`FIX_LOG.md`](FIX_LOG.md). The audit that started it is in [`PROJECT_AUDIT_REPORT.md`](PROJECT_AUDIT_REPORT.md).
@@ -91,6 +93,8 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 | AI patching: cases with colliding DMX addresses | 17% → **0%** (30-case eval, Groq gpt-oss-120b) | `evals/patch/results/` |
 | AI patching: request understood correctly | 90% → **100%** (93% before one round of prompt fixes) | `evals/patch/results/` |
 | AI patching: p50 / p95 latency | 1.3 / 2.1 s → **0.78 / 1.5 s** | `evals/patch/results/` |
+| Homepage 3D stage on Intel Iris Xe (integrated) | ~89 real lights → 1; **60 FPS**, 59 FPS 1% low, GPU ≈ 1.7 ms/frame | `bench/results/stage-*.json`, [docs](docs/homepage-show.md) |
+| Song analysis: *A Sky Full of Stars* | 125.1 BPM detected (published: 125), 10 sections, 22 cues | [docs](docs/homepage-show.md) |
 
 ## Known limitations
 
@@ -101,6 +105,7 @@ Written down on purpose: this is a portfolio project, and these are the honest e
 - **Rate limits are per process** (in-memory token buckets).
 - **Free AI tiers are tight** (Gemini: 5 requests/minute and 20/day per model). The provider chain and non-AI fallbacks keep features working, but fallback answers are simpler; heavy AI use needs a billed key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
+- **Concert mode is local-only.** The demo song is a commercial recording, so it's gitignored and never deployed; the homepage offers concert mode only where the file exists. A public demo needs a royalty-free track (the analysis works on any MP3/WAV/OGG/FLAC).
 - **Sentiment analysis isn't built.** The analysis page shows labelled sample data.
 - The AI patch eval uses 30 cases I wrote, and the second prompt version was tuned on them, so its 100% intent accuracy is optimistic; a held-out case set is the next step. Gemini results are pending: the free tier's 20 requests/day per model is less than one full run.
 

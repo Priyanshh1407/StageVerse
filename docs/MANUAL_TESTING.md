@@ -4,7 +4,7 @@ A click-by-click checklist for every upgrade made during the audit (see [`FIX_LO
 
 Some protections can only be checked by trying something the UI never lets you do (another user's data, voting twice). For those there's a snippet to paste into the browser's DevTools console (F12 → Console) **while on the app's page**, so it runs with that browser's login.
 
-> Everything here is also covered by the automated suite (`npm test`, 201 tests). This guide is for seeing it work end to end in a real browser.
+> Everything here is also covered by the automated suite (`npm test`, 233 tests). This guide is for seeing it work end to end in a real browser.
 
 ---
 
@@ -237,18 +237,43 @@ With **level 4** active, repeat 8.1–8.5. Each still answers, with an "AI is bu
 |---|---|---|---|
 | 9.1 | Health endpoint | Open `/api/health` | `{"status":"ok","db":"up","latencyMs":…}`; no connection strings or error details |
 | 9.2 | No tempo invented | Crew live screen on a song without a BPM | Shows "—" (used to show 128) |
-| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 201 tests passing, build succeeds |
+| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 233 tests passing, build succeeds |
 | 9.4 | Benchmark | `npm run bench`, then open `bench/results/live-run.json` | Push p50 of a few ms; setlist lookup examines 1 document |
 | 9.5 | AI eval | `npm run eval:patch -- --provider groq` (~65 Groq calls, ~15 min) | A new file in `evals/patch/results/` with 0% collisions for the new pipeline |
 
 ---
 
-## 10. Automated tests (Git Bash)
+## 10. Homepage show (UPG-04)
+
+Use the production build (`npm run build && npm start`); dev mode is much slower for 3D. Keep the laptop plugged in.
+
+| # | Check | Steps | Expected |
+|---|---|---|---|
+| 10.1 | First paint | Open `/` | The headline appears immediately as HTML; the 3D stage fades in behind it a moment later |
+| 10.2 | Scroll runs the show | Scroll slowly through the section | House lights down → "Cue 1/2/3 · GO" (rig powers up, camera moves) → one card per role (Fan, Artist, Organizer, Crew), with the rig recoloured for each → a riser (beams tighten) → the drop (strobe and blinders) → "You call the encore". Scrolling back plays it backwards |
+| 10.3 | Encore colour | At the encore, click a colour | The whole rig (beams, lasers, LED screens) changes to it. Nothing is saved (local only) |
+| 10.4 | Lighting desk takes over | Click **Lighting desk**, move any control | The panel says "You have the lights"; scrolling no longer changes the lights. Try Master (blackout), beam count, sweep/speed, colours, lasers (count and colour), blinders, haze |
+| 10.5 | Strobe and DROP | Hold **STROBE**; click **DROP** | Strobe flashes only while held; DROP converges the beams with a flash and releases by itself |
+| 10.6 | Resume show | Click **Resume show** | The desk lets go and the scroll show takes over again |
+| 10.7 | Concert mode | Click **Play the show with sound** (only shown if `public/audio/A Sky Full of Stars.mp3` exists) | Music plays; beams and crowd pulse on the beat; the camera cuts every 8 bars; strobe + blinders hit at 0:46, 1:17 and 2:49. The timeline shows the sections and loudness; clicking it seeks and the lights follow |
+| 10.8 | Desk during a song | While the song plays, touch the desk, then Resume show | The desk takes over; Resume returns to the song's programmed show at the current time |
+| 10.9 | Concert mode hidden without the song | Temporarily rename the MP3, reload | No "Play the show" button (the page checks the file with a HEAD request first) |
+| 10.10 | Quality tiers | Open `/?tier=0`, `/?tier=1`, `/?tier=2` | 0: poster with the 2D lights; 1: 72 beams, no bloom; 2: 100 beams with bloom |
+| 10.11 | Reduce motion | DevTools → Rendering → "Emulate CSS prefers-reduced-motion: reduce", reload | The poster without animation; the text, cards and desk still work |
+| 10.12 | Paused off-screen | Scroll down to the events, watch Task Manager → GPU | GPU use drops to about zero (the canvas stops rendering) |
+| 10.13 | Benchmark | Open `/lab/stage` → **Run benchmark** (~40 s, tab in front), then **Copy results** | Average and 1%-low FPS per configuration (full scene at DPR 1 and at native DPR) |
+| 10.14 | Song analysis | `npm run analyse:song -- "public/audio/A Sky Full of Stars.mp3" sky-full-of-stars "A Sky Full of Stars"` | ~125 BPM, 10 sections, ~22 cues; rewrites `public/shows/sky-full-of-stars.show.json` |
+| 10.15 | Phone width | DevTools device mode, 375 px | Text fits, the desk opens as a full-width panel, no horizontal scroll |
+| 10.16 | No socket on public pages | Open `/` logged out, check the console | No "Socket connection error" warnings (the socket only connects on live-show pages) |
+
+---
+
+## 11. Automated tests (Git Bash)
 
 Run from the project folder (`cd /d/Projects/stageverse`). None of these touch your real database: the tests start an in-memory MongoDB (the first run downloads a ~100 MB `mongod` binary and caches it) and mock every AI provider.
 
 ```bash
-# Everything: 201 tests, about 1-2 minutes
+# Everything: 233 tests, about 1-2 minutes
 npm test
 
 # Watch mode while editing (re-runs affected tests on save)
@@ -260,6 +285,7 @@ npm run test:coverage
 # One area at a time
 npx vitest run tests/security/authz-matrix.test.js    # who may do what on every route (SEC-03)
 npx vitest run tests/security/socket.test.js          # live-show socket auth, rooms, typed protocol (SEC-02, BUG-05, UPG-02)
+npx vitest run tests/unit/show.test.js                # homepage show: song analysis on a synthetic click track, cue engine (UPG-04)
 npx vitest run tests/security/voting.test.js          # one fan one vote, 20 concurrent votes (SEC-04, BUG-04)
 npx vitest run tests/security/predictions.test.js     # prediction scoring and locking (SEC-05)
 npx vitest run tests/security/events.test.js          # event short ids, new-venue shows (BUG-09, BUG-14)

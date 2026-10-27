@@ -15,9 +15,7 @@ On top of that base, two flagship talking points:
 A third flagship (concurrency-safe ticketing, UPG-01) comes back when ticketing is un-parked.
 
 ## Progress (2026-10-27)
-Phases 0–5 done; Phase 6 partly done (BUG-10, hygiene, README, proxy rename, /api/health). Branch chain: `phase-0-safety-net` → `phase-1-security` → `phase-2-correctness` → `phase-3-testing-ci` (phases 3–6 continue on it). 173 tests, lint 0 errors, build passes. Details in FIX_LOG.md.
-Waiting on the developer: Atlas password rotation; pick the deployment target; record the demo; UPG-04 3D homepage discussion. Then re-audit → project-interview-report → project-mock-interview.
-Also done beyond the plan: BUG-13–16, artist message/notification scoping, LLM SDK/model upgrade (gemini-3.8-flash), a regression from my own ERR-01 codemod (fixed).
+Phases 0–2 done on branches `phase-0-safety-net` → `phase-1-security` → `phase-2-correctness` (see FIX_LOG.md). 139 tests passing. Open from 0–2: Atlas password rotation (developer). Also fixed beyond the plan: BUG-13 (guest list hardcoded to event 13), BUG-14 (production couldn't create shows at new venues), artist message/notification scoping, a regression from my own ERR-01 codemod (login catch). Next: Phase 3.
 
 ## Phase Overview
 
@@ -137,9 +135,9 @@ Risk / rollback:
 Goal: every push proves the critical paths still work.
 Why this order: by now the critical paths are fixed and stable enough to lock in.
 Items:
-- [x] **TEST-01** Fill out the suite: authz matrix (role × route × own/other), order concurrency, vote dedupe, socket room isolation (using `socket.io-client` against an in-test server), scoring, LLM routes with a **mocked** Gemini client — `tests/` — M
-- [x] Fix the remaining ESLint **errors** to 0 (unescaped entities, set-state-in-effect, static-components, purity); warnings may remain — `app/`, `components/` — M
-- [x] GitHub Actions `ci.yml`: `npm ci` → `npm run lint` → `npm test` → `npm run build` on push and PR, with dummy env values; add a README badge — `.github/workflows/ci.yml` — S
+- [ ] **TEST-01** Fill out the suite: authz matrix (role × route × own/other), order concurrency, vote dedupe, socket room isolation (using `socket.io-client` against an in-test server), scoring, LLM routes with a **mocked** Gemini client — `tests/` — M
+- [ ] Fix the remaining ESLint **errors** to 0 (unescaped entities, set-state-in-effect, static-components, purity); warnings may remain — `app/`, `components/` — M
+- [ ] GitHub Actions `ci.yml`: `npm ci` → `npm run lint` → `npm test` → `npm run build` on push and PR, with dummy env values; add a README badge — `.github/workflows/ci.yml` — S
 Acceptance criteria:
 - `npm test` has ≥ 40 meaningful tests (assertions on DB state and status codes, not just `200`) and runs in < 60 s.
 - `npx eslint .` reports **0 errors**.
@@ -158,8 +156,8 @@ Risk / rollback:
 Goal: replace 1-second polling with server-authoritative push, and prove the improvement.
 Why this order: needs Phase 1's authenticated rooms, and Phase 3's tests catch regressions.
 Items:
-- [x] **PERF-01 (measure)** Script that opens N simulated crew clients (Node `fetch` loop or k6) and records req/s and p50/p95 for `/api/production/live`; record the "before" numbers in `FIX_LOG.md` — `scripts/bench-live.mjs` — S
-- [x] **PERF-01 (fix)** The server persists show state then emits the full snapshot to the room; the client fetches once on connect/reconnect (or uses Socket.IO connection-state recovery) plus a 20 s reconciliation poll; lean queries with `.lean()` and projected fields; index `Setlist.eventId` and `Poll.{eventId,isActive}` — production page, live route, models — M
+- [ ] **PERF-01 (measure)** Script that opens N simulated crew clients (Node `fetch` loop or k6) and records req/s and p50/p95 for `/api/production/live`; record the "before" numbers in `FIX_LOG.md` — `scripts/bench-live.mjs` — S
+- [ ] **PERF-01 (fix)** The server persists show state then emits the full snapshot to the room; the client fetches once on connect/reconnect (or uses Socket.IO connection-state recovery) plus a 20 s reconciliation poll; lean queries with `.lean()` and projected fields; index `Setlist.eventId` and `Poll.{eventId,isActive}` — production page, live route, models — M
 Acceptance criteria:
 - With 10 crew clients open, DB-hitting requests/sec drop from ~30 (before; measure it) to ≤ 1. Status changes reach clients in < 500 ms (log the emit-to-receive delta).
 - Killing and restarting the server: clients reconnect and show the correct state within 5 s.
@@ -176,7 +174,7 @@ Risk / rollback:
 Goal: turn the fixed flows into three defensible stories with numbers.
 Why this order: each one builds on a fixed and tested base from Phases 1–4.
 
-- [x] **UPG-02 Authenticated, room-scoped, server-authoritative live-show sync**
+- [ ] **UPG-02 Authenticated, room-scoped, server-authoritative live-show sync**
   - Problem it solves in THIS project: SEC-02, SEC-04, BUG-04, BUG-05, PERF-01. Anyone could control any show, votes were stuffable, events leaked across shows, and polling fought sockets.
   - What gets built (scope-limited): a typed event protocol (`lib/liveProtocol.js` with zod schemas per event); handshake auth; per-event rooms with role-based emit permission; `Vote` uniqueness; a server-computed winner; a state snapshot on reconnect; an integration test running two shows in parallel to prove isolation; a short `docs/live-sync.md` with a sequence diagram.
   - Evidence it produces: an isolation test (0 cross-room messages); a vote-stuffing test (1000 attempts → 1 counted); before/after request rate from Phase 4; measured emit-to-receive latency.
@@ -184,7 +182,7 @@ Why this order: each one builds on a fixed and tested base from Phases 1–4.
   - Follow-ups the interviewer will ask, and what you must understand: why cookies are sent on the socket handshake and how you verify them; rooms vs namespaces; what breaks with 2+ server instances (rooms are in-process, so you'd need the Redis adapter, and you should say you haven't needed it yet); at-least-once delivery and why the client reconciles; why the Next.js `pages/api` socket hack doesn't work on serverless.
   - Effort: M–L | Interview impact: 5 | Buzzword risk: Low
 
-- [x] **UPG-03 Hybrid LLM + deterministic DMX patch allocator, with an evaluation harness** (the AI/ML-role flagship)
+- [ ] **UPG-03 Hybrid LLM + deterministic DMX patch allocator, with an evaluation harness** (the AI/ML-role flagship)
   - Problem it solves in THIS project: LLM-01. Gemini is asked to compute collision-free DMX addresses (a deterministic interval-packing task), its output is unvalidated, and invalid JSON gives a 500.
   - What gets built (scope-limited):
     1. `lib/dmx/allocate.js`: a pure function that, given the current patch (universe, start, footprint) and requested fixtures, returns first-fit addresses within 1–512 per universe, spilling to the next universe, with no overlaps; plus a `repatch` mode that packs everything.
@@ -211,11 +209,11 @@ Risk / rollback:
 ## Phase 6 — Ship & Document
 Goal: a recruiter can click a live demo and a reviewer can understand the system in 5 minutes.
 Items:
-- [x] **BUG-10** Delete the empty `python-service/`, `app/api/sentiment`, `app/api/wizard/generate` and `lib/gemini.js`; label hardcoded analysis reviews as sample data (or remove the "engine" claim); remove the hardcoded `bpm: 128` — S
-- [x] Hygiene bundle: remove debug scripts and log, unused deps (`react-router-dom`, one of the two DnD libs, `jsonwebtoken`), console noise; rename `middleware.js` → `proxy.js`; run Prettier once — S–M
+- [ ] **BUG-10** Delete the empty `python-service/`, `app/api/sentiment`, `app/api/wizard/generate` and `lib/gemini.js`; label hardcoded analysis reviews as sample data (or remove the "engine" claim); remove the hardcoded `bpm: 128` — S
+- [ ] Hygiene bundle: remove debug scripts and log, unused deps (`react-router-dom`, one of the two DnD libs, `jsonwebtoken`), console noise; rename `middleware.js` → `proxy.js`; run Prettier once — S–M
 - [ ] **Deployment decision**: Socket.IO needs a long-running Node process. Either deploy the whole app on a single always-on host (Render/Railway/Fly with a custom `server.js` running Next and Socket.IO), or keep Next on Vercel and run the socket server separately. Document the choice and add `GET /api/health` (DB ping, no secrets) — M
-- [x] **DOC-01** README: what it is, the four roles, an architecture diagram (Next app ⇄ Mongo, Socket.IO rooms, Gemini), setup in < 10 minutes with `.env.example` and `scripts/seed.mjs`, demo accounts, a design decisions section (cookie JWT, server-authoritative sync, LLM intent + deterministic allocator), and an honest **known limitations** section (no real payments, single-instance sockets, self-serve roles) — M
-- [ ] **UPG-04 "The Show": a scroll-driven 3D concert homepage that runs on integrated graphics** (full design: `C:\Users\Intel\.claude\plans\yes-add-that-to-linear-orbit.md`)
+- [ ] **DOC-01** README: what it is, the four roles, an architecture diagram (Next app ⇄ Mongo, Socket.IO rooms, Gemini), setup in < 10 minutes with `.env.example` and `scripts/seed.mjs`, demo accounts, a design decisions section (cookie JWT, server-authoritative sync, LLM intent + deterministic allocator), and an honest **known limitations** section (no real payments, single-instance sockets, self-serve roles) — M
+- [x] **UPG-04 "The Show": a scroll-driven 3D concert homepage that runs on integrated graphics** (full design: `C:\Users\Intel\.claude\plans\yes-add-that-to-linear-orbit.md`)
   - Problem it solves in THIS project: the `/test-3d` prototype (`components/canvas/StageRig.jsx`) uses ~89 real dynamic lights (78 drei volumetric SpotLights + 11 pointLights), 3 per-frame `RenderTexture` scenes, ~500 draw calls (estimate) and full-res Bloom. It's unusable on the dev laptop (Intel Iris Xe). The gate/tunnel sections are dropped. `public/textures/env.exr` (70 MB) is unreferenced.
   - What gets built (scope-limited): `components/home/stage/`. Beams are a single `InstancedMesh` of additive shader cones animated in the vertex shader (0 real spotlights). Fixtures are instanced from `low_moving_head.glb`; the truss is one merged geometry; the LED wall is a `CanvasTexture` showing real upcoming events. Quality tiers 0/1/2 (`detect-gpu` + `PerformanceMonitor`, `?tier=` override; tier 0 = poster + existing `ConcertLights`, also used for reduced-motion). A 400vh sticky section driven by GSAP `ScrollTrigger` runs a data-driven **cue stack** (`cues.js`): house lights down → cues 1–3 → build (per-role shots) → the drop → "you call the encore" colour pick. The render loop pauses off-screen; the HTML headline keeps LCP fast. Afterwards, delete the gate/tunnel/unused components and ~76 MB of unused assets.
   - Evidence it produces: before/after table on the Intel Iris Xe (prod build): real lights 89 → ≤ 2, draw calls ~500 → ≤ 40, FPS `<before>` → ≥ 55, homepage LCP `<baseline>` → no worse, 3D assets ≤ 3 MB in a lazy chunk.
@@ -223,6 +221,7 @@ Items:
   - Follow-ups the interviewer will ask, and what you must understand: forward-rendering cost (pixels × lights); draw calls vs fill rate/overdraw; why instancing helps; vertex-shader animation vs per-frame JS; additive blending and `depthWrite:false`; why ScrollTrigger plus a ref instead of React state; how LCP is protected with a lazy canvas; accessibility (`prefers-reduced-motion`).
   - Effort: L (~4–6 days) | Interview impact: 4 (frontend/SDE), 2 (ML) | Buzzword risk: Low (backed by measured numbers)
   - Note: safe to build in parallel with security phases (public page, no auth or data writes)
+  - **Done (2026-10-28)**, see [`docs/homepage-show.md`](docs/homepage-show.md). Changes from the plan: native scroll + a ref instead of GSAP ScrollTrigger (no dependency, same no-re-render result); fixture heads are procedural instanced cylinders aimed by the beam shader instead of `low_moving_head.glb`; LED screens are a procedural shader plus a canvas texture. Added beyond the plan: lighting desk (manual mode / resume show), lasers, blinders, strobe, and **concert mode**: self-written song analysis (tempo, beats, downbeats, sections) programs a timecoded cue sheet synced to the audio clock (`npm run analyse:song`). Measured: 1 real light, 12 draw calls, 60 FPS (1% low 59) on the Iris Xe. The old `Hero` was removed (its 2D lights live on as the tier-0 fallback). The old `/test-3d` prototype and its ~12 MB of assets were never committed; they are now gitignored (kept on disk for reference).
 - [ ] 60–90 s demo GIF or video: run a live show with an encore vote across three browser windows (artist, crew, fan) — S
 - [ ] Re-run `project-audit-upgrade` (re-audit), then `project-interview-report`, then `project-mock-interview` — S
 Acceptance criteria:

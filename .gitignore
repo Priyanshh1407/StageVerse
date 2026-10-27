@@ -63,3 +63,15 @@ public/audio/*.m4a
 public/audio/*.ogg
 public/audio/*.flac
 !bench/results/stage-*.json
+
+# Old /test-3d 3D prototype (replaced by the homepage show, docs/homepage-show.md). Kept on disk
+# for reference, never committed: ~12 MB of models and the code that used them.
+/app/test-3d/
+/components/canvas/
+/public/models/
+/public/moving-head/
+/public/low_moving_head.glb
+/public/scene-transformed.glb
+/public/strobe.glb
+/public/truss.glb
+/public/tunnel-transformed.glb
