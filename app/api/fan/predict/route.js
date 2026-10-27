@@ -1,88 +1,64 @@
 import { NextResponse } from 'next/server';
-import { apiError } from '@/lib/api';
+import { apiError, readJson } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Prediction from '@/models/Prediction';
-import Event from '@/models/Event';
+import Setlist from '@/models/Setlist';
 import { verifyAuth } from '@/lib/auth';
+import { resolveEvent } from '@/lib/events';
+import { ConflictError, ValidationError } from '@/lib/errors';
+
+const MAX_SONGS = 10;
+
 export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
 
-        const { searchParams } = new URL(req.url);
-        const eventId = searchParams.get('eventId');
+        const eventId = new URL(req.url).searchParams.get('eventId');
+        if (!eventId) throw new ValidationError('Event ID required');
 
-        if (!eventId) {
-            return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
-        }
-        let queryEventId = eventId;
-        if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
-            const event = await Event.findOne({ eventId: eventId });
-            if (event) queryEventId = event._id;
-            else return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-        }
-
-        const prediction = await Prediction.findOne({
-            userId: user.userId,
-            eventId: queryEventId
-        });
-
+        const event = await resolveEvent(eventId);
+        const prediction = await Prediction.findOne({ userId: user.userId, eventId: event._id });
         return NextResponse.json({ success: true, data: prediction });
-
     } catch (error) {
         return apiError(error, '/api/fan/predict');
     }
 }
+
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
 
-        const body = await req.json();
-        const { eventId, songs } = body;
+        const { eventId, songs } = await readJson(req);
+        if (!eventId || !Array.isArray(songs)) throw new ValidationError('Invalid data');
+        if (songs.length > MAX_SONGS) throw new ValidationError(`Max ${MAX_SONGS} songs allowed`);
 
-        if (!eventId || !songs || !Array.isArray(songs)) {
-            return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
+        const cleanSongs = songs.map((s) => ({
+            id: s?.id ? String(s.id).slice(0, 64) : undefined,
+            title: String(s?.title ?? '').trim().slice(0, 200),
+        })).filter((s) => s.title || s.id);
+
+        const event = await resolveEvent(eventId);
+
+        // Predictions close when the show leaves standby: once songs are being played,
+        // a prediction is no longer a prediction.
+        const setlist = await Setlist.findOne({ eventId: event._id }).select('showStatus');
+        if (setlist && setlist.showStatus !== 'Standby') {
+            throw new ConflictError('Predictions are closed: the show has started');
         }
 
-        if (songs.length > 10) {
-            return NextResponse.json({ error: 'Max 10 songs allowed' }, { status: 400 });
-        }
-
-        console.log("[API] Received Prediction:", { userId: user.userId, eventId, songCount: songs.length });
-        let queryEventId = eventId;
-        if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
-            const event = await Event.findOne({ eventId: eventId });
-            if (event) {
-                queryEventId = event._id;
-                console.log("[API] Resolved Numeric Event ID to:", queryEventId);
-            } else {
-                console.error("[API] Event Not Found:", eventId);
-                return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-            }
-        }
-        const existingPrediction = await Prediction.findOne({ userId: user.userId, eventId: queryEventId });
-        if (existingPrediction && existingPrediction.status !== 'submitted') {
-            if (existingPrediction.status === 'graded') {
-                return NextResponse.json({ error: 'Prediction is already graded and locked.' }, { status: 403 });
-            }
+        const existing = await Prediction.findOne({ userId: user.userId, eventId: event._id }).select('status');
+        if (existing?.status === 'graded') {
+            throw new ConflictError('Prediction is already graded and locked.');
         }
 
         const savedPrediction = await Prediction.findOneAndUpdate(
-            { userId: user.userId, eventId: queryEventId },
-            {
-                userId: user.userId,
-                eventId: queryEventId,
-                songs: songs,
-                status: 'submitted'
-            },
+            { userId: user.userId, eventId: event._id },
+            { userId: user.userId, eventId: event._id, songs: cleanSongs, status: 'submitted' },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
-
-        console.log("[API] Saved Prediction:", savedPrediction ? savedPrediction._id : "FAILED");
-
         return NextResponse.json({ success: true, data: savedPrediction });
-
     } catch (error) {
         return apiError(error, '/api/fan/predict');
     }
