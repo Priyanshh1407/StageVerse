@@ -3,11 +3,9 @@ import { req, json, makeUser } from '../helpers';
 import { rateLimit, resetRateLimits } from '@/lib/rateLimit';
 
 // The LLM routes must never reach Google in tests
-vi.mock('@google/generative-ai', () => ({
-    GoogleGenerativeAI: class {
-        getGenerativeModel() {
-            return { generateContent: async () => ({ response: { text: () => 'A punchy teaser.' } }) };
-        }
+vi.mock('@google/genai', () => ({
+    GoogleGenAI: class {
+        models = { generateContent: async () => ({ text: 'A punchy teaser.', usageMetadata: { totalTokenCount: 42 } }) };
     },
 }));
 
