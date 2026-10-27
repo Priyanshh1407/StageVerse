@@ -1,0 +1,14 @@
+{
+  "label": "stage-step2-iris-xe",
+  "machine": "Intel Core i5-1155G7, Intel Iris Xe (ANGLE / D3D11), 1536x776 viewport, display 60 Hz, native DPR 1.25",
+  "build": "next build && next start (production)",
+  "scene": "full step-2 stage: truss, fixtures, beams, glows, LED screens, crowd; FPS overlay and auto step-down off",
+  "note": "Every configuration is capped by the 60 Hz display (vsync); the 1% lows show no stutter. Basis for enabling bloom on tier 1 (integrated GPUs).",
+  "results": [
+    { "config": "72 beams · DPR 1", "dpr": 1, "avgFps": 60, "low1Fps": 59, "worstMs": 17, "frames": 360 },
+    { "config": "100 + bloom · DPR 1", "dpr": 1, "avgFps": 60, "low1Fps": 59, "worstMs": 21, "frames": 360 },
+    { "config": "72 beams · native DPR", "dpr": 1.25, "avgFps": 60, "low1Fps": 58, "worstMs": 17, "frames": 360 },
+    { "config": "100 + bloom · native DPR", "dpr": 1.25, "avgFps": 60, "low1Fps": 58, "worstMs": 18, "frames": 360 },
+    { "config": "140 beams · native DPR", "dpr": 1.25, "avgFps": 60, "low1Fps": 58, "worstMs": 19, "frames": 360 }
+  ]
+}

@@ -13,23 +13,37 @@ light instead of computing it:
 
 | | Prototype (`/test-3d`) | The show |
 |---|---|---|
-| Real lights | ~89 | 1 (a hemisphere light for the steel) |
+| Real lights | ~89 | 3 cheap ones for the steel (sky fill, front fill, coloured bounce from below) |
 | Beams | a SpotLight + volumetric cone each | one `InstancedMesh` of additive cones |
 | Beam movement | JavaScript per fixture | vertex shader (pan/tilt/convergence from uniforms) |
 | LED screens | 3 `RenderTexture` scenes per frame | a procedural shader + one canvas texture |
-| Draw calls | hundreds (estimate) | 12, plus lasers/blinders (1 each, skipped while off) and bloom |
+| Draw calls | hundreds (estimate) | 15, plus lasers/blinders (1 each, skipped while off) and bloom |
 
 - **Beams** (`stage/beamShader.js`): open cones with additive blending and `depthWrite: false`, a
   fresnel core and length fade, and world-space value noise for haze. The moving-head bodies use the
   same aiming code, so a head always points where its beam goes.
 - **Truss** (`stage/trussGeometry.js`): every bar merged into one geometry (one draw call).
-- **Crowd** (`stage/crowdTexture.js`): silhouettes drawn into a canvas from a seed; one alpha-tested
-  plane that follows the camera.
+- **Crowd** (`stage/crowdTexture.js`): only heads and shoulders, three rows drawn into a canvas from a
+  seed. One plane pinned to the bottom of the camera's view in every shot, rim-lit in the show colours.
+
+### Making it look real, not like a game
+- **Lenses flare only toward the camera.** Each lens glow and lens face computes its fixture's aim
+  (the same shader code as the beam) and brightens with how directly the beam points at the camera:
+  a dim glass disc from the side, a white-hot point when it sweeps across you. Housings are dark metal
+  with no colour on them.
+- **Beams** are tight, near-white where they leave the lens and saturate with distance, carry
+  two-scale billowing haze grain, and soften close to the camera (out of focus, spread thin).
+- **Haze** (`stage/Haze.jsx`): three drifting, domain-warped noise layers tinted by the show colours,
+  thicker low and centre-stage. Their bottom edges sit on the floor (a plane poking below the floor is
+  cut off in a hard line).
+- **Steel** is dark and lit by a coloured bounce from below, the side the camera looks up at, the way
+  real truss picks up the show colour. The **floor** catches spill from the stage.
+- **Bloom** on integrated GPUs too (measured below), and a slow, tiny handheld camera sway.
 - **Quality tiers** (`stage/useQualityTier.js`): `detect-gpu` (its benchmark data is self-hosted in
   `public/gpu-benchmarks`, so there is no third-party request) picks a tier, and `?tier=0|1|2` forces one.
   drei's `PerformanceMonitor` steps down live: first bloom off, then 70% beams, then lower resolution.
   - Tier 2: 100 beams + bloom
-  - Tier 1: 72 beams, no bloom
+  - Tier 1: 72 beams, half-resolution bloom
   - Tier 0: no WebGL, or "reduce motion": the poster plus the 2D lights, or the poster alone
 - **Nothing renders off-screen**: the canvas `frameloop` is `never` while the section is scrolled
   away (IntersectionObserver).
@@ -106,5 +120,9 @@ hi-hats off-beat, a quiet half and a loud half) and checks the following:
 
 Step-1 benchmark (beams only, DPR 1): 56, 72, 100 and 140 beams, and 72 beams with bloom, all held
 **60 FPS average, 59 FPS 1% low, 17 ms worst frame** (`bench/results/stage-step1-iris-xe.json`). GPU time
-at 72 beams + bloom was ~1.7 ms per frame. The full-scene benchmark (truss, screens, crowd, lasers, native
-DPR) runs from the **Benchmark** button on `/lab/stage`.
+at 72 beams + bloom was ~1.7 ms per frame.
+
+Full-scene benchmark (truss, fixtures, screens, crowd; the **Benchmark** button on `/lab/stage`): 72 beams
+and 100 beams + bloom at DPR 1, and 72 beams, 100 + bloom and 140 beams at native DPR 1.25, all **60 FPS
+average, 58–59 FPS 1% low, 17–21 ms worst frame** (`bench/results/stage-step2-iris-xe.json`). That's why
+tier 1 gets bloom. The 60 Hz display caps every reading, so the remaining headroom isn't visible.
