@@ -4,7 +4,9 @@ import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
 import Task from '@/models/Task';
-import User from '@/models/User'; // Ensure User model is registered
+import User from '@/models/User';
+import { loadEventFor, EVENT_TEAM } from '@/lib/authz';
+import { ValidationError } from '@/lib/errors';
 import { riderTemplates } from '@/lib/riderTemplates'; // Import the new templates
 export async function GET(req) {
     try {
@@ -18,8 +20,7 @@ export async function GET(req) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
         }
 
-        const event = await Event.findById(eventId).populate('assignedTo', 'name email role');
-        if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        const event = await loadEventFor(user, eventId, EVENT_TEAM, { populate: { path: 'assignedTo', select: 'name email role' } });
 
         return NextResponse.json({
             success: true,
@@ -77,8 +78,14 @@ export async function POST(req) {
         if (!eventId) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
         }
-        const oldEvent = await Event.findById(eventId);
-        if (!oldEvent) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        // The rider belongs to the artist; only they can change it or pick the LD
+        const oldEvent = await loadEventFor(user, eventId, ['artist']);
+        if (assigneeId) {
+            const assignee = await User.findById(assigneeId).select('role');
+            if (!assignee || assignee.role !== 'production') {
+                throw new ValidationError('Assignee must be a production crew account');
+            }
+        }
 
         const oldRider = oldEvent.rider ? oldEvent.rider.toObject() : {};
         const updateData = {};
@@ -93,7 +100,7 @@ export async function POST(req) {
         }
         const changes = generateDiff(oldRider, { gear, stageLocation, mountingPreference, placementNotes, hazer });
         const updatedEvent = await Event.findByIdAndUpdate(
-            eventId,
+            oldEvent._id,
             { $set: updateData },
             { new: true }
         ).populate('assignedTo', 'name role');
@@ -104,7 +111,7 @@ export async function POST(req) {
             if (isNewAssignment) {
                 const title = riderTemplates.new_assignment[lang]();
                 await Task.create({
-                    eventId: eventId,
+                    eventId: oldEvent._id,
                     title: title,
                     description: 'Artist has assigned this event to you.',
                     assignee: assigneeName || 'Production Crew',
@@ -154,7 +161,7 @@ export async function POST(req) {
                 }
                 else title = riderTemplates.general_update[lang](1); // Fallback
                 await Task.create({
-                    eventId: eventId,
+                    eventId: oldEvent._id,
                     title: title,
                     description: description,
                     assignee: assigneeName || 'Production Crew',

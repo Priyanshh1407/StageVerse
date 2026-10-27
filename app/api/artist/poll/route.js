@@ -3,6 +3,7 @@ import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Poll from '@/models/Poll';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor, SHOW_CONTROL } from '@/lib/authz';
 
 export async function POST(req) {
     try {
@@ -14,12 +15,16 @@ export async function POST(req) {
         if (!eventId || !question || !options || options.length < 2) {
             return NextResponse.json({ error: 'Invalid poll data' }, { status: 400 });
         }
+        const event = await loadEventFor(artist, eventId, ['artist']);
 
+        // Polls configured before the show start closed; the artist opens one
+        // from the live-show screen (PUT /api/fan/poll), which is when fans see it.
         const newPoll = await Poll.create({
-            eventId,
+            eventId: event._id,
             question,
-            options: options.map(opt => ({ text: opt, votes: 0 })),
-            isActive: true // Activate immediately? Or separate step? Let's say active for now.
+            options: options.map(opt => ({ text: String(opt), votes: 0 })),
+            isActive: false,
+            createdBy: artist.userId,
         });
 
         return NextResponse.json({ success: true, poll: newPoll });
@@ -39,7 +44,8 @@ export async function GET(req) {
 
         if (!eventId) return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
 
-        const polls = await Poll.find({ eventId }).sort({ createdAt: -1 });
+        const event = await loadEventFor(artist, eventId, SHOW_CONTROL);
+        const polls = await Poll.find({ eventId: event._id }).sort({ createdAt: -1 });
 
         return NextResponse.json({ success: true, polls });
     } catch (e) {

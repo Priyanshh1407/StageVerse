@@ -6,6 +6,7 @@ import Event from '@/models/Event';
 import Venue from '@/models/Venue';
 import { verifyAuth } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
+import { requireRole } from '@/lib/authz';
 function getTypeColor(type) {
     switch (type) {
         case 'Touring': return 'bg-blue-500';
@@ -20,6 +21,7 @@ export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
+        requireRole(user, 'production', 'organizer');
         
         const body = await req.json();
         if (!body.title || !body.date) {

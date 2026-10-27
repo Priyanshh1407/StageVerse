@@ -3,6 +3,7 @@ import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
 import { verifyAuth } from '@/lib/auth';
+import { loadTaskFor } from '@/lib/authz';
 
 export async function PUT(req) {
     try {
@@ -15,6 +16,7 @@ export async function PUT(req) {
             return NextResponse.json({ error: 'Missing Data' }, { status: 400 });
         }
 
+        await loadTaskFor(user, id);
         const task = await Task.findByIdAndUpdate(
             id,
             { status },

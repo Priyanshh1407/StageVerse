@@ -4,6 +4,8 @@ import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Notification from '@/models/Notification'; // Add this
 import { verifyAuth } from '@/lib/auth';
+import User from '@/models/User';
+import { ValidationError } from '@/lib/errors';
 
 export async function PUT(req, props) {
     const params = await props.params;
@@ -32,6 +34,12 @@ export async function PUT(req, props) {
             return NextResponse.json({ error: 'Event not found or access denied' }, { status: 404 });
         }
 
+        if (assignedTo) {
+            const crew = await User.findById(assignedTo).select('role');
+            if (!crew || crew.role !== 'production') {
+                throw new ValidationError('assignedTo must be a production crew account');
+            }
+        }
         targetEvent.assignedTo = assignedTo;
         targetEvent.productionStatus = 'requested'; // Trigger LD Request
         await targetEvent.save();

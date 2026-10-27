@@ -3,6 +3,7 @@ import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor } from '@/lib/authz';
 
 export async function GET(req) {
     try {
@@ -16,8 +17,9 @@ export async function GET(req) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
         }
 
+        const event = await loadEventFor(artist, eventId, ['artist', 'organizer']);
         const guests = await Guest.find({
-            eventId,
+            eventId: event._id,
             artistId: artist.userId // NEW: Filter by artist
         }).sort({ createdAt: -1 });
 

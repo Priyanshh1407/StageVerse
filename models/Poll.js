@@ -19,10 +19,13 @@ const PollSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     createdAt: {
         type: Date,
         default: Date.now
     }
 });
+
+PollSchema.index({ eventId: 1, isActive: 1 });
 
 export default mongoose.models.Poll || mongoose.model('Poll', PollSchema);

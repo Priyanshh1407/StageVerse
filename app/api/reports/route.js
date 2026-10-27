@@ -6,16 +6,19 @@ import dbConnect from '@/lib/db';
 import Ticket from '@/models/Ticket';
 import Event from '@/models/Event';
 import User from '@/models/User';
+import { requireRole } from '@/lib/authz';
+import { ForbiddenError } from '@/lib/errors';
 
 export async function GET(req) {
   try {
     await dbConnect();
     const payload = await verifyAuth(req);
+    requireRole(payload, 'organizer');
 
     const { searchParams } = new URL(req.url);
     const eventIdParam = searchParams.get('eventId');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '5');
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '5') || 5, 1), 50);
     const search = searchParams.get('search') || '';
     const category = searchParams.get('category') || 'Financial Overview';
     const myEvents = await Event.find({ organizerId: payload.userId }).select('_id title');
@@ -26,7 +29,9 @@ export async function GET(req) {
     if (!eventIdParam || eventIdParam === 'All Events') {
       matchStage.eventId = { $in: myEvents.map(e => e._id) };
     } else {
-      matchStage.eventId = new mongoose.Types.ObjectId(eventIdParam);
+      const owned = myEvents.find(e => String(e._id) === eventIdParam);
+      if (!owned) throw new ForbiddenError('You do not have access to this event');
+      matchStage.eventId = owned._id;
     }
 
     let chartValueExpr = { $sum: "$price" };

@@ -69,6 +69,8 @@ export async function PUT(req, { params }) {
 
     const { id } = await params;
     const body = await req.json();
+    // Ownership and identifiers can't be changed through this endpoint
+    const { _id, eventId: _ignoredId, organizerId, createdAt, updatedAt, ...fields } = body;
 
     const query = getQuery(id);
     if (!query) return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
@@ -81,7 +83,7 @@ export async function PUT(req, { params }) {
 
     const updatedEvent = await Event.findOneAndUpdate(
       query,
-      { ...body },
+      fields,
       { new: true, runValidators: true }
     );
 

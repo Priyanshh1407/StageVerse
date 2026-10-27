@@ -5,6 +5,17 @@ import Guest from '@/models/Guest';
 import Notification from '@/models/Notification';
 import User from '@/models/User';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor } from '@/lib/authz';
+import { NotFoundError } from '@/lib/errors';
+
+const GUEST_MANAGERS = ['artist', 'organizer'];
+
+async function loadGuestFor(user, id) {
+    const guest = await Guest.findById(id);
+    if (!guest) throw new NotFoundError('Guest not found');
+    await loadEventFor(user, guest.eventId, GUEST_MANAGERS);
+    return guest;
+}
 export async function PATCH(req, { params }) {
     try {
         await dbConnect();
@@ -14,6 +25,7 @@ export async function PATCH(req, { params }) {
         const body = await req.json();
         const { notes } = body;
 
+        await loadGuestFor(artist, id);
         const guest = await Guest.findByIdAndUpdate(
             id,
             { notes },
@@ -33,8 +45,7 @@ export async function DELETE(req, { params }) {
         const artist = await verifyAuth(req);
 
         const { id } = await params;
-        const guest = await Guest.findById(id);
-        if (!guest) return NextResponse.json({ error: 'Guest not found' }, { status: 404 });
+        const guest = await loadGuestFor(artist, id);
         let targetUserId = guest.userId;
 
         if (!targetUserId && guest.email) {

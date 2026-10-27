@@ -4,8 +4,8 @@ import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
 import Notification from '@/models/Notification';
 import User from '@/models/User';
-import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor } from '@/lib/authz';
 
 export async function POST(req) {
     try {
@@ -18,19 +18,19 @@ export async function POST(req) {
         if (!userId || !eventId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
-        const event = await Event.findById(eventId);
+        // Only the event's artist can put prediction winners on the guest list
+        const event = await loadEventFor(artist, eventId, ['artist']);
         const fan = await User.findById(userId);
-
-        if (!event || !fan) {
-            return NextResponse.json({ error: 'Event or Fan not found' }, { status: 404 });
+        if (!fan) {
+            return NextResponse.json({ error: 'Fan not found' }, { status: 404 });
         }
         const newGuest = await Guest.findOneAndUpdate(
-            { eventId: eventId, email: fan.email },
+            { eventId: event._id, email: fan.email },
             {
                 name: fan.name,
                 email: fan.email,
                 userId: fan._id, // Ensure userId is saved!
-                eventId: eventId,
+                eventId: event._id,
                 status: 'approved', // Auto-approve winners
                 plusOnes: 1, // Give them a +1 by default? Let's say yes for winners.
                 notes: 'Winner of Setlist Prediction Game',

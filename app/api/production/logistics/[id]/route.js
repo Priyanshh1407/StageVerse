@@ -3,26 +3,15 @@ import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Logistics from '@/models/Logistics';
 import Task from '@/models/Task';
-import Event from '@/models/Event';
+import { verifyAuth } from '@/lib/auth';
+import { loadEventFor, EVENT_TEAM } from '@/lib/authz';
 
 export async function GET(request, { params }) {
     try {
         await dbConnect();
+        const user = await verifyAuth(request);
         const { id } = await params;
-        let event = null;
-        if (!isNaN(id)) {
-            event = await Event.findOne({ eventId: Number(id) });
-        }
-        if (!event && mongoose.Types.ObjectId.isValid(id)) {
-            event = await Event.findById(id);
-        }
-        if (!event && id === 'project-alpha') {
-            event = await Event.findOne({ title: 'Hamlet World Tour' });
-        }
-
-        if (!event) {
-            return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-        }
+        const event = await loadEventFor(user, id, EVENT_TEAM);
         const eventId = event._id;
         const logistics = await Logistics.findOne({ eventId });
         const logisticsData = logistics || {
@@ -30,7 +19,6 @@ export async function GET(request, { params }) {
             crew: [],
             documents: []
         };
-        const eventDetails = await Event.findById(eventId);
         const tasks = await Task.find({ eventId });
         const columns = [
             { id: 'preprod', title: 'Pre-Production', dotColor: 'bg-slate-400', cards: [] },
@@ -58,8 +46,8 @@ export async function GET(request, { params }) {
         columns.forEach(c => c.count = c.cards.length);
         const responseData = {
             id: eventId,
-            showName: eventDetails ? eventDetails.name : 'Unknown Show',
-            venue: eventDetails ? eventDetails.location : 'Unknown Venue',
+            showName: event.title,
+            venue: event.city,
             phase: logisticsData.phase,
             crew: logisticsData.crew,
             docs: logisticsData.documents || [],

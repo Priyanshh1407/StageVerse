@@ -18,8 +18,8 @@ describe('authorization (characterization)', () => {
         expect(saved.items.map((i) => i.title)).toEqual(['Opener']);
     });
 
-    // SEC-03: any logged-in user can overwrite any event's setlist
-    it.fails('a fan cannot overwrite an artist\'s setlist', async () => {
+    // SEC-03 (fixed): any logged-in user could overwrite any event's setlist
+    it('a fan cannot overwrite an artist\'s setlist', async () => {
         const { fan, event } = await makeWorld();
         const res = await saveSetlist(await req('POST', '/api/artist/setlist', {
             as: fan,
@@ -28,8 +28,8 @@ describe('authorization (characterization)', () => {
         expect(res.status).toBe(403);
     });
 
-    // SEC-04: voting needs no session at all
-    it.fails('voting without a session is rejected', async () => {
+    // SEC-04 (fixed): voting needed no session at all
+    it('voting without a session is rejected', async () => {
         const { event } = await makeWorld();
         const poll = await makePoll(event._id);
         const res = await votePoll(await req('POST', '/api/fan/poll', {
@@ -38,8 +38,8 @@ describe('authorization (characterization)', () => {
         expect(res.status).toBe(401);
     });
 
-    // SEC-02: anyone can change a live show's status
-    it.fails('changing live show status without a session is rejected', async () => {
+    // SEC-02 (fixed): anyone could change a live show's status
+    it('changing live show status without a session is rejected', async () => {
         const { event } = await makeWorld();
         const res = await setLiveStatus(await req('PUT', '/api/production/live', {
             body: { eventId: String(event._id), status: 'Live' },
@@ -47,8 +47,8 @@ describe('authorization (characterization)', () => {
         expect(res.status).toBe(401);
     });
 
-    // SEC-03: reports trusts ?eventId= without checking the organizer owns it
-    it.fails('an organizer cannot read another organizer\'s reports', async () => {
+    // SEC-03 (fixed): reports trusted ?eventId= without checking ownership
+    it('an organizer cannot read another organizer\'s reports', async () => {
         const { event } = await makeWorld();
         const otherOrganizer = await makeUser('organizer');
         const res = await reports(await req('GET', `/api/reports?eventId=${event._id}`, { as: otherOrganizer }));

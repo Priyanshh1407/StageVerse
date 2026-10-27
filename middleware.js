@@ -1,111 +1,91 @@
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-// 1. DEFINITION: Where does each role belong?
-const rolePaths = {
-  fan: ['/dashboard'],
-  artist: ['/artist-dashboard'],
-  organizer: ['/manage/dashboard'],
-  production: ['/prod-dashboard'],
+// Page-level gate. It only decides which *pages* a role may open.
+// Every API route still authenticates and authorizes itself (lib/auth.js, lib/authz.js),
+// because middleware never runs for Socket.IO and is easy to bypass by calling the API directly.
+
+// Home dashboard for each role
+const homeFor = {
+  fan: '/dashboard',
+  artist: '/artist-dashboard',
+  organizer: '/manage/dashboard',
+  production: '/prod-dashboard',
 };
 
-// 2. DEFINITION: Which pages are OPEN to everyone?
+// Pages that belong to one role (mirrors the app/(role) route groups)
+const rolePages = {
+  fan: ['/dashboard', '/discover', '/memory-vault', '/ticket'],
+  artist: ['/artist-dashboard', '/day-sheet', '/guest-list', '/live-show', '/setlist-builder', '/tech-rider'],
+  organizer: ['/manage', '/analysis', '/create-event', '/reports', '/ticketing'],
+  production: ['/prod-dashboard', '/live', '/logistics', '/patch-sheet', '/patch-studio', '/tasks'],
+};
+
+// Open to everyone
 const publicPaths = [
   '/',
   '/login',
   '/signup',
-  '/api/auth',
   '/contact',
   '/about',
   '/artist',
   '/explore',
   '/explore-artist',
   '/events',
-  '/artist', // Public Artist Profile
-  '/api', // Allow ALL API routes to pass through (Let API handle its own auth)
-  '/api/socket',
-  '/api/description',
-  '/api/patch',
-  '/test-3d'
+  '/test-3d',
+  '/api', // API routes do their own auth
 ];
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+// Segment-aware prefix match: '/live' matches '/live' and '/live/123' but not '/live-show'
+const matches = (pathname, prefix) =>
+  prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(prefix + '/');
+
+const secret = () => new TextEncoder().encode(process.env.JWT_SECRET);
+
+async function readRole(token) {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ['HS256'] });
+    return payload.role ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export async function middleware(req) {
   const token = req.cookies.get('token')?.value;
   const { pathname } = req.nextUrl;
 
-  // -----------------------------------------------------------
-  // A. PUBLIC ROUTE CHECK (The Fix 🔧)
-  // -----------------------------------------------------------
-  // We check if the current path STARTS with any of the public routes
-  // (e.g., /explore/event-1 starts with /explore, so it's allowed)
-  const isPublic = publicPaths.some(route =>
-    pathname === route || pathname.startsWith(route + '/')
-  );
-
-  if (isPublic) {
-    // If you are already logged in and try to visit Login/Signup, 
-    // we kindly redirect you to your dashboard.
-    if (token && (pathname === '/login' || pathname === '/signup')) {
-      try {
-        const { payload } = await jwtVerify(token, secret);
-        const myDashboard = rolePaths[payload.role]?.[0] || '/dashboard';
-        return NextResponse.redirect(new URL(myDashboard, req.url));
-      } catch (e) {
-        // Token invalid, let them go to login
-        return NextResponse.next();
-      }
+  if (publicPaths.some((p) => matches(pathname, p))) {
+    // Logged-in users visiting login/signup go to their dashboard
+    if (pathname === '/login' || pathname === '/signup') {
+      const role = await readRole(token);
+      if (role) return NextResponse.redirect(new URL(homeFor[role] || '/', req.url));
     }
-    // Otherwise, let them see the public page!
     return NextResponse.next();
   }
 
-  // -----------------------------------------------------------
-  // B. AUTHENTICATION CHECK (Protected Routes)
-  // -----------------------------------------------------------
-
-  // 1. No Token? -> Go to Login
-  if (!token) {
-    // Store the url they wanted to visit? (Optional feature for later)
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
-  try {
-    // 2. Verify Token
-    const { payload } = await jwtVerify(token, secret);
-    const userRole = payload.role;
-
-    // 3. Strict Role Check (Prevent Fan from seeing Artist pages)
-    const targetRole = Object.keys(rolePaths).find(role =>
-      rolePaths[role].some(path => pathname.startsWith(path))
-    );
-
-    if (targetRole && targetRole !== userRole) {
-      // Redirect to THEIR dashboard
-      const myDashboard = rolePaths[userRole]?.[0] || '/dashboard';
-      return NextResponse.redirect(new URL(myDashboard, req.url));
-    }
-
-    return NextResponse.next();
-
-  } catch (err) {
-    // Token is corrupt or expired
+  const role = await readRole(token);
+  if (!role) {
     const response = NextResponse.redirect(new URL('/login', req.url));
-    response.cookies.delete('token');
+    if (token) response.cookies.delete('token'); // expired or tampered
     return response;
   }
+
+  const owner = Object.keys(rolePages).find((r) => rolePages[r].some((p) => matches(pathname, p)));
+  if (owner && owner !== role) {
+    return NextResponse.redirect(new URL(homeFor[role] || '/', req.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, favicon files
-     * - images, models, textures (public folders)
-     * - Static file extensions (.glb, .gltf, .png, .jpg, .svg, .exr, etc.)
+     * Match all request paths except:
+     * - _next/static, _next/image, favicon
+     * - public asset folders and static file extensions
      */
     '/((?!_next/static|_next/image|favicon.ico|images|models|textures|.*\\.glb$|.*\\.gltf$|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.webp$|.*\\.exr$|.*\\.hdr$|.*\\.ico$).*)',
   ],

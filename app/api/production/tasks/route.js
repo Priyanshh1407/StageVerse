@@ -3,6 +3,7 @@ import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
 import { verifyAuth } from '@/lib/auth';
+import { loadTaskFor, myEventIds } from '@/lib/authz';
 
 export async function GET(req) {
     try {
@@ -10,7 +11,8 @@ export async function GET(req) {
         const user = await verifyAuth(req);
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
-        let query = {};
+        // Only tasks for events this user is part of
+        let query = { eventId: { $in: await myEventIds(user) } };
         if (status && status !== 'all') {
             query.status = status;
         }
@@ -72,6 +74,7 @@ export async function PUT(req) {
             updates.status = updates.status === 'completed' ? 'Done' : 'Pending';
         }
 
+        await loadTaskFor(user, id);
         const updatedTask = await Task.findByIdAndUpdate(id, updates, { new: true });
 
         return NextResponse.json({ success: true, data: updatedTask });
@@ -89,6 +92,7 @@ export async function DELETE(req) {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
 
+        await loadTaskFor(user, id);
         await Task.findByIdAndDelete(id);
 
         return NextResponse.json({ success: true });

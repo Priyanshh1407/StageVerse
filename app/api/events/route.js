@@ -4,6 +4,7 @@ import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue'; // Registry
 import { verifyAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/authz';
 export async function GET(req) {
   try {
     await dbConnect();
@@ -35,24 +36,21 @@ export async function POST(req) {
   try {
     await dbConnect();
     const user = await verifyAuth(req);
-    if (!user || user.role !== 'organizer') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    requireRole(user, 'organizer');
 
     const body = await req.json();
-    console.log("CREATE EVENT BODY:", body); // DEBUG LOG
-    console.log("ARTIST ID LINK:", body.artistId); // DEBUG LOG
     const count = await Event.countDocuments();
     const eventId = 1000 + count + 1;
 
+    // Server-owned fields can't be set by the client (mass assignment)
+    const { _id, eventId: _ignoredId, organizerId, assignedTo, productionStatus, createdAt, updatedAt, ...fields } = body;
     const newEvent = new Event({
-      ...body,
+      ...fields,
       eventId,
       organizerId: user.userId,
     });
 
     const savedEvent = await newEvent.save();
-    console.log("SAVED EVENT:", savedEvent); // DEBUG LOG to confirm artistId is saved
 
     return NextResponse.json({ success: true, data: savedEvent });
 

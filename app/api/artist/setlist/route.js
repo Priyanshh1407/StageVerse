@@ -1,12 +1,11 @@
 
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
-import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
-import Event from '@/models/Event';
 import Setlist from '@/models/Setlist';
 import Song from '@/models/Song';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor, EVENT_TEAM } from '@/lib/authz';
 export async function GET(req) {
     try {
         await dbConnect();
@@ -16,23 +15,10 @@ export async function GET(req) {
         let eventIdInput = searchParams.get('eventId');
         if (!eventIdInput) return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
 
-        let mongoEventId = eventIdInput;
-        const isValidObjectId = mongoose.Types.ObjectId.isValid(eventIdInput);
-
-        if (isValidObjectId) {
-            mongoEventId = eventIdInput;
-        } else {
-            const numericEventId = parseInt(eventIdInput);
-            if (!isNaN(numericEventId)) {
-                const event = await Event.findOne({ eventId: numericEventId });
-                if (event) mongoEventId = event._id;
-                else return NextResponse.json({ success: true, data: null });
-            } else {
-                return NextResponse.json({ error: 'Invalid Event ID format' }, { status: 400 });
-            }
-        }
-
-        const setlist = await Setlist.findOne({ eventId: mongoEventId });
+        // The real setlist is only visible to the event team (fans could otherwise
+        // read it and submit a perfect prediction)
+        const event = await loadEventFor(user, eventIdInput, EVENT_TEAM);
+        const setlist = await Setlist.findOne({ eventId: event._id });
         return NextResponse.json({ success: true, data: setlist });
 
     } catch (error) {
@@ -51,16 +37,9 @@ export async function POST(req) {
             return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
         }
 
-        let mongoEventId = eventId;
-        const isValidObjectId = mongoose.Types.ObjectId.isValid(eventId);
-
-        if (!isValidObjectId) {
-            const event = await Event.findOne({ eventId: eventId });
-            if (!event) {
-                return NextResponse.json({ error: `Event ${eventId} not found` }, { status: 404 });
-            }
-            mongoEventId = event._id;
-        }
+        // Only the artist linked to this event may change its setlist
+        const event = await loadEventFor(user, eventId, ['artist']);
+        const mongoEventId = event._id;
         const processedItems = await Promise.all(items.map(async (item) => {
             let song = await Song.findOne({
                 artistId: user.userId,
@@ -86,7 +65,7 @@ export async function POST(req) {
         const updatedSetlist = await Setlist.findOneAndUpdate(
             { eventId: mongoEventId },
             {
-                artistId: user.userId,
+                artistId: event.artistId,
                 eventId: mongoEventId,
                 items: processedItems
             },

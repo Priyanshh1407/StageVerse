@@ -3,8 +3,8 @@ import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Setlist from '@/models/Setlist';
 import Prediction from '@/models/Prediction';
-import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor } from '@/lib/authz';
 
 export async function POST(req) {
     try {
@@ -17,12 +17,9 @@ export async function POST(req) {
         if (!eventId) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
         }
-        let mongoEventId = eventId;
-        if (!eventId.match(/^[0-9a-fA-F]{24}$/)) {
-            const event = await Event.findOne({ eventId: eventId });
-            if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-            mongoEventId = event._id;
-        }
+        // Only the event's artist can grade the prediction game
+        const event = await loadEventFor(user, eventId, ['artist']);
+        const mongoEventId = event._id;
         const setlist = await Setlist.findOne({ eventId: mongoEventId });
         if (!setlist || !setlist.items || setlist.items.length === 0) {
             return NextResponse.json({ error: 'Artist has not saved a setlist yet.' }, { status: 400 });

@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
-import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
 import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/authz';
 
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
+        requireRole(user, 'artist');
 
         const { message, priority } = await req.json();
         const nextShow = await Event.findOne({
-            organizerId: user.userId,
+            artistId: user.userId,
             date: { $gte: new Date() }
         }).sort({ date: 1 });
 

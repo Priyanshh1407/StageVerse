@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Venue from '@/models/Venue';
+import { verifyAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/authz';
 export async function GET(req) {
     try {
         await dbConnect();
@@ -31,6 +33,8 @@ export async function GET(req) {
 export async function POST(req) {
     try {
         await dbConnect();
+        const user = await verifyAuth(req);
+        requireRole(user, 'organizer', 'production');
 
         const body = await req.json();
         if (!body.name || !body.city || !body.address) {
@@ -51,7 +55,8 @@ export async function POST(req) {
             );
         }
 
-        const newVenue = await Venue.create(body);
+        const { name, city, address, capacity, type, policies, description, image } = body;
+        const newVenue = await Venue.create({ name, city, address, capacity, type, policies, description, image });
 
         return NextResponse.json({ success: true, data: newVenue }, { status: 201 });
 
