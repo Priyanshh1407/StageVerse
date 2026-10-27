@@ -1,0 +1,959 @@
+{
+  "label": "openai_gpt-oss-120b-2026-10-27-prompt-v2",
+  "model": "openai/gpt-oss-120b",
+  "ranAt": "2026-10-27T16:55:10.342Z",
+  "summary": {
+    "legacy": {
+      "cases": 30,
+      "upstreamFailures": 0,
+      "schemaValidPct": 100,
+      "intentCorrectPct": 90,
+      "casesWithCollisionsPct": 17,
+      "casesOutOfRangePct": 13,
+      "casesLosingFootprintsPct": 13,
+      "p50LatencyMs": 1299,
+      "avgTokens": 805
+    },
+    "new": {
+      "cases": 30,
+      "upstreamFailures": 0,
+      "schemaValidPct": 100,
+      "intentCorrectPct": 100,
+      "casesWithCollisionsPct": 0,
+      "casesOutOfRangePct": 0,
+      "casesLosingFootprintsPct": 0,
+      "p50LatencyMs": 775,
+      "avgTokens": 705
+    }
+  },
+  "results": [
+    {
+      "id": "add-basic",
+      "legacy": {
+        "latencyMs": 1381.9911,
+        "tokens": 659,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 636.8315000000002,
+        "tokens": 680,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Beam",
+              "count": 8
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-two-types",
+      "legacy": {
+        "latencyMs": 1378.1875,
+        "tokens": 819,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 775.2464999999938,
+        "tokens": 743,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Spot",
+              "count": 6
+            },
+            {
+              "type": "Wash",
+              "count": 4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-around-existing",
+      "legacy": {
+        "latencyMs": 1575.085500000001,
+        "tokens": 923,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 725.1952999999994,
+        "tokens": 649,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Strobe",
+              "count": 4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-gap-fill",
+      "legacy": {
+        "latencyMs": 1502.9385000000038,
+        "tokens": 869,
+        "schemaValid": true,
+        "intentCorrect": false,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 883.9811000000045,
+        "tokens": 652,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Spot",
+              "count": 2,
+              "channels": 24
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-explicit-channels",
+      "legacy": {
+        "latencyMs": 1298.6242999999959,
+        "tokens": 745,
+        "schemaValid": true,
+        "intentCorrect": false,
+        "collisions": 9,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 1055.4747999999963,
+        "tokens": 888,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "LED Par",
+              "count": 10,
+              "channels": 8,
+              "mode": "8 channel"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-words-for-numbers",
+      "legacy": {
+        "latencyMs": 1248.1831999999995,
+        "tokens": 796,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 660.1227000000072,
+        "tokens": 685,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Wash",
+              "count": 12
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-singular",
+      "legacy": {
+        "latencyMs": 934.0673000000243,
+        "tokens": 563,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 754.1778999999806,
+        "tokens": 655,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Hazer",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-full-universe",
+      "legacy": {
+        "latencyMs": 3010.750299999985,
+        "tokens": 1636,
+        "schemaValid": true,
+        "intentCorrect": false,
+        "collisions": 0,
+        "outOfRange": 3,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 970.2098999999871,
+        "tokens": 702,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Beam",
+              "count": 40
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-near-end",
+      "legacy": {
+        "latencyMs": 1117.7384999999776,
+        "tokens": 739,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 1,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 545.0326000000059,
+        "tokens": 642,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Profile",
+              "count": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-busy-rig",
+      "legacy": {
+        "latencyMs": 1823.5160000000033,
+        "tokens": 1128,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 638.5284000000102,
+        "tokens": 644,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Blinder",
+              "count": 6
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-casual",
+      "legacy": {
+        "latencyMs": 1053.2140000000072,
+        "tokens": 552,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 10,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 1039.9001999999746,
+        "tokens": 791,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Beam",
+              "count": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-three-types",
+      "legacy": {
+        "latencyMs": 2090.638799999957,
+        "tokens": 1127,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 770.36599999998,
+        "tokens": 816,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Beam",
+              "count": 8
+            },
+            {
+              "type": "Wash",
+              "count": 8
+            },
+            {
+              "type": "Strobe",
+              "count": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-lasers",
+      "legacy": {
+        "latencyMs": 1161.083799999964,
+        "tokens": 737,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 377.1615999999922,
+        "tokens": 656,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Laser",
+              "count": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-pixel-bars",
+      "legacy": {
+        "latencyMs": 1068.015000000014,
+        "tokens": 566,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 873.7384999999776,
+        "tokens": 692,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Pixel Bar",
+              "count": 4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-second-universe",
+      "legacy": {
+        "latencyMs": 1170.1951000000117,
+        "tokens": 682,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 4,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 522.0333000000101,
+        "tokens": 659,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Spot",
+              "count": 4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "repatch-simple",
+      "legacy": {
+        "latencyMs": 1417.040399999998,
+        "tokens": 711,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 922.0651999999536,
+        "tokens": 641,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "repatch",
+          "fixtures": []
+        }
+      }
+    },
+    {
+      "id": "repatch-cleanup",
+      "legacy": {
+        "latencyMs": 1374.8659000000334,
+        "tokens": 880,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 1,
+        "outOfRange": 0,
+        "footprintsLost": 3
+      },
+      "new": {
+        "latencyMs": 825.6838999999454,
+        "tokens": 691,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "repatch",
+          "fixtures": []
+        }
+      }
+    },
+    {
+      "id": "repatch-readdress",
+      "legacy": {
+        "latencyMs": 1017.7792999999947,
+        "tokens": 718,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 585.7750999999698,
+        "tokens": 696,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "repatch",
+          "fixtures": []
+        }
+      }
+    },
+    {
+      "id": "repatch-many-overlaps",
+      "legacy": {
+        "latencyMs": 1194.1833999999799,
+        "tokens": 776,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 4
+      },
+      "new": {
+        "latencyMs": 679.4527000000235,
+        "tokens": 681,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "repatch",
+          "fixtures": []
+        }
+      }
+    },
+    {
+      "id": "repatch-plus-add",
+      "legacy": {
+        "latencyMs": 1718.0802000000258,
+        "tokens": 1060,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 838.2244000000064,
+        "tokens": 719,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "repatch",
+          "fixtures": [
+            {
+              "type": "Beam",
+              "count": 4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "repatch-two-universes",
+      "legacy": {
+        "latencyMs": 1416.4505000000354,
+        "tokens": 872,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 1,
+        "outOfRange": 0,
+        "footprintsLost": 2
+      },
+      "new": {
+        "latencyMs": 997.6283999999869,
+        "tokens": 669,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "repatch",
+          "fixtures": []
+        }
+      }
+    },
+    {
+      "id": "repatch-mixed-footprints",
+      "legacy": {
+        "latencyMs": 1406.6424000000115,
+        "tokens": 915,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 1,
+        "outOfRange": 0,
+        "footprintsLost": 3
+      },
+      "new": {
+        "latencyMs": 684.8778000000166,
+        "tokens": 659,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "repatch",
+          "fixtures": []
+        }
+      }
+    },
+    {
+      "id": "inject-addresses",
+      "legacy": {
+        "latencyMs": 1096.9740000000456,
+        "tokens": 708,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 672.9392000000225,
+        "tokens": 681,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Beam",
+              "count": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "inject-ignore-rules",
+      "legacy": {
+        "latencyMs": 956.2912999999244,
+        "tokens": 650,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 1537.8850000000093,
+        "tokens": 734,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Wash",
+              "count": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "inject-json",
+      "legacy": {
+        "latencyMs": 862.9138999999268,
+        "tokens": 617,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 796.5826000000816,
+        "tokens": 756,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Strobe",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "inject-universe-999",
+      "legacy": {
+        "latencyMs": 926.2733999999473,
+        "tokens": 586,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 2,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 1025.8474999999162,
+        "tokens": 653,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Spot",
+              "count": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ambiguous-some",
+      "legacy": {
+        "latencyMs": 992.7022000000579,
+        "tokens": 593,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 617.7367999999551,
+        "tokens": 687,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Beam",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "unknown-type",
+      "legacy": {
+        "latencyMs": 939.4827000000514,
+        "tokens": 589,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 1271.983600000036,
+        "tokens": 717,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Robe BMFL Blade",
+              "count": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "long-request",
+      "legacy": {
+        "latencyMs": 1841.7864999999292,
+        "tokens": 1135,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 1571.813199999975,
+        "tokens": 901,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Wash",
+              "count": 4
+            },
+            {
+              "type": "Beam",
+              "count": 6
+            },
+            {
+              "type": "Strobe",
+              "count": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "add-hindi-english",
+      "legacy": {
+        "latencyMs": 1410.282200000016,
+        "tokens": 786,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 486.8138999999501,
+        "tokens": 710,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0,
+        "intent": {
+          "action": "add",
+          "fixtures": [
+            {
+              "type": "Beam",
+              "count": 4
+            },
+            {
+              "type": "Wash",
+              "count": 2
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "note": "Intent prompt v2 (after error analysis of v1). Latency measures API time only. Caveat: the cases were written by the developer and v2 was tuned on them; confirm on a held-out set."
+}

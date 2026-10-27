@@ -87,6 +87,9 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 | Socket push latency to 10 screens | p50 ≈ 3 ms, p95 ≈ 5 ms | `bench/results/` |
 | Setlist lookup | 2,001 → 1 documents examined (index) | `bench/results/` |
 | Production dependency advisories | 19 → 1 (`xlsx`, write-only use, not reachable) | `npm audit --omit=dev` |
+| AI patching: cases with colliding DMX addresses | 17% → **0%** (30-case eval, Groq gpt-oss-120b) | `evals/patch/results/` |
+| AI patching: request understood correctly | 90% → **100%** (93% before one round of prompt fixes) | `evals/patch/results/` |
+| AI patching: p50 / p95 latency | 1.3 / 2.1 s → **0.78 / 1.5 s** | `evals/patch/results/` |
 
 ## Known limitations
 
@@ -98,7 +101,7 @@ Written down on purpose: this is a portfolio project, and these are the honest e
 - **Free AI tiers are tight** (Gemini: 5 requests/minute and 20/day per model). The provider chain and non-AI fallbacks keep features working, but fallback answers are simpler; heavy AI use needs a billed key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
 - **Sentiment analysis isn't built.** The analysis page shows labelled sample data.
-- The AI patch evaluation harness exists, but its real-model results haven't been recorded yet: a full run needs ~60–70 calls per model, more than the free tier's 20 per day.
+- The AI patch eval uses 30 cases I wrote, and the second prompt version was tuned on them, so its 100% intent accuracy is optimistic; a held-out case set is the next step. Gemini results are pending: the free tier's 20 requests/day per model is less than one full run.
 
 ## Project structure
 
