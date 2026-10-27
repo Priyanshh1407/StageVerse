@@ -7,6 +7,7 @@ import {
   MoreHorizontal, Calendar, ArrowUpRight, X, Trash2, Pencil, Check, ArrowLeft, Loader2
 } from 'lucide-react';
 import StudioNavbar from '@/components/production/StudioNavbar';
+import { toast } from 'sonner';
 
 export default function GlobalTasksPage() {
   const [tasks, setTasks] = useState([]);
@@ -33,23 +34,22 @@ export default function GlobalTasksPage() {
 
   const handleSaveTask = async (taskData) => {
     try {
-      if (editingTask) {
-        const res = await fetch('/api/production/tasks', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingTask.id, ...taskData })
-        });
-        if (res.ok) fetchTasks(); // Refresh
-      } else {
-        const res = await fetch('/api/production/tasks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(taskData)
-        });
-        if (res.ok) fetchTasks();
+      const res = await fetch('/api/production/tasks', {
+        method: editingTask ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingTask ? { id: editingTask.id, ...taskData } : taskData)
+      });
+      if (!res.ok) {
+        // Keep the modal open so the user can fix the problem (e.g. no show selected)
+        const body = await res.json().catch(() => ({}));
+        toast.error(body.error || 'Could not save the task');
+        return;
       }
+      fetchTasks();
       closeModal();
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      toast.error('Network error: task not saved');
+    }
   };
 
   const handleDelete = async (id) => {
