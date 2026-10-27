@@ -23,11 +23,18 @@ const MODEL = args.includes('--model') ? args[args.indexOf('--model') + 1] : DEF
 const RPM = args.includes('--rpm') ? Number(args[args.indexOf('--rpm') + 1]) : 5;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let nextSlot = 0;
+// Time spent inside API calls only (pacing waits and retry backoff are excluded from latency)
+let apiMs = 0;
 async function paced(fn) {
     const wait = nextSlot - Date.now();
     if (wait > 0) await sleep(wait);
     nextSlot = Date.now() + Math.ceil(60000 / RPM);
-    return fn();
+    const t = performance.now();
+    try {
+        return await fn();
+    } finally {
+        apiMs += performance.now() - t;
+    }
 }
 const cases = JSON.parse(fs.readFileSync(path.join(here, 'cases.json'), 'utf8'));
 
@@ -178,7 +185,7 @@ function legacyFixtures(patch) {
 }
 
 async function runLegacy(c, model) {
-    const t0 = performance.now();
+    apiMs = 0;
     const row = { latencyMs: 0, tokens: 0, schemaValid: false, intentCorrect: false, collisions: null, outOfRange: null, footprintsLost: 0 };
     let text;
     try {
@@ -186,10 +193,10 @@ async function runLegacy(c, model) {
     } catch (error) {
         row.upstreamError = error.upstream ? String(error.status || error.message) : undefined;
         row.error = error.message;
-        row.latencyMs = performance.now() - t0;
+        row.latencyMs = apiMs;
         return row;
     }
-    row.latencyMs = performance.now() - t0;
+    row.latencyMs = apiMs;
     let data;
     try {
         data = JSON.parse(String(text).replace(/```json/g, '').replace(/```/g, '').trim());
@@ -221,11 +228,11 @@ async function runLegacy(c, model) {
 }
 
 async function runNew(c, model) {
-    const t0 = performance.now();
+    apiMs = 0;
     const row = { latencyMs: 0, tokens: 0, attempts: 0, schemaValid: false, intentCorrect: false, collisions: null, outOfRange: null, footprintsLost: 0 };
     try {
         const { intent, attempts, tokens } = await getIntent(model, c.prompt);
-        Object.assign(row, { attempts, tokens, schemaValid: true });
+        Object.assign(row, { attempts, tokens, schemaValid: true, intent }); // keep the intent for error analysis
         row.intentCorrect = intentMatches(c.expect, intent.action, intent.fixtures);
         const current = c.current.map(toFixture);
         const added = allocate(current, intent.fixtures);
@@ -239,7 +246,7 @@ async function runNew(c, model) {
         // getIntent wraps the last parse error; an upstream failure surfaces as the original error
         if (error.upstream) row.upstreamError = String(error.status || error.message);
     }
-    row.latencyMs = performance.now() - t0;
+    row.latencyMs = apiMs;
     return row;
 }
 
