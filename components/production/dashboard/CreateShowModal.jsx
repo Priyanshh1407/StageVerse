@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Calendar, Clock, MapPin, Users, Music } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, Users, Music, Layers, Upload, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 
 export default function CreateShowModal({ onClose, onSave }) {
