@@ -83,6 +83,19 @@ describe('poll lifecycle', () => {
         expect((await Poll.findById(second._id)).isActive).toBe(true);
     });
 
+    it('closing a poll fixes the winner from persisted votes (BUG-04)', async () => {
+        const fans = await Promise.all(Array.from({ length: 3 }, () => makeUser('fan')));
+        await vote(fans[0], optA);
+        await vote(fans[1], optB);
+        await vote(fans[2], optB);
+
+        const { body } = await json(await fanPoll.PUT(await req('PUT', '/api/fan/poll', {
+            as: w.crew, body: { pollId: String(poll._id), isActive: false },
+        })));
+        expect(body.poll.winner).toMatchObject({ text: 'Song B', votes: 2, tie: false });
+        expect((await Poll.findById(poll._id)).winner.text).toBe('Song B');
+    });
+
     it('polls configured in the setlist builder start closed', async () => {
         const { body } = await json(await artistPoll.POST(await req('POST', '/api/artist/poll', {
             as: w.artist, body: { eventId: String(w.event._id), question: 'Encore?', options: ['A', 'B'] },

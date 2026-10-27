@@ -9,6 +9,7 @@ import { loadEventFor, hasEventRelation, SHOW_CONTROL } from '@/lib/authz';
 import { resolveEvent } from '@/lib/events';
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors';
 import { emitToEvent, pollPayload } from '@/lib/realtime';
+import { pickWinner } from '@/lib/polls';
 
 const isObjectId = (v) => mongoose.isObjectIdOrHexString(v) && /^[0-9a-fA-F]{24}$/.test(String(v));
 
@@ -63,7 +64,9 @@ export async function PUT(req) {
             // Only one poll per event can be open at a time
             await Poll.updateMany({ eventId: existing.eventId, isActive: true, _id: { $ne: existing._id } }, { isActive: false });
         }
-        const poll = await Poll.findByIdAndUpdate(pollId, { isActive }, { new: true });
+        // Closing a poll fixes its winner from the persisted counts, so every screen reveals the same result
+        const update = isActive ? { isActive, $unset: { winner: 1 } } : { isActive, winner: pickWinner(existing.options) };
+        const poll = await Poll.findByIdAndUpdate(pollId, update, { new: true });
 
         emitToEvent(poll.eventId, isActive ? 'poll:start' : 'poll:end', pollPayload(poll));
         return NextResponse.json({ success: true, poll });

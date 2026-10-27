@@ -127,7 +127,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
             poll={activePoll}
             onReveal={(winnerName) => {
               handleRevealEncore(winnerName);
-              if (onRevealEncore) onRevealEncore(activePoll);
+              if (onRevealEncore) onRevealEncore(winnerName);
             }}
           />
         ) : (

@@ -168,9 +168,15 @@ export default function LiveShowPage(props) {
       if (isOtherShow(data)) return;
       setPollStats(prev => ({ question: data.question ?? prev?.question, options: data.options }));
     };
-    const onPollReveal = (data) => {
+    // The server fixes the winner when the poll closes
+    const onPollEnd = (data) => {
       if (isOtherShow(data)) return;
-      setWinner(data?.winner || "Midnight City");
+      setPollStats(prev => ({ question: data.question ?? prev?.question, options: data.options }));
+      if (data.winner?.text) setWinner(data.winner.text);
+    };
+    const onPollReveal = (data) => {
+      if (isOtherShow(data) || !data?.winner) return;
+      setWinner(data.winner);
       setShowEncoreReveal(true);
     };
     const onWarning = (data) => {
@@ -182,6 +188,7 @@ export default function LiveShowPage(props) {
     socket.on("show:update", onShowUpdate);
     socket.on("poll:start", onPollStart);
     socket.on("poll:update", onPollUpdate);
+    socket.on("poll:end", onPollEnd);
     socket.on("poll:reveal", onPollReveal);
     socket.on("show:warning", onWarning);
 
@@ -189,6 +196,7 @@ export default function LiveShowPage(props) {
       socket.off("show:update", onShowUpdate);
       socket.off("poll:start", onPollStart);
       socket.off("poll:update", onPollUpdate);
+      socket.off("poll:end", onPollEnd);
       socket.off("poll:reveal", onPollReveal);
       socket.off("show:warning", onWarning);
     };
@@ -257,8 +265,9 @@ export default function LiveShowPage(props) {
             winner={winner}
             showWarning={showWarning} // Pass alert state
             onCloseWarning={() => { setShowWarning(false); warningDismissed.current = true; }}
-            onRevealEncore={(poll) => {
-              if (socket) socket.emit("poll:reveal", { eventId: showId, winner: poll.options.find(o => o.winning)?.title });
+            onRevealEncore={(winnerName) => {
+              // Prefer the winner the server fixed at poll close; fall back to the live tally
+              if (socket) socket.emit("poll:reveal", { eventId: showId, winner: winner || winnerName });
             }}
           />
 
