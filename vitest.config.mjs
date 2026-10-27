@@ -14,5 +14,11 @@ export default defineConfig({
         fileParallelism: false,
         testTimeout: 20000,
         hookTimeout: 120000,
+        coverage: {
+            provider: 'v8',
+            // Server-side code is what the tests exercise; UI components are verified by hand
+            include: ['lib/**/*.js', 'app/api/**/*.js', 'pages/api/**/*.js'],
+            reporter: ['text-summary', 'text', 'html'],
+        },
     },
 });
