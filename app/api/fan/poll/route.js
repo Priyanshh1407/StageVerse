@@ -10,14 +10,16 @@ export async function GET(req) {
         const { searchParams } = new URL(req.url);
         const eventId = searchParams.get('eventId');
 
-        if (!eventId) return NextResponse.json({ error: 'Event ID required' }, { status: 400 });        const fetchAll = searchParams.get('all') === 'true';
+        if (!eventId) return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
+        const fetchAll = searchParams.get('all') === 'true';
 
         let query = { eventId };
         if (!fetchAll) {
             query.isActive = true;
         }
 
-        const polls = await Poll.find(query).sort({ createdAt: -1 }).limit(10);        if (!fetchAll && polls.length > 0) {
+        const polls = await Poll.find(query).sort({ createdAt: -1 }).limit(10);
+        if (!fetchAll && polls.length > 0) {
             return NextResponse.json({ success: true, poll: polls[0] });
         } else if (!fetchAll) {
             return NextResponse.json({ success: true, poll: null });
@@ -28,7 +30,8 @@ export async function GET(req) {
         console.error(e);
         return NextResponse.json({ error: 'Server Error' }, { status: 500 });
     }
-}export async function PUT(req) {
+}
+export async function PUT(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
@@ -37,7 +40,9 @@ export async function GET(req) {
         const body = await req.json();
         const { pollId, isActive } = body;
 
-        if (!pollId) return NextResponse.json({ error: 'Missing Poll ID' }, { status: 400 });        if (isActive) {            const targetPoll = await Poll.findById(pollId);
+        if (!pollId) return NextResponse.json({ error: 'Missing Poll ID' }, { status: 400 });
+        if (isActive) {
+            const targetPoll = await Poll.findById(pollId);
             if (targetPoll) {
                 await Poll.updateMany({ eventId: targetPoll.eventId, isActive: true }, { isActive: false });
             }
@@ -55,16 +60,19 @@ export async function GET(req) {
         console.error(e);
         return NextResponse.json({ error: 'Server Error' }, { status: 500 });
     }
-}export async function POST(req) {
+}
+export async function POST(req) {
     try {
         await dbConnect();
 
         const body = await req.json();
-        const { pollId, optionId, create } = body;        if (create) {
+        const { pollId, optionId, create } = body;
+        if (create) {
             const user = await verifyAuth(req); // Only check auth for creation
             if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-            const { question, options, eventId } = body;            await Poll.updateMany({ eventId, isActive: true }, { isActive: false });
+            const { question, options, eventId } = body;
+            await Poll.updateMany({ eventId, isActive: true }, { isActive: false });
 
             const newPoll = await Poll.create({
                 eventId,
@@ -74,7 +82,8 @@ export async function GET(req) {
                 createdBy: user.userId
             });
             return NextResponse.json({ success: true, poll: newPoll });
-        }        if (!pollId || !optionId) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+        }
+        if (!pollId || !optionId) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
 
         const poll = await Poll.findOneAndUpdate(
             { _id: pollId, "options._id": optionId },

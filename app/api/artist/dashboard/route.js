@@ -12,7 +12,8 @@ export async function GET(req) {
         const user = await verifyAuth(req);
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }        console.log("ARTIST DASHBOARD FETCH - Artist ID:", user.userId); // DEBUG LOG
+        }
+        console.log("ARTIST DASHBOARD FETCH - Artist ID:", user.userId); // DEBUG LOG
         const allEvents = await Event.find({ artistId: user.userId }).select('title city ticketTiers date');
 
         let totalTicketsSold = 0;
@@ -40,29 +41,35 @@ export async function GET(req) {
                 date: event.date,
                 revenue: eventRevenue
             });
-        });        revenueBreakdown.sort((a, b) => new Date(a.date) - new Date(b.date));        let fanPulseLabel = "Low";
+        });
+        revenueBreakdown.sort((a, b) => new Date(a.date) - new Date(b.date));
+        let fanPulseLabel = "Low";
         let fanPulseTrend = false;
         if (totalCapacity > 0) {
             const sellOutRate = (totalTicketsSold / totalCapacity);
             if (sellOutRate > 0.8) { fanPulseLabel = "High Eng."; fanPulseTrend = true; }
             else if (sellOutRate > 0.5) { fanPulseLabel = "Steady"; fanPulseTrend = true; }
             else { fanPulseLabel = "Cooling"; fanPulseTrend = false; }
-        }        const nextShow = await Event.findOne({
-            artistId: user.userId,
-            date: { $gte: new Date() }
+        }
+        const nextShow = await Event.findOne({
+            artistId: user.userId
         })
-            .sort({ date: 1 })
+            .sort({ date: -1 })
             .populate('venue', 'name city') // Ensure we get venue details
-            .select('title date city venue ticketTiers images');        const upcomingStops = await Event.find({
-            artistId: user.userId,
-            date: { $gt: nextShow ? nextShow.date : new Date() }
-        })
-            .sort({ date: 1 })
+            .select('title date city venue ticketTiers images');
+        const upcomingQuery = { artistId: user.userId };
+        if (nextShow && nextShow._id) {
+            upcomingQuery._id = { $ne: nextShow._id };
+        }
+        const upcomingStops = await Event.find(upcomingQuery)
+            .sort({ date: -1 })
             .populate('venue', 'name')
-            .select('date city venue ticketTiers status'); // Added ticketTiers/status        let currentShowStats = { sold: 0, capacity: 0, percentage: 0, vipPercent: 0, gaPercent: 0, soldOut: false };
+            .select('date city venue ticketTiers status'); // Added ticketTiers/status
+        let currentShowStats = { sold: 0, capacity: 0, percentage: 0, vipPercent: 0, gaPercent: 0, soldOut: false };
         let activeAlert = null;
 
-        if (nextShow) {            let vipSold = 0, vipCap = 0, gaSold = 0, gaCap = 0;
+        if (nextShow) {
+            let vipSold = 0, vipCap = 0, gaSold = 0, gaCap = 0;
 
             if (nextShow.ticketTiers) {
                 nextShow.ticketTiers.forEach(tier => {
@@ -81,7 +88,8 @@ export async function GET(req) {
                 currentShowStats.vipPercent = vipCap > 0 ? Math.round((vipSold / vipCap) * 100) : 0;
                 currentShowStats.gaPercent = gaCap > 0 ? Math.round((gaSold / gaCap) * 100) : 0;
                 if (currentShowStats.percentage >= 100) currentShowStats.soldOut = true;
-            }            const urgentTasks = await Task.find({
+            }
+            const urgentTasks = await Task.find({
                 $or: [
                     { eventId: nextShow._id, priority: 'High' }, // Normal urgent tasks for this show
                     { title: { $regex: '^Crew Message:', $options: 'i' }, urgent: true } // GLOBAL Crew messages
@@ -99,7 +107,8 @@ export async function GET(req) {
                     type: "critical", // critical | warning | info
                     tasks: urgentTasks // Pass the actual tasks
                 };
-            } else if (currentShowStats.percentage < 50 && (new Date(nextShow.date) - new Date()) < 86400000 * 3) {                activeAlert = {
+            } else if (currentShowStats.percentage < 50 && (new Date(nextShow.date) - new Date()) < 86400000 * 3) {
+                activeAlert = {
                     active: true,
                     title: "Sales Alert",
                     message: "Ticket sales are below 50% for",
@@ -113,8 +122,10 @@ export async function GET(req) {
                     highlight: nextShow.city
                 };
             }
-        }        const tourName = "World Tour 2026";
-        const systemStatus = "Online";        const dashboardData = {
+        }
+        const tourName = "World Tour 2026";
+        const systemStatus = "Online";
+        let dashboardData = {
             tourName,
             systemStatus,
             currentShow: nextShow ? {
@@ -137,7 +148,8 @@ export async function GET(req) {
                 { label: "Gross Rev", value: `$${(grossRevenue / 1000).toFixed(1)}k`, sub: "Click for details", iconName: "DollarSign", trend: true, action: "revenue_breakdown" },
                 { label: "Streams", value: "2.4M", sub: "Top City: Mumbai", iconName: "BarChart3", trend: false, success: true },
             ],
-            stops: upcomingStops.map(stop => {                let sold = 0; let cap = 0;
+            stops: upcomingStops.map(stop => {
+                let sold = 0; let cap = 0;
                 if (stop.ticketTiers) stop.ticketTiers.forEach(t => { sold += (t.sold || 0); cap += (t.capacity || 0); });
                 const pct = cap > 0 ? Math.round((sold / cap) * 100) : 0;
 

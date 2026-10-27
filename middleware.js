@@ -25,7 +25,8 @@ const publicPaths = [
   '/api', // Allow ALL API routes to pass through (Let API handle its own auth)
   '/api/socket',
   '/api/description',
-  '/api/patch'
+  '/api/patch',
+  '/test-3d'
 ];
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
@@ -102,9 +103,10 @@ export const config = {
      * Match all request paths except for the ones starting with:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - images (public images folder)
+     * - favicon.ico, favicon files
+     * - images, models, textures (public folders)
+     * - Static file extensions (.glb, .gltf, .png, .jpg, .svg, .exr, etc.)
      */
-    '/((?!_next/static|_next/image|favicon.ico|images).*)',
+    '/((?!_next/static|_next/image|favicon.ico|images|models|textures|.*\\.glb$|.*\\.gltf$|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.webp$|.*\\.exr$|.*\\.hdr$|.*\\.ico$).*)',
   ],
 };

@@ -3,7 +3,8 @@ import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Setlist from '@/models/Setlist';
 import Song from '@/models/Song';
-import Poll from '@/models/Poll';const MOCK_EVENT_DATA = {
+import Poll from '@/models/Poll';
+const MOCK_EVENT_DATA = {
     event: {
         _id: 'demo-event',
         title: 'The Epoch World Tour (Demo)',
@@ -52,7 +53,8 @@ export async function GET(req) {
         await dbConnect();
 
         const { searchParams } = new URL(req.url);
-        const eventId = searchParams.get('eventId');        if (eventId === 'demo-event' || eventId === 'test') {
+        const eventId = searchParams.get('eventId');
+        if (eventId === 'demo-event' || eventId === 'test') {
             return NextResponse.json({ success: true, ...MOCK_EVENT_DATA });
         }
 
@@ -61,13 +63,18 @@ export async function GET(req) {
 
         if (mongoose.isValidObjectId(eventId)) {
             event = await Event.findById(eventId).populate('venue');
-        } else {            event = await Event.findOne({ eventId: eventId }).populate('venue');
+        } else {
+            event = await Event.findOne({ eventId: eventId }).populate('venue');
         }
 
         if (!event) {
             console.warn(`[ProductionAPI] Event ${eventId} not found.`);
             return NextResponse.json({ success: false, message: "Event not found" }, { status: 404 });
-        }        const setlistDoc = await Setlist.findOne({ eventId: eventId }).populate('items.songId');        if (!setlistDoc) console.warn(`No setlist found for eventId: ${eventId}`); // Keep for logs        const formattedSetlist = setlistDoc ? setlistDoc.items.map(item => {            const song = item.songId || {};
+        }
+        const setlistDoc = await Setlist.findOne({ eventId: eventId }).populate('items.songId');
+        if (!setlistDoc) console.warn(`No setlist found for eventId: ${eventId}`); // Keep for logs
+        const formattedSetlist = setlistDoc ? setlistDoc.items.map(item => {
+            const song = item.songId || {};
             return {
                 _id: song._id || item._id, // Fallback
                 title: item.title,
@@ -76,7 +83,8 @@ export async function GET(req) {
                 status: item.status || 'pending',
                 duration: item.duration || '0:00'
             };
-        }) : MOCK_EVENT_DATA.setlist;        const activePoll = await Poll.findOne({ eventId: eventId, isActive: true });
+        }) : MOCK_EVENT_DATA.setlist;
+        const activePoll = await Poll.findOne({ eventId: eventId, isActive: true });
 
         return NextResponse.json({
             success: true,
@@ -94,7 +102,8 @@ export async function GET(req) {
         });
 
     } catch (error) {
-        console.error("Live API Error:", error);        return NextResponse.json({ success: true, ...MOCK_EVENT_DATA });
+        console.error("Live API Error:", error);
+        return NextResponse.json({ success: true, ...MOCK_EVENT_DATA });
     }
 }
 
@@ -104,16 +113,23 @@ export async function PUT(req) {
         const body = await req.json();
         const { eventId, status } = body;
 
-        if (!eventId) return NextResponse.json({ success: false, message: "Missing Event ID" }, { status: 400 });        if (!status && typeof body.warning === 'undefined') {
+        if (!eventId) return NextResponse.json({ success: false, message: "Missing Event ID" }, { status: 400 });
+        if (eventId === 'demo-event') return NextResponse.json({ success: true, status: status || 'Live' });
+
+        if (!status && typeof body.warning === 'undefined') {
             return NextResponse.json({ success: false, message: "No update fields provided" }, { status: 400 });
-        }        let setlist = await Setlist.findOne({ eventId: eventId });
+        }
+        let setlist = await Setlist.findOne({ eventId: eventId });
 
         if (!setlist) {
             return NextResponse.json({ success: false, message: "Setlist not found" }, { status: 404 });
-        }        if (body.status) setlist.showStatus = body.status;
-        if (typeof body.warning === 'boolean') setlist.showWarning = body.warning;        if (status === 'Live') {
+        }
+        if (body.status) setlist.showStatus = body.status;
+        if (typeof body.warning === 'boolean') setlist.showWarning = body.warning;
+        if (status === 'Live') {
             const hasLive = setlist.items.some(i => i.status === 'live');
-            const hasCompleted = setlist.items.some(i => i.status === 'completed');            if (!hasLive && !hasCompleted && setlist.items.length > 0) {
+            const hasCompleted = setlist.items.some(i => i.status === 'completed');
+            if (!hasLive && !hasCompleted && setlist.items.length > 0) {
                 setlist.items[0].status = 'live';
             }
         }
