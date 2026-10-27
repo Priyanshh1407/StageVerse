@@ -2,6 +2,7 @@
 //
 //   npm run eval:patch                    # real Gemini calls (~60 requests, uses GEMINI_API_KEY)
 //   npm run eval:patch -- --model gemini-3.5-flash-lite
+//   npm run eval:patch -- --provider groq             # openai/gpt-oss-120b (uses GROQ_API_KEY)
 //   npm run eval:patch -- --fake          # scripted model, checks the harness only (no API calls)
 //
 // Writes evals/patch/results/<label>.json and prints a summary table.
@@ -15,7 +16,9 @@ import { getIntent } from '../../lib/dmx/intent.js';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const FAKE = args.includes('--fake');
-const MODEL = args.includes('--model') ? args[args.indexOf('--model') + 1] : (process.env.GEMINI_MODEL || 'gemini-3.8-flash');
+const PROVIDER = args.includes('--provider') ? args[args.indexOf('--provider') + 1] : 'gemini';
+const DEFAULT_MODEL = PROVIDER === 'groq' ? (process.env.GROQ_MODEL || 'openai/gpt-oss-120b') : (process.env.GEMINI_MODEL || 'gemini-3.8-flash');
+const MODEL = args.includes('--model') ? args[args.indexOf('--model') + 1] : DEFAULT_MODEL;
 // Requests per minute to stay under. The free tier allows 5 per model; pass --rpm for paid keys.
 const RPM = args.includes('--rpm') ? Number(args[args.indexOf('--rpm') + 1]) : 5;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -29,8 +32,33 @@ async function paced(fn) {
 const cases = JSON.parse(fs.readFileSync(path.join(here, 'cases.json'), 'utf8'));
 
 // ---------- model access ----------
+async function groqGenerate({ system, user, json, temperature }) {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: MODEL,
+            messages: [...(system ? [{ role: 'system', content: system }] : []), { role: 'user', content: user }],
+            ...(temperature !== undefined && { temperature }),
+            ...(json && { response_format: { type: 'json_schema', json_schema: { name: 'response', strict: false, schema: stripSchemaKey(json) } } }),
+        }),
+        signal: AbortSignal.timeout(60000),
+    });
+    if (!res.ok) throw Object.assign(new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 300)}`), { status: res.status });
+    const data = await res.json();
+    return { text: data.choices?.[0]?.message?.content ?? '', tokens: data.usage?.total_tokens ?? 0 };
+}
+function stripSchemaKey(schema) {
+    const { $schema, ...rest } = schema;
+    return rest;
+}
+
 let realGenerate;
 async function generate(opts) {
+    if (!realGenerate && PROVIDER === 'groq') {
+        if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY is not set (add it to .env.local)');
+        realGenerate = groqGenerate;
+    }
     if (!realGenerate) {
         if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not set (run with --env-file=.env.local, or use --fake)');
         const { GoogleGenAI } = await import('@google/genai');
@@ -41,7 +69,7 @@ async function generate(opts) {
                 contents: user,
                 config: {
                     ...(system && { systemInstruction: system }),
-                    ...(json && { responseMimeType: 'application/json', responseJsonSchema: json }),
+                    ...(json && { responseMimeType: 'application/json', responseJsonSchema: stripSchemaKey(json) }),
                     ...(temperature !== undefined && { temperature }),
                     httpOptions: { timeout: 60000 },
                 },
@@ -62,8 +90,8 @@ async function withRetries(fn, attempts = 6) {
         } catch (error) {
             const transient = TRANSIENT.has(error?.status) || /timed? ?out|aborted/i.test(String(error?.message));
             if (!transient || i >= attempts) throw Object.assign(error, { upstream: transient });
-            // Honour the server's "retry in Ns" (quota errors), otherwise back off 5s, 10s, 20s...
-            const hinted = Number(String(error?.message).match(/retry in ([\d.]+)s/i)?.[1]);
+            // Honour the server's hint (Gemini: "retry in Ns", Groq: "try again in Ns"), else back off 5s, 10s, 20s...
+            const hinted = Number(String(error?.message).match(/(?:retry|try again) in ([\d.]+)s/i)?.[1]);
             await sleep(Number.isFinite(hinted) ? (hinted + 1) * 1000 : 5000 * 2 ** (i - 1));
         }
     }
@@ -245,7 +273,8 @@ for (const c of cases) {
 }
 
 const summary = { legacy: summarize(results.map((r) => r.legacy)), new: summarize(results.map((r) => r.new)) };
-const label = FAKE ? 'FAKE-harness-check' : `${MODEL}-${new Date().toISOString().slice(0, 10)}`;
+// Model ids like "openai/gpt-oss-120b" contain "/", which can't go in a file name
+const label = FAKE ? 'FAKE-harness-check' : `${MODEL.replace(/[^\w.-]+/g, '_')}-${new Date().toISOString().slice(0, 10)}`;
 const out = { label, model: FAKE ? 'scripted (no API calls)' : MODEL, ranAt: new Date().toISOString(), summary, results };
 fs.mkdirSync(path.join(here, 'results'), { recursive: true });
 fs.writeFileSync(path.join(here, 'results', `${label}.json`), JSON.stringify(out, null, 2) + '\n');
