@@ -1,11 +1,11 @@
 'use client';
 
-import { Suspense, lazy, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
-import Beams from './Beams';
+import { OrbitControls, PerformanceMonitor } from '@react-three/drei';
+import StageScene from './StageScene';
 import { useQualityTier, TIER_SETTINGS } from './useQualityTier';
+import { DEFAULT_LOOK } from '@/lib/show/look';
 
 // FPS / draw-call overlay, loaded only on this page
 const Perf = lazy(() => import('r3f-perf').then((m) => ({ default: m.Perf })));
@@ -19,13 +19,16 @@ const PRESETS = {
 };
 const PALETTE = ['#19d9ff', '#ff3df2', '#a855f7', '#ff0099', '#39ff14', '#ffffff', '#ef4444'];
 
-// Configurations the benchmark steps through (each: 1.5 s warm-up, then 6 s of measurement)
+// Automatic step-down when the frame rate can't keep up (each level keeps the previous ones)
+const ADAPTIVE_LEVELS = ['full quality', 'bloom off', '70% beams', 'lower resolution'];
+
+// Full-scene configurations the benchmark steps through (1.5 s warm-up, then 6 s measured)
 const BENCH_CONFIGS = [
-    { label: '56 beams, no bloom', beams: 56, bloom: 'off' },
-    { label: '72 beams, no bloom', beams: 72, bloom: 'off' },
-    { label: '72 beams, bloom', beams: 72, bloom: 'on' },
-    { label: '100 beams, no bloom', beams: 100, bloom: 'off' },
-    { label: '140 beams, no bloom', beams: 140, bloom: 'off' },
+    { label: '72 beams · DPR 1', beams: 72, bloom: 'off', dpr: '1' },
+    { label: '100 + bloom · DPR 1', beams: 100, bloom: 'on', dpr: '1' },
+    { label: '72 beams · native DPR', beams: 72, bloom: 'off', dpr: 'native' },
+    { label: '100 + bloom · native DPR', beams: 100, bloom: 'on', dpr: 'native' },
+    { label: '140 beams · native DPR', beams: 140, bloom: 'off', dpr: 'native' },
 ];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -55,6 +58,8 @@ function measureFrames(ms) {
     });
 }
 
+const shortDate = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '');
+
 function Slider({ label, value, min, max, step, onChange, format = (v) => v }) {
     return (
         <label className="block text-xs text-slate-300 mb-3">
@@ -83,40 +88,68 @@ function Swatches({ label, value, onChange }) {
     );
 }
 
+function Choice({ label, options, value, onChange }) {
+    return (
+        <div className="flex gap-2 mb-2 text-xs items-center">
+            <span className="text-slate-300 w-14">{label}</span>
+            {options.map((o) => (
+                <button key={o} onClick={() => onChange(o)}
+                    className={`px-2 py-0.5 rounded ${value === o ? 'bg-cyan-500 text-black' : 'bg-white/10'}`}>{o}</button>
+            ))}
+        </div>
+    );
+}
+
 export default function LabStage() {
     const tier = useQualityTier();
     const [beamCount, setBeamCount] = useState(null); // null = the tier's default
     const [dprChoice, setDprChoice] = useState('auto');
     const [bloomChoice, setBloomChoice] = useState('auto');
+    const [adaptive, setAdaptive] = useState(true);
+    const [adaptiveLevel, setAdaptiveLevel] = useState(0);
     const [showPerf, setShowPerf] = useState(true);
-    const [look, setLookState] = useState({ ...PRESETS.Build, colorA: '#19d9ff', colorB: '#ff3df2' });
+    const [crowdSeed, setCrowdSeed] = useState(7);
+    const [events, setEvents] = useState([]);
+    const [look, setLookState] = useState({ ...DEFAULT_LOOK, ...PRESETS.Build });
     const lookRef = useRef(look); // read by the rig every frame, without re-rendering it
     const controls = useRef();
     const [bench, setBench] = useState({ running: false, step: '', results: [] });
 
-    // Step through BENCH_CONFIGS with the FPS overlay hidden (it costs frames itself)
-    const runBenchmark = async () => {
-        const restore = { beamCount, bloomChoice, showPerf };
-        setShowPerf(false);
-        setDprChoice('1');
-        const results = [];
-        for (const config of BENCH_CONFIGS) {
-            setBench({ running: true, step: config.label, results });
-            setBeamCount(config.beams);
-            setBloomChoice(config.bloom);
-            await sleep(1500); // let shaders compile and the frame rate settle
-            results.push({ config: config.label, ...(await measureFrames(6000)) });
-        }
-        setBench({ running: false, step: '', results: [...results] });
-        setBeamCount(restore.beamCount);
-        setBloomChoice(restore.bloomChoice);
-        setShowPerf(restore.showPerf);
-    };
+    // Real upcoming events for the LED wall (public endpoint)
+    useEffect(() => {
+        fetch('/api/events')
+            .then((r) => (r.ok ? r.json() : { events: [] }))
+            .then((json) => setEvents((json.events || []).map((e) => ({ title: e.title, city: e.city, date: shortDate(e.date) }))))
+            .catch(() => {});
+    }, []);
 
     const setLook = (patch) => {
         const next = { ...lookRef.current, ...patch };
         lookRef.current = next;
         setLookState(next);
+    };
+
+    // Step through BENCH_CONFIGS with the FPS overlay and auto step-down off (they'd skew results)
+    const runBenchmark = async () => {
+        const restore = { beamCount, bloomChoice, showPerf, dprChoice, adaptive };
+        setShowPerf(false);
+        setAdaptive(false);
+        setAdaptiveLevel(0);
+        const results = [];
+        for (const config of BENCH_CONFIGS) {
+            setBench({ running: true, step: config.label, results });
+            setBeamCount(config.beams);
+            setBloomChoice(config.bloom);
+            setDprChoice(config.dpr === 'native' ? String(window.devicePixelRatio) : config.dpr);
+            await sleep(1500); // let shaders compile and the frame rate settle
+            results.push({ config: config.label, dpr: config.dpr === 'native' ? window.devicePixelRatio : 1, ...(await measureFrames(6000)) });
+        }
+        setBench({ running: false, step: '', results: [...results] });
+        setBeamCount(restore.beamCount);
+        setBloomChoice(restore.bloomChoice);
+        setShowPerf(restore.showPerf);
+        setDprChoice(restore.dprChoice);
+        setAdaptive(restore.adaptive);
     };
 
     if (tier === null) {
@@ -125,35 +158,27 @@ export default function LabStage() {
 
     const effectiveTier = tier === 0 ? 1 : tier; // the lab always renders; tier 0 is noted below
     const settings = TIER_SETTINGS[effectiveTier];
-    const count = beamCount ?? settings.beams;
-    const dpr = dprChoice === 'auto' ? settings.dpr : Number(dprChoice);
-    const bloom = bloomChoice === 'auto' ? settings.bloom : bloomChoice === 'on';
+    const level = adaptive ? adaptiveLevel : 0;
+    const baseBeams = beamCount ?? settings.beams;
+    const count = level >= 2 ? Math.round(baseBeams * 0.7) : baseBeams;
+    const baseBloom = bloomChoice === 'auto' ? settings.bloom : bloomChoice === 'on';
+    const bloom = level >= 1 ? false : baseBloom;
+    const baseDpr = dprChoice === 'auto' ? settings.dpr : Number(dprChoice);
+    const dpr = level >= 3 ? 0.75 : baseDpr;
+    const dprOptions = ['auto', '0.75', '1', '1.25', '1.5'];
 
     return (
-        <div className="relative h-screen w-full bg-[#02030a] overflow-hidden">
+        <div className="relative h-screen w-full bg-[#010208] overflow-hidden">
             <Canvas
                 dpr={dpr}
                 camera={{ position: [0, 1.8, 26], fov: 55, near: 0.1, far: 200 }}
                 gl={{ antialias: false, powerPreference: 'high-performance' }}
             >
-                <color attach="background" args={['#02030a']} />
-                {/* Stage floor and backdrop: unlit, so they cost almost nothing */}
-                <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -4]}>
-                    <planeGeometry args={[80, 50]} />
-                    <meshBasicMaterial color="#05060c" />
-                </mesh>
-                <mesh position={[0, 9, -15]}>
-                    <planeGeometry args={[60, 24]} />
-                    <meshBasicMaterial color="#04071a" />
-                </mesh>
-
-                <Beams count={count} look={lookRef} />
-
-                {bloom && (
-                    <EffectComposer multisampling={0}>
-                        <Bloom mipmapBlur luminanceThreshold={0.15} intensity={1.1} resolutionScale={0.5} />
-                    </EffectComposer>
-                )}
+                <PerformanceMonitor
+                    flipflops={3}
+                    onDecline={() => adaptive && setAdaptiveLevel((l) => Math.min(l + 1, ADAPTIVE_LEVELS.length - 1))}
+                />
+                <StageScene beams={count} bloom={bloom} look={lookRef} events={events} crowdSeed={crowdSeed} />
                 <OrbitControls ref={controls} target={[0, 7, -6]} enableDamping />
                 {showPerf && (
                     <Suspense fallback={null}>
@@ -163,11 +188,12 @@ export default function LabStage() {
             </Canvas>
 
             <aside className="absolute top-3 right-3 w-72 max-h-[calc(100vh-1.5rem)] overflow-y-auto rounded-xl bg-black/75 backdrop-blur p-4 text-white border border-white/10">
-                <h1 className="text-sm font-bold tracking-wider text-cyan-300 mb-1">STAGE LAB · step 1</h1>
+                <h1 className="text-sm font-bold tracking-wider text-cyan-300 mb-1">STAGE LAB</h1>
                 <p className="text-[11px] text-slate-400 mb-3">
                     Detected tier <b className="text-white">{tier}</b>
                     {tier === 0 && ' (the homepage would show the 2D fallback; rendering tier 1 here)'}
-                    {' · '}{count} beams · bloom {bloom ? 'on' : 'off'}. Force a tier with <code>?tier=1</code>.
+                    {' · '}{count} beams · bloom {bloom ? 'on' : 'off'} · DPR {Array.isArray(dpr) ? dpr.join('–') : dpr}.
+                    {' '}Force a tier with <code>?tier=1</code>.
                 </p>
 
                 <div className="grid grid-cols-4 gap-1.5 mb-4">
@@ -178,20 +204,16 @@ export default function LabStage() {
                 </div>
 
                 <h2 className="text-[11px] uppercase tracking-wider text-slate-500 mb-2">Performance</h2>
-                <Slider label="Beams" value={count} min={10} max={140} step={1} onChange={setBeamCount} />
-                <div className="flex gap-2 mb-2 text-xs">
-                    <span className="text-slate-300 w-12">DPR</span>
-                    {['auto', '0.75', '1', '1.5'].map((d) => (
-                        <button key={d} onClick={() => setDprChoice(d)}
-                            className={`px-2 py-0.5 rounded ${dprChoice === d ? 'bg-cyan-500 text-black' : 'bg-white/10'}`}>{d}</button>
-                    ))}
-                </div>
-                <div className="flex gap-2 mb-4 text-xs">
-                    <span className="text-slate-300 w-12">Bloom</span>
-                    {['auto', 'on', 'off'].map((b) => (
-                        <button key={b} onClick={() => setBloomChoice(b)}
-                            className={`px-2 py-0.5 rounded ${bloomChoice === b ? 'bg-cyan-500 text-black' : 'bg-white/10'}`}>{b}</button>
-                    ))}
+                <Slider label="Beams" value={baseBeams} min={10} max={140} step={1} onChange={setBeamCount} />
+                <Choice label="DPR" options={dprOptions} value={dprChoice} onChange={setDprChoice} />
+                <Choice label="Bloom" options={['auto', 'on', 'off']} value={bloomChoice} onChange={setBloomChoice} />
+                <div className="flex gap-2 mb-4 text-xs items-center">
+                    <span className="text-slate-300 w-14">Auto</span>
+                    <button onClick={() => { setAdaptive((a) => !a); setAdaptiveLevel(0); }}
+                        className={`px-2 py-0.5 rounded ${adaptive ? 'bg-cyan-500 text-black' : 'bg-white/10'}`}>
+                        {adaptive ? 'on' : 'off'}
+                    </button>
+                    <span className="text-[11px] text-slate-400">{adaptive ? ADAPTIVE_LEVELS[level] : 'step-down disabled'}</span>
                 </div>
 
                 <h2 className="text-[11px] uppercase tracking-wider text-slate-500 mb-2">Look</h2>
@@ -203,7 +225,7 @@ export default function LabStage() {
                 <Swatches label="Colour A" value={look.colorA} onChange={(c) => setLook({ colorA: c })} />
                 <Swatches label="Colour B" value={look.colorB} onChange={(c) => setLook({ colorB: c })} />
 
-                <h2 className="text-[11px] uppercase tracking-wider text-slate-500 mt-4 mb-2">Benchmark</h2>
+                <h2 className="text-[11px] uppercase tracking-wider text-slate-500 mt-4 mb-2">Benchmark (full scene)</h2>
                 <button onClick={runBenchmark} disabled={bench.running}
                     className="w-full py-2 rounded bg-cyan-500 text-black font-bold text-xs disabled:opacity-60">
                     {bench.running ? `Measuring: ${bench.step}…` : 'Run benchmark (~40 s, keep this tab in front)'}
@@ -234,6 +256,7 @@ export default function LabStage() {
 
                 <div className="flex gap-2 mt-4 text-xs">
                     <button onClick={() => controls.current?.reset()} className="flex-1 py-1.5 rounded bg-white/10 hover:bg-white/20">Hero camera</button>
+                    <button onClick={() => setCrowdSeed((s) => s + 1)} className="flex-1 py-1.5 rounded bg-white/10 hover:bg-white/20">New crowd</button>
                     <button onClick={() => setShowPerf((v) => !v)} className="flex-1 py-1.5 rounded bg-white/10 hover:bg-white/20">
                         {showPerf ? 'Hide' : 'Show'} FPS
                     </button>

@@ -148,6 +148,61 @@ export function createBeamMaterial(uniforms) {
     });
 }
 
+/** A moving-head body: lens at the origin, housing extending back along +Y (opposite the beam). */
+export function createHeadGeometry() {
+    const geometry = new THREE.CylinderGeometry(0.26, 0.32, 0.75, 14, 1, false);
+    geometry.translate(0, 0.375, 0);
+    return geometry;
+}
+
+/**
+ * Moving-head housings, rotated in the vertex shader with the SAME aiming code as the beams,
+ * so every head always points exactly where its beam goes. Opaque, with cheap fixed-direction
+ * shading and a lens ring that glows in the beam colour.
+ */
+export function createHeadMaterial(uniforms) {
+    return new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: /* glsl */ `
+            ${AIM_GLSL}
+            attribute vec2 aBase;
+            attribute float aPhase;
+            attribute float aColorMix;
+            varying float vAlongBody;
+            varying float vColorMix;
+            varying vec3 vNormalW;
+
+            void main() {
+                vec3 fixture = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+                vec3 dir = aimDirection(fixture, aBase, aPhase);
+                vec3 down = vec3(0.0, -1.0, 0.0);
+                vec3 p = rotateFromTo(position, down, dir);
+                vNormalW = normalize(mat3(modelMatrix) * rotateFromTo(normal, down, dir));
+                vAlongBody = position.y / 0.75; // 0 at the lens, 1 at the back
+                vColorMix = aColorMix;
+                gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(p, 1.0);
+            }
+        `,
+        fragmentShader: /* glsl */ `
+            uniform vec3 uColorA;
+            uniform vec3 uColorB;
+            uniform float uIntensity;
+            varying float vAlongBody;
+            varying float vColorMix;
+            varying vec3 vNormalW;
+
+            void main() {
+                float light = 0.1 + 0.3 * max(0.0, dot(normalize(vNormalW), normalize(vec3(0.3, 0.8, 0.5))));
+                vec3 body = vec3(0.09, 0.1, 0.13) * light * 3.0;
+                float ring = smoothstep(0.12, 0.0, vAlongBody); // the lens end glows
+                vec3 lens = mix(uColorA, uColorB, vColorMix) * ring * min(uIntensity, 1.5) * 1.6;
+                gl_FragColor = vec4(body + lens, 1.0);
+            }
+        `,
+        toneMapped: false,
+    });
+}
+
 /** Hot glow at each fixture's lens: screen-facing points with a soft radial falloff. */
 export function createGlowMaterial(uniforms) {
     return new THREE.ShaderMaterial({
