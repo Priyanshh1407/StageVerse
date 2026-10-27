@@ -1,15 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { MapPin, Globe, Phone, Mail, Clock, Calendar, AlertTriangle, Users, Info, Edit2, Save, Wifi, Copy, Lock, Star, Navigation } from 'lucide-react';
 import { toast } from "sonner";
+
+// Defined at module level: a component declared inside VenueIntel would be a new
+// type on every render, so React remounted the input and it lost focus on each keystroke.
+function Input({ val, field, label, onChange }) {
+  return (
+    <div className="mb-2">
+      <label className="text-xs text-slate-400 block mb-1">{label}</label>
+      <input
+        value={val || ''}
+        onChange={e => onChange(field, e.target.value)}
+        className="w-full bg-[#101b23] border border-slate-700 rounded px-2 py-1 text-sm text-white focus:border-[#0d93f2] outline-none"
+      />
+    </div>
+  );
+}
 
 export default function VenueIntel({ intel, onUpdate }) {
   const [data, setData] = useState(intel || {});
   const [isEditing, setIsEditing] = useState(false);
-  useEffect(() => {
+  // Re-sync when the parent loads new intel (adjusting state during render instead of in an effect)
+  const [prevIntel, setPrevIntel] = useState(intel);
+  if (intel !== prevIntel) {
+    setPrevIntel(intel);
     if (intel) setData(intel);
-  }, [intel]);
+  }
+  const setField = (field, value) => setData(prev => ({ ...prev, [field]: value }));
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -20,16 +39,6 @@ export default function VenueIntel({ intel, onUpdate }) {
     onUpdate(data);
     setIsEditing(false);
   };
-  const Input = ({ val, field, label }) => (
-    <div className="mb-2">
-      <label className="text-xs text-slate-400 block mb-1">{label}</label>
-      <input
-        value={val || ''}
-        onChange={e => setData(prev => ({ ...prev, [field]: e.target.value }))}
-        className="w-full bg-[#101b23] border border-slate-700 rounded px-2 py-1 text-sm text-white focus:border-[#0d93f2] outline-none"
-      />
-    </div>
-  );
 
   const handleGetDirections = () => {
     const query = data.coffeeName || 'Coffee near me';
@@ -60,7 +69,7 @@ export default function VenueIntel({ intel, onUpdate }) {
           <div className="flex-1">
             <p className="text-xs uppercase text-[#90b2cb] font-bold tracking-wider">Venue Wifi</p>
             {isEditing ? (
-              <Input val={data.wifiName} field="wifiName" label="Network Name" />
+              <Input val={data.wifiName} field="wifiName" label="Network Name" onChange={setField} />
             ) : (
               <p className="text-slate-900 dark:text-white text-lg font-bold leading-tight mt-1">{data.wifiName || 'Not Set'}</p>
             )}
@@ -68,7 +77,7 @@ export default function VenueIntel({ intel, onUpdate }) {
         </div>
         <div className="flex items-center justify-between bg-slate-100 dark:bg-[#101b23] p-3 rounded-lg border border-[#315168]/50">
           {isEditing ? (
-            <Input val={data.wifiPass} field="wifiPass" label="Password" />
+            <Input val={data.wifiPass} field="wifiPass" label="Password" onChange={setField} />
           ) : (
             <>
               <p className="font-mono text-[#0d93f2] text-sm tracking-wide">{data.wifiPass || '---'}</p>
@@ -90,7 +99,7 @@ export default function VenueIntel({ intel, onUpdate }) {
             <p className="text-xs uppercase text-[#90b2cb] font-bold tracking-wider">Green Room</p>
             <div className="flex justify-between items-baseline mt-1">
               {isEditing ? (
-                <Input val={data.greenRoomCode} field="greenRoomCode" label="Door Code" />
+                <Input val={data.greenRoomCode} field="greenRoomCode" label="Door Code" onChange={setField} />
               ) : (
                 <>
                   <p className="text-slate-900 dark:text-white text-lg font-bold leading-tight">Code: {data.greenRoomCode || '---'}</p>
@@ -112,7 +121,7 @@ export default function VenueIntel({ intel, onUpdate }) {
             style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop")' }}
           ></div>
           <div className="absolute top-3 right-3 bg-white text-black text-xs font-bold px-2 py-1 rounded shadow">
-            {isEditing ? <Input val={data.distance} field="distance" label="Distance" /> : (data.distance || '0.2 mi')}
+            {isEditing ? <Input val={data.distance} field="distance" label="Distance" onChange={setField} /> : (data.distance || '0.2 mi')}
           </div>
         </div>
         <div className="p-5">
@@ -120,7 +129,7 @@ export default function VenueIntel({ intel, onUpdate }) {
             <div className="flex-1">
               <p className="text-xs uppercase text-[#90b2cb] font-bold tracking-wider mb-1">Best Coffee Nearby</p>
               {isEditing ? (
-                <Input val={data.coffeeName} field="coffeeName" label="Place Name" />
+                <Input val={data.coffeeName} field="coffeeName" label="Place Name" onChange={setField} />
               ) : (
                 <h4 className="text-slate-900 dark:text-white text-lg font-bold">{data.coffeeName || 'Dark Matter Coffee'}</h4>
               )}
@@ -131,7 +140,7 @@ export default function VenueIntel({ intel, onUpdate }) {
             </div>
           </div>
           {isEditing ? (
-            <Input val={data.coffeeDesc} field="coffeeDesc" label="Description" />
+            <Input val={data.coffeeDesc} field="coffeeDesc" label="Description" onChange={setField} />
           ) : (
             <p className="text-sm text-slate-500 dark:text-[#90b2cb] mb-4">{data.coffeeDesc || '"Mothership" location. Known for psychedelic blends.'}</p>
           )}
