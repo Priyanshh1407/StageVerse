@@ -14,6 +14,9 @@ On top of that base, two flagship talking points:
 
 A third flagship (concurrency-safe ticketing, UPG-01) comes back when ticketing is un-parked.
 
+## Progress (2026-10-27)
+Phases 0–2 done on branches `phase-0-safety-net` → `phase-1-security` → `phase-2-correctness` (see FIX_LOG.md). 139 tests passing. Open from 0–2: Atlas password rotation (developer). Also fixed beyond the plan: BUG-13 (guest list hardcoded to event 13), BUG-14 (production couldn't create shows at new venues), artist message/notification scoping, a regression from my own ERR-01 codemod (login catch). Next: Phase 3.
+
 ## Phase Overview
 
 | Phase | Goal | Items | Effort | Interview payoff |
@@ -37,12 +40,12 @@ Total ≈ 16–20 working days, excluding parked work. If time runs short, **do 
 Goal: be able to change the code and know immediately if the two main flows broke.
 Why this order: every later fix needs a baseline and a regression net, and the leaked credential can't wait.
 Items:
-- [ ] **SEC-01 (do today, before anything else)**: rotate the Atlas DB user password; delete `temp_update.mjs` — Atlas console, `temp_update.mjs` — S
-- [ ] Commit or stash the 9 uncommitted files on `deployment`; decide what to do with the untracked `public/*.glb`, `app/test-3d/`, `components/canvas/` (commit, LFS, or ignore). Then `git checkout -b phase-0-safety-net` from a clean tree — S
-- [ ] Record baseline in `FIX_LOG.md`: build ✅, lint 82 errors / 25 warnings, 0 tests, npm audit 2C/13H/4M — S
-- [ ] Add `.env.example` with `MONGODB_URI`, `JWT_SECRET`, `GEMINI_API_KEY`, `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (names only) — S
-- [ ] Set up Vitest + `mongodb-memory-server` (**replica-set mode**, needed for transactions in Phase 1) with a `tests/helpers.js` that builds a `Request` carrying a signed `token` cookie for a given role — `vitest.config.mjs`, `tests/` — M
-- [ ] Characterization tests that pin **current** behaviour (some will be marked `.fails` / `todo` and flipped to passing as Phase 1 fixes land):
+- [ ] **SEC-01 (do today, before anything else)** — file deleted ✔; **password rotation: developer to confirm**: rotate the Atlas DB user password; delete `temp_update.mjs` — Atlas console, `temp_update.mjs` — S
+- [x] Commit or stash the 9 uncommitted files on `deployment`; decide what to do with the untracked `public/*.glb`, `app/test-3d/`, `components/canvas/` (commit, LFS, or ignore). Then `git checkout -b phase-0-safety-net` from a clean tree — S
+- [x] Record baseline in `FIX_LOG.md`: build ✅, lint 82 errors / 25 warnings, 0 tests, npm audit 2C/13H/4M — S
+- [x] Add `.env.example` with `MONGODB_URI`, `JWT_SECRET`, `GEMINI_API_KEY`, `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (names only) — S
+- [x] Set up Vitest + `mongodb-memory-server` (**replica-set mode**, needed for transactions in Phase 1) with a `tests/helpers.js` that builds a `Request` carrying a signed `token` cookie for a given role — `vitest.config.mjs`, `tests/` — M
+- [x] Characterization tests that pin **current** behaviour (some will be marked `.fails` / `todo` and flipped to passing as Phase 1 fixes land):
   - auth: signup → login → cookie set; wrong password → 401
   - protected route without cookie returns 500 (documents ERR-01)
   - fan poll vote without cookie succeeds (documents SEC-04)
@@ -50,7 +53,7 @@ Items:
   - organizer can read another organizer's reports via `?eventId=` (documents SEC-03)
   - fan can overwrite a setlist (documents SEC-03)
   — `tests/characterization/*.test.js` — M
-- [ ] Seed script (`scripts/seed.mjs`, reads env) creating one user per role, one event with tiers, one setlist, so the app and tests share fixtures — S
+- [x] Seed script (`scripts/seed.mjs`, reads env) creating one user per role, one event with tiers, one setlist, so the app and tests share fixtures — S
 Acceptance criteria:
 - The Atlas password is rotated and `temp_update.mjs` no longer exists; `git status` is clean on the new branch.
 - `npm test` runs ≥ 8 tests against an in-memory Mongo with no network access.
@@ -69,11 +72,11 @@ Risk / rollback:
 Goal: nobody can act on data they don't own, and nobody can control a live show they aren't part of.
 Why this order: ERR-01 and ARCH-01 come first because they create the `withApi` / `lib/authz.js` primitives that SEC-03, SEC-02 and SEC-04 are built on. ERR-01 (a P2) is scheduled here because it's HIGH interview risk and a prerequisite.
 Items:
-- [ ] **ERR-01** `lib/errors.js` (`AuthError`, `ForbiddenError`, `NotFoundError`, `ValidationError`) plus a `withApi(handler)` wrapper mapping them to 401/403/404/400 with a request id; `verifyAuth` uses `jose` and throws `AuthError` — `lib/auth.js`, `lib/errors.js`, `lib/api.js` — S–M
-- [ ] **ARCH-01** `lib/events.js#resolveEvent(id)` (one rule for numeric vs ObjectId) and `lib/authz.js#requireRole`, `loadEventFor(user, id, {as})` — `lib/` — M
-- [ ] **SEC-03** Apply authz to every mutating route plus sensitive reads (setlist, polls, declare-results, guestlist/[id], tasks, logistics, reports `eventId`, day-sheet); scope queries by owner; extend `middleware.js` role prefixes — `app/api/**`, `middleware.js` — L
-- [ ] **SEC-02 + BUG-05** Socket handshake auth (`io.use`, JWT from the cookie); `join` an event room only after an authz check; control events accepted only from the event's artist or crew; `io.to(room).emit`; CORS restricted to your own origin; auth on `PUT /api/production/live` — `pages/api/socket/io.js`, `app/api/production/live/route.js`, clients — M
-- [ ] **SEC-04** `Vote` model with unique `{pollId,userId}`; vote requires auth and an active poll; server emits the tally after the DB write; ignore client `poll:vote`; remove fake `votes: 12` — `models/Vote.js`, `app/api/fan/poll/route.js`, `LivePollCard.jsx`, production page — M
+- [x] **ERR-01** `lib/errors.js` (`AuthError`, `ForbiddenError`, `NotFoundError`, `ValidationError`) plus a `withApi(handler)` wrapper mapping them to 401/403/404/400 with a request id; `verifyAuth` uses `jose` and throws `AuthError` — `lib/auth.js`, `lib/errors.js`, `lib/api.js` — S–M
+- [x] **ARCH-01** `lib/events.js#resolveEvent(id)` (one rule for numeric vs ObjectId) and `lib/authz.js#requireRole`, `loadEventFor(user, id, {as})` — `lib/` — M
+- [x] **SEC-03** Apply authz to every mutating route plus sensitive reads (setlist, polls, declare-results, guestlist/[id], tasks, logistics, reports `eventId`, day-sheet); scope queries by owner; extend `middleware.js` role prefixes — `app/api/**`, `middleware.js` — L
+- [x] **SEC-02 + BUG-05** Socket handshake auth (`io.use`, JWT from the cookie); `join` an event room only after an authz check; control events accepted only from the event's artist or crew; `io.to(room).emit`; CORS restricted to your own origin; auth on `PUT /api/production/live` — `pages/api/socket/io.js`, `app/api/production/live/route.js`, clients — M
+- [x] **SEC-04** `Vote` model with unique `{pollId,userId}`; vote requires auth and an active poll; server emits the tally after the DB write; ignore client `poll:vote`; remove fake `votes: 12` — `models/Vote.js`, `app/api/fan/poll/route.js`, `LivePollCard.jsx`, production page — M
 Acceptance criteria:
 - A test matrix shows: a fan gets **403** on setlist POST, poll create/activate, declare-results, another organizer's reports, guest delete, task update; unauthenticated gets **401** (not 500) on all protected routes.
 - The owner can still do everything they could before (positive cases in the same matrix).
@@ -96,19 +99,19 @@ Risk / rollback:
 Goal: remaining user-visible bugs fixed; bad input and failing dependencies produce clear errors, never fake success.
 Why this order: these build on Phase 1's `withApi`, `resolveEvent` and authz helpers.
 Items:
-- [ ] **ERR-02** Remove the mock-data fallback from `production/live` GET; UI shows "sync lost, retrying" — `app/api/production/live/route.js`, production page — S
-- [ ] **BUG-04** Winner computed and persisted server-side at poll end; remove the "Midnight City" fallback — `app/api/fan/poll/route.js`, `models/Poll.js`, `LiveControls.jsx` — S
-- [ ] **BUG-06** Move hooks above early returns — `LiveControls.jsx`, `PollSelectionModal.jsx` — S
-- [ ] **BUG-07** Logistics route: import mongoose, use `resolveEvent`, `title`/`city`, auth, remove the `'project-alpha'` magic — `app/api/production/logistics/[id]/route.js` — S
-- [ ] **BUG-08** Tasks: require and authorize `eventId`, align schema fields and status enum, scope GET — `app/api/production/tasks/route.js`, `models/Task.js` — S
-- [ ] **BUG-09** Atomic `Counter`-based event short ids — `app/api/events/route.js` — S
-- [ ] **SEC-05** Restrict setlist GET; lock predictions at show start; de-duplicate scoring; extract `scorePrediction()` as a pure function — `lib/scoring.js`, routes — S–M
-- [ ] **SEC-06** Auth + role + per-user rate limit + max prompt length on `/api/generate`, `/api/description`, `/api/patch`; auth on venues and fixture-profiles POST — `lib/rateLimit.js`, routes — S–M
-- [ ] **VAL-01** `zod` schemas for orders, events (create/update whitelist), setlist, polls, predictions, venues, tasks — `lib/schemas/*.js` — M
-- [ ] **SEC-08** Escape regex input everywhere; exact song match via a normalized indexed field — `lib/escapeRegex.js`, `models/Song.js` — S
-- [ ] **SEC-09** Role allow-list at signup (document the self-serve trade-off), min password length, login rate limit — `app/api/auth/*` — S
-- [ ] **SEC-07** `npm audit fix`; bump `next`/`eslint-config-next` to latest 16.x patch; check `xlsx` usage (write-only?) and document or replace — `package.json` — S
-- [ ] **ERR-03 / BUG-11** Generic client errors; `/api/auth/me` reads the user from the DB — S
+- [x] **ERR-02** Remove the mock-data fallback from `production/live` GET; UI shows "sync lost, retrying" — `app/api/production/live/route.js`, production page — S
+- [x] **BUG-04** Winner computed and persisted server-side at poll end; remove the "Midnight City" fallback — `app/api/fan/poll/route.js`, `models/Poll.js`, `LiveControls.jsx` — S
+- [x] **BUG-06** Move hooks above early returns — `LiveControls.jsx`, `PollSelectionModal.jsx` — S
+- [x] **BUG-07** Logistics route: import mongoose, use `resolveEvent`, `title`/`city`, auth, remove the `'project-alpha'` magic — `app/api/production/logistics/[id]/route.js` — S
+- [x] **BUG-08** Tasks: require and authorize `eventId`, align schema fields and status enum, scope GET — `app/api/production/tasks/route.js`, `models/Task.js` — S
+- [x] **BUG-09** Atomic `Counter`-based event short ids — `app/api/events/route.js` — S
+- [x] **SEC-05** Restrict setlist GET; lock predictions at show start; de-duplicate scoring; extract `scorePrediction()` as a pure function — `lib/scoring.js`, routes — S–M
+- [x] **SEC-06** Auth + role + per-user rate limit + max prompt length on `/api/generate`, `/api/description`, `/api/patch`; auth on venues and fixture-profiles POST — `lib/rateLimit.js`, routes — S–M
+- [x] **VAL-01** `zod` schemas for orders, events (create/update whitelist), setlist, polls, predictions, venues, tasks — `lib/schemas/*.js` — M
+- [x] **SEC-08** Escape regex input everywhere; exact song match via a normalized indexed field — `lib/escapeRegex.js`, `models/Song.js` — S
+- [x] **SEC-09** Role allow-list at signup (document the self-serve trade-off), min password length, login rate limit — `app/api/auth/*` — S
+- [x] **SEC-07** `npm audit fix`; bump `next`/`eslint-config-next` to latest 16.x patch; check `xlsx` usage (write-only?) and document or replace — `package.json` — S
+- [x] **ERR-03 / BUG-11** Generic client errors; `/api/auth/me` reads the user from the DB — S
 Acceptance criteria:
 - `npm audit --omit=dev` shows 0 critical; any remaining high is documented with a reachability note.
 - Unit tests for `scorePrediction` cover duplicates, order bonus, ties and empty input.

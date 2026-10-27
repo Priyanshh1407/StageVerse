@@ -80,3 +80,58 @@ Fix: `lib/socketServer.js` verifies the session cookie during the handshake; cli
 Verification: 10 tests against a real Socket.IO server: no cookie or a forged token is refused; a fan's control event is rejected; show A's update never reaches show B; an HTTP vote produces a server-sent tally in one room only.
 Trade-off / at larger scale: rooms live in one process, so with more than one server instance I'd add the Socket.IO Redis adapter. The socket server also needs a long-running Node process, not serverless.
 Interview version: "WebSockets bypass HTTP middleware, so my live-show channel had no auth at all and broadcast globally. I authenticated the handshake with the same session cookie, scoped everything to per-event rooms, and made the server the only source of truth for state changes, so clients request changes over HTTP and the server announces what actually got saved."
+
+---
+
+## Phase 2 — Correctness & resilience (2026-10-27, branch `phase-2-correctness`)
+
+### BUG-06 — Rules-of-Hooks violations on live screens (commit 3750f28)
+Root cause: `LiveControls` and `PollSelectionModal` returned early before calling `useState`/`useEffect`, so a render where `currentSong`/`isOpen` changed called a different number of hooks ("Rendered more hooks than during the previous render"). Fix: hooks first, empty state after. Verification: `react-hooks/rules-of-hooks` errors 5 → 0.
+
+### BUG-04 — Encore reveal always announced "Midnight City" (commit 0cf3a5a)
+Investigation: traced the reveal. The crew member who clicked Reveal saw the right winner (computed locally), but the socket message carried `options.find(o => o.winning)?.title`, and `winning` is only set *after* a reveal, so it sent `undefined` and every other screen fell back to a hardcoded "Midnight City".
+Fix: closing a poll stores `pickWinner()` of the persisted counts on the Poll (ties flagged), `poll:end` carries it, and the reveal relays that name. Verification: unit tests for `pickWinner` (ties, zero votes) and an integration test (A:1, B:2 → winner B persisted).
+Interview version: "Only the person who clicked Reveal saw the right winner; everyone else saw a hardcoded song, because the broadcast read a flag that is only set after the reveal. I moved the decision to the server at poll close, so there's one winner and every screen gets it from the same place."
+
+### SEC-05 — Gaming the setlist prediction game (commit 0222a9a)
+Symptom (red test): predicting "Song A" three times scored **35**; the honest score is 15. Predictions could also be changed after the show started.
+Root cause: scoring ran `findIndex` per predicted song with no record of which real songs were already matched.
+Fix: pure `scorePrediction()` where each setlist entry matches at most once (blank titles never match); predictions return 409 once the show leaves Standby; results written with one `bulkWrite` instead of N `save()` calls. (The real setlist was already hidden from fans in Phase 1.)
+Interview version: "A pure scoring function made the bug obvious and testable: each real song can be matched once. I wrote the failing test first; it showed 35 points for spamming one song."
+
+### BUG-09 + BUG-14 — Event ids collided; production couldn't create shows at new venues (commit 4d7d1c3)
+Symptom (red tests): after deleting an event, the next create returned 500 (duplicate `eventId`); five concurrent creates produced duplicate ids; a legacy event with id 1500 got its id reused.
+Root cause: `eventId = 1000 + countDocuments() + 1`; the production dashboard used `Math.random()` in 1000–9999. Separately, production created missing venues without the schema's required `address` (it set a non-existent `location` field).
+Fix: `nextEventId()`, one atomic `$inc` on a unique Counter document, seeded from the highest existing id. Venues get `address: 'TBA'`.
+Interview version: "Deriving an id from a count breaks as soon as you delete anything, and it races. An atomic counter fixes both; the subtle part was seeding it from the highest existing id so legacy data isn't reused."
+
+### BUG-08 — Production task creation always failed (commit 174a2d2)
+Root cause: the modal sent `eventId`, but the route ignored it, and `Task.eventId` is required, so every create failed validation. It also wrote fields the schema silently dropped and mixed `'Pending'`/`'pending'`.
+Fix: required, authorized `eventId`; field allow-list (a task can't be moved to another show); one status vocabulary; show name and venue from the populated event; the page shows the server's error instead of closing the modal.
+
+### SEC-08 — User input used as regex (commit ad91c4a)
+Symptom (red tests): a song titled `My Song (Live` crashed the setlist save (500); a title of `.*` linked an unrelated song; `(` in venue/discover search returned 500.
+Fix: `escapeRegex`/`containsRegex` at every call site (length-capped). Also scoped the artist dashboard's "Crew Message" alert to the artist's own shows (it counted messages from every event).
+
+### SEC-06 — Unauthenticated LLM endpoints (commit d7343ae)
+Fix: `guardLlmRequest()` checks session, role, and a per-user token bucket (10/min, 429 + `Retry-After`); prompt length caps; a 15 s Gemini request timeout. Gemini is mocked in tests.
+Trade-off: the bucket is in process memory, so with several instances I'd use Redis (`INCR` + TTL).
+
+### SEC-09 + BUG-11 — Signup/login hardening; `/api/auth/me` (commit b0862f6)
+Fix: email format, min 8 chars, known roles only, emails stored lowercase, 5 login attempts/min per IP+email, signup throttled; `/me` reads the profile from the DB (the JWT only carries `{userId, role}`).
+**Regression found and fixed:** the ERR-01 codemod (428e1de) had emptied login's `catch`. Its "delete the console line" regex ran past a statement with no semicolon and also removed the `return apiError(...)` inserted just before it, so any login error produced no response. The new rate-limit test exercised that path and failed with `undefined`. A scan of every route's `catch` blocks found no other case.
+Interview version (this is a good one): "My own refactoring script introduced a bug: a regex that deleted logging lines ran past a missing semicolon and deleted a return statement. Tests on the happy path didn't notice; the first test that hit login's error path did. Afterwards I scanned all 58 routes for catch blocks with no return or throw to make sure it was the only one."
+
+### VAL-01 — Schema validation at the boundary (commit 54953cf)
+Fix: `lib/schemas.js` (zod) for event create/update, setlist, polls, venues, day sheet and rider; unknown keys are stripped, so mass assignment is closed by construction; 400 responses list the bad fields; malformed JSON is a 400. Verification: a client-sent `sold: 999` becomes 0, `organizerId` is ignored.
+
+### SEC-07 — Vulnerable dependencies (commits 8462f20, c7ce1ab)
+Before → after (`npm audit --omit=dev`): 19 (2 critical, 13 high, 4 moderate) → 1 high. next 16.0.8 → 16.4.3, jspdf → 4.2.1, socket.io/ws via `npm audit fix`, vitest 3 → 5 (dev). zod 3 → 4.6.7 because GHSA-mrhx-c7xc-m3w5 (memory exhaustion on oversized constrained arrays) applied to our own `.max()` schemas.
+Remaining: `xlsx` (no fixed release on npm), not reachable because the app only *writes* a spreadsheet in the browser.
+Note: next's newer `eslint-config-next` adds React Compiler rules, so lint errors rose 81 → 108 without code changes (`set-state-in-effect` 13 → 32, new `immutability` 10). That's Phase 3 work.
+
+### BUG-13 + ERR-02 (UI) (commits 0d0e39b, 972d7bf)
+BUG-13: the artist guest-list page was hardcoded to `eventId=13` for reads, adds and clear-all; it now uses the artist's own shows with a picker. ERR-02: the crew live screen shows a "sync problem" banner (not on crew / unavailable / connection lost) and keeps the last good state.
+
+### Phase 2 status
+`npm test`: **139 passing** (from 0 at the start of Phase 0) · `next build`: passes · `npm audit --omit=dev`: 1 high (xlsx, not reachable) · lint: 108 errors / 26 warnings (stricter ruleset; Phase 3).
