@@ -45,6 +45,9 @@ export default function Beams({ count, look }) {
         const g = new THREE.BufferGeometry();
         g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(fixtures.flatMap((f) => f.position)), 3));
         g.setAttribute('aColorMix', new THREE.BufferAttribute(new Float32Array(fixtures.map((f) => f.colorMix)), 1));
+        // Aim data too: a lens only flares while its beam points toward the camera
+        g.setAttribute('aBase', new THREE.BufferAttribute(new Float32Array(fixtures.flatMap((f) => [f.pan, f.tilt])), 2));
+        g.setAttribute('aPhase', new THREE.BufferAttribute(new Float32Array(fixtures.map((f) => f.phase)), 1));
         return g;
     }, [fixtures]);
 

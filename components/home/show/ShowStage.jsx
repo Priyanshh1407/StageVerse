@@ -24,14 +24,19 @@ function directFrame(control, look, camera, aim, delta) {
         aim.target.set(...shot.target);
         aim.placed = true;
     }
-    easing.damp3(camera.position, shot.pos, 0.9, delta);
+    // A slow, tiny handheld sway so no shot ever looks frozen
+    const t = performance.now() / 1000;
+    aim.sway[0] = shot.pos[0] + Math.sin(t * 0.31) * 0.12 + Math.sin(t * 0.73) * 0.04;
+    aim.sway[1] = shot.pos[1] + Math.sin(t * 0.47 + 1.3) * 0.07;
+    aim.sway[2] = shot.pos[2];
+    easing.damp3(camera.position, aim.sway, 0.9, delta);
     easing.damp3(aim.target, shot.target, 0.9, delta);
     camera.lookAt(aim.target);
 }
 
 /** Inside the canvas: runs the show every frame. */
 function Director({ control, look }) {
-    const aim = useRef({ target: new THREE.Vector3(), placed: false });
+    const aim = useRef({ target: new THREE.Vector3(), sway: [0, 0, 0], placed: false });
     useFrame(({ camera }, delta) => directFrame(control.current, look, camera, aim.current, delta));
     return null;
 }

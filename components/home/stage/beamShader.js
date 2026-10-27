@@ -36,7 +36,7 @@ export function createRigUniforms() {
 export function createBeamGeometry() {
     // Thin at the lens, modest at the far end (the reference look has tight beams);
     // apex at the origin pointing down -Y
-    const geometry = new THREE.CylinderGeometry(0.05, 0.85, BEAM_LENGTH, 20, 1, true);
+    const geometry = new THREE.CylinderGeometry(0.04, 0.6, BEAM_LENGTH, 20, 1, true);
     geometry.translate(0, -BEAM_LENGTH / 2, 0);
     return geometry;
 }
@@ -134,10 +134,15 @@ export function createBeamMaterial(uniforms) {
                 float core = pow(facing, 2.6);
                 float fade = pow(vAlong, 1.5);
                 // Smoke drifting through the beam: grain that moves slowly in world space
-                float smoke = noise(vWorld * 0.55 + vec3(0.0, uTime * 0.25, uTime * 0.12));
-                float haze = mix(1.0, 0.45 + smoke * 1.1, uHaze);
-                float a = core * fade * haze * uIntensity * 0.6;
-                gl_FragColor = vec4(mix(uColorA, uColorB, vColorMix), a);
+                vec3 drift = vec3(0.0, uTime * 0.25, uTime * 0.12);
+                float smoke = noise(vWorld * 0.22 + drift) * 0.65 + noise(vWorld * 0.9 + drift * 1.7) * 0.35;
+                float haze = mix(1.0, 0.2 + smoke * 1.6, uHaze);
+                // Close to the camera a beam is out of focus and spread thin: soften it
+                float near = smoothstep(3.0, 16.0, length(cameraPosition - vWorld));
+                float a = core * fade * haze * uIntensity * 0.5 * mix(0.25, 1.0, near);
+                // Real beams are near-white where they leave the lens and saturate with distance
+                vec3 color = mix(mix(uColorA, uColorB, vColorMix), vec3(1.0), pow(vAlong, 8.0) * 0.55 * core);
+                gl_FragColor = vec4(color, a);
             }
         `,
         transparent: true,
@@ -157,8 +162,9 @@ export function createHeadGeometry() {
 
 /**
  * Moving-head housings, rotated in the vertex shader with the SAME aiming code as the beams,
- * so every head always points exactly where its beam goes. Opaque, with cheap fixed-direction
- * shading and a lens ring that glows in the beam colour.
+ * so every head always points exactly where its beam goes. Dark painted metal with a soft top
+ * light and a coloured backlight edge; only the lens face lights up, and only as brightly as a
+ * real lens would look from where the camera is (bright when the beam swings toward you).
  */
 export function createHeadMaterial(uniforms) {
     return new THREE.ShaderMaterial({
@@ -168,9 +174,11 @@ export function createHeadMaterial(uniforms) {
             attribute vec2 aBase;
             attribute float aPhase;
             attribute float aColorMix;
-            varying float vAlongBody;
+            varying float vLens;
+            varying float vFacing;
             varying float vColorMix;
             varying vec3 vNormalW;
+            varying vec3 vViewDir;
 
             void main() {
                 vec3 fixture = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -178,7 +186,9 @@ export function createHeadMaterial(uniforms) {
                 vec3 down = vec3(0.0, -1.0, 0.0);
                 vec3 p = rotateFromTo(position, down, dir);
                 vNormalW = normalize(mat3(modelMatrix) * rotateFromTo(normal, down, dir));
-                vAlongBody = position.y / 0.75; // 0 at the lens, 1 at the back
+                vLens = step(0.9, -normal.y);                       // the front cap is the lens
+                vFacing = max(0.0, dot(dir, normalize(cameraPosition - fixture)));
+                vViewDir = normalize(cameraPosition - fixture);
                 vColorMix = aColorMix;
                 gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(p, 1.0);
             }
@@ -187,16 +197,22 @@ export function createHeadMaterial(uniforms) {
             uniform vec3 uColorA;
             uniform vec3 uColorB;
             uniform float uIntensity;
-            varying float vAlongBody;
+            varying float vLens;
+            varying float vFacing;
             varying float vColorMix;
             varying vec3 vNormalW;
+            varying vec3 vViewDir;
 
             void main() {
-                float light = 0.1 + 0.3 * max(0.0, dot(normalize(vNormalW), normalize(vec3(0.3, 0.8, 0.5))));
-                vec3 body = vec3(0.09, 0.1, 0.13) * light * 3.0;
-                float ring = smoothstep(0.12, 0.0, vAlongBody); // the lens end glows
-                vec3 lens = mix(uColorA, uColorB, vColorMix) * ring * min(uIntensity, 1.5) * 1.6;
-                gl_FragColor = vec4(body + lens, 1.0);
+                vec3 n = normalize(vNormalW);
+                vec3 beam = mix(uColorA, uColorB, vColorMix);
+                float top = max(0.0, dot(n, vec3(0.0, 1.0, 0.0)));           // soft top light
+                float back = pow(1.0 - max(0.0, dot(n, vViewDir)), 3.0);     // edge lit from behind
+                vec3 body = vec3(0.025, 0.027, 0.032) + vec3(0.06) * top + beam * back * 0.12 * min(uIntensity, 1.2);
+                // Lens: dim glass from the side, white-hot core when aimed at the camera
+                float flare = pow(vFacing, 6.0);
+                vec3 lens = mix(beam * 0.25, mix(beam, vec3(1.0), 0.7) * 2.2, flare) * min(uIntensity, 1.5);
+                gl_FragColor = vec4(mix(body, lens, vLens), 1.0);
             }
         `,
         toneMapped: false,
@@ -206,15 +222,23 @@ export function createHeadMaterial(uniforms) {
 /** Hot glow at each fixture's lens: screen-facing points with a soft radial falloff. */
 export function createGlowMaterial(uniforms) {
     return new THREE.ShaderMaterial({
-        uniforms: { ...uniforms, uSize: { value: 140 } },
+        uniforms: { ...uniforms, uSize: { value: 260 } },
         vertexShader: /* glsl */ `
+            ${AIM_GLSL}
             uniform float uSize;
+            attribute vec2 aBase;
+            attribute float aPhase;
             attribute float aColorMix;
             varying float vColorMix;
+            varying float vFlare;
             void main() {
-                vec4 mv = viewMatrix * modelMatrix * vec4(position, 1.0);
+                vec3 fixture = (modelMatrix * vec4(position, 1.0)).xyz;
+                vec3 dir = aimDirection(fixture, aBase, aPhase);
+                vFlare = pow(max(0.0, dot(dir, normalize(cameraPosition - fixture))), 5.0);
+                vec4 mv = viewMatrix * vec4(fixture, 1.0);
                 gl_Position = projectionMatrix * mv;
-                gl_PointSize = uSize / max(1.0, -mv.z); // shrink with distance
+                // Bigger only while the lens faces the camera; shrink with distance
+                gl_PointSize = uSize * (0.06 + vFlare) / max(1.0, -mv.z);
                 vColorMix = aColorMix;
             }
         `,
@@ -223,12 +247,13 @@ export function createGlowMaterial(uniforms) {
             uniform vec3 uColorB;
             uniform float uIntensity;
             varying float vColorMix;
+            varying float vFlare;
             void main() {
                 float d = length(gl_PointCoord - 0.5) * 2.0;     // 0 centre, 1 edge
-                float glow = pow(max(0.0, 1.0 - d), 3.0);
-                float hot = smoothstep(0.35, 0.0, d);            // white-hot centre
-                vec3 col = mix(mix(uColorA, uColorB, vColorMix), vec3(1.0), hot * 0.8);
-                gl_FragColor = vec4(col, (glow + hot) * uIntensity);
+                float halo = pow(max(0.0, 1.0 - d), 4.0) * 0.6;
+                float hot = smoothstep(0.18, 0.0, d);            // small white-hot core
+                vec3 col = mix(mix(uColorA, uColorB, vColorMix), vec3(1.0), hot);
+                gl_FragColor = vec4(col, (halo + hot) * min(uIntensity, 1.5) * (0.15 + 0.85 * vFlare));
             }
         `,
         transparent: true,

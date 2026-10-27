@@ -57,7 +57,7 @@ export default function Home() {
 
   return (
     <div className="bg-[#f5f7f8] dark:bg-[#050505] font-sans text-slate-900 dark:text-white antialiased selection:bg-[#00d4ff] selection:text-black">
-      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+      <div className="relative flex min-h-screen w-full flex-col overflow-x-clip">
 
         <Navbar isLoggedIn={false} />
 

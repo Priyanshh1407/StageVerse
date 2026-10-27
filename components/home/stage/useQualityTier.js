@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react';
 
 // Rendering budget for the 3D show:
 //   0  no 3D: static poster + 2D lights (no WebGL, "reduce motion", very weak devices)
-//   1  integrated GPUs (e.g. Intel Iris Xe): fewer beams, no post-processing, dpr 1
+//   1  integrated GPUs (e.g. Intel Iris Xe): fewer beams, half-resolution bloom, dpr 1
 //   2  discrete GPUs: more beams, bloom, dpr up to 1.5
 export const TIER_SETTINGS = {
     0: { beams: 0, bloom: false, dpr: 1 },
-    // Step-1 benchmark on an Iris Xe: 140 beams and 72 + bloom all held a locked 60 FPS, so these leave
-    // headroom for weaker integrated GPUs (an auto step-down catches the rest)
-    1: { beams: 72, bloom: false, dpr: 1 },
+    // Full-scene benchmark on an Iris Xe: 140 beams, and 100 + bloom at native DPR, all held 60 FPS
+    // (1% low 58), so integrated GPUs get bloom too; the auto step-down turns it off first if needed
+    1: { beams: 72, bloom: true, dpr: 1 },
     2: { beams: 100, bloom: true, dpr: [1, 1.5] },
 };
 

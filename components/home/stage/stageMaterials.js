@@ -75,6 +75,41 @@ export function createLedMaterial({ textTexture = null, grid = [160, 70], seed =
     });
 }
 
+/**
+ * Arena floor: dark, catching coloured light spilling off the front of the stage, strongest at
+ * the stage edge and fading toward the audience (plus a faint glossy streak under the centre).
+ */
+export function createFloorMaterial() {
+    return new THREE.ShaderMaterial({
+        uniforms: {
+            uColorA: { value: new THREE.Color('#19d9ff') },
+            uColorB: { value: new THREE.Color('#ff3df2') },
+            uLight: { value: 0.5 },
+        },
+        vertexShader: /* glsl */ `
+            varying vec3 vWorld;
+            void main() {
+                vec4 w = modelMatrix * vec4(position, 1.0);
+                vWorld = w.xyz;
+                gl_Position = projectionMatrix * viewMatrix * w;
+            }
+        `,
+        fragmentShader: /* glsl */ `
+            uniform vec3 uColorA;
+            uniform vec3 uColorB;
+            uniform float uLight;
+            varying vec3 vWorld;
+            void main() {
+                float fromStage = max(0.0, vWorld.z);                    // stage front is at z = 0
+                float spill = exp(-fromStage * 0.055) * smoothstep(30.0, 4.0, abs(vWorld.x));
+                float streak = exp(-abs(vWorld.x) * 0.35) * exp(-fromStage * 0.05) * 0.5;
+                vec3 tint = mix(uColorA, uColorB, smoothstep(-14.0, 14.0, vWorld.x));
+                gl_FragColor = vec4(vec3(0.008, 0.009, 0.016) + tint * (spill + streak) * 0.22 * uLight, 1.0);
+            }
+        `,
+    });
+}
+
 /** Backdrop: a vertical gradient, a faint glow near the stage floor fading to black above. */
 export function createBackdropMaterial() {
     return new THREE.ShaderMaterial({

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { seededRandom, crowdPeople } from '@/components/home/stage/crowdTexture';
+import { seededRandom, crowdPeople, CROWD_CANVAS } from '@/components/home/stage/crowdTexture';
 
 describe('crowd generation', () => {
     it('the same seed always gives the same crowd; a different seed a different one', () => {
@@ -16,15 +16,24 @@ describe('crowd generation', () => {
         }
     });
 
-    it('fills the width with two rows, about a third with arms up and a few phones', () => {
+    it('fills the width with three rows of heads, smaller and higher toward the back', () => {
         const people = crowdPeople(7);
-        expect(people.length).toBeGreaterThan(40);
-        const rows = new Set(people.map((p) => p.baseline));
-        expect(rows.size).toBe(2);
-        const armsUp = people.filter((p) => p.armsUp).length / people.length;
-        expect(armsUp).toBeGreaterThan(0.15);
-        expect(armsUp).toBeLessThan(0.55);
-        expect(people.some((p) => p.phone)).toBe(true);
-        expect(people.every((p) => !p.phone || p.armsUp)).toBe(true);
+        expect(new Set(people.map((p) => p.row)).size).toBe(3);
+        const back = people.filter((p) => p.row === 0);
+        const front = people.filter((p) => p.row === 2);
+        expect(back.length).toBeGreaterThan(40);
+        expect(front.length).toBeGreaterThan(25);
+        const avg = (xs, k) => xs.reduce((s, p) => s + p[k], 0) / xs.length;
+        expect(avg(back, 'r')).toBeLessThan(avg(front, 'r'));
+        expect(avg(back, 'headY')).toBeLessThan(avg(front, 'headY'));
+        expect(Math.min(...people.map((p) => p.x))).toBeLessThan(0);
+        expect(Math.max(...people.map((p) => p.x))).toBeGreaterThan(CROWD_CANVAS.width - 60);
+    });
+
+    it('every head is inside the canvas', () => {
+        for (const p of crowdPeople(3)) {
+            expect(p.headY - p.r).toBeGreaterThan(0);
+            expect(p.headY + p.r).toBeLessThan(CROWD_CANVAS.height);
+        }
     });
 });
