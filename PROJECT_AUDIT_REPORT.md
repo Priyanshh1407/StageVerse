@@ -4,26 +4,19 @@ Project: StageVerse | Type: Full-stack web app (Next.js 16 App Router + MongoDB/
 > Scope: all tracked source plus untracked work-in-progress (`app/test-3d/`, `components/canvas/`, `temp_update.mjs`). Branch `deployment` with uncommitted changes to 9 files — the audit reflects the working tree, not the last commit.
 > Secret-bearing files (`.env.local`) were intentionally not opened.
 
-## 0. Status after Phases 0–2 (2026-10-27)
+## 0. Status after Phases 0–6 (2026-10-27)
 
 | Finding | Status |
 |---|---|
 | SEC-01 | File deleted; **Atlas password rotation pending (developer)** |
-| SEC-02, SEC-03, SEC-04, SEC-05, SEC-06, SEC-07, SEC-08, SEC-09 | Fixed (SEC-07: 1 high left, xlsx, not reachable) |
-| ERR-01, ERR-02, ERR-03, ARCH-01, VAL-01 | Fixed |
-| BUG-04, BUG-05, BUG-06, BUG-07, BUG-08, BUG-09, BUG-11 | Fixed |
+| SEC-02 … SEC-09, ERR-01 … ERR-03, ARCH-01, VAL-01 | Fixed |
+| BUG-04 … BUG-11, BUG-10, PERF-01, TEST-01, LLM-01, DOC-01 | Fixed (LLM-01: real-model eval numbers pending) |
 | BUG-01, BUG-02, BUG-03 | **Parked** (ticketing on hold by developer decision) |
-| BUG-10, PERF-01, TEST-01 (CI part), LLM-01, DOC-01, hygiene | Open (Phases 3–6) |
 
-New findings during execution (all fixed):
-- **BUG-12** `app/api/artist/message/route.js`: looked up the artist's next show by `organizerId`, so artist messages never attached to a show (P2).
-- **BUG-13** `app/(artist)/guest-list/page.jsx`: hardcoded `eventId=13` for reads, adds and clear-all (P1).
-- **BUG-14** `app/api/production/events/route.js` and `[id]/route.js`: created venues without the required `address`, so production shows at a new venue failed (P1).
-- **SEC-10** `app/api/artist/notifications/route.js` and `artist/dashboard`: returned or counted crew messages from every event to any artist (P2).
-- **REG-01** Regression introduced by my ERR-01 codemod: login's `catch` was emptied. Caught by a test and fixed in b0862f6.
-- Closing remark on the "code hidden in comments" scare: see Hygiene; not a bug.
+New findings during execution (all fixed): **BUG-12** artist messages looked up shows by organizerId · **BUG-13** guest list hardcoded to event 13 · **BUG-14** production couldn't create shows at new venues · **BUG-15** CreateShowModal missing icon imports (crash) · **BUG-16** Venue Intel inputs lost focus every keystroke · **SEC-10** artists saw crew messages from every event · UploadMediaModal cleared event search results · TaskModal offered shows the crew isn't on · **REG-01** my ERR-01 codemod emptied login's catch (caught by a test).
+Corrections to this report: the "glued lines" were lone carriage returns, not hidden code (see Hygiene). In Mongoose 9, `isValidObjectId` is not as loose as I implied in ARCH-01.
 
-Baseline → now: tests 0 → 139 · prod audit 19 → 1 (unreachable) · build passes · lint 82 → 108 errors (stricter eslint-config-next 16.4.3 rules; Phase 3).
+Baseline → now: tests 0 → 173 · lint errors 82 → 0 · prod audit 19 → 1 (unreachable) · build passes · CI added (unverified until first push).
 
 ## 1. Executive Summary
 

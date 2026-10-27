@@ -135,3 +135,61 @@ BUG-13: the artist guest-list page was hardcoded to `eventId=13` for reads, adds
 
 ### Phase 2 status
 `npm test`: **139 passing** (from 0 at the start of Phase 0) · `next build`: passes · `npm audit --omit=dev`: 1 high (xlsx, not reachable) · lint: 108 errors / 26 warnings (stricter ruleset; Phase 3).
+
+---
+
+## Phase 3 — Testing & CI (2026-10-27, branch `phase-3-testing-ci`)
+
+### Lint 108 → 0 errors (commits 031f404 … cb87678)
+Approach: fix by cause, not by count. Real bugs got proper fixes; mechanical issues were scripted from ESLint's exact positions; genuine data-fetch effects got a one-line, reasoned exemption instead of contorted code.
+- **BUG-15** `CreateShowModal` used `Layers`/`Upload`/`Loader2` without importing them, so opening production's "Create Show" crashed (same class as BUG-01; `next build` doesn't catch it).
+- **BUG-16** `VenueIntel` declared `Input` *inside* the component, so every keystroke created a new component type and React remounted the field: it lost focus after each character.
+- `ConcertLights` used `Math.random()` for animation durations during render; the 200 ms flash effect re-rendered it, handing framer-motion new durations that restart the sweep.
+- 19 "copy props into state in an effect" sites became "adjust state during render when the input changes" (react.dev's recommended pattern). Where the effect used to run on mount, initial state is now derived from props (AddGuestForm in edit mode, memory vault `?action=upload`), because the render-time check only fires on *changes*.
+- Bugs these effects hid: `UploadMediaModal`'s friend-search effect cleared the **event** results whenever the friend box was empty; `TaskModal` offered every public event as a task's show, so crew picked shows they then got a 403 on (now `/api/artist/events`); the tech rider flashed an empty state before its events loaded.
+- Parked ticketing files keep their errors visible as warnings via a labelled ESLint override, so CI can enforce zero errors elsewhere without editing parked code.
+- A false claim of mine was caught by my own test: in Mongoose 9, `isValidObjectId('twelve-chars')` is `false`. The comment in `lib/events.js` was corrected.
+
+### CI (commit 6a4b22c)
+GitHub Actions: Node 22 → `npm ci` → lint → tests with coverage (in-memory Mongo, cached binary) → `next build` → informational prod audit. Placeholder env only. Coverage on critical code: `authz` 97%, `scoring`/`polls` 100%, `socketServer` 93%, fan poll route 81% (47% overall; untested read routes aren't the goal). **Not yet verified on GitHub:** it runs on the first push.
+
+## Phase 4 — Performance (commit 23dc26e)
+
+### PERF-01 — 1-second polling on top of sockets
+Measured first (`bench/live.bench.js`, in-memory replica set, 2,000 other shows, 10 crew screens):
+
+| | before | after |
+|---|---|---|
+| requests/s (10 screens) | 10 | 0.5 |
+| setlist docs examined | 2,001 (collection scan) | 1 (index) |
+| endpoint p50 / p95 | 14.3 / 19.1 ms | 13.6 / 17.6 ms |
+| push p50 / p95 | 3.3 / 5.6 ms | 2.9 / 5.2 ms |
+
+Fix: index on `Setlist.eventId`; `lean()` plus projections (no song populate the screen never read); the crew screen is push-first, with a 20 s reconcile poll and a refetch on every socket (re)connect (Socket.IO doesn't replay missed events).
+Honest reading: endpoint latency barely moved, because a 2k-document scan is cheap and per-request auth/lookup work dominates. The index matters as data grows; the real win is 20× less load and ~3 ms updates instead of up to 1 s.
+Interview version: "I measured before touching anything. The surprise was that the index didn't change latency at my data size, so I didn't claim it did; the real win was load: push-first cut requests twentyfold and made updates near-instant."
+
+## Phase 5 — Interview upgrades
+
+### UPG-02 — Typed live-show protocol (commit de98dc3)
+`lib/liveProtocol.js` validates every relayed socket payload with zod (status enum, integer time, non-empty winner); malformed events get `error:invalid`. `docs/live-sync.md` has the sequence diagram, protocol table, decisions, numbers and limitations.
+
+### UPG-03 — AI patching: LLM intent + deterministic allocator (commits f3f1b83, 37946e7)
+Problem: the patch assistant asked Gemini to "find the next free address gaps" and trusted its JSON. Repatch replaced the whole patch with model output, and both screens then forced every fixture to 16 channels / Standard, which itself reintroduces collisions. The full current patch went into every prompt, and user text was concatenated into the instructions.
+Fix: the model only extracts `{action, fixtures[{type,count,channels?,mode?}]}`, with JSON mode constrained by `z.toJSONSchema()` of the same zod validator and one repair retry quoting the validation error; 422 if still invalid. `lib/dmx/allocate.js` does first-fit allocation (existing fixtures never move), spill-over to the next universe, order-preserving repatch, and `findConflicts`; the route re-checks before responding. The screens keep real footprints.
+Verification: unit tests; **fast-check property tests** (300 random patches each: new fixtures never overlap or exceed channel 512; repatch always clean and footprint-preserving); route tests with a scripted model (repair loop, 422, out-of-space 400, user text not in the system instruction, no addresses sent to the model).
+Eval harness: `evals/patch/cases.json` (30 cases incl. 4 prompt-injection cases) and `run.mjs` comparing the verbatim legacy prompt with the new pipeline. **Real-model results: `<pending — developer to run npm run eval:patch>`.** The `--fake` mode only proves the harness runs.
+Interview version: "I moved the part that has to be correct out of the LLM. The model parses what the lighting designer wants; an algorithm guarantees collision-free addresses, which property-based tests check over hundreds of random rigs, and an eval set measures intent accuracy against the old prompt."
+
+### LLM-01 — Current SDK and model (commit 61a9a84)
+`@google/generative-ai` → `@google/genai` 2.31; `gemini-2.5-flash` → `gemini-3.8-flash` (stable; recommended for new projects on Google's models page, Oct 2026), overridable via `GEMINI_MODEL`. `lib/llm.js#generate` puts rules in `systemInstruction` and user text in `contents`, uses JSON Schema output where structured, a 15 s timeout, and returns token usage. The description route uses JSON mode instead of stripping code fences.
+
+## Phase 6 — Ship & document (partial)
+
+- **BUG-10** (ed54c68): deleted empty "features" (`python-service/` 0-byte files, `api/sentiment`, `api/wizard/generate`, `lib/gemini.js`); the analysis page labels its reviews as sample data; the live API/screen no longer invent BPM 128/120 or key "C". Removed debug artifacts and unused deps (react-router-dom, @dnd-kit/*, jsonwebtoken, leva).
+- `middleware.js` → `proxy.js` (Next 16), with first tests for the page gate; `/api/health` replaces a public health check that leaked connection errors (bf1557f).
+- **DOC-01** (e887494): real README (roles, architecture diagram, 10-minute setup, demo accounts, measured numbers, known limitations). The seed gives the demo fan a ticket so the three-window demo works.
+- Mongoose 9 deprecation: `new: true` → `returnDocument: 'after'` (505ef45).
+- **Not done (need the developer):** deployment target decision, demo GIF/video, live eval run, UPG-04 3D homepage (to discuss), then re-audit → interview report → mock interview.
+
+`npm test`: **173 passing** · lint: **0 errors** (35 warnings) · build: passes · prod audit: 1 high (xlsx, not reachable).
