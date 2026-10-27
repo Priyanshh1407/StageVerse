@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { apiError, readJson } from '@/lib/api';
+import { parseBody, pollCreateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Poll from '@/models/Poll';
 import Vote from '@/models/Vote';
@@ -84,10 +85,7 @@ export async function POST(req) {
         const body = await readJson(req);
 
         if (body.create) {
-            const { question, options, eventId } = body;
-            if (!question || !Array.isArray(options) || options.length < 2) {
-                throw new ValidationError('A poll needs a question and at least 2 options');
-            }
+            const { question, options, eventId } = parseBody(pollCreateSchema, body);
             const event = await loadEventFor(user, eventId, ['artist']);
 
             await Poll.updateMany({ eventId: event._id, isActive: true }, { isActive: false });

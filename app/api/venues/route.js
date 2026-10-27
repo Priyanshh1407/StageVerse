@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { parseBody, venueCreateSchema } from '@/lib/schemas';
 import { containsRegex } from '@/lib/escapeRegex';
 import dbConnect from '@/lib/db';
 import Venue from '@/models/Venue';
@@ -37,13 +38,7 @@ export async function POST(req) {
         const user = await verifyAuth(req);
         requireRole(user, 'organizer', 'production');
 
-        const body = await req.json();
-        if (!body.name || !body.city || !body.address) {
-            return NextResponse.json(
-                { message: 'Missing required fields (Name, City, Address)' },
-                { status: 400 }
-            );
-        }
+        const body = parseBody(venueCreateSchema, await req.json());
         const existingVenue = await Venue.findOne({
             name: body.name,
             city: body.city
@@ -56,8 +51,7 @@ export async function POST(req) {
             );
         }
 
-        const { name, city, address, capacity, type, policies, description, image } = body;
-        const newVenue = await Venue.create({ name, city, address, capacity, type, policies, description, image });
+        const newVenue = await Venue.create(body);
 
         return NextResponse.json({ success: true, data: newVenue }, { status: 201 });
 

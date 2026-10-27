@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { parseBody, eventUpdateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
@@ -68,9 +69,8 @@ export async function PUT(req, { params }) {
     const payload = await verifyAuth(req);
 
     const { id } = await params;
-    const body = await req.json();
-    // Ownership and identifiers can't be changed through this endpoint
-    const { _id, eventId: _ignoredId, organizerId, createdAt, updatedAt, ...fields } = body;
+    // Ownership, identifiers and ticket inventory can't be changed through this endpoint
+    const fields = parseBody(eventUpdateSchema, await req.json());
 
     const query = getQuery(id);
     if (!query) return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });

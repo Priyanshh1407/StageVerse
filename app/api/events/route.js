@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { parseBody, eventCreateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue'; // Registry
@@ -39,11 +40,10 @@ export async function POST(req) {
     const user = await verifyAuth(req);
     requireRole(user, 'organizer');
 
-    const body = await req.json();
+    // The schema whitelists client fields, so server-owned ones (organizerId, eventId, sold...) can't be set
+    const fields = parseBody(eventCreateSchema, await req.json());
     const eventId = await nextEventId();
 
-    // Server-owned fields can't be set by the client (mass assignment)
-    const { _id, eventId: _ignoredId, organizerId, assignedTo, productionStatus, createdAt, updatedAt, ...fields } = body;
     const newEvent = new Event({
       ...fields,
       eventId,

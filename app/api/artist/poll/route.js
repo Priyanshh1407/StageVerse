@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { parseBody, pollCreateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Poll from '@/models/Poll';
 import { verifyAuth } from '@/lib/auth';
@@ -10,11 +11,7 @@ export async function POST(req) {
         await dbConnect();
         const artist = await verifyAuth(req);
 
-        const body = await req.json();
-        const { eventId, question, options } = body;
-        if (!eventId || !question || !options || options.length < 2) {
-            return NextResponse.json({ error: 'Invalid poll data' }, { status: 400 });
-        }
+        const { eventId, question, options } = parseBody(pollCreateSchema, await req.json());
         const event = await loadEventFor(artist, eventId, ['artist']);
 
         // Polls configured before the show start closed; the artist opens one

@@ -11,7 +11,7 @@ export async function POST(req) {
         await guardLlmRequest(req, ['organizer']);
         const body = await req.json();
         const [artist, genre, vibe, title, date, city, venue] = ['artist', 'genre', 'vibe', 'title', 'date', 'city', 'venue']
-            .map((field) => promptText(body[field], field, { max: 200 }));
+            .map((field) => promptText(body[field], field, { max: field === 'vibe' ? 600 : 200 }));
 
         if (!artist || !genre || !vibe) {
             return NextResponse.json(

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { parseBody, riderUpdateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
@@ -72,8 +73,7 @@ export async function POST(req) {
         await dbConnect();
         const user = await verifyAuth(req);
 
-        const body = await req.json();
-        const { eventId, gear, stageLocation, mountingPreference, placementNotes, hazer, assigneeId, assigneeName } = body;
+        const { eventId, gear, stageLocation, mountingPreference, placementNotes, hazer, assigneeId, assigneeName } = parseBody(riderUpdateSchema, await req.json());
 
         if (!eventId) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { parseBody, daySheetUpdateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Task from '@/models/Task';
@@ -98,8 +99,7 @@ export async function PUT(req, { params }) {
 
         const resolvedParams = await params;
         const { id } = resolvedParams;
-        const body = await req.json();
-        const { schedule, venueIntel, notifyTeam } = body;
+        const { schedule, venueIntel, notifyTeam } = parseBody(daySheetUpdateSchema, await req.json());
         const updateData = {};
         if (schedule) {
             updateData.daySheet = schedule.map(item => {

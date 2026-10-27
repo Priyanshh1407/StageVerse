@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { parseBody, setlistSaveSchema } from '@/lib/schemas';
 import { escapeRegex } from '@/lib/escapeRegex';
 import dbConnect from '@/lib/db';
 import Setlist from '@/models/Setlist';
@@ -31,12 +32,7 @@ export async function POST(req) {
         await dbConnect();
         const user = await verifyAuth(req);
 
-        const body = await req.json();
-        let { eventId, items } = body;
-
-        if (!eventId || !Array.isArray(items)) {
-            return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
-        }
+        const { eventId, items } = parseBody(setlistSaveSchema, await req.json());
 
         // Only the artist linked to this event may change its setlist
         const event = await loadEventFor(user, eventId, ['artist']);
