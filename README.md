@@ -28,12 +28,13 @@ flowchart LR
     R --> DB[(MongoDB)]
     S --> DB
     R -- "broadcast after DB write<br/>lib/realtime" --> S
-    R -- "intent only" --> G[Gemini<br/>gemini-3.8-flash]
+    R -- "intent only" --> G[AI chain<br/>Gemini 3.8 Flash → 3.5 Flash-Lite → Groq]
     R --> D[lib/dmx/allocate<br/>deterministic addressing]
 ```
 
 - **Every API route authenticates and authorizes itself.** A user's permissions on an event come from their *relation* to it (organizer / artist / assigned crew), not just their account role ([`lib/authz.js`](lib/authz.js)). The page proxy only decides which pages a role can open.
 - **The server is the source of truth for live state.** Clients request changes over HTTP; the server writes to MongoDB and *then* broadcasts to the show's Socket.IO room. Details, sequence diagram and numbers: [`docs/live-sync.md`](docs/live-sync.md).
+- **AI requests are always answered.** Providers are tried in order (Gemini 3.8 Flash → Gemini 3.5 Flash-Lite → Groq `gpt-oss-120b`), and a provider that just hit overload or quota is skipped for a while (circuit breaker). If none answers, each feature falls back to something useful without AI: template copy, the artist's own song catalogue, a BPM energy curve for setlist order, or a rule-based reader for patch requests. Responses say `degraded: true` when that happens ([`lib/llm.js`](lib/llm.js)).
 - **The LLM interprets, code computes.** The DMX patch assistant asks Gemini only for intent (`{action, fixtures:[{type,count}]}`, JSON-schema constrained and validated, with one repair retry). A deterministic allocator assigns collision-free addresses ([`lib/dmx`](lib/dmx)).
 
 ## Run it locally (about 10 minutes)
@@ -44,7 +45,7 @@ flowchart LR
 git clone https://github.com/Priyanshh1407/StageVerse.git
 cd StageVerse
 npm install
-cp .env.example .env.local      # then fill in MONGODB_URI and JWT_SECRET (GEMINI_API_KEY optional)
+cp .env.example .env.local      # then fill in MONGODB_URI and JWT_SECRET (GEMINI_API_KEY / GROQ_API_KEY optional)
 npm run seed -- --yes           # demo users, venue, event and setlist
 npm run dev                     # http://localhost:3000
 ```
@@ -94,7 +95,7 @@ Written down on purpose: this is a portfolio project, and these are the honest e
 - **Ticketing is on hold.** The purchase widget has a known crash (BUG-01), purchases don't issue tickets (BUG-02), and inventory updates aren't atomic (BUG-03). No real payments are taken. See "Parked: Ticketing" in [`UPGRADE_PLAN.md`](UPGRADE_PLAN.md).
 - **Real-time needs one long-running Node server.** Socket.IO attaches to Next's HTTP server, so it doesn't work on serverless hosts, and rooms are in-process (multiple instances would need the Socket.IO Redis adapter).
 - **Rate limits are per process** (in-memory token buckets).
-- **Gemini free tier is tight:** 5 requests/minute and 20 requests/day per model. The app falls back from `gemini-3.8-flash` to `gemini-3.6-flash` when the primary is overloaded or out of quota, but heavy AI use needs a billed API key.
+- **Free AI tiers are tight** (Gemini: 5 requests/minute and 20/day per model). The provider chain and non-AI fallbacks keep features working, but fallback answers are simpler; heavy AI use needs a billed key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
 - **Sentiment analysis isn't built.** The analysis page shows labelled sample data.
 - The AI patch evaluation harness exists, but its real-model results haven't been recorded yet: a full run needs ~60–70 calls per model, more than the free tier's 20 per day.

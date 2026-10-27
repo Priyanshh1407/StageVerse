@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from 'zod';
 import { apiError } from '@/lib/api';
 import { HttpError } from "@/lib/errors";
-import { guardLlmRequest, promptText, generate, upstreamError } from '@/lib/llm';
+import { guardLlmRequest, promptText, generate } from '@/lib/llm';
 
 const descriptionSchema = z.object({
     headline: z.string().min(1).max(200),
@@ -45,29 +45,30 @@ export async function POST(req) {
             `Date: ${date || 'Soon'}`,
         ].join('\n');
 
-        const { text } = await generate({ system: SYSTEM, user: details, json: descriptionJsonSchema });
+        // Template copy used when no provider answers or the answer doesn't validate,
+        // so the organizer's form always gets a usable draft
+        const template = {
+            headline: `${artist} Live${city ? ` in ${city}` : ''}!`,
+            hook: `${artist} brings ${genre} with a ${vibe.split('.')[0].toLowerCase()} feel to ${venue || 'the stage'}${date ? ` on ${date}` : ''}.`,
+            atmosphere: `Expect a ${vibe.split('.')[0].toLowerCase()} night built for ${genre} fans.`,
+            highlights: [`${artist} live`, `${genre} all night`, venue ? `At ${venue}` : 'An unforgettable venue'],
+            closing: "Tickets are limited. Don't miss out.",
+        };
 
-        let data;
+        let data = template;
+        let degraded = true;
         try {
+            const { text } = await generate({ system: SYSTEM, user: details, json: descriptionJsonSchema });
             data = descriptionSchema.parse(JSON.parse(text));
-        } catch {
-            // Rare with JSON mode, but never fail the organizer's form because of it
-            data = {
-                headline: `${artist} Live!`,
-                hook: text.substring(0, 150) + "...",
-                atmosphere: "Experience the vibe.",
-                highlights: ["Live Performance", "Great Music", "Unforgettable Night"],
-                closing: "Don't miss out."
-            };
+            degraded = false;
+        } catch (error) {
+            if (error instanceof HttpError) throw error;
+            console.warn(`[description] using template: ${error.message}`);
         }
 
         const formattedDescription = `HEADLINE: ${data.headline}\n\nHOOK: ${data.hook}\n\nATMOSPHERE: ${data.atmosphere}\n\nHIGHLIGHTS:\n- ${data.highlights.join('\n- ')}\n\nCLOSING: ${data.closing}`;
-        return NextResponse.json({ description: formattedDescription });
+        return NextResponse.json({ description: formattedDescription, degraded });
     } catch (error) {
-        // Our own errors (auth, validation, rate limit) keep their status; the rest may be upstream AI errors
-        if (error instanceof HttpError) return apiError(error, "/api/description");
-        const upstream = upstreamError(error);
-        if (upstream) return NextResponse.json({ error: upstream.error }, { status: upstream.status });
         return apiError(error, "/api/description");
     }
 }

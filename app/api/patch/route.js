@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from 'zod';
 import { apiError } from '@/lib/api';
-import { guardLlmRequest, promptText, generate, upstreamError } from '@/lib/llm';
+import { guardLlmRequest, promptText, generate } from '@/lib/llm';
 import { HttpError, ValidationError } from '@/lib/errors';
 import { parseBody } from '@/lib/schemas';
 import { getIntent } from '@/lib/dmx/intent';
+import { ruleIntent } from '@/lib/dmx/ruleIntent';
 import { allocate, repatch, findConflicts } from '@/lib/dmx/allocate';
 
 // The patch screens send compact fixtures ({ u, a, c, type, mode }); full names are accepted too
@@ -46,10 +47,15 @@ export async function POST(req) {
         try {
             intentResult = await getIntent(generate, prompt);
         } catch (error) {
-            if (error.code === 'INTENT_INVALID') throw new HttpError(422, error.message);
-            throw error;
+            // No provider answered, or the answers never validated: read the request with rules instead
+            if (error.code !== 'LLM_UNAVAILABLE' && error.code !== 'INTENT_INVALID') throw error;
+            const intent = ruleIntent(prompt);
+            if (!intent) {
+                throw new HttpError(422, "I couldn't read that request. Try something like \"add 8 beams and 4 washes\" or \"fix collisions\".");
+            }
+            intentResult = { intent, attempts: 0, tokens: 0, model: null, degraded: true };
         }
-        const { intent, attempts, tokens, model } = intentResult;
+        const { intent, attempts, tokens, model, degraded = false } = intentResult;
 
         let action;
         let patch;
@@ -81,7 +87,8 @@ export async function POST(req) {
             patch,
             meta: {
                 intent,
-                model, // which model answered (the fallback is used when the primary is overloaded)
+                model, // which model answered (null when the rule-based reader was used)
+                degraded, // true: no AI answer was usable, the request was read with rules
                 attempts,
                 tokens,
                 latencyMs: Date.now() - started,
@@ -89,11 +96,6 @@ export async function POST(req) {
             },
         });
     } catch (error) {
-        // Our own errors (auth, validation, rate limit) keep their status; the rest may be upstream AI errors
-        if (error instanceof HttpError) return apiError(error, "/api/patch");
-
-        const upstream = upstreamError(error);
-        if (upstream) return NextResponse.json({ error: upstream.error }, { status: upstream.status });
         return apiError(error, '/api/patch');
     }
 }
