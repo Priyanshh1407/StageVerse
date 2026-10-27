@@ -94,9 +94,10 @@ Written down on purpose: this is a portfolio project, and these are the honest e
 - **Ticketing is on hold.** The purchase widget has a known crash (BUG-01), purchases don't issue tickets (BUG-02), and inventory updates aren't atomic (BUG-03). No real payments are taken. See "Parked: Ticketing" in [`UPGRADE_PLAN.md`](UPGRADE_PLAN.md).
 - **Real-time needs one long-running Node server.** Socket.IO attaches to Next's HTTP server, so it doesn't work on serverless hosts, and rooms are in-process (multiple instances would need the Socket.IO Redis adapter).
 - **Rate limits are per process** (in-memory token buckets).
+- **Gemini free tier is tight:** 5 requests/minute and 20 requests/day per model. The app falls back from `gemini-3.8-flash` to `gemini-3.6-flash` when the primary is overloaded or out of quota, but heavy AI use needs a billed API key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
 - **Sentiment analysis isn't built.** The analysis page shows labelled sample data.
-- The AI patch evaluation harness exists, but its real-model results haven't been recorded yet.
+- The AI patch evaluation harness exists, but its real-model results haven't been recorded yet: a full run needs ~60–70 calls per model, more than the free tier's 20 per day.
 
 ## Project structure
 
