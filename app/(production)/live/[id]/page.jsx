@@ -7,7 +7,7 @@ import StudioNavbar from '@/components/production/StudioNavbar';
 import LiveHeader from '@/components/production/live/LiveHeader';
 import LiveControls from '@/components/production/live/LiveControls';
 import SetlistTimeline from '@/components/production/live/SetlistTimeline';
-import { useSocket } from '@/components/providers/SocketProvider';
+import { useSocket, useShowRoom } from '@/components/providers/SocketProvider';
 
 import { toast } from "sonner";
 import ShowTimer from "@/components/artist/live/ShowTimer"; // Reuse Artist Timer
@@ -15,13 +15,18 @@ import ShowTimer from "@/components/artist/live/ShowTimer"; // Reuse Artist Time
 export default function LiveShowPage(props) {
   const params = use(props.params);
   const showId = params.id;
-  const { socket, isConnected } = useSocket(); // Use Socket
+  const { socket } = useSocket();
+  useShowRoom(showId);
   useEffect(() => {
-    if (socket) {
-      console.log(`[Production Page] Socket Status: ${socket.connected ? 'Connected' : 'Disconnected'} (ID: ${socket.id})`);
-      socket.on("connect", () => toast.success("Crew: Connected to Sync Server"));
-      socket.on("disconnect", () => toast.error("Crew: Lost Connection"));
-    }
+    if (!socket) return;
+    const onConnect = () => toast.success("Crew: Connected to Sync Server");
+    const onDisconnect = () => toast.error("Crew: Lost Connection");
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
   }, [socket]);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -122,16 +127,12 @@ export default function LiveShowPage(props) {
 
   useEffect(() => {
     if (!socket) return;
+    // The server only sends this room's events; the id check is defence in depth
+    const isOtherShow = (data) => data?.eventId && String(data.eventId) !== String(showId);
+
     const onShowUpdate = (data) => {
-      console.log(`[Socket RX] show:update`, data);
+      if (isOtherShow(data) || !data.status) return;
       toast.info(`Signal Received: ${data.status}`);
-      if (data.eventId && String(data.eventId) !== String(showId)) {
-        console.error(`[Sync Warning] Mismatch! Page: ${showId} vs Socket: ${data.eventId}`);
-        toast.warning(`Event ID Mismatch (P:${showId} vs S:${data.eventId})`, {
-          description: "Proceeding with update anyway (Debug Mode)",
-          duration: 5000
-        });
-      }
       if (typeof data.time === 'number') {
         console.log(`[Sync] Force Time to ${data.time}`);
         setElapsedSeconds(data.time);
@@ -158,32 +159,22 @@ export default function LiveShowPage(props) {
       }
     };
     const onPollStart = (data) => {
-      console.log("Socket: Poll Started", data);
+      if (isOtherShow(data)) return;
       toast.info("ENCORE POLL STARTED");
-      setPollStats({
-        question: data.question,
-        options: data.options.map(o => ({ ...o, votes: 0 }))
-      });
+      setPollStats({ question: data.question, options: data.options });
     };
+    // Tallies are the persisted counts from the server, not client-side +1s
     const onPollUpdate = (data) => {
-      setPollStats(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          options: prev.options.map(opt =>
-            (opt.id === data.optionId || opt._id === data.optionId)
-              ? { ...opt, votes: opt.votes + 1 }
-              : opt
-          )
-        };
-      });
+      if (isOtherShow(data)) return;
+      setPollStats(prev => ({ question: data.question ?? prev?.question, options: data.options }));
     };
     const onPollReveal = (data) => {
+      if (isOtherShow(data)) return;
       setWinner(data?.winner || "Midnight City");
       setShowEncoreReveal(true);
     };
-    const onWarning = () => {
-      console.log("[Socket RX] show:warning RECEIVED");
+    const onWarning = (data) => {
+      if (isOtherShow(data)) return;
       toast.warning("LAST SONG ALERT: Prepare for Finale");
       setShowWarning(true); // Active UI Alert
     };
@@ -267,7 +258,7 @@ export default function LiveShowPage(props) {
             showWarning={showWarning} // Pass alert state
             onCloseWarning={() => { setShowWarning(false); warningDismissed.current = true; }}
             onRevealEncore={(poll) => {
-              if (socket) socket.emit("poll:reveal", { winner: poll.options.find(o => o.winning)?.title });
+              if (socket) socket.emit("poll:reveal", { eventId: showId, winner: poll.options.find(o => o.winning)?.title });
             }}
           />
 

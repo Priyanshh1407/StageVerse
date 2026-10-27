@@ -12,7 +12,7 @@ import PollModal from '@/components/artist/live/PollModal';
 import PollSelectionModal from '@/components/artist/live/PollSelectionModal';
 import WarningModal from '@/components/artist/live/WarningModal';
 import EncoreScreen from '@/components/EncoreScreen';
-import { useSocket } from '@/components/providers/SocketProvider';
+import { useSocket, useShowRoom } from '@/components/providers/SocketProvider';
 import { use } from 'react';
 
 const INITIAL_LOGS = [
@@ -25,6 +25,7 @@ export default function LiveModePage(props) {
   const eventId = params.id;
 
   const { socket } = useSocket();
+  const room = useShowRoom(eventId);
   const [logs, setLogs] = useState(INITIAL_LOGS);
   const [showStatus, setShowStatus] = useState('Standby');
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -56,24 +57,42 @@ export default function LiveModePage(props) {
   }, [showStatus]);
 
   useEffect(() => {
-    if (socket) {
-      console.log(`[Artist Page] Socket Status: ${socket.connected ? 'Connected' : 'Disconnected'} (ID: ${socket.id})`);
-      socket.on("connect", () => toast.success("Connected to Sync Server"));
-      socket.on("disconnect", () => toast.error("Lost Connection to Sync Server"));
-    }
+    if (!socket) return;
+    const onConnect = () => toast.success("Connected to Sync Server");
+    const onDisconnect = () => toast.error("Lost Connection to Sync Server");
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
   }, [socket]);
 
-  const updateShowStatus = async (newStatus) => {
+  useEffect(() => {
+    if (room.error) toast.error(`Sync unavailable: ${room.error}`);
+  }, [room.error]);
+
+  // Persist show state. The server broadcasts it to the crew after saving,
+  // so the DB and every screen agree on what happened.
+  const updateLiveState = async (patch) => {
     try {
-      await fetch('/api/production/live', {
+      const res = await fetch('/api/production/live', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId, status: newStatus })
+        body: JSON.stringify({ eventId, ...patch })
       });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        toast.error(body.error || 'Could not update the show');
+        return false;
+      }
+      return true;
     } catch (e) {
-      console.error("Failed to persist status", e);
+      toast.error('Network error: show state not saved');
+      return false;
     }
   };
+  const updateShowStatus = (newStatus) => updateLiveState({ status: newStatus });
 
   const handleStartShow = () => {
     console.log("Triggering Start Show...");
@@ -82,15 +101,7 @@ export default function LiveModePage(props) {
     if (showStatus === 'Standby') {
       setElapsedSeconds(0);
       addLog("Show Started", "Intro Sequence 01 Initiated", "active");
-      if (socket && socket.connected) {
-        console.log(`[Socket TX] show:start | EventID: ${eventId} | SocketID: ${socket.id}`);
-        socket.emit("show:start", { eventId, status: 'Live' });
-        toast.success("Sync Signal Broadcasted");
-      } else {
-        console.error("[Socket Error] Socket not connected! Cannot emit show:start");
-        toast.error("Sync Failed: Socket Offline");
-      }
-      updateShowStatus('Live');
+      updateShowStatus('Live').then((ok) => ok && toast.success("Show started: crew notified"));
     } else {
       // Resuming from Paused — must emit socket and persist to DB too
       addLog("Show Resumed", "Timer continued", "active");
@@ -155,19 +166,8 @@ export default function LiveModePage(props) {
         pollQuestion = json.poll.question;
 
         addLog(`${pollQuestion} Activated`, "Live Pulse System: Voting Open", "active");
-        if (socket) {
-          console.log(`[Artist] Emitting poll:start for Poll: ${activePollId}`);
-          socket.emit("poll:start", {
-            eventId,
-            pollId: activePollId,
-            question: pollQuestion,
-            options: pollOptions.map((o, idx) => ({
-              id: o._id || `opt-${idx}`,
-              text: typeof o === 'string' ? o : (o.text || "Option")
-            }))
-          });
-          toast.success("Poll Distributed to Fans");
-        }
+        // The server broadcasts poll:start to fans and crew once the poll is open
+        toast.success("Poll Distributed to Fans");
       } else {
         toast.error("Failed to activate poll");
         return;
@@ -180,7 +180,6 @@ export default function LiveModePage(props) {
 
     setTimeout(async () => {
       addLog("Poll Results Finalized", "Voting Closed", "active");
-      if (socket) socket.emit("poll:end");
       try {
         await fetch('/api/fan/poll', {
           method: 'PUT',
@@ -199,32 +198,9 @@ export default function LiveModePage(props) {
   const handleConfirmWarning = async () => {
     setShowWarningModal(false);
     addLog("Last Song Alert Sent", "Crew prepared for finale/egress", "critical");
-    try {
-      await fetch('/api/production/live', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId, warning: true })
-      });
-    } catch (e) {
-      console.error("Failed to persist warning", e);
-    }
-    if (socket) {
-      console.log(`[Artist] Emitting show:warning for Event: ${eventId}`);
-      socket.emit("show:warning", { eventId });
-      toast.success("Alert Signal Sent to Production");
-    } else {
-      console.error("[Artist] Socket disconnected. Cannot send warning.");
-      toast.error("Socket Error: Check Connection");
-    }
-    setTimeout(async () => {
-      try {
-        await fetch('/api/production/live', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventId, warning: false })
-        });
-      } catch (e) { }
-    }, 30000);
+    // Saving the warning makes the server alert the crew's screens
+    if (await updateLiveState({ warning: true })) toast.success("Alert Signal Sent to Production");
+    setTimeout(() => { updateLiveState({ warning: false }); }, 30000);
   };
 
   const handleEmergencyPause = () => {

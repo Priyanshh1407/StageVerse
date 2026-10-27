@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Check } from 'lucide-react';
-import { useSocket } from '@/components/providers/SocketProvider';
+import { useSocket, useShowRoom } from '@/components/providers/SocketProvider';
 
 export default function LivePollCard({ eventId, onComplete }) {
     const [poll, setPoll] = useState(null);
@@ -9,69 +9,62 @@ export default function LivePollCard({ eventId, onComplete }) {
     const [votedOptionId, setVotedOptionId] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [timeLeft, setTimeLeft] = useState(60);
-    const [isVisible, setIsVisible] = useState(false); // Default to false to prevent flashing
     const { socket } = useSocket();
-    const listenerAttached = useRef(false);
+    useShowRoom(eventId);
+
+    // Server payloads look like { eventId, pollId, question, options: [{ _id, text, votes }] }
+    const toPoll = (data) => ({ _id: data.pollId, question: data.question, options: data.options });
 
     useEffect(() => {
-        if (!socket || listenerAttached.current) return;
-        listenerAttached.current = true;
-
-        console.log("[LivePollCard] Attaching socket listeners");
+        if (!socket || !eventId) return;
+        const forThisShow = (data) => String(data?.eventId) === String(eventId);
 
         const onPollStart = (data) => {
-            console.log("[Socket RX Fan] poll:start FULL DATA:", JSON.stringify(data));
-            const newPoll = {
-                _id: data.pollId || 'temp-id',
-                question: data.question || "Live Poll",
-                options: (data.options || []).map((o, idx) => ({
-                    _id: o._id || o.id || `opt-${idx}`,
-                    text: o.text || `Option ${idx + 1}`,
-                    votes: 12
-                })),
-            };
-
-            console.log("[LivePollCard] Setting poll:", newPoll);
-            setPoll(newPoll);
+            if (!forThisShow(data)) return;
+            setPoll(toPoll(data));
+            setVotedOptionId(null);
             setTimeLeft(60);
-            toast.success("Poll is now ACTIVE!"); // Confirmation
+            toast.success("Poll is now ACTIVE!");
         };
-
-        const onPollEnd = () => {
-            console.log("[LivePollCard] Poll Ended");
+        const onPollUpdate = (data) => {
+            if (!forThisShow(data)) return;
+            setPoll((prev) => (prev && String(prev._id) === String(data.pollId) ? { ...prev, options: data.options } : prev));
+        };
+        const onPollEnd = (data) => {
+            if (!forThisShow(data)) return;
             setPoll(null);
         };
 
         socket.on("poll:start", onPollStart);
+        socket.on("poll:update", onPollUpdate);
         socket.on("poll:end", onPollEnd);
-
         return () => {
             socket.off("poll:start", onPollStart);
+            socket.off("poll:update", onPollUpdate);
             socket.off("poll:end", onPollEnd);
-            listenerAttached.current = false;
         };
-    }, [socket]);
-    const fetchPoll = async (forceShow = false) => {
+    }, [socket, eventId]);
+
+    // Catch up on a poll that opened before this page loaded (or during a reconnect)
+    const fetchPoll = useCallback(async () => {
         try {
             const res = await fetch(`/api/fan/poll?eventId=${eventId}`);
+            if (!res.ok) return;
             const json = await res.json();
-            if (json.success && json.poll) {
+            if (json.poll?.isActive) {
                 setPoll(json.poll);
-                if (forceShow || json.poll.isActive) {
-                    setIsVisible(true);
-                    setTimeLeft(60); // Reset timer on new fetch
-                }
+                setVotedOptionId(json.votedOptionId || null);
             }
         } catch (e) {
             console.error("Error fetching poll", e);
         } finally {
             setLoading(false);
         }
-    };
+    }, [eventId]);
 
     useEffect(() => {
-        if (!eventId) return;
-    }, [eventId]);
+        if (eventId) fetchPoll();
+    }, [eventId, fetchPoll]);
     useEffect(() => {
         if (!poll) return;
         const timer = setInterval(() => {
@@ -92,9 +85,8 @@ export default function LivePollCard({ eventId, onComplete }) {
 
     const handleVote = async (optionId) => {
         if (votedOptionId || isSubmitting) return;
-        setVotedOptionId(optionId);
+        setVotedOptionId(optionId); // optimistic; reverted below if the server refuses
         setIsSubmitting(true);
-        toast.success("🎉 Vote Submitted!", { duration: 3000 });
 
         try {
             const res = await fetch('/api/fan/poll', {
@@ -102,18 +94,22 @@ export default function LivePollCard({ eventId, onComplete }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ pollId: poll._id, optionId })
             });
-
             const data = await res.json();
-            console.log("[Vote Response]", data);
 
-            if (!data.success) {
-                console.error("Vote failed:", data.error);
-            }
-            if (socket) {
-                socket.emit("poll:vote", { pollId: poll._id, optionId });
+            if (res.ok) {
+                // The server broadcasts the new tally to everyone, including us
+                setPoll((prev) => (prev ? { ...prev, options: data.poll.options } : prev));
+                toast.success("🎉 Vote Submitted!", { duration: 3000 });
+            } else if (res.status === 409) {
+                toast.info(data.error || "You've already voted");
+                fetchPoll(); // sync the option we actually voted for
+            } else {
+                setVotedOptionId(null);
+                toast.error(data.error || "Vote failed");
             }
         } catch (e) {
-            console.error("Vote error:", e);
+            setVotedOptionId(null);
+            toast.error("Network error: vote not sent");
         } finally {
             setIsSubmitting(false);
         }
@@ -122,7 +118,6 @@ export default function LivePollCard({ eventId, onComplete }) {
     if (loading || !poll) return null; // Simplified: If poll exists, show it.
 
     const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
-    console.log('Rendering Poll UI', poll);
 
     return (
         <div className="fixed inset-0 z-[9999] bg-[#050505] flex items-center justify-center font-sans animate-in fade-in duration-500">
