@@ -1,21 +1,18 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { apiError } from '@/lib/api';
+import { HttpError } from "@/lib/errors";
+import { guardLlmRequest, promptText, GEMINI_MODEL, GEMINI_REQUEST_OPTIONS } from '@/lib/llm';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function POST(req) {
     try {
-        const { prompt } = await req.json();
+        await guardLlmRequest(req, ['artist', 'organizer']);
+        const body = await req.json();
+        const prompt = promptText(body.prompt, 'prompt', { required: true });
 
-        if (!prompt) {
-            return NextResponse.json(
-                { error: "Missing prompt" },
-                { status: 400 }
-            );
-        }
-
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL }, GEMINI_REQUEST_OPTIONS);
 
         const instruction = `You are a creative event strategist and expert copywriter.
         User Input: "${prompt}"
@@ -29,6 +26,8 @@ export async function POST(req) {
 
         return NextResponse.json({ result: text });
     } catch (error) {
+        // Our own errors (auth, validation, rate limit) keep their status; the rest may be upstream AI errors
+        if (error instanceof HttpError) return apiError(error, "/api/generate");
 
         if (error.status === 429 || error.message?.includes("429")) {
             return NextResponse.json(

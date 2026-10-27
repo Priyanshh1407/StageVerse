@@ -1,17 +1,20 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { apiError } from '@/lib/api';
+import { guardLlmRequest, promptText, GEMINI_MODEL, GEMINI_REQUEST_OPTIONS } from '@/lib/llm';
+import { HttpError, ValidationError } from '@/lib/errors';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function POST(req) {
     try {
-        const { prompt, currentPatch = [] } = await req.json(); // Accept currentPatch
-        if (!prompt) {
-            return NextResponse.json({ error: "No Prompt provided." }, { status: 400 });
-        }
+        await guardLlmRequest(req, ['production']);
+        const body = await req.json();
+        const prompt = promptText(body.prompt, 'prompt', { required: true });
+        const currentPatch = Array.isArray(body.currentPatch) ? body.currentPatch : [];
+        if (currentPatch.length > 1024) throw new ValidationError('Patch is too large');
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL }, GEMINI_REQUEST_OPTIONS);
 
         const systemPrompt = `
             You are a lighting console expert. 
@@ -56,6 +59,8 @@ export async function POST(req) {
 
         return NextResponse.json({ patch: data.patch, action: data.action || 'add' });
     } catch (error) {
+        // Our own errors (auth, validation, rate limit) keep their status; the rest may be upstream AI errors
+        if (error instanceof HttpError) return apiError(error, "/api/patch");
         return apiError(error, '/api/patch');
     }
 }

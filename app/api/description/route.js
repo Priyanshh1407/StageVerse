@@ -1,13 +1,17 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { apiError } from '@/lib/api';
+import { HttpError } from "@/lib/errors";
+import { guardLlmRequest, promptText, GEMINI_MODEL, GEMINI_REQUEST_OPTIONS } from '@/lib/llm';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function POST(req) {
     try {
-        const { artist, genre, vibe, title, date, city, venue } = await req.json();
-        console.log("Generating Description for:", { artist, genre, vibe, title });
+        await guardLlmRequest(req, ['organizer']);
+        const body = await req.json();
+        const [artist, genre, vibe, title, date, city, venue] = ['artist', 'genre', 'vibe', 'title', 'date', 'city', 'venue']
+            .map((field) => promptText(body[field], field, { max: 200 }));
 
         if (!artist || !genre || !vibe) {
             return NextResponse.json(
@@ -16,7 +20,7 @@ export async function POST(req) {
             );
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL }, GEMINI_REQUEST_OPTIONS);
 
         const prompt = `You are a professional event copywriter. Write a compelling, high-energy event description.
         
@@ -62,6 +66,8 @@ export async function POST(req) {
 
         return NextResponse.json({ description: formattedDescription });
     } catch (error) {
+        // Our own errors (auth, validation, rate limit) keep their status; the rest may be upstream AI errors
+        if (error instanceof HttpError) return apiError(error, "/api/description");
 
         if (error.status === 429 || error.message?.includes("429") || error.message?.includes("Quota exceeded")) {
             return NextResponse.json(
