@@ -20,6 +20,7 @@ describe('page gate (proxy.js)', () => {
     it('3D homepage assets and the lab are public (they are fetched by anonymous visitors)', async () => {
         expect(await visit('/gpu-benchmarks/d-intel.json')).toBe('next');
         expect(await visit('/audio/show.mp3')).toBe('next');
+        expect(await visit('/shows/sky-full-of-stars.show.json')).toBe('next');
         expect(await visit('/lab/stage')).toBe('next');
     });
 

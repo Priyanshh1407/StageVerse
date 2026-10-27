@@ -2,18 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/MainFooter";
-import Hero from "@/components/home/Hero";
+import ShowSection from "@/components/home/show/ShowSection";
 import TrendingEvents from "@/components/home/TrendingEvents";
 import LocalEvents from "@/components/home/LocalEvents";
 import PromoSection from "@/components/home/PromoEvent";
-import { Loader2 } from "lucide-react"; // Optional: specific loader icon
 import MainFooter from "@/components/MainFooter";
 
 export default function Home() {
   const [trendingData, setTrendingData] = useState([]);
   const [localData, setLocalData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [screenEvents, setScreenEvents] = useState([]); // shown on the stage's LED wall
   useEffect(() => {
     async function fetchData() {
       try {
@@ -38,6 +37,11 @@ export default function Home() {
             badge: e.status === 'Selling Fast' ? 'Hot' : null // For LocalEvents
           }));
 
+          setScreenEvents(json.events.slice(0, 2).map(e => ({
+            title: e.title,
+            city: e.city,
+            date: e.date ? new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',
+          })));
           setTrendingData(realEvents.slice(0, 4)); // Top 4
           setLocalData(realEvents.slice(0, 4)); // Same for now, or shuffle
         }
@@ -59,11 +63,9 @@ export default function Home() {
 
         <main className="flex-1 relative pt-0">
 
-          {}
-          <Hero />
+          <ShowSection events={screenEvents} />
 
-          {}
-          <div className="relative z-10 flex flex-col space-y-16 md:space-y-24 pb-20 bg-transparent">
+          <div id="events" className="relative z-10 flex flex-col space-y-16 md:space-y-24 pt-16 pb-20 bg-transparent">
 
             {}
             <div className="w-full">
