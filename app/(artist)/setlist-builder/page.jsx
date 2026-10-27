@@ -187,24 +187,24 @@ function SetlistBuilderContent() {
     setIsAiModalOpen(false); // Close modal during generation to show loading state in button or toast? 
 
     try {
-      const fullPrompt = `${aiPrompt} 
-      IMPORTANT: Return a JSON array ONLY. Format: [{"title": "Song Name", "duration": "03:30", "bpm": "120 BPM", "tag": "High Energy", "tagColor": "orange"}].`;
-
+      // The server owns the prompt and output format for this task and always answers:
+      // from a model, or (degraded) from the artist's own catalogue
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: fullPrompt })
+        body: JSON.stringify({ task: 'songs', request: aiPrompt })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      let text = data.result;
-      if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-      else if (text.startsWith("```")) text = text.replace(/^```\s*/, "").replace(/\s*```$/, "");
+      const suggestions = data.result;
+      if (data.degraded) {
+        toast.info(suggestions.length
+          ? "AI is busy: suggested songs from your catalogue instead."
+          : "AI is busy and your catalogue is empty. Add songs manually for now.");
+      }
 
-      const suggestions = JSON.parse(text);
-
-      if (Array.isArray(suggestions)) {
+      if (Array.isArray(suggestions) && suggestions.length) {
         const newSongs = suggestions.map(s => ({
           id: Date.now() + Math.random(),
           title: s.title,
@@ -214,12 +214,12 @@ function SetlistBuilderContent() {
           tagColor: s.tagColor || 'purple'
         }));
         setBankSongs(prev => [...newSongs, ...prev]);
-        toast.success("AI added 3 songs to your bank!");
+        if (!data.degraded) toast.success(`AI added ${newSongs.length} songs to your bank!`);
       }
 
     } catch (e) {
       console.error(e);
-      toast.error("AI Failed to suggest songs.");
+      toast.error(e.message || "Couldn't suggest songs.");
     } finally {
       setIsAiLoading(false);
     }

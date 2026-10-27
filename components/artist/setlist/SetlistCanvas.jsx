@@ -58,29 +58,17 @@ export default function SetlistCanvas({ items, setItems }) {
         tags: item.tags.map(t => t.label).join(", ")
       }));
 
-      const fullPrompt = `
-      I have a setlist of songs: ${JSON.stringify(simplifiedList)}
-      
-      User Goal: "${promptText}"
-      
-      Task: Reorder the songs to best match the user's goal (e.g. flow by BPM, key, or energy).
-      CRITICAL: Return ONLY a JSON array of the song "id"s in the new optimized order.
-      Example usage: ["id_123", "id_456"]
-      `;
-
+      // The server owns the prompt and output format, and always answers: from a model, or
+      // (degraded) with a deterministic energy curve built from the songs' BPM
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: fullPrompt })
+        body: JSON.stringify({ task: 'reorder', goal: promptText, songs: simplifiedList })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      let text = data.result;
-      if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-      else if (text.startsWith("```")) text = text.replace(/^```\s*/, "").replace(/\s*```$/, "");
-
-      const optimizedIds = JSON.parse(text);
+      const optimizedIds = data.result;
 
       if (!Array.isArray(optimizedIds)) throw new Error("AI did not return an array");
       const itemMap = new Map(items.map(item => [String(item.id), item]));
@@ -97,7 +85,7 @@ export default function SetlistCanvas({ items, setItems }) {
 
       setItems(newOrder);
       setAiCurated(true);
-      toast.success("Setlist optimized by AI!");
+      toast.success(data.degraded ? "AI is busy: ordered by an energy curve (BPM) instead." : "Setlist optimized by AI!");
 
     } catch (e) {
       console.error(e);
