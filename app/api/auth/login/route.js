@@ -4,11 +4,14 @@ import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
+import { rateLimit, clientIp, LIMITS } from '@/lib/rateLimit';
 
 export async function POST(req) {
     try {
         await dbConnect();
-        const { email, password } = await req.json();
+        const body = await req.json();
+        const email = String(body.email ?? '').trim();
+        const password = String(body.password ?? '');
 
         if (!email || !password) {
             return NextResponse.json(
@@ -17,7 +20,11 @@ export async function POST(req) {
             );
         }
 
-        const user = await User.findOne({ email }).select('+password');
+        // Slow down password guessing: 5 attempts per minute per IP + email
+        rateLimit(`login:${clientIp(req)}:${email.toLowerCase()}`, LIMITS.login);
+
+        // New accounts store lowercase emails; older ones may not, so accept both spellings
+        const user = await User.findOne({ email: { $in: [email, email.toLowerCase()] } }).select('+password');
 
         if (!user) {
             return NextResponse.json(
@@ -59,5 +66,6 @@ export async function POST(req) {
 
         return response;
     } catch (error) {
+        return apiError(error, '/api/auth/login');
     }
 }
