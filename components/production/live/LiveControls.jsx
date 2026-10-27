@@ -5,9 +5,10 @@ import { PlayCircle, AlertTriangle, Eye, Crosshair, Wind, CheckCircle2, Megaphon
 import EncoreScreen from '@/components/EncoreScreen'; // Import the new screen
 
 export default function LiveControls({ currentSong, currentCue, pollStats, winner, onRevealEncore, showWarning, onCloseWarning }) {
-  if (!currentSong) return <div className="p-8 text-gray-500">No song active</div>;
   const [showEncoreScreen, setShowEncoreScreen] = useState(false);
   const [encoreWinner, setEncoreWinner] = useState(null);
+  // Hooks must run on every render, so the empty state is returned after them
+  if (!currentSong) return <div className="p-8 text-gray-500">No song active</div>;
   const activePoll = pollStats ? {
     isActive: true,
     title: pollStats.question,

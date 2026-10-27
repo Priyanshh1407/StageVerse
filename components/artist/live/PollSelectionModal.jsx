@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import { BarChart2, CheckCircle2, ChevronRight, X } from 'lucide-react';
 
 export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId }) {
-  if (!isOpen) return null;
-
   const [availablePolls, setAvailablePolls] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -47,6 +45,9 @@ export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId 
     };
     fetchPolls();
   }, [isOpen, eventId]);
+
+  // Hooks run on every render; the closed state is returned after them
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050505]/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
