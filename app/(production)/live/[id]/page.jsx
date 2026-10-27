@@ -36,6 +36,8 @@ export default function LiveShowPage(props) {
   const [showEncoreReveal, setShowEncoreReveal] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [winner, setWinner] = useState(null);
+  // Set when the last state refresh failed; the screen keeps the last good data and says so
+  const [syncError, setSyncError] = useState(null);
   const warningDismissed = React.useRef(false); // Prevent re-trigger after dismiss
   const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
@@ -76,6 +78,11 @@ export default function LiveShowPage(props) {
     try {
       const res = await fetch(`/api/production/live?eventId=${showId}`);
       const json = await res.json();
+      if (!res.ok) {
+        setSyncError(res.status === 403 ? 'You are not on the crew for this show.' : (json.error || 'Show data unavailable'));
+        return;
+      }
+      setSyncError(null);
       if (json.success) {
         setShow(prev => {
           // Always trust the DB status — artist writes to DB on every action (start, pause, resume)
@@ -110,7 +117,7 @@ export default function LiveShowPage(props) {
         }
       }
     } catch (e) {
-      console.error("Error fetching show data", e);
+      setSyncError('Connection lost. Retrying...');
     } finally {
       setIsLoading(false);
     }
@@ -210,7 +217,7 @@ export default function LiveShowPage(props) {
     );
   }
 
-  if (!show) return <div className="text-white p-10">Show not found</div>;
+  if (!show) return <div className="text-white p-10">{syncError || 'Show not found'}</div>;
 
   return (
     <>
@@ -244,6 +251,12 @@ export default function LiveShowPage(props) {
 
         { }
         <StudioNavbar />
+
+        {syncError && (
+          <div role="alert" className="bg-amber-500/15 border-b border-amber-500/40 text-amber-300 text-sm font-medium px-6 py-2">
+            Sync problem: {syncError} The screen is showing the last known state.
+          </div>
+        )}
 
         { }
         <LiveHeader
