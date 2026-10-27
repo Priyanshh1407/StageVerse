@@ -8,8 +8,10 @@ import { useEffect, useState } from 'react';
 //   2  discrete GPUs: more beams, bloom, dpr up to 1.5
 export const TIER_SETTINGS = {
     0: { beams: 0, bloom: false, dpr: 1 },
-    1: { beams: 56, bloom: false, dpr: 1 },   // starting guesses; the step-1 lab measures the real limits
-    2: { beams: 72, bloom: true, dpr: [1, 1.5] },
+    // Step-1 benchmark on an Iris Xe: 140 beams and 72 + bloom all held a locked 60 FPS, so these leave
+    // headroom for weaker integrated GPUs (an auto step-down catches the rest)
+    1: { beams: 72, bloom: false, dpr: 1 },
+    2: { beams: 100, bloom: true, dpr: [1, 1.5] },
 };
 
 function hasWebGL() {
