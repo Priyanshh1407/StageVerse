@@ -100,7 +100,7 @@ export async function PUT(req) {
         if (!id) throw new ValidationError('Task id required');
 
         await loadTaskFor(user, id);
-        const updatedTask = await Task.findByIdAndUpdate(id, pickTaskFields(body), { new: true, runValidators: true });
+        const updatedTask = await Task.findByIdAndUpdate(id, pickTaskFields(body), { returnDocument: 'after', runValidators: true });
         return NextResponse.json({ success: true, data: updatedTask });
     } catch (e) {
         return apiError(e, '/api/production/tasks');

@@ -77,7 +77,7 @@ export async function POST(req) {
                 ...(body.version && { version: body.version }),
                 ...(body.showName && { showName: body.showName })
             },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
         const logType = collisionCount > 0 ? 'warning' : 'success';
         const logMsg = collisionCount > 0

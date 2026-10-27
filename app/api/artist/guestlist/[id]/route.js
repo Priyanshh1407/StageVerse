@@ -29,7 +29,7 @@ export async function PATCH(req, { params }) {
         const guest = await Guest.findByIdAndUpdate(
             id,
             { notes },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!guest) return NextResponse.json({ error: 'Guest not found' }, { status: 404 });

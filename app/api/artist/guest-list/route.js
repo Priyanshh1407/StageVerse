@@ -77,7 +77,7 @@ export async function PUT(req) {
         if (email) updateData.email = email;
         if (tier) updateData.tier = tier;
 
-        const updatedGuest = await Guest.findByIdAndUpdate(id, { $set: updateData }, { new: true });
+        const updatedGuest = await Guest.findByIdAndUpdate(id, { $set: updateData }, { returnDocument: 'after' });
         return NextResponse.json({ success: true, data: updatedGuest });
     } catch (error) {
         return apiError(error, '/api/artist/guest-list');

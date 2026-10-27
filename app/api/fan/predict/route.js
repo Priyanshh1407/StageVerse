@@ -56,7 +56,7 @@ export async function POST(req) {
         const savedPrediction = await Prediction.findOneAndUpdate(
             { userId: user.userId, eventId: event._id },
             { userId: user.userId, eventId: event._id, songs: cleanSongs, status: 'submitted' },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         );
         return NextResponse.json({ success: true, data: savedPrediction });
     } catch (error) {

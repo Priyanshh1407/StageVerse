@@ -67,7 +67,7 @@ export async function PUT(req) {
         }
         // Closing a poll fixes its winner from the persisted counts, so every screen reveals the same result
         const update = isActive ? { isActive, $unset: { winner: 1 } } : { isActive, winner: pickWinner(existing.options) };
-        const poll = await Poll.findByIdAndUpdate(pollId, update, { new: true });
+        const poll = await Poll.findByIdAndUpdate(pollId, update, { returnDocument: 'after' });
 
         emitToEvent(poll.eventId, isActive ? 'poll:start' : 'poll:end', pollPayload(poll));
         return NextResponse.json({ success: true, poll });
@@ -119,7 +119,7 @@ export async function POST(req) {
         const updated = await Poll.findOneAndUpdate(
             { _id: pollId, isActive: true, 'options._id': optionId },
             { $inc: { 'options.$.votes': 1 } },
-            { new: true },
+            { returnDocument: 'after' },
         );
         if (!updated) {
             // Poll closed between the check and the increment: undo the vote record

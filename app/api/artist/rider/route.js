@@ -102,7 +102,7 @@ export async function POST(req) {
         const updatedEvent = await Event.findByIdAndUpdate(
             oldEvent._id,
             { $set: updateData },
-            { new: true }
+            { returnDocument: 'after' }
         ).populate('assignedTo', 'name role');
         const isNewAssignment = assigneeId && (!oldEvent.assignedTo || oldEvent.assignedTo.toString() !== assigneeId);
 

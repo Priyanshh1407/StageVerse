@@ -37,7 +37,7 @@ export async function POST(req) {
                 addedBy: artist.userId,
                 artistId: artist.userId // NEW: Save explicit artistId
             },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         );
         await Notification.create({
             userId: fan._id,

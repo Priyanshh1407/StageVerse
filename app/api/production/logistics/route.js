@@ -20,7 +20,7 @@ export async function PUT(req) {
         const task = await Task.findByIdAndUpdate(
             id,
             { status },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!task) return NextResponse.json({ error: 'Task not found' }, { status: 404 });

@@ -84,7 +84,7 @@ export async function PUT(req, { params }) {
     const updatedEvent = await Event.findOneAndUpdate(
       query,
       fields,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!updatedEvent) return NextResponse.json({ message: 'Event not found' }, { status: 404 });

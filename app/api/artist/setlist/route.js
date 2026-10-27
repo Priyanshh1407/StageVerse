@@ -66,7 +66,7 @@ export async function POST(req) {
                 eventId: mongoEventId,
                 items: processedItems
             },
-            { new: true, upsert: true, setDefaultsOnInsert: true }
+            { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
         );
 
         return NextResponse.json({ success: true, data: updatedSetlist });

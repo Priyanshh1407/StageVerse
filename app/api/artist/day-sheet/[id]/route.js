@@ -117,7 +117,7 @@ export async function PUT(req, { params }) {
         const event = await Event.findByIdAndUpdate(
             existing._id,
             { $set: updateData },
-            { new: true }
+            { returnDocument: 'after' }
         );
         if (notifyTeam && schedule) {
             console.log("Creating Notification Task for Crew...");
