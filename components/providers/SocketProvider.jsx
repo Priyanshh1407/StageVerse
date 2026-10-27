@@ -16,7 +16,8 @@ export const useSocket = () => {
  * Join the realtime room for one show. The server checks the session cookie and
  * decides the role ('artist' | 'crew' | 'organizer' | 'audience'); a socket only
  * receives events for rooms it has joined. Re-joins after every reconnect, because
- * a reconnected socket starts with no rooms.
+ * a reconnected socket starts with no rooms. Joining a room is what opens the connection
+ * (the provider doesn't connect on its own, so public pages never open a socket).
  */
 export function useShowRoom(eventId) {
     const { socket } = useSocket();
@@ -36,6 +37,7 @@ export function useShowRoom(eventId) {
         };
 
         if (socket.connected) join();
+        else socket.connect();
         socket.on("connect", join);
         return () => {
             cancelled = true;
@@ -61,6 +63,7 @@ export const SocketProvider = ({ children }) => {
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
             timeout: 20000,
+            autoConnect: false, // connected by useShowRoom, only on pages that use live features
         });
 
         socketInstance.on("connect", () => setIsConnected(true));
