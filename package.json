@@ -2,6 +2,9 @@
   "name": "stageverse",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.9"
+  },
   "scripts": {
     "dev": "cross-env TURBOPACK=0 next dev",
     "build": "next build",

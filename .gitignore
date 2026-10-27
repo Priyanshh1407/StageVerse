@@ -46,3 +46,11 @@ next-env.d.ts
 
 # eval harness self-checks (not evidence)
 evals/patch/results/FAKE-*.json
+
+# 70 MB HDR environment map from the 3D prototype; unreferenced, keep it out of git history
+public/textures/env.exr
+
+# benchmark outputs (only the recorded before/after evidence is committed)
+bench/results/*
+!bench/results/live-before.json
+!bench/results/live-after.json

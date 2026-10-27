@@ -39,7 +39,7 @@ flowchart LR
 
 ## Run it locally (about 10 minutes)
 
-**Prerequisites:** Node.js 22, a MongoDB database (local `mongod` or a free Atlas cluster), and optionally a Gemini API key for the AI features.
+**Prerequisites:** Node.js 22.9 or newer, a MongoDB database (local `mongod` or a free Atlas cluster), and optionally Gemini and/or Groq API keys for the AI features (without any, AI features use their non-AI fallbacks).
 
 ```bash
 git clone https://github.com/Priyanshh1407/StageVerse.git
@@ -71,12 +71,13 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 | `npm run lint` | ESLint (CI fails on any error) |
 | `npm run seed -- --yes` | Seed demo data into the database in `.env.local` |
 | `npm run bench` | Live-screen benchmark (endpoint latency, socket push latency) |
-| `npm run eval:patch` | AI patch-assistant evaluation, legacy vs current pipeline (makes ~60 real Gemini calls; `-- --fake` checks the harness without API calls) |
+| `npm run eval:patch -- --provider groq` | AI patch-assistant evaluation, legacy vs current pipeline (~65 real API calls; `-- --fake` checks the harness without API calls) |
 
 ## Testing and quality
 
-- **173 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), and the AI patch route with a scripted model.
+- **201 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), and the AI patch route with a scripted model.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, tests with coverage, a production build and a dependency audit on every push.
+- **Manual test guide:** [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md) walks through every upgraded feature in the browser (including how to force each AI fallback level) and lists the automated test commands.
 - The engineering history (each bug, how it was found, the fix and the trade-off) is in [`FIX_LOG.md`](FIX_LOG.md). The audit that started it is in [`PROJECT_AUDIT_REPORT.md`](PROJECT_AUDIT_REPORT.md).
 
 ## Measured
