@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { apiError, readJson } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Setlist from '@/models/Setlist';
-import Song from '@/models/Song';
 import Poll from '@/models/Poll';
 import Venue from '@/models/Venue';
 import { verifyAuth } from '@/lib/auth';
@@ -43,17 +42,20 @@ export async function GET(req) {
         if (eventId === DEMO_EVENT_ID) return NextResponse.json({ success: true, demo: true, ...MOCK_EVENT_DATA });
 
         const user = await verifyAuth(req);
-        const event = await loadEventFor(user, eventId, EVENT_TEAM, { populate: { path: 'venue', model: Venue } });
+        const event = await loadEventFor(user, eventId, EVENT_TEAM, { populate: { path: 'venue', model: Venue, select: 'name city address' } });
 
+        // Plain objects with only the fields the crew screen shows (the setlist items
+        // already carry title/bpm/key/duration, so songs aren't populated)
         const [setlistDoc, activePoll] = await Promise.all([
-            Setlist.findOne({ eventId: event._id }).populate({ path: 'items.songId', model: Song }),
-            Poll.findOne({ eventId: event._id, isActive: true }),
+            Setlist.findOne({ eventId: event._id })
+                .select('items._id items.songId items.title items.bpm items.key items.status items.duration showStatus showWarning')
+                .lean(),
+            Poll.findOne({ eventId: event._id, isActive: true }).select('question options isActive').lean(),
         ]);
 
         const setlist = (setlistDoc?.items || []).map((item) => {
-            const song = item.songId || {};
             return {
-                _id: song._id || item._id,
+                _id: item.songId || item._id,
                 title: item.title,
                 bpm: item.bpm || 120,
                 key: item.key || 'C',

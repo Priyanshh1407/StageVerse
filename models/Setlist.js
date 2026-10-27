@@ -50,4 +50,7 @@ const SetlistSchema = new mongoose.Schema({
   showWarning: { type: Boolean, default: false }
 }, { timestamps: true });
 
+// Every live-show read and write looks a setlist up by its event
+SetlistSchema.index({ eventId: 1 });
+
 export default mongoose.models.Setlist || mongoose.model('Setlist', SetlistSchema);

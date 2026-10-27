@@ -12,6 +12,9 @@ import { useSocket, useShowRoom } from '@/components/providers/SocketProvider';
 import { toast } from "sonner";
 import ShowTimer from "@/components/artist/live/ShowTimer"; // Reuse Artist Timer
 
+// Reconciliation poll. Was 1000 ms (10 screens = 10 requests/s); see bench/results.
+const RECONCILE_MS = 20000;
+
 export default function LiveShowPage(props) {
   const params = use(props.params);
   const showId = params.id;
@@ -123,15 +126,21 @@ export default function LiveShowPage(props) {
     }
   };
 
+  // Sockets deliver every state change within milliseconds (the server broadcasts after each
+  // DB write). The poll only reconciles anything missed, so it can be slow; every (re)connect
+  // also refetches, because events sent while disconnected are never replayed.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchShowData();
-    const interval = setInterval(() => {
-      fetchShowData();
-    }, 1000); // 1-second polling for near-instant sync with artist actions
-
+    const interval = setInterval(fetchShowData, RECONCILE_MS);
     return () => clearInterval(interval);
   }, [showId]);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("connect", fetchShowData);
+    return () => socket.off("connect", fetchShowData);
+  }, [socket, showId]);
 
   useEffect(() => {
     if (!socket) return;

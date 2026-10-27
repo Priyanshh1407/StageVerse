@@ -9,7 +9,8 @@ export default defineConfig({
         environment: 'node',
         globalSetup: ['./tests/globalSetup.js'],
         setupFiles: ['./tests/setup.js'],
-        include: ['tests/**/*.test.js'],
+        // Benchmarks only run with BENCH=1 (npm run bench), never in the normal test run
+        include: process.env.BENCH ? ['bench/**/*.bench.js'] : ['tests/**/*.test.js'],
         // One in-memory replica set is shared, so test files run one at a time
         fileParallelism: false,
         testTimeout: 20000,
