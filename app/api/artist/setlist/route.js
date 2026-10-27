@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { escapeRegex } from '@/lib/escapeRegex';
 import dbConnect from '@/lib/db';
 import Setlist from '@/models/Setlist';
 import Song from '@/models/Song';
@@ -43,7 +44,7 @@ export async function POST(req) {
         const processedItems = await Promise.all(items.map(async (item) => {
             let song = await Song.findOne({
                 artistId: user.userId,
-                title: { $regex: new RegExp(`^${item.title}$`, 'i') }
+                title: { $regex: `^${escapeRegex(String(item.title ?? ''))}$`, $options: 'i' }
             });
 
             if (!song) {

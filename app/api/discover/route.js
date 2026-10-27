@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiError } from '@/lib/api';
+import { containsRegex } from '@/lib/escapeRegex';
 import dbConnect from "@/lib/db";
 import Event from "@/models/Event";
 import Venue from "@/models/Venue"; // Import to ensure model registration
@@ -56,10 +57,10 @@ export async function GET(req) {
         }
 
         if (genre && genre !== 'All') {
-            matchStage.genre = { $regex: genre, $options: 'i' };
+            matchStage.genre = containsRegex(genre);
         }
         if (vibe && vibe !== 'All') {
-            matchStage.tags = { $regex: vibe, $options: 'i' };
+            matchStage.tags = containsRegex(vibe);
         }
 
         const pipeline = [
@@ -83,7 +84,7 @@ export async function GET(req) {
         if (city && city !== 'All') {
             pipeline.push({
                 $match: {
-                    'venueData.city': { $regex: city, $options: 'i' }
+                    'venueData.city': containsRegex(city)
                 }
             });
         }
@@ -92,10 +93,10 @@ export async function GET(req) {
             pipeline.push({
                 $match: {
                     $or: [
-                        { artist: { $regex: searchQuery, $options: 'i' } },
-                        { title: { $regex: searchQuery, $options: 'i' } },
-                        { 'venueData.name': { $regex: searchQuery, $options: 'i' } },
-                        { 'venueData.city': { $regex: searchQuery, $options: 'i' } }
+                        { artist: containsRegex(searchQuery) },
+                        { title: containsRegex(searchQuery) },
+                        { 'venueData.name': containsRegex(searchQuery) },
+                        { 'venueData.city': containsRegex(searchQuery) }
                     ]
                 }
             });

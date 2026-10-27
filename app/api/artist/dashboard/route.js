@@ -87,10 +87,12 @@ export async function GET(req) {
                 currentShowStats.gaPercent = gaCap > 0 ? Math.round((gaSold / gaCap) * 100) : 0;
                 if (currentShowStats.percentage >= 100) currentShowStats.soldOut = true;
             }
+            const myEventIds = (await Event.find({ artistId: user.userId }).select('_id')).map((e) => e._id);
             const urgentTasks = await Task.find({
                 $or: [
                     { eventId: nextShow._id, priority: 'High' }, // Normal urgent tasks for this show
-                    { title: { $regex: '^Crew Message:', $options: 'i' }, urgent: true } // GLOBAL Crew messages
+                    // Crew messages, but only for this artist's own shows
+                    { eventId: { $in: myEventIds }, title: { $regex: '^Crew Message:', $options: 'i' }, urgent: true }
                 ],
                 status: { $ne: 'Done' }
             }).select('title status priority dueDate');

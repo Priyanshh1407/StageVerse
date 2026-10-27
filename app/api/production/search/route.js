@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { escapeRegex } from '@/lib/escapeRegex';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Task from '@/models/Task';
@@ -19,7 +20,7 @@ export async function GET(req) {
             return NextResponse.json({ success: true, data: { events: [], tasks: [], patches: [] } });
         }
 
-        const regex = new RegExp(query, 'i'); // Case-insensitive partial match
+        const regex = new RegExp(escapeRegex(query.slice(0, 100)), 'i'); // literal, case-insensitive partial match
         const [events, tasks, patches] = await Promise.all([
             Event.find({
                 $or: [

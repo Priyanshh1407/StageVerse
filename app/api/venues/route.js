@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { containsRegex } from '@/lib/escapeRegex';
 import dbConnect from '@/lib/db';
 import Venue from '@/models/Venue';
 import { verifyAuth } from '@/lib/auth';
@@ -15,8 +16,8 @@ export async function GET(req) {
         if (query) {
             filter = {
                 $or: [
-                    { name: { $regex: query, $options: 'i' } },
-                    { city: { $regex: query, $options: 'i' } }
+                    { name: containsRegex(query) },
+                    { city: containsRegex(query) }
                 ]
             };
         }

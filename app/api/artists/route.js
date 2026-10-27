@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api';
+import { containsRegex } from '@/lib/escapeRegex';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 
@@ -13,8 +14,8 @@ export async function GET(req) {
 
         if (search) {
             query.$or = [
-                { name: { $regex: search, $options: 'i' } },
-                { location: { $regex: search, $options: 'i' } }
+                { name: containsRegex(search) },
+                { location: containsRegex(search) }
             ];
         }
         const artists = await User.find(query)
