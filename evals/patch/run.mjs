@@ -16,6 +16,16 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const FAKE = args.includes('--fake');
 const MODEL = args.includes('--model') ? args[args.indexOf('--model') + 1] : (process.env.GEMINI_MODEL || 'gemini-3.8-flash');
+// Requests per minute to stay under. The free tier allows 5 per model; pass --rpm for paid keys.
+const RPM = args.includes('--rpm') ? Number(args[args.indexOf('--rpm') + 1]) : 5;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let nextSlot = 0;
+async function paced(fn) {
+    const wait = nextSlot - Date.now();
+    if (wait > 0) await sleep(wait);
+    nextSlot = Date.now() + Math.ceil(60000 / RPM);
+    return fn();
+}
 const cases = JSON.parse(fs.readFileSync(path.join(here, 'cases.json'), 'utf8'));
 
 // ---------- model access ----------
@@ -33,13 +43,30 @@ async function generate(opts) {
                     ...(system && { systemInstruction: system }),
                     ...(json && { responseMimeType: 'application/json', responseJsonSchema: json }),
                     ...(temperature !== undefined && { temperature }),
-                    httpOptions: { timeout: 30000 },
+                    httpOptions: { timeout: 60000 },
                 },
             });
             return { text: res.text ?? '', tokens: res.usageMetadata?.totalTokenCount ?? 0 };
         };
     }
-    return realGenerate(opts);
+    return withRetries(() => paced(() => realGenerate(opts)));
+}
+
+// Transient upstream failures (overload, quota, deadline) are retried with backoff the same way
+// for both pipelines; if a call still fails it is recorded as an upstream error, not a model error.
+const TRANSIENT = new Set([429, 500, 503, 504]);
+async function withRetries(fn, attempts = 6) {
+    for (let i = 1; ; i++) {
+        try {
+            return await fn();
+        } catch (error) {
+            const transient = TRANSIENT.has(error?.status) || /timed? ?out|aborted/i.test(String(error?.message));
+            if (!transient || i >= attempts) throw Object.assign(error, { upstream: transient });
+            // Honour the server's "retry in Ns" (quota errors), otherwise back off 5s, 10s, 20s...
+            const hinted = Number(String(error?.message).match(/retry in ([\d.]+)s/i)?.[1]);
+            await sleep(Number.isFinite(hinted) ? (hinted + 1) * 1000 : 5000 * 2 ** (i - 1));
+        }
+    }
 }
 
 // Scripted stand-ins for --fake: the "new" model answers perfectly; the "legacy" one
@@ -124,9 +151,17 @@ function legacyFixtures(patch) {
 
 async function runLegacy(c, model) {
     const t0 = performance.now();
-    const { text, tokens } = await model({ user: legacyPrompt(c.current, c.prompt) });
-    const latencyMs = performance.now() - t0;
-    const row = { latencyMs, tokens, schemaValid: false, intentCorrect: false, collisions: null, outOfRange: null, footprintsLost: 0 };
+    const row = { latencyMs: 0, tokens: 0, schemaValid: false, intentCorrect: false, collisions: null, outOfRange: null, footprintsLost: 0 };
+    let text;
+    try {
+        ({ text, tokens: row.tokens } = await model({ user: legacyPrompt(c.current, c.prompt) }));
+    } catch (error) {
+        row.upstreamError = error.upstream ? String(error.status || error.message) : undefined;
+        row.error = error.message;
+        row.latencyMs = performance.now() - t0;
+        return row;
+    }
+    row.latencyMs = performance.now() - t0;
     let data;
     try {
         data = JSON.parse(String(text).replace(/```json/g, '').replace(/```/g, '').trim());
@@ -173,18 +208,23 @@ async function runNew(c, model) {
         row.outOfRange = outOfRange.filter(isNew).length;
     } catch (error) {
         row.error = error.message;
+        // getIntent wraps the last parse error; an upstream failure surfaces as the original error
+        if (error.upstream) row.upstreamError = String(error.status || error.message);
     }
     row.latencyMs = performance.now() - t0;
     return row;
 }
 
-function summarize(rows) {
-    const n = rows.length;
+function summarize(allRows) {
+    // Calls that never got a model answer (outage after retries) are excluded and counted separately
+    const rows = allRows.filter((r) => !r.upstreamError);
+    const n = rows.length || 1;
     const valid = rows.filter((r) => r.schemaValid);
     const pct = (k) => Math.round((100 * k) / n);
     const lat = rows.map((r) => r.latencyMs).sort((a, b) => a - b);
     return {
-        cases: n,
+        cases: rows.length,
+        upstreamFailures: allRows.length - rows.length,
         schemaValidPct: pct(valid.length),
         intentCorrectPct: pct(rows.filter((r) => r.intentCorrect).length),
         casesWithCollisionsPct: pct(valid.filter((r) => r.collisions > 0).length),
