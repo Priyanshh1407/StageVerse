@@ -33,6 +33,9 @@ const publicPaths = [
   '/explore-artist',
   '/events',
   '/test-3d',
+  '/lab',             // internal 3D test pages (noindex)
+  '/gpu-benchmarks',  // self-hosted GPU tier data for the 3D homepage
+  '/audio',           // homepage show music and its analysis
   '/api', // API routes do their own auth
 ];
 

@@ -17,6 +17,12 @@ describe('page gate (proxy.js)', () => {
         expect(await visit('/events/123')).toBe('next');
     });
 
+    it('3D homepage assets and the lab are public (they are fetched by anonymous visitors)', async () => {
+        expect(await visit('/gpu-benchmarks/d-intel.json')).toBe('next');
+        expect(await visit('/audio/show.mp3')).toBe('next');
+        expect(await visit('/lab/stage')).toBe('next');
+    });
+
     it('protected pages send anonymous visitors to login', async () => {
         expect(await visit('/live-show/abc')).toBe('/login');
         expect(await visit('/prod-dashboard')).toBe('/login');

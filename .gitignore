@@ -54,3 +54,11 @@ public/textures/env.exr
 bench/results/*
 !bench/results/live-before.json
 !bench/results/live-after.json
+
+# Songs are copyrighted recordings: use them locally, never commit or deploy them.
+# The analysis/cue files derived from them (beat times, our lighting program) are fine to commit.
+public/audio/*.mp3
+public/audio/*.wav
+public/audio/*.m4a
+public/audio/*.ogg
+public/audio/*.flac
