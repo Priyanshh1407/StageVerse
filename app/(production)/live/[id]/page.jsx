@@ -98,7 +98,6 @@ export default function LiveShowPage(props) {
             ...prev,
             name: json.event.title,
             status: newStatus,
-            bpm: 128,
             currentSong: json.setlist.find(s => s.status === 'live') || json.setlist[0],
             currentCue: {},
             setlist: json.setlist
@@ -273,7 +272,7 @@ export default function LiveShowPage(props) {
           showName={show.event?.name}
           onResync={fetchShowData} // Pass the data fetcher
           status={show.status}
-          bpm={show.currentSong?.bpm || show.bpm || 128} // Dynamic BPM
+          bpm={show.currentSong?.bpm ?? '—'} // tempo of the current song, if the setlist has one
           showTime={formatTime(elapsedSeconds)}
         />
 

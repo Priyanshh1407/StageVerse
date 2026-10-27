@@ -37,6 +37,7 @@ const TREND_DATA_POST = [
   { time: 'Day 6', value: 10, type: 'positive' },
   { time: 'Day 7', value: 5, type: 'positive' },
 ];
+// Placeholder content for the planned sentiment feature; not real attendee reviews (BUG-10)
 const REVIEWS = [
   { id: 1, user: "Sarah Jenkins", ticket: "Ticket #8492 • VIP Pass", text: "Honestly one of the best nights of my life. The transition between the opening act and the main event was seamless. The VIP area was worth every penny.", sentiment: "positive" },
   { id: 2, user: "Mike T.", ticket: "Ticket #1120 • GA Pass", text: "Missed the first 30 mins because the gates were a mess. No clear signage anywhere.", sentiment: "negative" },
@@ -106,7 +107,7 @@ export default function AnalysisPage() {
 
               <h2 className="text-2xl font-bold text-white mb-2">Coming Soon</h2>
               <p className="text-[#90b2cb] mb-8">
-                Our advanced sentiment analysis engine is currently crunching the numbers. Check back shortly for insights.
+                Sentiment analysis isn&apos;t built yet. The reviews on this page are sample data that show the planned layout.
               </p>
 
               <button
@@ -303,7 +304,7 @@ export default function AnalysisPage() {
             <div className="bg-[#192734] rounded-xl border border-[#2c3b47] overflow-hidden">
               <div className="p-4 border-b border-[#2c3b47] flex justify-between items-center bg-white/5">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-white text-sm font-bold uppercase tracking-wider">Recent Verified Reviews</h3>
+                  <h3 className="text-white text-sm font-bold uppercase tracking-wider">Sample Reviews (demo data)</h3>
                   <span className="text-xs text-[#90b2cb] font-normal lowercase bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
                     Filter: {reviewFilter}
                   </span>

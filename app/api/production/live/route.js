@@ -57,8 +57,8 @@ export async function GET(req) {
             return {
                 _id: item.songId || item._id,
                 title: item.title,
-                bpm: item.bpm || 120,
-                key: item.key || 'C',
+                bpm: item.bpm || null, // null = unknown (no invented tempo)
+                key: item.key || null,
                 status: item.status || 'pending',
                 duration: item.duration || '0:00'
             };
