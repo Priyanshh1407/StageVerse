@@ -166,3 +166,26 @@ describe('SEC-04: tallies come from the server after the DB write', () => {
         expect(await received).toBeNull();
     });
 });
+
+describe('UPG-02: typed live protocol', () => {
+    it('malformed control payloads are rejected, not relayed', async () => {
+        const artist = await client({ as: w.artist });
+        const crew = await client({ as: w.crew });
+        await join(artist, w.event._id);
+        await join(crew, w.event._id);
+
+        const invalid = next(artist, 'error:invalid');
+        const received = next(crew, 'show:update');
+        artist.emit('show:update', { eventId: String(w.event._id), status: 'Exploded', time: -5 });
+        expect(await invalid).toMatchObject({ event: 'show:update' });
+        expect(await received).toBeNull();
+    });
+
+    it('a reveal must name a winner', async () => {
+        const crewSocket = await client({ as: w.crew });
+        await join(crewSocket, w.event._id);
+        const invalid = next(crewSocket, 'error:invalid');
+        crewSocket.emit('poll:reveal', { eventId: String(w.event._id), winner: '' });
+        expect(await invalid).toMatchObject({ event: 'poll:reveal' });
+    });
+});
