@@ -341,7 +341,7 @@ export default function EventDetailPage() {
                         <div className="flex items-end justify-between mb-12">
                             <div>
                                 <h3 className="text-sm font-bold text-[#00d4ff] uppercase tracking-widest mb-2">More Like This</h3>
-                                <h2 className="text-3xl md:text-5xl font-black text-white">Don't Miss Out</h2>
+                                <h2 className="text-3xl md:text-5xl font-black text-white">Don&apos;t Miss Out</h2>
                             </div>
                             <Link href="/discover" className="text-white hover:text-[#00d4ff] font-bold border-b border-white hover:border-[#00d4ff] pb-1 transition-colors">
                                 View All Events

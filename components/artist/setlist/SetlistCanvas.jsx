@@ -120,7 +120,7 @@ export default function SetlistCanvas({ items, setItems }) {
 
           <div className="relative z-10">
             <h2 className="text-2xl text-white font-bold mb-1 flex items-center gap-3">
-              Tonight's Set
+              Tonight&apos;s Set
               {aiCurated && (
                 <span className="animate-in fade-in zoom-in duration-300 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wide border border-emerald-500/20">
                   <CheckCircle2 className="w-3.5 h-3.5" />

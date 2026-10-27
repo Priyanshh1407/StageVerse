@@ -57,7 +57,7 @@ function PollGrid({ onEdit, onPreview }) {
           </div>
           <div className="space-y-3 mb-4">
             <p className="text-[#90b2cb] text-xs">Trigger: After Song 5</p>
-            <p className="text-[#90b2cb] text-xs">Options: Wonderwall, Don't Stop Believing</p>
+            <p className="text-[#90b2cb] text-xs">Options: Wonderwall, Don&apos;t Stop Believing</p>
           </div>
           <div className="pt-3 border-t border-[#223949] mt-auto">
             <button onClick={onPreview} className="w-full py-2 bg-[#223949]/30 hover:bg-[#223949] text-sm text-[#90b2cb] hover:text-white rounded font-medium transition-colors">Preview Interaction</button>

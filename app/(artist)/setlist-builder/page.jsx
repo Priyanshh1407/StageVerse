@@ -390,7 +390,7 @@ function SetlistBuilderContent() {
               <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
-            <p className="text-sm text-slate-400 mb-3">Describe the vibe you want (e.g., "Sad acoustic ballads" or "High energy 80s rock").</p>
+            <p className="text-sm text-slate-400 mb-3">Describe the vibe you want (e.g., &quot;Sad acoustic ballads&quot; or &quot;High energy 80s rock&quot;).</p>
 
             <textarea
               className="w-full bg-[#101b23] border border-[#315168] rounded-xl p-4 text-white text-sm focus:outline-none focus:border-purple-500 min-h-[100px] mb-6"

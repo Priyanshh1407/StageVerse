@@ -122,7 +122,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                             {}
                             {flatResults.length === 0 && (
                                 <div className="text-center py-12 text-gray-500">
-                                    No results found for "{query}"
+                                    No results found for &quot;{query}&quot;
                                 </div>
                             )}
 

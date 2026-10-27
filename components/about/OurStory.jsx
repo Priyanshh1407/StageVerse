@@ -22,7 +22,7 @@ export default function OurStory() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">From Garage Gigs to Global Stages</h2>
             <div className="prose prose-lg prose-invert text-gray-400">
               <p className="mb-6">
-                StageVerse was born in 2020, a year when the lights went out on stages around the world. We realized that the connection between artist and audience was fragile, relying on outdated systems that didn't serve the modern fan.
+                StageVerse was born in 2020, a year when the lights went out on stages around the world. We realized that the connection between artist and audience was fragile, relying on outdated systems that didn&apos;t serve the modern fan.
               </p>
               <p className="mb-6">
                 We started with a simple idea: make discovery intuitive and access seamless. No hidden fees, no confusing queues—just music. What began as a small project to help local indie bands manage bookings has exploded into a global platform hosting millions of fans.

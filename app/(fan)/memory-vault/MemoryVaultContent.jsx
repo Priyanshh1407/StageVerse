@@ -127,7 +127,7 @@ export default function MemoryVaultPage() {
               <div className="flex flex-col gap-2">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Your Memory Vault</h2>
                 <p className="text-slate-500 dark:text-slate-400 text-base max-w-2xl">
-                  Browse and relive your past concert experiences. You've captured <span className="text-[#0d93f2] font-bold">1,204 photos</span> and <span className="text-[#0d93f2] font-bold">86 videos</span> across 42 shows.
+                  Browse and relive your past concert experiences. You&apos;ve captured <span className="text-[#0d93f2] font-bold">1,204 photos</span> and <span className="text-[#0d93f2] font-bold">86 videos</span> across 42 shows.
                 </p>
               </div>
               <button 

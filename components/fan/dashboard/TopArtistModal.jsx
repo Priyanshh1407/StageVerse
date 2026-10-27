@@ -91,7 +91,7 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
             ))
           ) : (
             <div className="flex flex-col items-center justify-center py-10 text-slate-500">
-              <p>No artists found matching "{searchQuery}"</p>
+              <p>No artists found matching &quot;{searchQuery}&quot;</p>
             </div>
           )}
         </div>

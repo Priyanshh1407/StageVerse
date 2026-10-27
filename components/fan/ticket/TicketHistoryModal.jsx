@@ -93,7 +93,7 @@ export default function TicketHistoryModal({ isOpen, onClose, tickets = [], onSe
           
           {filteredTickets.length === 0 && (
             <div className="text-center py-10 text-slate-500 text-sm">
-              No tickets found matching "{searchQuery}"
+              No tickets found matching &quot;{searchQuery}&quot;
             </div>
           )}
         </div>

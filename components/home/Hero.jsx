@@ -159,7 +159,7 @@ export default function Hero() {
                     </div>
                 )}
             </div>
-            import {motion} from 'framer-motion';
+            import {motion} from &apos;framer-motion&apos;;
 
             {}
             <div className="relative z-20 h-full flex flex-col items-center justify-center px-4 py-20 pointer-events-none">

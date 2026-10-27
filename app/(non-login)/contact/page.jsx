@@ -76,7 +76,7 @@ export default function ContactPage() {
                 Get in touch
               </h1>
               <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-                Have questions about an event? Want to partner with StageVerse? We're here to help. Fill out the form or reach out directly.
+                Have questions about an event? Want to partner with StageVerse? We&apos;re here to help. Fill out the form or reach out directly.
               </p>
             </div>
           </div>

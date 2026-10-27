@@ -51,7 +51,7 @@ export default function AIContentPreview({ content, onRequestAI }) {
           <div className="text-center p-8">
             <RefreshCw className="w-12 h-12 mx-auto mb-4 text-[#0d93f2] animate-pulse" />
             <h3 className="text-lg font-bold text-white">Ready to Dream?</h3>
-            <p className="max-w-xs mx-auto mt-2">Fill the form and hit "Generate AI" to see the magic here.</p>
+            <p className="max-w-xs mx-auto mt-2">Fill the form and hit &quot;Generate AI&quot; to see the magic here.</p>
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default function AIContentPreview({ content, onRequestAI }) {
 
             {parsed.closing && (
               <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-slate-800 dark:text-white font-medium text-center italic">
-                "{parsed.closing}"
+                &quot;{parsed.closing}&quot;
               </div>
             )}
           </div>

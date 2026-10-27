@@ -131,7 +131,7 @@ export default function FanDashboard() {
                   </div>
 
                   {data.user.bio && (
-                    <p className="text-sm text-slate-600 dark:text-slate-300 italic mb-3 max-w-md">"{data.user.bio}"</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 italic mb-3 max-w-md">&quot;{data.user.bio}&quot;</p>
                   )}
 
                   <div className="flex items-center gap-2">

@@ -407,7 +407,7 @@ export default function EventDetailsForm({
             ) : (
               <div onClick={handleCreateNewClick} className="px-4 py-4 hover:bg-[#0d93f2]/10 cursor-pointer flex items-center gap-3 text-[#0d93f2]">
                 <Plus className="w-5 h-5" />
-                <div><div className="font-bold">Venue not found?</div><div className="text-sm">Create "{venueSearch}"</div></div>
+                <div><div className="font-bold">Venue not found?</div><div className="text-sm">Create &quot;{venueSearch}&quot;</div></div>
               </div>
             )}
           </div>

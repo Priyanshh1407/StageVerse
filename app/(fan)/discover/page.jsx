@@ -268,7 +268,7 @@ export default function DiscoverPage() {
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="max-w-xl">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Can't find what you're looking for?</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Can&apos;t find what you&apos;re looking for?</h2>
                   <p className="text-blue-100">Set up alerts for your favorite artists and never miss a show again.</p>
                 </div>
                 <button onClick={() => setIsAlertModalOpen(true)} className="bg-white text-[#0d93f2] hover:bg-blue-50 px-6 py-3 rounded-xl font-bold shadow-lg transition-colors whitespace-nowrap">

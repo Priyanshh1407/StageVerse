@@ -187,7 +187,7 @@ export default function ArtistDashboard() {
             <h1 className="text-slate-900 dark:text-white tracking-tight text-3xl md:text-4xl font-bold leading-tight">
               Tour Hub: {data.tourName}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Overview of today's logistics and tour status.</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Overview of today&apos;s logistics and tour status.</p>
           </div>
 
           <div className="flex items-center gap-2 bg-white dark:bg-[#1e2e38] p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">

@@ -173,7 +173,7 @@ export default function AnalysisPage() {
                   <h3 className="text-white text-lg font-bold">AI Executive Summary</h3>
                 </div>
                 <p className="text-white/90 text-lg font-normal leading-relaxed mb-4 font-body relative z-10">
-                  "Attendees were <span className="text-[#0bda5b] font-medium border-b border-[#0bda5b]/30">thrilled with the headliner performance</span> and visual effects, citing them as the highlight of the night. However, significant friction was reported regarding <span className="text-red-500 font-medium border-b border-red-500/30">queue times at the entrance and bar service</span>, which negatively impacted the early-event experience."
+                  &quot;Attendees were <span className="text-[#0bda5b] font-medium border-b border-[#0bda5b]/30">thrilled with the headliner performance</span> and visual effects, citing them as the highlight of the night. However, significant friction was reported regarding <span className="text-red-500 font-medium border-b border-red-500/30">queue times at the entrance and bar service</span>, which negatively impacted the early-event experience.&quot;
                 </p>
                 <div className="flex gap-3 relative z-10">
                   <div className="px-3 py-1 rounded bg-white/5 border border-white/10 text-xs text-[#90b2cb]">Confidence: High</div>
@@ -338,7 +338,7 @@ export default function AnalysisPage() {
                           <p className="text-white text-sm font-bold">{review.user}</p>
                           <span className="text-[#90b2cb] text-xs">• {review.ticket}</span>
                         </div>
-                        <p className="text-[#90b2cb] text-sm leading-relaxed">"{review.text}"</p>
+                        <p className="text-[#90b2cb] text-sm leading-relaxed">&quot;{review.text}&quot;</p>
                       </div>
                     </div>
                   ))
@@ -420,7 +420,7 @@ function TopicCard({ icon: Icon, title, score, quote, subtext, type }) {
         </div>
         <span className="text-white font-bold text-lg">{score}</span>
       </div>
-      <p className={`text-white text-base font-medium mb-1 ${hoverColor} transition-colors`}>"{quote}"</p>
+      <p className={`text-white text-base font-medium mb-1 ${hoverColor} transition-colors`}>&quot;{quote}&quot;</p>
       <p className="text-[#90b2cb] text-sm">{subtext}</p>
     </div>
   );

@@ -35,7 +35,7 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
             <Lightbulb className="text-blue-500 w-6 h-6 shrink-0" />
             <div>
               <p className="text-white text-sm font-bold mb-1">Tip of the day</p>
-              <p className="text-gray-500 text-xs leading-relaxed">Use "Group Mode" to assign tasks to multiple electricians at once during load-in.</p>
+              <p className="text-gray-500 text-xs leading-relaxed">Use &quot;Group Mode&quot; to assign tasks to multiple electricians at once during load-in.</p>
             </div>
           </div>
         </div>

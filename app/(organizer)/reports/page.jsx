@@ -521,7 +521,7 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
             ) : (
               <tr>
                 <td colSpan="7" className="px-6 py-8 text-center text-[#90b2cb]">
-                  No transactions found matching "{search}"
+                  No transactions found matching &quot;{search}&quot;
                 </td>
               </tr>
             )}

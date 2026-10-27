@@ -275,7 +275,7 @@ export default function GuestlistPanel({ eventId }) {
                                         </div>
                                     ) : (
                                         <p className="text-slate-300 text-sm leading-relaxed italic opacity-80">
-                                            "{selectedGuest.notes || 'No internal notes added.'}"
+                                            &quot;{selectedGuest.notes || 'No internal notes added.'}&quot;
                                         </p>
                                     )}
                                 </div>

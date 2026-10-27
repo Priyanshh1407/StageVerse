@@ -54,7 +54,7 @@ export default function CreateAlertModal({ isOpen, onClose }) {
                                 <Check className="w-8 h-8" />
                             </div>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Alert Created!</h3>
-                            <p className="text-slate-500 text-sm mt-1">We'll notify you when tickets drop.</p>
+                            <p className="text-slate-500 text-sm mt-1">We&apos;ll notify you when tickets drop.</p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-6">

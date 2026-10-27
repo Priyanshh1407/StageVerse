@@ -304,7 +304,7 @@ export function DaySheetCard({ onClick, data }) {
             </div>
             <div>
               <h3 className="text-lg font-bold text-white leading-none">Day Sheet</h3>
-              <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Today's Schedule</p>
+              <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Today&apos;s Schedule</p>
             </div>
           </div>
           <div className="bg-white/5 p-2 rounded-full group-hover:bg-white/10 transition-colors">
