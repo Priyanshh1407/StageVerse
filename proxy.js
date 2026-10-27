@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-// Page-level gate. It only decides which *pages* a role may open.
+// Page-level gate (Next 16 "proxy", formerly middleware). It only decides which *pages* a role may open.
 // Every API route still authenticates and authorizes itself (lib/auth.js, lib/authz.js),
-// because middleware never runs for Socket.IO and is easy to bypass by calling the API directly.
+// because the proxy never runs for Socket.IO and is easy to bypass by calling the API directly.
 
 // Home dashboard for each role
 const homeFor = {
@@ -52,7 +52,7 @@ async function readRole(token) {
   }
 }
 
-export async function middleware(req) {
+export async function proxy(req) {
   const token = req.cookies.get('token')?.value;
   const { pathname } = req.nextUrl;
 
