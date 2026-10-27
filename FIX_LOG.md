@@ -178,7 +178,7 @@ Interview version: "I measured before touching anything. The surprise was that t
 Problem: the patch assistant asked Gemini to "find the next free address gaps" and trusted its JSON. Repatch replaced the whole patch with model output, and both screens then forced every fixture to 16 channels / Standard, which itself reintroduces collisions. The full current patch went into every prompt, and user text was concatenated into the instructions.
 Fix: the model only extracts `{action, fixtures[{type,count,channels?,mode?}]}`, with JSON mode constrained by `z.toJSONSchema()` of the same zod validator and one repair retry quoting the validation error; 422 if still invalid. `lib/dmx/allocate.js` does first-fit allocation (existing fixtures never move), spill-over to the next universe, order-preserving repatch, and `findConflicts`; the route re-checks before responding. The screens keep real footprints.
 Verification: unit tests; **fast-check property tests** (300 random patches each: new fixtures never overlap or exceed channel 512; repatch always clean and footprint-preserving); route tests with a scripted model (repair loop, 422, out-of-space 400, user text not in the system instruction, no addresses sent to the model).
-Eval harness: `evals/patch/cases.json` (30 cases incl. 4 prompt-injection cases) and `run.mjs` comparing the verbatim legacy prompt with the new pipeline. **Real-model results: `<pending — developer to run npm run eval:patch>`.** The `--fake` mode only proves the harness runs.
+Eval harness: `evals/patch/cases.json` (30 cases incl. 4 prompt-injection cases) and `run.mjs` comparing the verbatim legacy prompt with the new pipeline. Real-model results are in the eval section below.
 Interview version: "I moved the part that has to be correct out of the LLM. The model parses what the lighting designer wants; an algorithm guarantees collision-free addresses, which property-based tests check over hundreds of random rigs, and an eval set measures intent accuracy against the old prompt."
 
 ### LLM-01 — Current SDK and model (commit 61a9a84)
@@ -200,7 +200,7 @@ Interview version: "I moved the part that has to be correct out of the LLM. The 
 
 ### Live eval findings
 - First live run: `gemini-3.8-flash` answered 503 "high demand" / 504 deadline; the harness crashed on the first upstream error. Fixed: retries with server-hinted waits, pacing (`--rpm`), and outages counted separately from wrong answers.
-- The free tier allows **5 requests/minute and 20/day per model**. A full eval (~60–70 calls per model) can't finish in a day on a free key, so partial results were discarded as not evidence. **Eval numbers: `<pending a billed key or a Groq-backed run>`.**
+- The free tier allows **5 requests/minute and 20/day per model**. A full eval (~60–70 calls per model) can't finish in a day on a free key, so partial results were discarded as not evidence. The eval was run on Groq instead (below).
 - Live smoke test (1 call, `gemini-3.5-flash-lite`, the exact structured-output request `lib/llm.js` sends): schema-valid JSON on the first try, but **21.9 s** latency under current load.
 
 ### Provider chain + non-AI fallbacks (commits 1f0484e, 6b960d3)
@@ -211,3 +211,20 @@ Goal (developer's request): an AI request should always get an answer, never "no
 - `/api/generate` became task-based (`insight` / `songs` / `reorder`). The three screens used to paste format instructions into one free-text prompt, which conflicted with the server's "under 50 words" system prompt; now the server owns each prompt, schema and fallback.
 - Not an outage message: our own abuse limit (10 AI requests/min per user) still returns 429 on purpose.
 Interview version: "The newest model was overloaded and my key had 20 requests a day, so 'just call the LLM' wasn't a reliability strategy. I built a provider chain with a circuit breaker so requests skip a model that's down, and behind it a deterministic fallback per feature, so users always get an answer and the response says when it's the simpler one."
+
+
+### UPG-03 eval results (Groq `openai/gpt-oss-120b`, 30 cases, 0 upstream failures; commits a31a216, be17757)
+
+| | legacy (model assigns addresses) | new, prompt v1 | new, prompt v2 |
+|---|---|---|---|
+| intent correct | 90% | 93% | **100%** |
+| cases with address collisions | 17% | 0% | **0%** |
+| out-of-range addresses | 13% (3% in run 1) | 0% | **0%** |
+| repatch lost fixture footprints | 13% | 0% | **0%** |
+| p50 / p95 latency | 1.3 / 2.1 s | invalid* | **0.78 / 1.5 s** |
+| avg tokens | 805 | 620 | 705 |
+
+* v1 timed the harness's pacing wait as well; fixed so only API time counts.
+Error analysis between v1 and v2: "Patch 6 spots and 4 washes" was read as *repatch* (in lighting, "patch" also means connecting new fixtures; on a real rig this would have re-addressed everything), and "Robe BMFL Blades" was forced into the generic "Beam" category. The prompt now says patch/rig/hang N X means add, and keeps named fixture models as their type. No repair retries were needed in v2.
+**Caveat:** I wrote the cases and tuned v2 on them, so 100% is optimistic. Next step: a held-out set written separately. Legacy out-of-range varied between runs (it uses the model's default temperature).
+Interview version: "I built a 30-case eval with prompt-injection cases and compared the old prompt, where the model picked DMX addresses, against intent extraction plus a deterministic allocator. Collisions went from 17% of cases to zero by construction, and error analysis of the two remaining misses found a real ambiguity, 'patch' meaning 'add' in lighting, which a prompt fix resolved. I'd validate that 100% on a held-out set before claiming it."

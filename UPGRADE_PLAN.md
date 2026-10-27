@@ -16,7 +16,7 @@ A third flagship (concurrency-safe ticketing, UPG-01) comes back when ticketing 
 
 ## Progress (2026-10-27)
 Phases 0–5 done; Phase 6 partly done (BUG-10, hygiene, README, proxy rename, /api/health). Branch chain: `phase-0-safety-net` → `phase-1-security` → `phase-2-correctness` → `phase-3-testing-ci` (phases 3–6 continue on it). 173 tests, lint 0 errors, build passes. Details in FIX_LOG.md.
-Waiting on the developer: Atlas password rotation; run `npm run eval:patch` (real Gemini calls) to record UPG-03 numbers; pick the deployment target; record the demo; UPG-04 3D homepage discussion. Then re-audit → project-interview-report → project-mock-interview.
+Waiting on the developer: Atlas password rotation; pick the deployment target; record the demo; UPG-04 3D homepage discussion. Then re-audit → project-interview-report → project-mock-interview.
 Also done beyond the plan: BUG-13–16, artist message/notification scoping, LLM SDK/model upgrade (gemini-3.8-flash), a regression from my own ERR-01 codemod (fixed).
 
 ## Phase Overview
