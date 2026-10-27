@@ -42,19 +42,19 @@ export default function TechRiderPage() {
           setEvents(json.data);
           if (json.data.length > 0 && !selectedEventId) {
             setSelectedEventId(json.data[0]._id);
+          } else if (json.data.length === 0) {
+            setIsLoading(false); // nothing to load a rider for
           }
         }
       } catch (e) {
         console.error("Failed to load events", e);
+        setIsLoading(false);
       }
     }
     loadEvents();
   }, []);
   useEffect(() => {
-    if (!selectedEventId) {
-      setIsLoading(false); // Fix: Stop loading if no event
-      return;
-    }
+    if (!selectedEventId) return; // loadEvents above ends the loading state when there are no events
 
     async function loadRiderData() {
       setIsLoading(true);

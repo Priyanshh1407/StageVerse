@@ -20,7 +20,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
         const fetchEvents = async () => {
             setIsLoadingEvents(true);
             try {
-                const res = await fetch('/api/events');
+                const res = await fetch('/api/artist/events'); // shows where I'm the artist or assigned crew
                 if (res.ok) {
                     const data = await res.json();
                     setEvents(data.events || data); // Handle array or { events: [] }
@@ -33,7 +33,10 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
         };
         fetchEvents();
     }, []);
-    useEffect(() => {
+    // Refill the form when a different task is opened
+    const [prevTask, setPrevTask] = useState(task);
+    if (task !== prevTask) {
+        setPrevTask(task);
         if (task) {
             setFormData({
                 title: task.title || '',
@@ -47,7 +50,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                 assignee: task.assignee || 'Alex M.'
             });
         }
-    }, [task, showId]);
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();

@@ -58,6 +58,7 @@ export default function PatchSheetPage(props) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchPatch();
     const handleFocus = () => {
       if (!isSaving) fetchPatch();

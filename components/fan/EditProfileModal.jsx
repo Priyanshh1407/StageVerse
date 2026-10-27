@@ -17,8 +17,12 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
     instagram: '',
     twitter: ''
   });
-  useEffect(() => {
-    if (isOpen && currentUser) {
+  // Fill the form from the profile each time the modal opens (or the profile arrives)
+  const [prevOpenUser, setPrevOpenUser] = useState(null);
+  const openUser = isOpen ? currentUser : null;
+  if (openUser !== prevOpenUser) {
+    setPrevOpenUser(openUser);
+    if (openUser) {
       setFormData({
         name: currentUser.name || '',
         location: currentUser.location || '',
@@ -31,7 +35,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
         twitter: currentUser.socials?.twitter || ''
       });
     }
-  }, [isOpen, currentUser]);
+  }
 
   useEffect(() => {
     const handleEsc = (e) => {

@@ -63,6 +63,7 @@ export default function LivePollCard({ eventId, onComplete }) {
     }, [eventId]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
         if (eventId) fetchPoll();
     }, [eventId, fetchPoll]);
     useEffect(() => {

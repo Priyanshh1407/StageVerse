@@ -101,14 +101,6 @@ export default function UploadMediaModal({ isOpen, onClose }) {
     return () => clearTimeout(timeout);
   }, [eventQuery]);
   useEffect(() => {
-    if (friendQuery.length < 1) { setEventResults([]); return; }
-    const MOCK_FRIENDS = [
-      { id: 'u1', name: 'Sarah Jenkins' }, { id: 'u2', name: 'Mike Chen' },
-      { id: 'u3', name: 'Jessica Alverez' }, { id: 'u4', name: 'David Ross' },
-    ];
-    setFriendQuery(prev => prev); // minor ref hack
-  }, [friendQuery]);
-  useEffect(() => {
     const handleClick = (e) => {
       if (eventInputRef.current && !eventInputRef.current.contains(e.target)) setShowEventDropdown(false);
     }

@@ -124,6 +124,7 @@ export default function LiveShowPage(props) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchShowData();
     const interval = setInterval(() => {
       fetchShowData();

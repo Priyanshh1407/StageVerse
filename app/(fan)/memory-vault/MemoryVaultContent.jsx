@@ -18,7 +18,7 @@ export default function MemoryVaultPage() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(() => searchParams.get('action') === 'upload');
 
   const [memories,setMemories]=useState([]);
   const [isLoading,setIsLoading]=useState(true);
@@ -48,11 +48,12 @@ export default function MemoryVaultPage() {
 
     fetchMemories();
   },[isUploadModalOpen])
-  useEffect(() => {
-    if (searchParams.get('action') === 'upload') {
-      setIsUploadModalOpen(true);
-    }
-  }, [searchParams]);
+  // ?action=upload opens the upload modal (initial value above; this handles later navigations)
+  const [prevSearchParams, setPrevSearchParams] = useState(searchParams);
+  if (searchParams !== prevSearchParams) {
+    setPrevSearchParams(searchParams);
+    if (searchParams.get('action') === 'upload') setIsUploadModalOpen(true);
+  }
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const { scrollTop } = scrollContainerRef.current;
@@ -80,9 +81,13 @@ export default function MemoryVaultPage() {
     return matchesSearch && matchesArtist&&matchesVenue&&matchesYear;
     });
   },[memories,searchQuery,selectedArtist,selectedVenue,selectedYear]);
-  useEffect(() => {
+  // Back to the first page whenever a filter changes
+  const filterKey = [searchQuery, selectedArtist, selectedVenue, selectedYear].join('\u0000');
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [searchQuery, selectedArtist, selectedVenue, selectedYear]);
+  }
 
   const visibleMemories = filteredMemories.slice(0, visibleCount);
   const hasMore = visibleCount < filteredMemories.length;

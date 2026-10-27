@@ -84,6 +84,7 @@ export default function ReportsPage() {
     }
   };
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchData();
   }, [currentPage, searchQuery, eventScope, category]);
   const totalPages = Math.ceil(totalCount / itemsPerPage);

@@ -6,9 +6,14 @@ import Image from 'next/image';
 export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (isOpen) setSearchQuery('');
-  }, [isOpen]);
+  // Reset when the modal opens (adjusted during render, not in an effect)
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) {
+      setSearchQuery('');
+    }
+  }
 
   useEffect(() => {
     const handleEsc = (e) => {

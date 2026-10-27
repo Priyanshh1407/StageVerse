@@ -5,9 +5,14 @@ import Image from 'next/image';
 
 export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
   const [searchQuery, setSearchQuery] = useState('');
-  useEffect(() => {
-    if (isOpen) setSearchQuery('');
-  }, [isOpen]);
+  // Reset when the modal opens (adjusted during render, not in an effect)
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) {
+      setSearchQuery('');
+    }
+  }
 
   useEffect(() => {
     const handleEsc = (e) => {

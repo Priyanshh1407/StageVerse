@@ -52,9 +52,12 @@ export default function StudioNavbar({ projectId }) {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
-  useEffect(() => {
+  // Follow the show id of the page we're on
+  const [prevContextId, setPrevContextId] = useState(contextId);
+  if (contextId !== prevContextId) {
+    setPrevContextId(contextId);
     if (contextId) setCurrentId(contextId);
-  }, [contextId]);
+  }
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -134,7 +137,8 @@ export default function StudioNavbar({ projectId }) {
     },
     { label: 'Live Show', href: `/live`, isActive: (path) => path.includes('/live') },
   ];
-  const currentProject = projects.find(p => (p.eventId || p.id) == currentId); // eslint-disable-line eqeqeq
+  // Ids may be numeric short ids or ObjectId strings, so compare as strings
+  const currentProject = projects.find(p => String(p.eventId || p.id) === String(currentId));
   const projectTitle = currentProject ? currentProject.title : "Select Project";
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
   const [msgContent, setMsgContent] = useState('');

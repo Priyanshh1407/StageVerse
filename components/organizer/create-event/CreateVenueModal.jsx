@@ -36,11 +36,13 @@ export default function CreateVenueModal({
     bagPolicy: '',
     hasParking: true, // Default from your UI
   });
-  useEffect(() => {
-    if (isOpen && initialName) {
-      setFormData(prev => ({ ...prev, name: initialName }));
-    }
-  }, [isOpen, initialName]);
+  // Prefill the name typed in the venue search when the modal opens
+  const openName = isOpen ? initialName : null;
+  const [prevOpenName, setPrevOpenName] = useState(null);
+  if (openName !== prevOpenName) {
+    setPrevOpenName(openName);
+    if (openName) setFormData(prev => ({ ...prev, name: openName }));
+  }
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -95,14 +97,14 @@ export default function CreateVenueModal({
           width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: #101622; 
+          background: #101622;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #314368; 
+          background-color: #314368;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #4b5f88; 
+          background-color: #4b5f88;
         }
       `}</style>
 

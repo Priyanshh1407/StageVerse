@@ -32,9 +32,12 @@ function SetlistBuilderContent() {
   const searchParams = useSearchParams();
   const urlEventId = searchParams.get('eventId');
   const [selectedEventId, setSelectedEventId] = useState(urlEventId);
-  useEffect(() => {
+  // Follow ?eventId= when the URL changes (adjusted during render, not in an effect)
+  const [prevUrlEventId, setPrevUrlEventId] = useState(urlEventId);
+  if (urlEventId !== prevUrlEventId) {
+    setPrevUrlEventId(urlEventId);
     if (urlEventId) setSelectedEventId(urlEventId);
-  }, [urlEventId]);
+  }
 
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);

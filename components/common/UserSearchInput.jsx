@@ -11,21 +11,21 @@ export default function UserSearchInput({
     initialValue = null,
     required = false
 }) {
-    const [searchTerm, setSearchTerm] = useState('');
+    const termFrom = (v) => (v && typeof v === 'object' ? v.name : (typeof v === 'string' ? v : ''));
+    const [searchTerm, setSearchTerm] = useState(() => termFrom(initialValue));
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedUser, setSelectedUser] = useState(initialValue);
     const wrapperRef = useRef(null);
 
-    useEffect(() => {
-        if (initialValue && typeof initialValue === 'object') {
-            setSelectedUser(initialValue);
-            setSearchTerm(initialValue.name);
-        } else if (initialValue && typeof initialValue === 'string') {
-            setSearchTerm(initialValue);
-        }
-    }, [initialValue]);
+    // Follow the parent's value when it changes (e.g. an edit form finishes loading)
+    const [prevInitialValue, setPrevInitialValue] = useState(initialValue);
+    if (initialValue !== prevInitialValue) {
+        setPrevInitialValue(initialValue);
+        if (initialValue && typeof initialValue === 'object') setSelectedUser(initialValue);
+        if (initialValue) setSearchTerm(termFrom(initialValue));
+    }
     useEffect(() => {
         function handleClickOutside(event) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {

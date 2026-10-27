@@ -7,25 +7,30 @@ import { useRouter } from 'next/navigation';
 
 export default function GlobalSearchModal({ isOpen, onClose }) {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState(null);
+    const [fetchedResults, setResults] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef(null);
     const router = useRouter();
-    useEffect(() => {
-        if (isOpen) {
-            setTimeout(() => inputRef.current?.focus(), 50);
-        } else {
+    // Clear the search when the modal closes (adjusted during render, not in an effect)
+    const [wasOpen, setWasOpen] = useState(isOpen);
+    if (isOpen !== wasOpen) {
+        setWasOpen(isOpen);
+        if (!isOpen) {
             setQuery('');
             setResults(null);
             setSelectedIndex(0);
         }
-    }, [isOpen]);
+    }
     useEffect(() => {
-        if (!query || query.length < 2) {
-            setResults(null);
-            return;
-        }
+        if (!isOpen) return;
+        const t = setTimeout(() => inputRef.current?.focus(), 50);
+        return () => clearTimeout(t);
+    }, [isOpen]);
+    // Queries shorter than 2 characters show nothing (derived, so no state reset needed)
+    const results = query.length >= 2 ? fetchedResults : null;
+    useEffect(() => {
+        if (!query || query.length < 2) return;
 
         const timer = setTimeout(async () => {
             setIsLoading(true);

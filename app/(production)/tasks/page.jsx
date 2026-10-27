@@ -29,6 +29,7 @@ export default function GlobalTasksPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchTasks();
   }, []);
 

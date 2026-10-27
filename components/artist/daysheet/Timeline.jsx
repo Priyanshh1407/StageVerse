@@ -11,11 +11,12 @@ export default function Timeline({ initialSchedule, onUpdate }) {
   const [editingItem, setEditingItem] = useState(null); // If null, we are adding. If set, we are editing.
   const [formData, setFormData] = useState({ time: '12:00 PM', title: '', sub: '', type: 'other', tasks: [] });
   const [tempTask, setTempTask] = useState(''); // For adding new subtasks in modal
-  useEffect(() => {
-    if (initialSchedule) {
-      setSchedule(initialSchedule);
-    }
-  }, [initialSchedule]);
+  // Take the parent's schedule when it loads or changes
+  const [prevInitialSchedule, setPrevInitialSchedule] = useState(initialSchedule);
+  if (initialSchedule !== prevInitialSchedule) {
+    setPrevInitialSchedule(initialSchedule);
+    if (initialSchedule) setSchedule(initialSchedule);
+  }
   const openAddModal = () => {
     setEditingItem(null);
     setFormData({ time: '12:00 PM', title: '', sub: '', type: 'other', tasks: [] });

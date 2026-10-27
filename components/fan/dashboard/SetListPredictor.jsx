@@ -19,11 +19,14 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
   const [showScorecard, setShowScorecard] = useState(false);
 
   const isGraded = initialPrediction?.status === 'graded';
-  useEffect(() => {
+  // Switching events (or a fresh prediction from the server) resets the editor
+  const [prevKey, setPrevKey] = useState({ selectedEventId, initialPrediction });
+  if (prevKey.selectedEventId !== selectedEventId || prevKey.initialPrediction !== initialPrediction) {
+    setPrevKey({ selectedEventId, initialPrediction });
     setPrediction(initialPrediction?.songs || []);
     setSearchQuery("");
     setShowScorecard(false);
-  }, [selectedEventId, initialPrediction]);
+  }
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -171,7 +174,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
           </button>
         </div>
       ) : (
-        
+
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative z-10">
 
           {}
