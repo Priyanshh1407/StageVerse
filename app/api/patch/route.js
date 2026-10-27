@@ -49,7 +49,7 @@ export async function POST(req) {
             if (error.code === 'INTENT_INVALID') throw new HttpError(422, error.message);
             throw error;
         }
-        const { intent, attempts, tokens } = intentResult;
+        const { intent, attempts, tokens, model } = intentResult;
 
         let action;
         let patch;
@@ -81,6 +81,7 @@ export async function POST(req) {
             patch,
             meta: {
                 intent,
+                model, // which model answered (the fallback is used when the primary is overloaded)
                 attempts,
                 tokens,
                 latencyMs: Date.now() - started,
