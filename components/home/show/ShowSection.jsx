@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Orbitron } from 'next/font/google';
-import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play } from 'lucide-react';
+import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play, SunMedium } from 'lucide-react';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
@@ -107,6 +107,7 @@ export default function ShowSection({ events = [] }) {
     // ready: an uploaded song analysed and waiting for "Start the show"
     const [song, setSong] = useState({ bundled: null, current: null, ready: null, playing: false, time: 0, status: null, error: null });
     const [fullscreen, setFullscreen] = useState(false);
+    const [brightnessTip, setBrightnessTip] = useState(false); // shown for the first seconds of a show
 
     // Scroll progress through the section drives the show (no re-render unless an overlay changes)
     useEffect(() => {
@@ -256,6 +257,8 @@ export default function ShowSection({ events = [] }) {
         setSong((s) => ({ ...s, current: show, ready: null, playing: true, status: null, error: null }));
         setDeskOpen(false);
         enterShowMode(stage.current); // must run inside the click that started the show
+        setBrightnessTip(true);
+        setTimeout(() => setBrightnessTip(false), 6000);
     };
 
     const playDemo = () => song.bundled && playShow(song.bundled, encodeURI(song.bundled.audio));
@@ -297,6 +300,12 @@ export default function ShowSection({ events = [] }) {
         <section ref={section} className="relative h-[520vh] bg-[#010208]" aria-label="StageVerse live show">
             <div ref={stage} className="sticky top-0 h-screen w-full overflow-hidden bg-[#010208]">
                 <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />
+
+                {/* Start of a show: recommend full screen brightness (a page can't set it itself) */}
+                <div aria-live="polite" className={`absolute top-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur border border-white/15 text-sm text-white pointer-events-none transition-opacity duration-700 ${brightnessTip ? 'opacity-100' : 'opacity-0'}`}>
+                    <SunMedium className="w-4 h-4 text-yellow-300" aria-hidden />
+                    {brightnessTip && 'For the full experience, turn your screen brightness all the way up'}
+                </div>
 
                 {/* While the show runs in the browser's full screen */}
                 {fullscreen && (
@@ -351,6 +360,9 @@ export default function ShowSection({ events = [] }) {
                                 <div className="font-mono text-cyan-300 text-xs tracking-[0.3em] mb-2">YOUR TURN</div>
                                 <h2 className="text-2xl sm:text-3xl font-black mb-2">Run the show yourself.</h2>
                                 <p className="text-sm text-gray-300 mb-4">Take the lighting desk, or drop in a song: we find its beats and sections and program a light show for it, right here in your browser. Your file never leaves your device.</p>
+                                <p className="flex items-center gap-1.5 text-xs text-yellow-200/90 mb-3">
+                                    <SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, turn your screen brightness and volume up.
+                                </p>
                                 <div className="flex flex-wrap gap-2">
                                     <button onClick={() => setDeskOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-cyan-300">
                                         <Settings2 className="w-4 h-4" /> Take the desk
