@@ -412,6 +412,23 @@ describe('song extras', () => {
             for (const k of ['colorA', 'colorB', 'washColor', 'laserColor']) expect(look[k]).toBe('#ffd400');
         }
         expect(at(30).colorA).not.toBe('#ffd400'); // back to the show's own colours afterwards
+
+        // a held span keeps the colour for a whole stretch (here from bar 40 to the end)
+        const held = prepareSongShow(programShow({ duration: 128, bpm: 120, beats, downbeats, energy: [],
+            sections: [sec(0, 8, 'intro'), sec(16, 24, 'groove'), sec(64, 24, 'peak'), sec(112, 8, 'outro')] }, { extras: { tintSpans: [{ fromBar: 40, color: '#ffd400' }] } }));
+        for (const t of [81, 100, 125]) expect(sampleSongShow(held, t).look.colorB).toBe('#ffd400');
+        expect(sampleSongShow(held, 70).look.colorB).not.toBe('#ffd400');
+
+        // a palette span gives a stretch only its own colours, from its first second
+        const spans = prepareSongShow(programShow({ duration: 128, bpm: 120, beats, downbeats, energy: [],
+            sections: [sec(0, 8, 'intro'), sec(16, 24, 'groove'), sec(64, 24, 'peak'), sec(112, 8, 'outro')] },
+            { extras: { paletteSpans: [{ from: 70, palettes: [['#ffd400', '#ffb000'], ['#fff176', '#ffd400']] }] } }));
+        // (blends between two shades during a crossfade are still shades of yellow)
+        const yellowish = (h) => { const n = parseInt(h.slice(1), 16); return (n >> 16) > 240 && ((n >> 8) & 255) > 160 && (n & 255) < 130; };
+        for (let t = 71; t < 127; t += 1) {
+            const l = sampleSongShow(spans, t).look;
+            expect(yellowish(l.colorA) && yellowish(l.colorB)).toBe(true);
+        }
     });
 });
 

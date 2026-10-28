@@ -16,7 +16,8 @@
     "test:coverage": "vitest run --coverage",
     "bench": "cross-env BENCH=1 vitest run",
     "eval:patch": "node --env-file-if-exists=.env.local evals/patch/run.mjs",
-    "analyse:song": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/analyse-song.mjs"
+    "analyse:song": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/analyse-song.mjs",
+    "song:bars": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/song-bars.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",

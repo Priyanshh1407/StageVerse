@@ -52,7 +52,7 @@ function bakeStrobe(scene) {
 
 function createStrobeMaterial() {
     return new THREE.ShaderMaterial({
-        uniforms: { uFlash: { value: 0 }, uTint: { value: new THREE.Color('#19d9ff') } },
+        uniforms: { uFlash: { value: 0 }, uTint: { value: new THREE.Color('#19d9ff') }, uFlashColor: { value: new THREE.Color('#fff8ee') } },
         vertexShader: /* glsl */ `
             attribute float aFlash;
             varying vec3 vColor;
@@ -68,6 +68,7 @@ function createStrobeMaterial() {
         fragmentShader: /* glsl */ `
             uniform float uFlash;
             uniform vec3 uTint;
+            uniform vec3 uFlashColor;
             varying vec3 vColor;
             varying float vFlashFace;
             varying vec3 vNormalW;
@@ -79,7 +80,7 @@ function createStrobeMaterial() {
                 float edge = pow(clamp(1.0 - abs(n.z), 0.0, 1.0), 2.0);
                 vec3 body = (max(vColor, vec3(0.09)) * fill + uTint * (max(0.0, -n.y) * 0.1 + edge * 0.08));
                 // Off: grey frosted panel catching a little rig colour. Firing: blinding white.
-                vec3 face = mix(vec3(0.16) + uTint * 0.08, vec3(1.0, 0.98, 0.95) * 7.0, uFlash);
+                vec3 face = mix(vec3(0.16) + uTint * 0.08, uFlashColor * 7.0, uFlash);
                 gl_FragColor = vec4(mix(body, face, vFlashFace), 1.0);
             }
         `,
@@ -114,6 +115,7 @@ export default function Strobes({ count, look }) {
         const u = mesh.current.material.uniforms;
         u.uFlash.value = Math.min(1, roomFlash(look.current, clock.elapsedTime).strobe);
         u.uTint.value.set(look.current.colorA);
+        u.uFlashColor.value.set(look.current.strobeColor ?? '#fff8ee');
     });
 
     return <instancedMesh key={positions.length} ref={mesh} args={[geometry, material, positions.length]} frustumCulled={false} />;
