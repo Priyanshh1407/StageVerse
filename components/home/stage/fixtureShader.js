@@ -89,16 +89,16 @@ const RIG_GLSL = /* glsl */ `
     }
 
     // Per-fixture on/off: alternate swaps odd and even beams every beat; sparkle switches random
-    // beams off every half beat
+    // beams off every half beat (on/off only)
     float fixtureHash(float idx, float salt) { return fract(sin(idx * 12.9898 + floor(uBeat * 2.0) * 78.233 + salt) * 43758.5453); }
     float fixtureGate() {
         float altOn = step(0.5, fract(uBeat * 0.5 + mod(aIndex, 2.0) * 0.5));
         float g = mix(1.0, altOn, uAlternate);
         return g * mix(1.0, step(0.4, fixtureHash(aIndex, 1.7)), uSparkle);
     }
-    // Sparkle also re-colours beams at random (and flashes some white)
-    float fixtureColorMix(float base) { return mix(base, step(0.5, fixtureHash(aIndex, 5.3)), uSparkle); }
-    float fixtureWhite() { return uSparkle * step(0.82, fixtureHash(aIndex, 9.1)); }
+    // Colour isn't randomised (focus keeps one colour; colour changes fade smoothly, all together)
+    float fixtureColorMix(float base) { return base; }
+    float fixtureWhite() { return 0.0; }
 
     // Model (Z up) <-> world, through the fixture's mounting basis (standing, hanging or sideways)
     vec3 toWorld(vec3 p) { return p.x * aXAxis + p.y * cross(aUp, aXAxis) + p.z * aUp; }

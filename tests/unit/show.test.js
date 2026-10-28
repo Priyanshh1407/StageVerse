@@ -268,6 +268,11 @@ describe('programming rules (concert-style)', () => {
         expect(look.wash).toBe(0);
         expect(look.focusFloor).toBe(1);
         expect(look.laser).toBe(0);
+        // one colour for the whole rig, changing smoothly (over a bar) every 2 bars
+        const phrases = show.cues.filter((c) => c.name.startsWith('Focus'));
+        for (const c of phrases) expect(c.look.colorA).toBe(c.look.colorB);
+        expect(new Set(phrases.map((c) => c.look.colorA)).size).toBeGreaterThan(1);
+        for (const c of phrases.slice(1)) expect(c.fade).toBeGreaterThanOrEqual(1.9);
     });
 
     it('the final breakdown: side towers alone, from crossing inside to out at the audience', () => {
@@ -308,6 +313,14 @@ describe('programming rules (concert-style)', () => {
 
     it('grooves have no lasers', () => {
         for (const c of show.cues.filter((x) => x.name.startsWith('Groove'))) expect(c.look.laser ?? 0).toBe(0);
+    });
+
+    it('a song without an outro gets one: the last 5 seconds fade to black', () => {
+        const noOutro = programShow({ ...analysis, sections: analysis.sections.slice(0, -1).map((s, i, a) => (i === a.length - 1 ? { ...s, end: 144 } : s)) });
+        expect(noOutro.sections.at(-1)).toMatchObject({ kind: 'outro', start: 139, end: 144 });
+        const p = prepareSongShow(noOutro);
+        expect(sampleSongShow(p, 143.95).look.master).toBeLessThan(0.05);
+        expect(sampleSongShow(p, 138).look.master).toBe(1);
     });
 
     it('the outro fades slowly into blackout', () => {
