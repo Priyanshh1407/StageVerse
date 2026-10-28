@@ -76,7 +76,8 @@ function driveRole(u, role, target, state, delta) {
     // (computing sin(time * speed) made beams leap whenever a cue changed the speed)
     state.phase += delta * u.uSpeed.value;
     u.uPhase.value = state.phase;
-    const fan = role.ownAim ? 1 + 3 * (target.sidesAim ?? 0) : target.fan ?? 1;
+    // Side towers: sidesAim 0 = crossing (their rest), 1 = further across, -1 = out to the audience
+    const fan = role.ownAim ? 1 + 0.6 * (target.sidesAim ?? 0) : target.fan ?? 1;
     u.uFan.value += (fan - u.uFan.value) * ease;
     u.uTiltShift.value += ((target.tiltShift ?? 0) - u.uTiltShift.value) * ease;
     u.uPhaseSpread.value += ((target.phaseSpread ?? 0.25) - u.uPhaseSpread.value) * ease;

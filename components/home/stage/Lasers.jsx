@@ -43,8 +43,8 @@ function createLaserMaterial() {
                 vOn = mix(1.0, on, uChase);
                 float t = uPhase; // accumulated in JS, so speed changes never make the fan leap
                 // Fan spread over the audience, each source leaning in toward the centre of the room
-                // (+0.22 turns the whole show to the audience's right, where it reads best)
-                float yaw = 0.22 + aFan * 0.38 * uSpread - aSide * 0.18 + sin(t * 0.35 + aSide) * 0.06;
+                // (+0.1 turns the whole show slightly to the audience's right)
+                float yaw = 0.1 + aFan * 0.38 * uSpread - aSide * 0.18 + sin(t * 0.35 + aSide) * 0.06;
                 // The whole sheet rises well above head height and scans slowly up and down
                 float pitch = 0.42 + sin(t * 0.7 + aSide * 1.3) * 0.14;
                 vec3 p = position;

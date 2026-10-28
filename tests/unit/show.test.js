@@ -276,6 +276,8 @@ describe('programming rules (concert-style)', () => {
         expect(open.sides).toBe(1);
         expect(open.sidesAim).toBeGreaterThan(0.9);
         expect(at(127.5).sidesAim).toBeLessThan(0.2);
+        expect(at(127.5).sidesAim).toBeGreaterThan(-0.2);   // ends crossing (left beams go right), not opened out
+        expect(Math.abs(at(127.5).tiltShift + 0.15)).toBeLessThan(0.01); // level, straight at the audience
     });
 
     it('a breakdown between peaks: blinders alone, then washes alone, then slowing down', () => {
