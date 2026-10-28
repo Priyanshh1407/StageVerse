@@ -208,3 +208,10 @@ Two further rules:
   - Focus: washes and floor off, beams converging on the centre of the stage floor.
   - The final breakdown is the side towers alone, swinging from crossing inside out to the audience, then fading out.
   - Several hits on the same beat now all apply.
+- **Endings match the song:**
+  - A song that winds down through a breakdown gets the side-tower ending: towers alone, crossing, flaring out, back to the audience, crossing again, fading.
+  - A song that ends straight out of a peak gets a big finish: the whole rig on the centre with blinders, strobes and lasers, then a quick fade.
+  - A quiet ending gets a soft fade of washes and side towers.
+  - Songs without an outro get a 5-second one, chosen the same way.
+- **Solos:** every song gives each fixture type (side towers, aerial beams, floor, washes, lasers) 4 bars alone at full.
+- **Build-ups** are found bar by bar (rising loudness plus drum density before a peak).

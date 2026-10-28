@@ -354,17 +354,26 @@ describe('programming rules (concert-style)', () => {
         expect(sampleSongShow(p, 138).look.master).toBe(1);
     });
 
-    it('every song ends with the side-tower ending, even straight out of a peak', () => {
+    it('the outro matches how the song ends: big finish after a peak, soft fade after a quiet part', () => {
         const fromPeak = programShow({ ...analysis, sections: [sec(0, 8, 'intro'), sec(16, 8, 'build'), sec(32, 48, 'peak'), sec(128, 8, 'outro')] });
         const p = prepareSongShow(fromPeak);
-        const start = sampleSongShow(p, 129).look;
-        expect(start.sides).toBe(1);
-        expect(start.beams + start.floor + start.wash + start.laser).toBe(0);
-        expect(start.sweep).toBe(0);
-        const names = fromPeak.cues.filter((c) => c.t >= 128).map((c) => c.name);
-        expect(names.some((n) => n.includes('flaring out'))).toBe(true);
-        expect(names.some((n) => n.includes('to the audience'))).toBe(true);
+        const hit = sampleSongShow(p, 128.3).look;
+        expect(hit.beams + hit.sides + hit.floor).toBe(3);
+        expect(hit.blinder).toBeGreaterThan(0.5);
+        expect(fromPeak.cues.some((c) => c.name.includes('flaring out'))).toBe(false);
         expect(sampleSongShow(p, 143.95).look.master).toBeLessThan(0.05);
+
+        const calm = programShow({ ...analysis, sections: [sec(0, 8, 'intro'), sec(16, 56, 'calm'), sec(128, 8, 'outro')] });
+        const q = prepareSongShow(calm);
+        const soft = sampleSongShow(q, 131).look;
+        expect(soft.wash).toBe(1);
+        expect(soft.beams + soft.floor + soft.laser).toBe(0);
+        expect(calm.cues.some((c) => c.name.includes('flaring out'))).toBe(false);
+        expect(sampleSongShow(q, 143.95).look.master).toBeLessThan(0.05);
+    });
+
+    it('a song that winds down through a breakdown keeps the side-tower ending', () => {
+        expect(show.cues.some((c) => c.name.includes('flaring out'))).toBe(true);
     });
 
     it('the outro fades slowly into blackout', () => {
