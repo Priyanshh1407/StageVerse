@@ -29,14 +29,22 @@ function directFrame(control, look, camera, aim, delta) {
     }
     // No handheld sway: a constantly moving camera makes every sub-pixel detail (truss bracing,
     // LED pixels, fixture vents) crawl, which reads as flicker
-    easing.damp3(camera.position, shot.pos, 1.4, delta);
-    easing.damp3(aim.target, shot.target, 1.4, delta);
+    // During a song's show the camera sits a little higher, over the whole rig
+    const lift = control.mode === 'song' ? 2.2 : 0;
+    aim.pos[0] = shot.pos[0];
+    aim.pos[1] = shot.pos[1] + lift;
+    aim.pos[2] = shot.pos[2];
+    aim.look[0] = shot.target[0];
+    aim.look[1] = shot.target[1] + lift * 0.4;
+    aim.look[2] = shot.target[2];
+    easing.damp3(camera.position, aim.pos, 1.4, delta);
+    easing.damp3(aim.target, aim.look, 1.4, delta);
     camera.lookAt(aim.target);
 }
 
 /** Inside the canvas: runs the show every frame. */
 function Director({ control, look }) {
-    const aim = useRef({ target: new THREE.Vector3(), placed: false });
+    const aim = useRef({ target: new THREE.Vector3(), pos: [0, 0, 0], look: [0, 0, 0], placed: false });
     useFrame(({ camera }, delta) => directFrame(control.current, look, camera, aim.current, delta));
     return null;
 }

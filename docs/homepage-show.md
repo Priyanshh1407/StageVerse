@@ -200,3 +200,11 @@ tier 1 gets bloom. The 60 Hz display caps every reading, so the remaining headro
 Two further rules:
 - The energy climbs in steps: a quiet section leading into a build or peak grooves for its second half (calm, then groove, then build).
 - A section only counts as a build if its energy actually rises (last quarter louder than the first).
+- **Latest tuning:**
+  - The camera sits higher during song shows.
+  - Side towers aim out at the audience with a slight inward angle; their own `sidesAim` swings them in to cross, and wide or mirrored positions never throw them outside the towers.
+  - Grooves have no lasers; builds are dimmer.
+  - Peaks open with the rig dark while the lasers spool from the centre one or two to the full, wider fan, then the rig slams in; energy bursts go full on.
+  - Focus: washes and floor off, beams converging on the centre of the stage floor.
+  - The final breakdown is the side towers alone, swinging from crossing inside out to the audience, then fading out.
+  - Several hits on the same beat now all apply.

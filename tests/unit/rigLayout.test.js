@@ -14,10 +14,11 @@ describe('rigLayout', () => {
         expect(roles).toEqual(new Set(['aerial', 'sides', 'floor', 'wash']));
     });
 
-    it('side towers are mirrored left/right and fire inward across the stage', () => {
+    it('side towers are mirrored left/right and aim out at the audience with a slight inward angle', () => {
         const towers = rigLayout(52).filter((f) => f.group === 'sideTowers');
         for (const f of towers) {
             expect(Math.sign(f.pan)).toBe(-Math.sign(f.position[0]));
+            expect(Math.abs(f.pan)).toBeLessThan(0.5);
             // clamped sideways: base against the tower, head pointing in toward the stage
             expect(f.mount).toBe('side');
             expect(Math.sign(f.up[0])).toBe(-Math.sign(f.position[0]));

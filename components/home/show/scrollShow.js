@@ -77,8 +77,8 @@ export function buildScrollSheet(encore = ENCORE_CHOICES[0]) {
         { t: 0.2, hold: 0.01, name: 'House lights down', look: { house: 0, wash: 0.15 } },
         // The rig comes up one group at a time, each doing its own job
         { t: 0.25, hold: 0.015, name: 'Cue 1 · Stage washes', shot: 'wide', look: { intensity: 0.6, wash: 1, washColor: '#3b5bff' } },
-        { t: 0.3, hold: 0.015, name: 'Cue 2 · Side towers', shot: 'dolly', look: { ...HOLD, intensity: 0.75, sides: 1, colorA: '#19d9ff', colorB: '#3b5bff', stars: 0.3 } },
-        { t: 0.36, hold: 0.015, name: 'Cue 3 · Aerials and floor', shot: 'high', look: { intensity: 0.9, beams: 1, floor: 1, fan: 1, tiltShift: 0, sweep: 0.12, speed: 0.35, phaseSpread: 0, colorB: '#ff3df2', washColor: '#a855f7' } },
+        { t: 0.3, hold: 0.015, name: 'Cue 2 · Side towers', shot: 'dolly', look: { ...HOLD, intensity: 0.75, sides: 1, sidesAim: 1, colorA: '#19d9ff', colorB: '#3b5bff', stars: 0.3 } },
+        { t: 0.36, hold: 0.015, name: 'Cue 3 · Aerials and floor', shot: 'high', look: { intensity: 0.9, beams: 1, floor: 1, sidesAim: 0.3, fan: 1, tiltShift: 0, sweep: 0.12, speed: 0.35, phaseSpread: 0, colorB: '#ff3df2', washColor: '#a855f7' } },
         // One designed look per role
         ...ROLES.map((r) => ({ t: r.at, hold: r.hold, name: `${r.key} look`, shot: r.shot, look: { ...r.look, colorA: r.colors[0], colorB: r.colors[1], laserColor: r.colors[0] } })),
         // Riser, then the drop

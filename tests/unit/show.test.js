@@ -237,33 +237,58 @@ describe('programming rules (concert-style)', () => {
         for (let i = 2; i < build.length; i++) expect(build[i].look.speed).toBeGreaterThan(build[i - 1].look.speed);
     });
 
-    it('a peak opens with one or two lasers that grow, and hits strobes/blinders every 2 bars plus on energy bursts', () => {
+    it('a peak opens with one or two lasers that grow while everything else is dark, then the rig slams in', () => {
         expect(at(64.5).laserAmount).toBeLessThan(0.2);
+        const spool = at(66);
+        expect(spool.beams + spool.sides + spool.floor + spool.wash).toBe(0);
+        expect(spool.laser).toBe(1);
+        expect(at(69).beams).toBe(1);
+        expect(at(69).laserSpread).toBeGreaterThan(1.5);
+    });
+
+    it('peaks hit strobes/blinders every 2 bars, and bursts of energy go full on', () => {
         expect(at(72.5).laserAmount).toBeGreaterThan(0.9);
         const peakHits = show.hits.filter((h) => h.t >= 64 && h.t < 112);
         expect(peakHits.filter((h) => h.kind === 'strobe' || h.kind === 'blinder').length).toBeGreaterThanOrEqual(8);
         // the smaller burst gets a strobe burst (the biggest becomes the focus section)
         expect(show.hits.some((h) => h.kind === 'strobe' && Math.abs(h.t - 72) < 1.1 && h.dur > 0.6)).toBe(true);
+        expect(show.hits.some((h) => h.kind === 'burst' && Math.abs(h.t - 72) < 1.1)).toBe(true);
+        expect(at(72.3).intensity).toBeGreaterThanOrEqual(1.6);
     });
 
-    it('a focus section at the biggest spike: everything on, aimed at the centre, beams sparkling', () => {
+    it('a focus section at the biggest spike: aimed at the centre of the stage floor, beams sparkling', () => {
         const focus = show.cues.find((c) => c.name === 'Focus');
         expect(focus).toBeDefined();
         expect(Math.abs(focus.t - 84)).toBeLessThanOrEqual(2);
         const look = at(focus.t + 1);
         expect(look.sparkle).toBeGreaterThan(0.9);
         expect(look.converge).toBeGreaterThan(0.8);
-        expect(look.beams + look.sides + look.floor).toBe(3);
+        expect(look.beams + look.sides).toBe(2);
+        expect(look.floor).toBe(0);
+        expect(look.wash).toBe(0);
+        expect(look.focusFloor).toBe(1);
     });
 
-    it('after a peak: blinders alone, then washes alone, then slowing down', () => {
+    it('the final breakdown: side towers alone, from crossing inside to out at the audience', () => {
         expect(show.sections.find((s) => s.start === 112).kind).toBe('breakdown');
-        expect(show.hits.some((h) => h.t === 112 && h.kind === 'blinder')).toBe(true);
-        const open = at(112.2);
-        expect(open.beams + open.sides + open.floor + open.wash).toBe(0);
-        const washes = show.cues.find((c) => c.name.startsWith('Breakdown') && c.name.includes('phrase 2'));
+        const open = at(113);
+        expect(open.beams + open.floor + open.wash + open.laser).toBe(0);
+        expect(open.sides).toBe(1);
+        expect(open.sidesAim).toBeGreaterThan(0.9);
+        expect(at(127.5).sidesAim).toBeLessThan(0.2);
+    });
+
+    it('a breakdown between peaks: blinders alone, then washes alone, then slowing down', () => {
+        const mid = programShow({ ...analysis, sections: [sec(0, 8, 'intro'), sec(16, 8, 'build'), sec(32, 8, 'peak'), sec(48, 8, 'groove'), sec(64, 24, 'peak'), sec(112, 16, 'outro')] });
+        expect(mid.sections.find((s) => s.start === 48).kind).toBe('breakdown');
+        expect(mid.hits.some((h) => h.t === 48 && h.kind === 'blinder')).toBe(true);
+        const washes = mid.cues.find((c) => c.name.startsWith('Breakdown') && c.name.includes('phrase 2'));
         expect(washes.look.wash).toBe(1);
         expect(washes.look.beams + washes.look.sides).toBe(0);
+    });
+
+    it('grooves have no lasers', () => {
+        for (const c of show.cues.filter((x) => x.name.startsWith('Groove'))) expect(c.look.laser ?? 0).toBe(0);
     });
 
     it('the outro fades slowly into blackout', () => {

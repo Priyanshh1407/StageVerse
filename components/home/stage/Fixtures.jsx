@@ -13,7 +13,9 @@ export const MOVING_HEAD_URL = '/fixtures/moving-head.glb';
 // colours come from the look, and each job moves in its own way.
 export const ROLES = {
     aerial: { level: 'beams', colors: ['colorA', 'colorB'], sweep: 1, speed: 1, converge: 1, spread: 1, opacity: 1 },
-    sides: { level: 'sides', colors: ['colorB', 'colorA'], sweep: 0.55, speed: 0.7, converge: 1, spread: 1.1, opacity: 1 },
+    // Side towers keep to their own aim (sidesAim), so wide or mirrored positions never throw them
+    // outside the towers; they sweep only a little
+    sides: { level: 'sides', colors: ['colorB', 'colorA'], sweep: 0.3, speed: 0.7, converge: 1, spread: 1.1, opacity: 1, ownAim: true },
     // On the drop the floor fixtures don't focus: they swing fully sideways
     floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.8, speed: 1.3, converge: 0.8, spread: 0.9, opacity: 0.9, sideways: true },
     // Washes colour the stage: wide, soft, barely moving, never part of the drop's convergence
@@ -61,6 +63,9 @@ function driveRole(u, role, target, state, delta) {
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
     u.uConverge.value = drop > 0.5 ? converge : u.uConverge.value + (converge - u.uConverge.value) * ease;
     u.uSideways.value = role.sideways ? drop : 0;
+    // Converging beams meet mid-air over the stage, or (focus) on the centre of the stage floor
+    const ff = target.focusFloor ?? 0;
+    u.uTarget.value.set(0, 4.5 - 4 * ff, -6.5 - 0.5 * ff);
     // Beat-locked effects: the song's beat when one is playing, otherwise 120 BPM
     state.clock += delta;
     u.uBeat.value = target.beatPos ?? state.clock * 2;
@@ -71,7 +76,8 @@ function driveRole(u, role, target, state, delta) {
     // (computing sin(time * speed) made beams leap whenever a cue changed the speed)
     state.phase += delta * u.uSpeed.value;
     u.uPhase.value = state.phase;
-    u.uFan.value += ((target.fan ?? 1) - u.uFan.value) * ease;
+    const fan = role.ownAim ? 1 + 3 * (target.sidesAim ?? 0) : target.fan ?? 1;
+    u.uFan.value += (fan - u.uFan.value) * ease;
     u.uTiltShift.value += ((target.tiltShift ?? 0) - u.uTiltShift.value) * ease;
     u.uPhaseSpread.value += ((target.phaseSpread ?? 0.25) - u.uPhaseSpread.value) * ease;
     u.uHaze.value += (target.haze - u.uHaze.value) * ease;
