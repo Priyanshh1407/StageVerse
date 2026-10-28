@@ -18,7 +18,8 @@ const ShowStage = dynamic(() => import('./ShowStage'), { ssr: false });
 // Display face for the LED wall and the venue sign (drawn into canvases, so it's passed by name)
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display: 'swap' });
 
-const SONG_SHOW = '/shows/sky-full-of-stars.show.json';
+// Demo songs with programmed shows, in button order (each offered only where its track exists)
+const DEMO_SHOWS = ['/shows/sky-full-of-stars.show.json', '/shows/yellow.show.json'];
 const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', build: '#ff8a00', peak: '#ff3df2', outro: '#3b5bff' };
 const MAX_UPLOAD_MB = 80;
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -103,9 +104,9 @@ export default function ShowSection({ events = [] }) {
     const [desk, setDesk] = useState(DEFAULT_LOOK);
     const [deskOpen, setDeskOpen] = useState(false);
     const [counts, setCounts] = useState({ beams: null, lasers: 24, blinders: 8 });
-    // bundled: the demo song's show (only where its file exists); current: the show playing;
+    // demos: the demo songs' shows (only those whose track exists); current: the show playing;
     // ready: an uploaded song analysed and waiting for "Start the show"
-    const [song, setSong] = useState({ bundled: null, current: null, ready: null, playing: false, time: 0, status: null, error: null });
+    const [song, setSong] = useState({ demos: [], current: null, ready: null, playing: false, time: 0, status: null, error: null });
     const [fullscreen, setFullscreen] = useState(false);
     const [brightnessTip, setBrightnessTip] = useState(false); // shown for the first seconds of a show
 
@@ -156,18 +157,19 @@ export default function ShowSection({ events = [] }) {
         return () => observer.disconnect();
     }, []);
 
-    // The demo song is offered only where its file exists (it's local-only: copyrighted)
+    // Each demo song is offered only where its track exists
     useEffect(() => {
         let cancelled = false;
         const c = control.current;
-        fetch(SONG_SHOW)
-            .then((r) => (r.ok ? r.json() : null))
-            .then(async (show) => {
-                if (!show?.audio || cancelled) return;
-                const head = await fetch(encodeURI(show.audio), { method: 'HEAD' });
-                if (head.ok && !cancelled) setSong((s) => ({ ...s, bundled: show }));
-            })
-            .catch(() => {});
+        const load = async (url) => {
+            const show = await fetch(url).then((r) => (r.ok ? r.json() : null));
+            if (!show?.audio) return null;
+            const head = await fetch(encodeURI(show.audio), { method: 'HEAD' });
+            return head.ok ? show : null;
+        };
+        Promise.all(DEMO_SHOWS.map((url) => load(url).catch(() => null))).then((shows) => {
+            if (!cancelled) setSong((s) => ({ ...s, demos: shows.filter(Boolean) }));
+        });
         return () => {
             cancelled = true;
             c.audio?.pause();
@@ -261,7 +263,7 @@ export default function ShowSection({ events = [] }) {
         setTimeout(() => setBrightnessTip(false), 6000);
     };
 
-    const playDemo = () => song.bundled && playShow(song.bundled, encodeURI(song.bundled.audio));
+    const playDemo = (show) => playShow(show, encodeURI(show.audio));
 
     // The visitor's own song: decoded and analysed in their browser, never uploaded anywhere
     const analyseUpload = async (file) => {
@@ -294,7 +296,9 @@ export default function ShowSection({ events = [] }) {
     const songSection = now?.sections.find((s) => song.time >= s.start && song.time < s.end);
     const deskCounts = { ...counts, beams: counts.beams ?? 52 };
     const showOverlays = mode !== 'song';
-    const songControls = { available: Boolean(song.bundled), title: song.bundled?.title, playing: song.playing, play: playDemo, stop: stopSong };
+    // The lighting desk offers the first demo song
+    const firstDemo = song.demos[0];
+    const songControls = { available: Boolean(firstDemo), title: firstDemo?.title, playing: song.playing, play: () => firstDemo && playDemo(firstDemo), stop: stopSong };
 
     return (
         <section ref={section} className="relative h-[520vh] bg-[#010208]" aria-label="StageVerse live show">
@@ -371,11 +375,11 @@ export default function ShowSection({ events = [] }) {
                                         className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold disabled:opacity-60">
                                         {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your song
                                     </button>
-                                    {song.bundled && (
-                                        <button onClick={playDemo} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white">
-                                            <Music className="w-4 h-4" /> {song.bundled.title}
+                                    {song.demos.map((show) => (
+                                        <button key={show.title} onClick={() => playDemo(show)} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white">
+                                            <Music className="w-4 h-4" /> {show.title}
                                         </button>
-                                    )}
+                                    ))}
                                 </div>
                                 <input ref={fileInput} type="file" accept="audio/*" className="hidden"
                                     onChange={(e) => { analyseUpload(e.target.files?.[0]); e.target.value = ''; }} />
