@@ -18,7 +18,8 @@ function directFrame(control, look, camera, aim, delta) {
     const raw = control.progress;
     control.smoothProgress = control.smoothProgress === undefined ? raw : control.smoothProgress + (raw - control.smoothProgress) * (1 - Math.exp(-delta * 2.5));
     const state = currentState(control);
-    look.current = state.look;
+    // In full screen the show runs ~30% brighter (a page can't raise the screen's own brightness)
+    look.current = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;
     if (control.mode !== 'manual') control.shot = state.shot;
     const shot = SHOTS[control.shot] || SHOTS.wide;
     if (!aim.placed) {

@@ -26,7 +26,10 @@ const analysis = analyseSong(channelData, sampleRate);
 // The browser loads the song from /audio/<file name> (only present where you put it)
 const publicPath = path.relative('public', file).split(path.sep).join('/');
 const audio = publicPath.startsWith('..') ? null : `/${publicPath}`;
-const show = programShow(analysis, { title, audio });
+// Per-song touches, if any (e.g. public/shows/yellow.extras.json)
+const extrasFile = `public/shows/${slug}.extras.json`;
+const extras = fs.existsSync(extrasFile) ? JSON.parse(fs.readFileSync(extrasFile, 'utf8')) : null;
+const show = programShow(analysis, { title, audio, extras });
 
 fs.mkdirSync('public/shows', { recursive: true });
 const out = `public/shows/${slug}.show.json`;
@@ -35,4 +38,5 @@ fs.writeFileSync(out, `${JSON.stringify(show)}\n`);
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 console.log(`${title}: ${fmt(analysis.duration)}, ${analysis.bpm} BPM, ${analysis.beats.length} beats, ${analysis.downbeats.length} bars`);
 for (const s of analysis.sections) console.log(`  ${fmt(s.start)}-${fmt(s.end)}  ${s.kind.padEnd(6)} ${String(s.bars).padStart(3)} bars  energy ${s.energy.toFixed(2)}`);
+if (extras) console.log(`extras: ${extrasFile} (${show.hits.filter((h) => h.kind === 'tint').length} colour tints)`);
 console.log(`${show.cues.length} cues, ${show.hits.length} hits -> ${out} (${Date.now() - started} ms)`);

@@ -50,13 +50,17 @@ async function decodeForAnalysis(file) {
  * While a light show plays: the stage goes full screen and the navbar is hidden (the class also
  * hides it where full screen isn't available). Leaving brings both back.
  */
+let wakeLock = null; // keeps the screen from dimming or sleeping during a show
 function enterShowMode(element) {
     document.documentElement.classList.add('show-immersive');
     element?.requestFullscreen?.().catch(() => {});
+    navigator.wakeLock?.request('screen').then((lock) => { wakeLock = lock; }, () => {});
 }
 function exitShowMode() {
     document.documentElement.classList.remove('show-immersive');
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    wakeLock?.release().catch(() => {});
+    wakeLock = null;
 }
 
 /** Run the analysis and programming in a worker, so the page stays smooth meanwhile. */
@@ -134,6 +138,7 @@ export default function ShowSection({ events = [] }) {
     useEffect(() => {
         const onChange = () => {
             setFullscreen(Boolean(document.fullscreenElement));
+            control.current.fullscreen = Boolean(document.fullscreenElement);
             if (!document.fullscreenElement) document.documentElement.classList.remove('show-immersive');
         };
         document.addEventListener('fullscreenchange', onChange);

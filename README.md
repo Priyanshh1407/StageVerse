@@ -105,7 +105,7 @@ Written down on purpose: this is a portfolio project, and these are the honest e
 - **Rate limits are per process** (in-memory token buckets).
 - **Free AI tiers are tight** (Gemini: 5 requests/minute and 20/day per model). The provider chain and non-AI fallbacks keep features working, but fallback answers are simpler; heavy AI use needs a billed key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
-- **Concert mode is local-only.** The demo song is a commercial recording, so it's gitignored and never deployed; the homepage offers concert mode only where the file exists. A public demo needs a royalty-free track (the analysis works on any MP3/WAV/OGG/FLAC).
+- **Concert mode is local-only.** The demo songs are commercial recordings, so they're gitignored and never committed or deployed. Their programmed shows (timings only, no audio) are committed in `public/shows/`, so after checking out the repo you can drop your own copy of the track into `public/audio/` with the same file name (e.g. `A Sky Full of Stars.mp3`) and the demo button appears. Without a track, "Light up your song" analyses any MP3/WAV/OGG/FLAC in the browser. Per-song touches live in `public/shows/<slug>.extras.json` (e.g. Yellow turns every light yellow at its drops).
 - **Sentiment analysis isn't built.** The analysis page shows labelled sample data.
 - The AI patch eval uses 30 cases I wrote, and the second prompt version was tuned on them, so its 100% intent accuracy is optimistic; a held-out case set is the next step. Gemini results are pending: the free tier's 20 requests/day per model is less than one full run.
 

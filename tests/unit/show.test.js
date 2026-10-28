@@ -398,6 +398,23 @@ describe('programming rules (concert-style)', () => {
     });
 });
 
+describe('song extras', () => {
+    it('tints every lit fixture one colour at each drop and at chosen moments', () => {
+        const beats = Array.from({ length: 64 * 4 }, (_, i) => i * 0.5);
+        const downbeats = beats.map((_, i) => i).filter((i) => i % 4 === 0);
+        const sec = (start, bars, kind) => ({ start, end: start + bars * 2, kind, bars, energy: 0.5 });
+        const extras = { tintAtDrops: { color: '#ffd400', beats: 8 }, tints: [{ t: 20, color: '#ffd400', beats: 4 }] };
+        const show = prepareSongShow(programShow({ duration: 128, bpm: 120, beats, downbeats, energy: [],
+            sections: [sec(0, 8, 'intro'), sec(16, 8, 'calm'), sec(32, 8, 'build'), sec(48, 32, 'peak'), sec(112, 8, 'outro')] }, { extras }));
+        const at = (t) => sampleSongShow(show, t).look;
+        for (const t of [21, 49.5]) {
+            const look = at(t);
+            for (const k of ['colorA', 'colorB', 'washColor', 'laserColor']) expect(look[k]).toBe('#ffd400');
+        }
+        expect(at(30).colorA).not.toBe('#ffd400'); // back to the show's own colours afterwards
+    });
+});
+
 describe('section labels', () => {
     it('only calls a section a build when its energy rises into the peak', async () => {
         const { labelSections } = await import('@/lib/show/analysis');

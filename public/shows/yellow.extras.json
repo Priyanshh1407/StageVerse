@@ -1,0 +1,5 @@
+{
+  "_note": "Per-song touches for Yellow (Coldplay). tintAtDrops turns every lit fixture yellow at each drop (0:10, 2:01, 3:18). Add each moment the word 'yellow' is sung to tints as { \"t\": seconds, \"color\": \"#ffd400\", \"beats\": 4 }, then re-run: npm run analyse:song -- \"public/audio/Yellow.mp3\" yellow \"Yellow\"",
+  "tintAtDrops": { "color": "#ffd400", "beats": 8 },
+  "tints": []
+}
