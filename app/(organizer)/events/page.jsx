@@ -14,16 +14,22 @@ import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 export default function EventsPage() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // --- STATE FOR INTERACTIVITY ---
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  function getCategoryIcon(genre) {
+    if (!genre) return Music;
+    const g = genre.toLowerCase();
+    if (g.includes('tech') || g.includes('business')) return Mic;
+    if (g.includes('art') || g.includes('theater')) return Palette;
+    if (g.includes('sport')) return Trophy;
+    if (g.includes('food')) return Utensils;
+    return Music;
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-
-  // Fetch events 
   const fetchEvents = async () => {
     setIsLoading(true);
     try {
@@ -71,10 +77,9 @@ export default function EventsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchEvents();
   }, []);
-
-  // --- FILTER LOGIC ---
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -83,17 +88,12 @@ export default function EventsPage() {
       return matchesSearch && matchesStatus;
     });
   }, [events, searchQuery, statusFilter]);
-
-  // --- PAGINATION LOGIC ---
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
   const currentData = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  // --- HANDLERS ---
   const handleCreateRedirect = () => {
-    // Redirect to Create Event Page
     router.push('/create-event');
   };
 
@@ -115,14 +115,11 @@ export default function EventsPage() {
 
     setIsLoading(true);
     try {
-      // A. Fetch full raw details of the event first (to get clean data)
       const res = await fetch(`/api/events/${event.id}`); // Using the Long ID
       const json = await res.json();
 
       if (!json.success) throw new Error("Failed to fetch original event");
       const originalEvent = json.data;
-
-      // B. Prepare payload (Remove IDs, dates, and add 'Copy')
       const payload = {
         title: `${originalEvent.title} (Copy)`,
         description: originalEvent.description,
@@ -142,8 +139,6 @@ export default function EventsPage() {
           status: 'Active'
         }))
       };
-
-      // C. Create the new Event
       const createRes = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,7 +162,6 @@ export default function EventsPage() {
   const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this event permanently?")) {
       try {
-        // Optimistic update
         setEvents(prev => prev.filter(e => e.id !== id));
         await fetch(`/api/events/${id}`, { method: 'DELETE' });
       } catch (err) {
@@ -182,26 +176,19 @@ export default function EventsPage() {
       setCurrentPage(page);
     }
   };
-
-  // Reset page when filters change
-  useEffect(() => {
+  // Back to page 1 whenever the search or filter changes
+  const filterKey = `${searchQuery}\u0000${statusFilter}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  }
 
-  const getCategoryIcon = (genre) => {
-    if (!genre) return Music;
-    const g = genre.toLowerCase();
-    if (g.includes('tech') || g.includes('business')) return Mic;
-    if (g.includes('art') || g.includes('theater')) return Palette;
-    if (g.includes('sport')) return Trophy;
-    if (g.includes('food')) return Utensils;
-    return Music;
-  };
 
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30">
 
-      {/* Imported Sidebar Component */}
+      {}
       <OrganizerSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-[#101b22]">
@@ -211,7 +198,7 @@ export default function EventsPage() {
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-[#2c3b47] scrollbar-track-[#101b22]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-6">
 
-            {/* CONTROLS */}
+            {}
             <EventsControlBar
               search={searchQuery}
               setSearch={setSearchQuery}
@@ -220,7 +207,7 @@ export default function EventsPage() {
               onCreate={handleCreateRedirect}
             />
 
-            {/* EVENTS TABLE CONTAINER */}
+            {}
             <div className="bg-[#192734] rounded-xl border border-[#2c3b47] overflow-hidden flex flex-col min-h-[400px]">
               {isLoading ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-[#90b2cb] gap-3">
@@ -254,10 +241,6 @@ export default function EventsPage() {
     </div>
   );
 }
-
-// ==========================================
-// SUB-COMPONENTS
-// ==========================================
 
 function Header({ onMenuClick }) {
   return (
@@ -294,7 +277,7 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#192734] p-4 rounded-xl border border-[#2c3b47]">
       <div className="flex flex-1 items-center gap-4 w-full md:w-auto flex-wrap md:flex-nowrap">
-        {/* Search Input */}
+        {}
         <div className="w-full md:w-80 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="w-5 h-5 text-[#90b2cb]" />
@@ -308,7 +291,7 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
           />
         </div>
 
-        {/* Filter Dropdown */}
+        {}
         <div className="relative group">
           <button
             onClick={() => setShowFilterDropdown(!showFilterDropdown)}
@@ -344,7 +327,7 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
         </div>
       </div>
 
-      {/* Create Button with Redirect */}
+      {}
       <button
         onClick={onCreate}
         className="flex items-center gap-2 bg-[#0d93f2] hover:bg-[#0b84db] text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-lg shadow-[#0d93f2]/20 w-full md:w-auto justify-center"
@@ -405,8 +388,6 @@ function EventsTable({ data, onDuplicate, onDelete, onEdit, onAnalytics, onViewL
 
 function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLive }) {
   const [showMenu, setShowMenu] = useState(false);
-
-  // Status styling logic
   const getStatusStyles = (status) => {
     switch (status) {
       case 'Live': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
@@ -447,10 +428,10 @@ function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLiv
           </div>
         </div>
       </td>
-      {/* 2. ARTIST COLUMN */}
+      {}
       <td className="px-6 py-4">
         <div className="flex items-center gap-2">
-          <Mic className="w-3 h-3 text-[#90b2cb]" /> {/* Optional icon */}
+          <Mic className="w-3 h-3 text-[#90b2cb]" /> {}
           <span className="text-sm text-white font-medium">{event.artist}</span>
         </div>
       </td>
@@ -483,10 +464,7 @@ function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLiv
         </span>
       </td>
       <td className="px-6 py-4 text-right">
-        {/* FIXED HERE: 
-           - 'opacity-100' makes it visible by default (Mobile)
-           - 'md:opacity-0 md:group-hover:opacity-100' applies hover effect ONLY on Desktop
-        */}
+        {}
         <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onEdit(event)}

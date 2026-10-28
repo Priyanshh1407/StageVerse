@@ -1,0 +1,17 @@
+{
+  "label": "before",
+  "pollIntervalMs": 1000,
+  "endpoint": {
+    "requests": 300,
+    "p50Ms": 14.3,
+    "p95Ms": 19.05
+  },
+  "setlistLookupDocsExamined": 2001,
+  "push": {
+    "screens": 10,
+    "rounds": 50,
+    "p50Ms": 3.33,
+    "p95Ms": 5.59
+  },
+  "requestsPerSecondFor10Screens": 10
+}

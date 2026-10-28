@@ -15,8 +15,6 @@ import {
   ChevronLeft, ChevronRight, Menu, FileSpreadsheet, FileText, Check, CalendarDays
 } from 'lucide-react';
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
-
-// --- UTILITY: FORMATTING FUNCTIONS ---
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -39,8 +37,6 @@ const formatPercentage = (val) => {
 
 export default function ReportsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // --- STATE ---
   const [stats, setStats] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [revenueTypes, setRevenueTypes] = useState([]);
@@ -49,18 +45,12 @@ export default function ReportsPage() {
   const [eventsList, setEventsList] = useState([]);
 
   const [isGenerating, setIsGenerating] = useState(true); // Start true to trigger initial fetch
-
-  // Filters
   const [category, setCategory] = useState("Financial Overview");
   const [eventScope, setEventScope] = useState("");
   const [dateRange, setDateRange] = useState("Aug 01 - Aug 31, 2023");
-
-  // Transactions State
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
-  // --- API SIMULATION ---
   const fetchData = async () => {
     setIsGenerating(true);
 
@@ -93,13 +83,10 @@ export default function ReportsPage() {
       setIsGenerating(false);
     }
   };
-
-  // Initial Load
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchData();
   }, [currentPage, searchQuery, eventScope, category]);
-
-  // Pagination Logic
   const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const handlePageChange = (newPage) => {
@@ -136,17 +123,11 @@ export default function ReportsPage() {
       return;
     }
     const doc = new jsPDF();
-
-    //title
     doc.setFontSize(18);
     doc.text("Event Sale Report", 14, 22);
-
-    //subtitle
     doc.setFontSize(11);
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-
-    // table generation
     autoTable(doc, {
       startY: 40,
       head: [['ID', 'Date', 'Customer', 'Type', 'Qty', 'Amount', 'Status']],
@@ -170,7 +151,7 @@ export default function ReportsPage() {
   return (
     <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30">
 
-      {/* Imported Sidebar Component */}
+      {}
       <OrganizerSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-[#101b22]">
@@ -180,7 +161,7 @@ export default function ReportsPage() {
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-[#2c3b47] scrollbar-track-[#101b22]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-6">
 
-            {/* CONTROLS */}
+            {}
             <ReportControls
               category={category} setCategory={setCategory}
               scope={eventScope} setScope={setEventScope}
@@ -191,7 +172,7 @@ export default function ReportsPage() {
               onExportPDF={handleExportPDF}
             />
 
-            {/* STATS GRID */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {isGenerating
                 ? Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
@@ -199,13 +180,13 @@ export default function ReportsPage() {
               }
             </div>
 
-            {/* CHARTS ROW */}
+            {}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <SalesChart data={chartData} />
               <RevenueByType data={revenueTypes} />
             </div>
 
-            {/* TRANSACTIONS TABLE */}
+            {}
             <TransactionsTable
               data={transactions}
               search={searchQuery}
@@ -222,10 +203,6 @@ export default function ReportsPage() {
     </div>
   );
 }
-
-// ==========================================
-// SUB-COMPONENTS
-// ==========================================
 
 function Header({ onMenuClick }) {
   return (
@@ -267,7 +244,7 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
     <div className="bg-[#192734] rounded-xl p-6 border border-[#2c3b47] shadow-sm">
       <div className="flex flex-col lg:flex-row lg:items-end gap-4 justify-between">
         <div className="flex flex-col md:flex-row gap-4 flex-1">
-          {/* CATEGORY SELECT */}
+          {}
           <div className="flex flex-col gap-2 w-full md:w-1/4">
             <label className="text-[#90b2cb] text-xs font-semibold uppercase tracking-wider">Report Category</label>
             <div className="relative">
@@ -285,7 +262,7 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
             </div>
           </div>
 
-          {/* EVENT SCOPE SELECT */}
+          {}
           <div className="flex flex-col gap-2 w-full md:w-1/4">
             <label className="text-[#90b2cb] text-xs font-semibold uppercase tracking-wider">Event Scope</label>
             <div className="relative">
@@ -305,16 +282,8 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
             </div>
           </div>
 
-          {/* DATE PICKER */}
-          {/* <div className="flex flex-col gap-2 w-full md:w-1/4">
-            <label className="text-[#90b2cb] text-xs font-semibold uppercase tracking-wider">Date Range</label>
-            <button className="flex items-center justify-between w-full bg-[#101b22] border border-[#2c3b47] text-white text-sm rounded-lg px-3 py-2.5 hover:border-[#3e5060] transition-colors">
-              <span className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-[#90b2cb]" />
-                {date}
-              </span>
-            </button>
-          </div> */}
+          {}
+          {}
         </div>
 
         <div className="flex items-center gap-3 w-full lg:w-auto mt-2 lg:mt-0 relative">
@@ -352,7 +321,6 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
 }
 
 function StatCard({ data }) {
-  // Determine if trend is positive or negative for styling
   const isPositive = data.trend > 0;
   const isNeutral = data.trend === 0 || (data.trend < 0.2 && data.trend > -0.2); // Treat very small numbers as neutral
 
@@ -361,14 +329,10 @@ function StatCard({ data }) {
     : "text-red-400 bg-red-400/10 border-red-400/20";
 
   let TrendIcon = isPositive ? TrendingUp : TrendingDown;
-
-  // Overrides for "Neutral" trends
   if (isNeutral) {
     trendColors = "text-[#90b2cb] bg-[#2c3b47]";
     TrendIcon = null; // No icon for neutral
   }
-
-  // Formatting value based on type
   let displayValue;
   if (data.type === 'currency') displayValue = formatCurrency(data.value);
   else if (data.type === 'percentage') displayValue = data.value + '%';
@@ -558,7 +522,7 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
             ) : (
               <tr>
                 <td colSpan="7" className="px-6 py-8 text-center text-[#90b2cb]">
-                  No transactions found matching "{search}"
+                  No transactions found matching &quot;{search}&quot;
                 </td>
               </tr>
             )}
@@ -566,7 +530,7 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
         </table>
       </div>
 
-      {/* PAGINATION */}
+      {}
       <div className="px-6 py-3 border-t border-[#2c3b47] flex flex-col sm:flex-row justify-between items-center text-xs text-[#90b2cb] gap-4">
         <span>Showing {data.length} of {totalCount} transactions</span>
         <div className="flex gap-1 items-center">

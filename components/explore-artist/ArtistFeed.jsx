@@ -18,7 +18,7 @@ export default function ArtistsFeed({
     <div className="flex-1">
 
       <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between">
-        {/* ... (Search bar code remains same) ... */}
+        {}
         <div className="relative w-full md:max-w-xl group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="w-5 h-5 text-gray-500 group-focus-within:text-[#00C2FF] transition-colors" />
@@ -74,7 +74,7 @@ export default function ArtistsFeed({
             ))}
           </div>
 
-          {/* LOAD MORE BUTTON LOGIC */}
+          {}
           {hasMore && (
             <div className="mt-12 flex justify-center">
               <button

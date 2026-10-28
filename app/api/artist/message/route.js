@@ -1,30 +1,26 @@
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
 import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/authz';
 
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        requireRole(user, 'artist');
 
         const { message, priority } = await req.json();
-
-        // Find the "Next Show" (Event 201 or similar) to attach the message to
-        // Logic: Find first upcoming event
         const nextShow = await Event.findOne({
-            organizerId: user.userId,
+            artistId: user.userId,
             date: { $gte: new Date() }
         }).sort({ date: 1 });
 
         if (!nextShow) {
             return NextResponse.json({ error: "No upcoming shows found to attach message to." }, { status: 400 });
         }
-
-        // Create the Task
         const newTask = await Task.create({
             eventId: nextShow._id,
             title: `Artist Message: ${message}`, // "Artist Message: We need more water"
@@ -40,7 +36,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: newTask });
 
     } catch (error) {
-        console.error("Message API Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/message');
     }
 }

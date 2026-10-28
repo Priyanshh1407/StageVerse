@@ -9,32 +9,20 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
   const [recentlyAdded, setRecentlyAdded] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
-
-  // Form State
   const [newTitle, setNewTitle] = useState('');
   const [newDuration, setNewDuration] = useState('');
   const [newGenre, setNewGenre] = useState('');
   const [newMood, setNewMood] = useState('');
   const [newBpm, setNewBpm] = useState('');
-
-  // --- SMART DURATION HANDLER ---
   const handleDurationChange = (e) => {
-    // 1. Remove any character that is NOT a number
     let value = e.target.value.replace(/\D/g, '');
-
-    // 2. Limit to 4 digits (MMSS)
     if (value.length > 4) value = value.slice(0, 4);
-
-    // 3. Add Colon automatically
     if (value.length > 2) {
       value = `${value.slice(0, 2)}:${value.slice(2)}`;
     }
 
     setNewDuration(value);
   };
-  // -----------------------------
-
-  // Filter Logic
   const filteredSongs = songs.filter((song) => {
     const matchesFilter = activeFilter === 'All' || song.tag.includes(activeFilter);
     const matchesSearch = song.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -69,8 +57,6 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
       bpm: newBpm.toUpperCase().includes('BPM') ? newBpm : `${newBpm} BPM`,
       tag: newMood 
     });
-    
-    // Reset
     setNewTitle('');
     setNewDuration('');
     setNewGenre('');
@@ -90,7 +76,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
   return (
     <div className="bg-[#1a2c38] border border-[#223949] rounded-xl flex flex-col h-full overflow-hidden shadow-lg ring-1 ring-white/5">
       
-      {/* HEADER SECTION */}
+      {}
       <div className="p-4 border-b border-[#223949] bg-[#1a2c38] z-10 flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <h3 className="text-white text-lg font-bold flex items-center gap-2">
@@ -117,7 +103,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
           )}
         </div>
         
-        {/* --- CREATE NEW SONG FORM --- */}
+        {}
         {isCreating ? (
           <form onSubmit={handleCreateSubmit} className="flex flex-col gap-2 animate-in slide-in-from-top-2 duration-200">
             <input 
@@ -151,7 +137,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 onChange={(e) => setNewBpm(e.target.value)}
               />
               
-              {/* UPDATED DURATION INPUT */}
+              {}
               <input 
                 className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#0d93f2] px-3 py-2 placeholder:text-white/30"
                 placeholder="MM:SS"
@@ -173,7 +159,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
             </button>
           </form>
         ) : (
-          /* Search & Filter UI */
+          
           <>
             <div className="relative">
               <span className="absolute inset-y-0 left-3 flex items-center text-[#90b2cb]">

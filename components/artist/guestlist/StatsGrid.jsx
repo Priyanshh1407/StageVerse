@@ -1,7 +1,6 @@
 'use client';
 
 export default function StatsGrid({ stats, isLoading }) {
-  // If loading, show dashes, else show real numbers
   const display = (val) => isLoading ? '-' : val;
 
   const cards = [

@@ -3,8 +3,6 @@
 import React, { useState, useEffect, use } from 'react';
 import { Search, FolderOpen, Save, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-
-// 1. Import the shared Navbar Component
 import StudioNavbar from '@/components/production/StudioNavbar';
 
 import StudioSidebar from '@/components/production/studio/StudioSidebar';
@@ -12,29 +10,24 @@ import CreativeRigView from '@/components/production/studio/views/CreativeRigVie
 import TechnicalRigView from '@/components/production/studio/views/TechnicalRigView';
 
 const INITIAL_FIXTURES = [
-   // Fallback if needed, but we prefer fetching.
    { id: 101, fixtureId: 101, profile: "Martin MAC Aura XB", universe: 2, address: 1, channels: 25, mode: "Standard (25ch)", cue: "Intro Sequence", cueColor: "blue", status: "ok" },
 ];
 
 export default function PatchStudioPage(props) {
    const params = use(props.params);
    const showId = params.id;
-
-   // STATE
    const [viewMode, setViewMode] = useState('creative'); // 'creative' or 'technical'
    const [fixtures, setFixtures] = useState([]);
    const [isLoading, setIsLoading] = useState(true);
    const [isSaving, setIsSaving] = useState(false);
    const [searchQuery, setSearchQuery] = useState("");
    const [lastSaved, setLastSaved] = useState(null);
-
-   // Load Patch Data
    useEffect(() => {
       if (!showId) return;
       loadPatch();
    }, [showId]);
 
-   const loadPatch = async () => {
+   async function loadPatch() {
       try {
          setIsLoading(true);
          const res = await fetch(`/api/production/patch?eventId=${showId}`);
@@ -88,12 +81,9 @@ export default function PatchStudioPage(props) {
          if (res.ok) {
             toast.success('Patch saved successfully');
             setLastSaved(new Date());
-
-            // IMMEDIATE SYNC: Update local state with what the server has stored
             if (data.data && data.data.fixtures) {
                setFixtures(data.data.fixtures);
             } else {
-               // Fallback refetch if response is partial
                loadPatch();
             }
 
@@ -109,11 +99,8 @@ export default function PatchStudioPage(props) {
    };
 
    const handleAddFixtures = (newFixtures) => {
-      // 1. Find the highest used address in Universe 1 (Simple Auto-Patch)
       let currentUniverse = 1;
       let nextAddress = 1;
-
-      // Filter fixtures in Universe 1 and find the max address range
       const fixturesInUniv1 = fixtures.filter(f => parseInt(f.universe) === 1);
       if (fixturesInUniv1.length > 0) {
          fixturesInUniv1.forEach(f => {
@@ -123,28 +110,20 @@ export default function PatchStudioPage(props) {
             }
          });
       }
-
-      // Find max ID for unique IDs
       const maxId = fixtures.length > 0 ? Math.max(...fixtures.map(f => f.fixtureId || 0)) : 100;
 
       const prepareToAdd = newFixtures.map((f, i) => {
-         // 1. If AI/Manual provided specific address, use it.
          if (f.address && f.universe) {
             return {
                ...f,
                fixtureId: maxId + i + 1,
                id: maxId + i + 1,
                status: 'ok',
-               // Ensure these are numbers
                address: parseInt(f.address),
                universe: parseInt(f.universe)
             };
          }
-
-         // 2. Otherwise Auto-Patch logic
          const startAddr = nextAddress;
-
-         // Increment for next fixture in loop
          const channelCount = parseInt(f.channels) || 0;
          nextAddress += channelCount;
 
@@ -163,8 +142,6 @@ export default function PatchStudioPage(props) {
    };
 
    const handleReplaceFixtures = (newFixtures) => {
-      // Find max ID for safety if needed, but if replaced, maybe reset IDs?
-      // Actually if AI returns replacements, we should trust it, or map them to ensure IDs exist.
       const mapped = newFixtures.map((f, i) => ({
          ...f,
          fixtureId: f.fixtureId || (1000 + i), // ensuring IDs
@@ -176,19 +153,14 @@ export default function PatchStudioPage(props) {
       setFixtures(mapped);
       toast.success("Patch Repatched by AI");
    };
-
-   // --- CONTEXT ACTIONS ---
    const handleDeleteFixture = (fixtureId) => {
       setFixtures(prev => prev.filter(f => (f.fixtureId || f.id) !== fixtureId));
       toast.success("Fixture deleted (unsaved)");
    };
-
-   // UPDATED DELETE LOGIC TO BE GRANULAR
    const handleDeleteGroup = (cueName, profileName = null) => {
       let count = 0;
 
       if (profileName) {
-         // Granular Deletion: Delete only fixtures with this Cue AND this Profile
          count = fixtures.filter(f => {
             const fCue = f.cue || 'Unassigned';
             const fProfile = f.profile || 'Unknown Fixture';
@@ -204,7 +176,6 @@ export default function PatchStudioPage(props) {
          toast.success(`Deleted batch of ${count} '${profileName}' fixtures`);
 
       } else {
-         // Full Group Deletion (Legacy fallback)
          count = fixtures.filter(f => {
             const fCue = f.cue || 'Unassigned';
             return fCue === cueName;
@@ -221,15 +192,12 @@ export default function PatchStudioPage(props) {
 
    const handleEditFixture = (updatedFixture) => {
       setFixtures(prev => prev.map(f => {
-         // robust ID check using string comparison
          const fId = String(f.fixtureId || f.id);
          const uId = String(updatedFixture.fixtureId || updatedFixture.id);
          return fId === uId ? { ...f, ...updatedFixture } : f;
       }));
       toast.success("Fixture updated (unsaved)");
    };
-
-   // Filter fixtures based on search
    const filteredFixtures = fixtures.filter(f => {
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
@@ -243,10 +211,10 @@ export default function PatchStudioPage(props) {
    return (
       <div className="flex flex-col h-screen w-full overflow-hidden bg-[#0F0F10] text-slate-300 selection:bg-blue-500 selection:text-white font-sans">
 
-         {/* 1. GLOBAL NAVBAR */}
+         {}
          <StudioNavbar projectId={showId} />
 
-         {/* 2. SUB HEADER */}
+         {}
          <header className="flex items-center justify-between border-b border-[#27272A] bg-[#0F0F10] px-6 py-2.5 shrink-0 z-20">
             <div className="flex items-center gap-2 text-sm">
                <FolderOpen className="w-5 h-5 text-gray-600" />
@@ -257,7 +225,7 @@ export default function PatchStudioPage(props) {
             </div>
 
             <div className="flex items-center gap-4">
-               {/* Search */}
+               {}
                <div className="hidden md:flex items-center bg-[#18181B] border border-[#27272A] rounded-lg h-9 w-72 px-3 focus-within:border-blue-500/50 transition-all">
                   <Search className="w-4 h-4 text-gray-500 mr-2" />
                   <input
@@ -269,7 +237,7 @@ export default function PatchStudioPage(props) {
                   <span className="text-[10px] text-gray-600 border border-[#27272A] px-1 rounded">⌘K</span>
                </div>
 
-               {/* Manual Sync Button (Bonus) */}
+               {}
                <button
                   onClick={loadPatch}
                   disabled={isLoading}
@@ -279,7 +247,7 @@ export default function PatchStudioPage(props) {
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                </button>
 
-               {/* Global Save Button */}
+               {}
                <button
                   onClick={handleSavePatch}
                   disabled={isSaving}
@@ -291,19 +259,19 @@ export default function PatchStudioPage(props) {
             </div>
          </header>
 
-         {/* 3. MAIN WORKSPACE */}
+         {}
          <div className="flex-1 flex overflow-hidden">
 
-            {/* LEFT SIDEBAR (Controls) */}
-            {/* LEFT SIDEBAR (Controls) */}
+            {}
+            {}
             <StudioSidebar onAddFixtures={handleAddFixtures} onReplaceFixtures={handleReplaceFixtures} fixtures={fixtures} />
 
-            {/* RIGHT CONTENT AREA */}
+            {}
             <div className="flex-1 bg-[#0F0F10] flex flex-col h-full overflow-hidden relative">
-               {/* Background Grid Pattern */}
+               {}
                <div className="absolute inset-0 pointer-events-none opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
 
-               {/* VIEW TOGGLE HEADER */}
+               {}
                <div className="flex flex-col md:flex-row items-center justify-between p-6 pb-4 gap-4 z-10 border-b border-[#27272A] bg-[#0F0F10]/95 backdrop-blur-sm sticky top-0">
                   <div className="flex flex-col">
                      <h2 className="text-white text-xl font-bold tracking-tight">Show Rig: <span className="text-blue-500 font-normal">Neon Nights Tour</span></h2>
@@ -314,7 +282,7 @@ export default function PatchStudioPage(props) {
                      </p>
                   </div>
 
-                  {/* THE TOGGLE SWITCH */}
+                  {}
                   <div className="bg-[#18181B] p-1 rounded-lg border border-[#27272A] flex h-9 items-center">
                      <button
                         onClick={() => setViewMode('creative')}
@@ -331,7 +299,7 @@ export default function PatchStudioPage(props) {
                   </div>
                </div>
 
-               {/* DYNAMIC VIEW RENDER */}
+               {}
                <div className="flex-1 overflow-auto z-0 relative">
                   {isLoading && <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center"><Loader2 className="animate-spin text-white w-8 h-8" /></div>}
 

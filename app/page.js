@@ -2,20 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/MainFooter";
-import Hero from "@/components/home/Hero";
+import ShowSection from "@/components/home/show/ShowSection";
 import TrendingEvents from "@/components/home/TrendingEvents";
 import LocalEvents from "@/components/home/LocalEvents";
 import PromoSection from "@/components/home/PromoEvent";
-import { Loader2 } from "lucide-react"; // Optional: specific loader icon
 import MainFooter from "@/components/MainFooter";
 
 export default function Home() {
   const [trendingData, setTrendingData] = useState([]);
   const [localData, setLocalData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // --- SIMULATE API CALL ---
+  const [screenEvents, setScreenEvents] = useState([]); // shown on the stage's LED wall
   useEffect(() => {
     async function fetchData() {
       try {
@@ -23,7 +20,6 @@ export default function Home() {
         const json = await res.json();
 
         if (json.success) {
-          // Map API data to component props
           const realEvents = json.events.map(e => ({
             id: e._id,
             name: e.title,
@@ -41,6 +37,11 @@ export default function Home() {
             badge: e.status === 'Selling Fast' ? 'Hot' : null // For LocalEvents
           }));
 
+          setScreenEvents(json.events.slice(0, 2).map(e => ({
+            title: e.title,
+            city: e.city,
+            date: e.date ? new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',
+          })));
           setTrendingData(realEvents.slice(0, 4)); // Top 4
           setLocalData(realEvents.slice(0, 4)); // Same for now, or shuffle
         }
@@ -56,24 +57,17 @@ export default function Home() {
 
   return (
     <div className="bg-[#f5f7f8] dark:bg-[#050505] font-sans text-slate-900 dark:text-white antialiased selection:bg-[#00d4ff] selection:text-black">
-      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+      <div className="relative flex min-h-screen w-full flex-col overflow-x-clip">
 
         <Navbar isLoggedIn={false} />
 
         <main className="flex-1 relative pt-0">
 
-          {/* Hero takes full height usually, so no extra padding needed here if Hero is h-screen */}
-          <Hero />
+          <ShowSection events={screenEvents} />
 
-          {/* WRAPPER FOR CONTENT SECTIONS:
-             - relative z-10: Ensures this sits above any fixed Hero backgrounds if they overlap.
-             - space-y-16: Adds consistent vertical gaps (4rem) between sections on mobile.
-             - md:space-y-24: Larger gaps (6rem) on desktop for a cleaner look.
-             - pb-20: Adds bottom padding so the footer doesn't feel jammed.
-          */}
-          <div className="relative z-10 flex flex-col space-y-16 md:space-y-24 pb-20 bg-transparent">
+          <div id="events" className="relative z-10 flex flex-col space-y-16 md:space-y-24 pt-16 pb-20 bg-transparent">
 
-            {/* Dynamic Sections */}
+            {}
             <div className="w-full">
               <TrendingEvents events={trendingData} isLoading={isLoading} />
             </div>
@@ -82,7 +76,7 @@ export default function Home() {
               <LocalEvents events={localData} isLoading={isLoading} />
             </div>
 
-            {/* Static Promo */}
+            {}
             <div className="w-full">
               <PromoSection />
             </div>

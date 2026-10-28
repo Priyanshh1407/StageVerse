@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { verifyAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/authz';
+import { containsRegex } from '@/lib/escapeRegex';
+
+const ROLES = ['fan', 'artist', 'organizer', 'production'];
 
 export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
+        // Used to pick collaborators (artists, crew); fans don't need to enumerate accounts
+        requireRole(user, 'artist', 'organizer', 'production');
+        
         const { searchParams } = new URL(req.url);
         const query = searchParams.get('query');
         const role = searchParams.get('role');
@@ -20,10 +24,10 @@ export async function GET(req) {
         }
 
         const filter = {
-            name: { $regex: query, $options: 'i' }
+            name: containsRegex(query, 50)
         };
 
-        if (role) {
+        if (role && ROLES.includes(role)) {
             filter.role = role;
         }
 
@@ -33,7 +37,6 @@ export async function GET(req) {
 
         return NextResponse.json({ success: true, users });
     } catch (error) {
-        console.error('User Search Error:', error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/users/search');
     }
 }

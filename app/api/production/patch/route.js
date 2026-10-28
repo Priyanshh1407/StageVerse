@@ -1,9 +1,10 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Patch from '@/models/Patch';
-import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor, EVENT_TEAM } from '@/lib/authz';
 import { logActivity } from '@/lib/logger';
 
 export async function GET(req) {
@@ -15,18 +16,14 @@ export async function GET(req) {
 
         if (!eventId) return NextResponse.json({ error: 'Missing eventId' }, { status: 400 });
 
-        let eventDoc = await Event.findOne({
-            $or: [{ _id: eventId.match(/^[0-9a-fA-F]{24}$/) ? eventId : null }, { eventId: eventId }]
-        });
-
-        if (!eventDoc) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        const eventDoc = await loadEventFor(user, eventId, EVENT_TEAM);
 
         const patch = await Patch.findOne({ eventId: eventDoc._id });
         if (!patch) return NextResponse.json({ success: true, data: { fixtures: [] } });
 
         return NextResponse.json({ success: true, data: patch });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError(error, '/api/production/patch');
     }
 }
 
@@ -41,13 +38,8 @@ export async function POST(req) {
             return NextResponse.json({ error: 'Missing eventId or fixtures array' }, { status: 400 });
         }
 
-        let eventDoc = await Event.findOne({
-            $or: [{ _id: eventId.match(/^[0-9a-fA-F]{24}$/) ? eventId : null }, { eventId: eventId }]
-        });
-
-        if (!eventDoc) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-
-        // --- COLLISION DETECTION (Non-Blocking) ---
+        // The lighting patch is edited by crew (and the organizer), not the artist
+        const eventDoc = await loadEventFor(user, eventId, ['crew', 'organizer']);
         const processedFixtures = fixtures.map(f => ({ ...f, status: 'ok' }));
 
         const universeMap = {};
@@ -77,9 +69,6 @@ export async function POST(req) {
                 }
             }
         }
-
-        // Upsert Patch 
-        // REMOVED runValidators: true to avoid Schema Cache issues with new Enums
         const updatedPatch = await Patch.findOneAndUpdate(
             { eventId: eventDoc._id },
             {
@@ -88,10 +77,8 @@ export async function POST(req) {
                 ...(body.version && { version: body.version }),
                 ...(body.showName && { showName: body.showName })
             },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
-
-        // LOG ACTIVITY
         const logType = collisionCount > 0 ? 'warning' : 'success';
         const logMsg = collisionCount > 0
             ? `Saved Patch with ${collisionCount} collisions`
@@ -109,6 +96,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: updatedPatch }, { status: 200 });
 
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError(error, '/api/production/patch');
     }
 }

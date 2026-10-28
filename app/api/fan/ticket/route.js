@@ -9,8 +9,6 @@ import Venue from "@/models/Venue"; // Ensure models are registered
 export async function GET() {
   try {
     await dbConnect();
-
-    // 1. Auth Check
     const cookieStore = await cookies();
     const token = cookieStore.get("token");
     if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -18,8 +16,6 @@ export async function GET() {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token.value, secret);
     const userId = payload.userId;
-
-    // 2. Fetch Tickets with deep population
     const tickets = await Ticket.find({ userId })
       .populate({
         path: 'eventId',
@@ -31,8 +27,6 @@ export async function GET() {
         }
       })
       .lean();
-
-    // 3. Process and Split Data
     const now = new Date();
     const upcoming = [];
     const past = [];
@@ -41,13 +35,10 @@ export async function GET() {
       if (!t.eventId) return; // Skip if event was deleted
 
       const eventDate = new Date(t.eventId.date);
-      
-      // Format Data for Frontend
       const formattedTicket = {
         id: t._id.toString(),
         artist: t.eventId.artist,
         tour: t.eventId.title, // Using Event Title as Tour Name
-        // Format Date: "NOV 14" or "Oct 22, 2022"
         dateRaw: eventDate, 
         dateDisplay: eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase(),
         dateFull: eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -69,11 +60,7 @@ export async function GET() {
         past.push(formattedTicket);
       }
     });
-
-    // 4. Sort Lists
-    // Upcoming: Soonest first
     upcoming.sort((a, b) => a.dateRaw - b.dateRaw);
-    // Past: Most recent first
     past.sort((a, b) => b.dateRaw - a.dateRaw);
 
     return NextResponse.json({ 

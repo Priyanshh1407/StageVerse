@@ -5,8 +5,6 @@ import { Sparkles, Save, Trash2, ChevronDown, Calendar, Ticket } from 'lucide-re
 export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, onSave, onDeclareResults }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -26,7 +24,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
         </div>
         <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em]">Smart Setlist Builder</h1>
 
-        {/* Dynamic Event Selector */}
+        {}
         {event ? (
           <div className="relative inline-block mt-2" ref={dropdownRef}>
             <button
@@ -40,7 +38,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
               </span>
             </button>
 
-            {/* Dropdown Menu */}
+            {}
             {isDropdownOpen && allEvents.length > 0 && (
               <div className="absolute top-full left-0 mt-2 w-72 bg-[#182934] border border-[#315168] rounded-xl shadow-2xl overflow-hidden py-1 z-50">
                 <div className="px-3 py-2 text-[10px] uppercase font-bold text-[#5a7c96] tracking-wider border-b border-[#223949] mb-1">Switch Event</div>

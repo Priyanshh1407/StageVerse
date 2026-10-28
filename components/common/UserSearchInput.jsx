@@ -11,26 +11,21 @@ export default function UserSearchInput({
     initialValue = null,
     required = false
 }) {
-    const [searchTerm, setSearchTerm] = useState('');
+    const termFrom = (v) => (v && typeof v === 'object' ? v.name : (typeof v === 'string' ? v : ''));
+    const [searchTerm, setSearchTerm] = useState(() => termFrom(initialValue));
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
-
-    // If editing, we might have an initial value (just a name or an object)
     const [selectedUser, setSelectedUser] = useState(initialValue);
     const wrapperRef = useRef(null);
 
-    useEffect(() => {
-        if (initialValue && typeof initialValue === 'object') {
-            setSelectedUser(initialValue);
-            setSearchTerm(initialValue.name);
-        } else if (initialValue && typeof initialValue === 'string') {
-            // Fallback for string only legacy data
-            setSearchTerm(initialValue);
-        }
-    }, [initialValue]);
-
-    // Click outside to close
+    // Follow the parent's value when it changes (e.g. an edit form finishes loading)
+    const [prevInitialValue, setPrevInitialValue] = useState(initialValue);
+    if (initialValue !== prevInitialValue) {
+        setPrevInitialValue(initialValue);
+        if (initialValue && typeof initialValue === 'object') setSelectedUser(initialValue);
+        if (initialValue) setSearchTerm(termFrom(initialValue));
+    }
     useEffect(() => {
         function handleClickOutside(event) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
@@ -40,8 +35,6 @@ export default function UserSearchInput({
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [wrapperRef]);
-
-    // Debounce Search
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             if (searchTerm.length >= 2 && !selectedUser) {
@@ -78,13 +71,11 @@ export default function UserSearchInput({
         setSelectedUser(null);
         setSearchTerm('');
         if (onSelect) onSelect(null);
-        // Re-focus input if desired
     };
 
     const handleChange = (e) => {
         setSearchTerm(e.target.value);
         if (selectedUser) {
-            // If user modifies the text after selection, invalidates the selection
             setSelectedUser(null);
             if (onSelect) onSelect(null);
         }
@@ -116,7 +107,7 @@ export default function UserSearchInput({
                     </button>
                 ) : null}
 
-                {/* Dropdown Results */}
+                {}
                 {showDropdown && results.length > 0 && (
                     <div className="absolute top-full left-0 w-full mt-2 bg-[#182234] border border-[#314368] rounded-lg shadow-xl overflow-hidden z-[100] max-h-60 overflow-y-auto">
                         {results.map((user) => (

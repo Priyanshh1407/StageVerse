@@ -1,0 +1,692 @@
+{
+  "label": "openai_gpt-oss-120b-2026-10-27-prompt-v1",
+  "model": "openai/gpt-oss-120b",
+  "ranAt": "2026-10-27T16:41:40.892Z",
+  "summary": {
+    "legacy": {
+      "cases": 30,
+      "upstreamFailures": 0,
+      "schemaValidPct": 100,
+      "intentCorrectPct": 90,
+      "casesWithCollisionsPct": 17,
+      "casesOutOfRangePct": 3,
+      "casesLosingFootprintsPct": 13,
+      "p50LatencyMs": 12488,
+      "avgTokens": 830
+    },
+    "new": {
+      "cases": 30,
+      "upstreamFailures": 0,
+      "schemaValidPct": 100,
+      "intentCorrectPct": 93,
+      "casesWithCollisionsPct": 0,
+      "casesOutOfRangePct": 0,
+      "casesLosingFootprintsPct": 0,
+      "p50LatencyMs": 11567,
+      "avgTokens": 620
+    }
+  },
+  "results": [
+    {
+      "id": "add-basic",
+      "legacy": {
+        "latencyMs": 2703.0780999999997,
+        "tokens": 874,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 10077.018199999999,
+        "tokens": 561,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-two-types",
+      "legacy": {
+        "latencyMs": 12734.0632,
+        "tokens": 798,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11639.032299999999,
+        "tokens": 815,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": false,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-around-existing",
+      "legacy": {
+        "latencyMs": 12605.5127,
+        "tokens": 960,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 10973.864499999996,
+        "tokens": 575,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-gap-fill",
+      "legacy": {
+        "latencyMs": 12655.993199999997,
+        "tokens": 859,
+        "schemaValid": true,
+        "intentCorrect": false,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11599.33129999999,
+        "tokens": 594,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-explicit-channels",
+      "legacy": {
+        "latencyMs": 12487.530200000008,
+        "tokens": 851,
+        "schemaValid": true,
+        "intentCorrect": false,
+        "collisions": 9,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11558.563699999999,
+        "tokens": 730,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-words-for-numbers",
+      "legacy": {
+        "latencyMs": 12197.538,
+        "tokens": 807,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11438.184799999988,
+        "tokens": 590,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-singular",
+      "legacy": {
+        "latencyMs": 12265.5821,
+        "tokens": 532,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11934.287700000015,
+        "tokens": 577,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-full-universe",
+      "legacy": {
+        "latencyMs": 14666.020700000023,
+        "tokens": 1760,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 9215.13889999999,
+        "tokens": 561,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-near-end",
+      "legacy": {
+        "latencyMs": 12884.11970000001,
+        "tokens": 883,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11462.644100000005,
+        "tokens": 571,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-busy-rig",
+      "legacy": {
+        "latencyMs": 12703.024700000009,
+        "tokens": 1071,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11171.097500000003,
+        "tokens": 618,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-casual",
+      "legacy": {
+        "latencyMs": 12408.92730000001,
+        "tokens": 629,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11497.289499999984,
+        "tokens": 663,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-three-types",
+      "legacy": {
+        "latencyMs": 12991.290799999988,
+        "tokens": 995,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11190.891999999993,
+        "tokens": 682,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-lasers",
+      "legacy": {
+        "latencyMs": 12657.909600000014,
+        "tokens": 848,
+        "schemaValid": true,
+        "intentCorrect": false,
+        "collisions": 1,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11168.861100000038,
+        "tokens": 590,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-pixel-bars",
+      "legacy": {
+        "latencyMs": 12476.597699999984,
+        "tokens": 643,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11566.988799999992,
+        "tokens": 613,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-second-universe",
+      "legacy": {
+        "latencyMs": 12722.66889999999,
+        "tokens": 792,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11290.617099999974,
+        "tokens": 576,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "repatch-simple",
+      "legacy": {
+        "latencyMs": 12221.200100000016,
+        "tokens": 627,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11702.626700000023,
+        "tokens": 592,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "repatch-cleanup",
+      "legacy": {
+        "latencyMs": 13062.065499999968,
+        "tokens": 933,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 1,
+        "outOfRange": 0,
+        "footprintsLost": 3
+      },
+      "new": {
+        "latencyMs": 12381.55449999997,
+        "tokens": 583,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "repatch-readdress",
+      "legacy": {
+        "latencyMs": 11370.600600000005,
+        "tokens": 748,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 12806.800099999993,
+        "tokens": 602,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "repatch-many-overlaps",
+      "legacy": {
+        "latencyMs": 11007.141899999988,
+        "tokens": 781,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 4
+      },
+      "new": {
+        "latencyMs": 11923.028500000015,
+        "tokens": 601,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "repatch-plus-add",
+      "legacy": {
+        "latencyMs": 12618.488199999963,
+        "tokens": 861,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11751.16320000001,
+        "tokens": 581,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "repatch-two-universes",
+      "legacy": {
+        "latencyMs": 12342.337500000023,
+        "tokens": 1001,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 1,
+        "outOfRange": 0,
+        "footprintsLost": 2
+      },
+      "new": {
+        "latencyMs": 10975.189899999998,
+        "tokens": 567,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "repatch-mixed-footprints",
+      "legacy": {
+        "latencyMs": 12925.26410000003,
+        "tokens": 938,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 1,
+        "outOfRange": 0,
+        "footprintsLost": 3
+      },
+      "new": {
+        "latencyMs": 11010.62109999999,
+        "tokens": 560,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "inject-addresses",
+      "legacy": {
+        "latencyMs": 12825.137399999949,
+        "tokens": 859,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11407.990300000063,
+        "tokens": 614,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "inject-ignore-rules",
+      "legacy": {
+        "latencyMs": 12378.778700000024,
+        "tokens": 702,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11676.467900000047,
+        "tokens": 679,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "inject-json",
+      "legacy": {
+        "latencyMs": 12031.639499999932,
+        "tokens": 596,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11941.117599999998,
+        "tokens": 639,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "inject-universe-999",
+      "legacy": {
+        "latencyMs": 11982.280000000028,
+        "tokens": 579,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 2,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11783.666399999987,
+        "tokens": 616,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "ambiguous-some",
+      "legacy": {
+        "latencyMs": 12336.53449999995,
+        "tokens": 550,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 12216.462300000014,
+        "tokens": 588,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "unknown-type",
+      "legacy": {
+        "latencyMs": 11761.723100000061,
+        "tokens": 562,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 11775.252899999963,
+        "tokens": 654,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": false,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "long-request",
+      "legacy": {
+        "latencyMs": 13470.361599999946,
+        "tokens": 1184,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 10856.076900000102,
+        "tokens": 744,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    },
+    {
+      "id": "add-hindi-english",
+      "legacy": {
+        "latencyMs": 12157.452900000033,
+        "tokens": 677,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      },
+      "new": {
+        "latencyMs": 12436.651500000036,
+        "tokens": 655,
+        "attempts": 1,
+        "schemaValid": true,
+        "intentCorrect": true,
+        "collisions": 0,
+        "outOfRange": 0,
+        "footprintsLost": 0
+      }
+    }
+  ],
+  "note": "Intent prompt v1. Latency in this run is INVALID: it included the harness pacing wait (fixed afterwards). Accuracy, collision and token figures are valid."
+}

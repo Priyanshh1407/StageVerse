@@ -7,20 +7,12 @@ import { toast } from 'sonner';
 export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixtures, fixtures = [] }) {
   const [profiles, setProfiles] = useState([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
-
-  // Selection State
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [quantity, setQuantity] = useState(8);
   const [universe, setUniverse] = useState(1);
   const [address, setAddress] = useState(1);
   const [logic, setLogic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-
-  // ... (Modal State)
-
-  // ... (fetchProfiles)
-
-  // Implemented AI Patch
   const handleAiPatch = async () => {
     if (!logic.trim()) {
       toast.error("Please enter a prompt (e.g. 'Patch 8 beams')");
@@ -49,11 +41,11 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
       } else if (json.patch && Array.isArray(json.patch)) {
         const newFixtures = json.patch.map(item => ({
           profile: item.type || 'Generic',
-          mode: 'Standard',
-          channels: 16,
+          mode: item.mode || 'Standard',
+          channels: item.channels || 16, // footprint from the allocator (no longer forced to 16)
           quantity: 1,
           patch: 'Auto',
-          address: item.address,
+          address: item.address,   // assigned by lib/dmx/allocate, collision-free
           universe: item.universe,
           cue: 'Ready',
           cueColor: 'blue',
@@ -78,14 +70,12 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
   };
 
   const handleCalculate = () => {
-    // 1. AI Interdiction
     if (logic && logic.trim().length > 0) {
       handleAiPatch();
       return;
     }
 
     if (!onAddFixtures) return;
-    // ... (rest of manual logic)
     if (!selectedProfileId) {
       toast.error("Please select a fixture profile");
       return;
@@ -125,13 +115,11 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
   const [newModeName, setNewModeName] = useState("Standard");
   const [newChannels, setNewChannels] = useState(16);
   const [isCreating, setIsCreating] = useState(false);
-
-  // Fetch Profiles on Mount
   useEffect(() => {
     fetchProfiles();
   }, []);
 
-  const fetchProfiles = async () => {
+  async function fetchProfiles() {
     try {
       const res = await fetch('/api/production/fixture-profiles');
       const data = await res.json();
@@ -170,7 +158,6 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
         await fetchProfiles(); // Reload list
         setSelectedProfileId(data.data._id); // Select new profile
         setShowModal(false);
-        // Reset form
         setNewManufacturer("");
         setNewModel("");
         setNewChannels(16);
@@ -188,7 +175,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
   return (
     <aside className="w-full h-full flex flex-col relative z-20 shadow-2xl bg-[#16202a]">
 
-      {/* 1. Header (Fixed Height) */}
+      {}
       <div className="flex-none p-6 border-b border-[#2c3e50] bg-[#16202a]">
         <h1 className="text-white font-bold text-xl tracking-tight leading-none">Intelligent Patch Studio</h1>
         <div className="flex items-center gap-2 mt-2">
@@ -199,7 +186,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
         </div>
       </div>
 
-      {/* 2. Scrollable Content */}
+      {}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 min-h-0">
         <div>
           <h2 className="text-white font-bold text-xs uppercase tracking-[0.2em] text-[#90b2cb] border-b border-[#2c3e50] pb-3 mb-6 flex items-center gap-2">
@@ -266,7 +253,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
         </div>
       </div>
 
-      {/* 3. Footer (Fixed at Bottom) */}
+      {}
       <div className="flex-none p-6 border-t border-[#2c3e50] bg-[#16202a] z-10 relative">
         <button
           onClick={handleCalculate}
@@ -278,7 +265,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
         </button>
       </div>
 
-      {/* CREATE PROFILE MODAL */}
+      {}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">

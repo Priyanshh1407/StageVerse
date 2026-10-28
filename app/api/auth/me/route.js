@@ -1,30 +1,24 @@
-import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { apiError } from '@/lib/api';
+import dbConnect from '@/lib/db';
+import User from '@/models/User';
+import { verifyAuth } from '@/lib/auth';
+import { AuthError } from '@/lib/errors';
 
-export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token");
-
-  if (!token) {
-    return NextResponse.json({ user: null }, { status: 401 });
-  }
-
+// The JWT only carries { userId, role }, so profile fields are read from the database.
+// This also means a renamed user sees the new name without logging in again.
+export async function GET(req) {
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token.value, secret);
+    const session = await verifyAuth(req);
+    await dbConnect();
+    const user = await User.findById(session.userId).select('name email role avatar');
+    if (!user) throw new AuthError('Account no longer exists');
 
-    // Return the user data needed for the Navbar
-    const user = {
-      id: payload.userId,
-      name: payload.name || "User", // Ensure these were saved in your JWT payload during login
-      email: payload.email,
-      role: payload.role
-    };
-
-    return NextResponse.json({ user }, { status: 200 });
+    return NextResponse.json({
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar }
+    }, { status: 200 });
   } catch (error) {
-    // If token is invalid/expired
-    return NextResponse.json({ user: null }, { status: 401 });
+    if (error.status === 401) return NextResponse.json({ user: null }, { status: 401 });
+    return apiError(error, '/api/auth/me');
   }
 }

@@ -6,8 +6,6 @@ export const metadata = {
   title: 'Memory Vault | StageVerse',
   description: 'Your concert history and media collection.',
 };
-
-// Optional: A nice loading spinner while the URL params are read
 function VaultLoader() {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-[#f5f7f8] dark:bg-[#101b22]">

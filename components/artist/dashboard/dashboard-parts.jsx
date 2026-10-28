@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 import UserSearchInput from '@/components/common/UserSearchInput';
 import { MapPin, ArrowRight, Ticket, AlertTriangle, Heart, TrendingUp, Sun, DollarSign, BarChart3, ChevronRight, CheckCircle, Lightbulb } from 'lucide-react';
-
-// 1. Live Show Hero Card
 export function LiveShowCard({ data }) {
   if (!data) return null; // Safety check
 
@@ -15,7 +13,7 @@ export function LiveShowCard({ data }) {
         style={{ backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 100%), url("${data.image}")` }}
       />
 
-      {/* Assign LD Overlay */}
+      {}
       <AssignProductionOverlay eventId={data.id} currentAssignee={data.assignedTo} />
 
       <div className="relative z-10 flex flex-col h-full justify-between p-6 md:p-10">
@@ -106,8 +104,6 @@ function AssignProductionOverlay({ eventId, currentAssignee }) {
     </div>
   );
 }
-
-// 2. Ticket Sales Component (Wide/Rectangular)
 export function TicketStatsCard({ data }) {
   if (!data) return null;
 
@@ -116,7 +112,7 @@ export function TicketStatsCard({ data }) {
   return (
     <div className="w-full bg-white dark:bg-[#223949] rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-8 items-center justify-between">
 
-      {/* Left: Main Progress */}
+      {}
       <div className="flex-1 w-full flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-slate-800 dark:text-white">
@@ -145,7 +141,7 @@ export function TicketStatsCard({ data }) {
         </div>
       </div>
 
-      {/* Right: Breakdown Stats */}
+      {}
       <div className="flex w-full md:w-auto gap-4 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-4 md:pt-0 md:pl-8">
         <div className="flex-1 text-center min-w-[100px]">
           <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">VIP Tiers</p>
@@ -161,21 +157,7 @@ export function TicketStatsCard({ data }) {
     </div>
   );
 }
-
-// 3. Merch / Alert Box
 export function MerchAlert({ data, onClick }) {
-  // This looks like a component prop, not a direct alert call inside logic.
-  // Checking previous grep... "onClick={() => alert(...)}" ?
-  // Grep said line 110: export function MerchAlert({ data, onClick }) { ... matches "alert(" ? No.
-  // Wait, the grep output was:
-  // {"File":"...dashboard-parts.jsx","LineNumber":110,"LineContent":"export function MerchAlert({ data, onClick }) {"}
-  // Why did it match? Maybe "Alert" in MerchAlert?
-  // Ah, grep was case insensitive `alert(`. 
-  // "MerchAlert" matches.
-  // I should check if there is actual alert usage inside.
-  // The grep didn't show usage for this file other than the definition line which is a false positive if I'm not careful.
-  // Let's Skip this file unless I see actual usage.
-  // Grep match: "MerchAlert" -> "Alert" is part of the name.
 
   if (!data || !data.active) return null;
 
@@ -209,13 +191,11 @@ export function MerchAlert({ data, onClick }) {
         )}
       </div>
 
-      {/* Decorative bg elements */}
+      {}
       <div className="absolute top-0 right-0 p-8 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-white/20 transition-colors"></div>
     </div>
   );
 }
-
-// 4. Quick Stats Row
 export function StatGrid({ data, onAction }) {
   const iconMap = {
     Heart: Heart,
@@ -260,8 +240,6 @@ export function StatGrid({ data, onAction }) {
     </div>
   );
 }
-
-// 5. Upcoming Stops (All Concerts)
 export function UpcomingStops({ data }) {
   if (!data || data.length === 0) return null;
 
@@ -273,7 +251,7 @@ export function UpcomingStops({ data }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {data.map((stop, i) => (
           <div key={i} className="bg-white dark:bg-[#223949] p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-5 group cursor-pointer hover:border-[#0d93f2]/50 transition-all hover:shadow-md relative overflow-hidden">
-            {/* Ticket Progress Stripe */}
+            {}
             <div className="absolute bottom-0 left-0 h-1 bg-slate-100 dark:bg-slate-700 w-full">
               <div className="h-full bg-[#0d93f2]" style={{ width: `${stop.percentSold || 0}%` }}></div>
             </div>
@@ -300,8 +278,6 @@ export function UpcomingStops({ data }) {
     </div>
   );
 }
-
-// 6. Smart Day Sheet Widget (Redesigned)
 export function DaySheetCard({ onClick, data }) {
   const defaultSchedule = [
     { time: "14:00", event: "Load In", status: "past" },
@@ -317,7 +293,7 @@ export function DaySheetCard({ onClick, data }) {
       onClick={onClick}
       className="relative overflow-hidden rounded-2xl shadow-xl cursor-pointer group h-full min-h-[350px] bg-[#0b1219] border border-slate-800"
     >
-      {/* Background Gradient */}
+      {}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d93f2]/5 to-transparent pointer-events-none"></div>
 
       <div className="relative z-10 p-6 flex flex-col h-full">
@@ -328,7 +304,7 @@ export function DaySheetCard({ onClick, data }) {
             </div>
             <div>
               <h3 className="text-lg font-bold text-white leading-none">Day Sheet</h3>
-              <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Today's Schedule</p>
+              <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Today&apos;s Schedule</p>
             </div>
           </div>
           <div className="bg-white/5 p-2 rounded-full group-hover:bg-white/10 transition-colors">
@@ -337,7 +313,7 @@ export function DaySheetCard({ onClick, data }) {
         </div>
 
         <div className="flex-1 relative">
-          {/* Glowing Timeline Line */}
+          {}
           <div className="absolute left-[23px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-[#0d93f2] via-[#0d93f2]/20 to-transparent shadow-[0_0_10px_#0d93f2]"></div>
 
           <div className="space-y-7">
@@ -347,7 +323,7 @@ export function DaySheetCard({ onClick, data }) {
 
               return (
                 <div key={i} className={`relative pl-14 flex items-center justify-between group/item ${isPast ? 'opacity-40 grayscale' : 'opacity-100'}`}>
-                  {/* Timeline Node */}
+                  {}
                   <div className={`absolute left-[16px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 z-10 transition-all duration-500
                                     ${isActive
                       ? 'bg-[#0d93f2] border-white shadow-[0_0_20px_#0d93f2] scale-125'

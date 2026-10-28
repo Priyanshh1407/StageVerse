@@ -1,38 +1,33 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
+import { parseBody, pollCreateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Poll from '@/models/Poll';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor, SHOW_CONTROL } from '@/lib/authz';
 
 export async function POST(req) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const body = await req.json();
-        const { eventId, question, options } = body;
+        const { eventId, question, options } = parseBody(pollCreateSchema, await req.json());
+        const event = await loadEventFor(artist, eventId, ['artist']);
 
-        // Validation
-        if (!eventId || !question || !options || options.length < 2) {
-            return NextResponse.json({ error: 'Invalid poll data' }, { status: 400 });
-        }
-
-        // Check if a poll already exists for this event? 
-        // For now, let's assume one active poll per event or just create a new one.
-        // Let's create a new one.
-
+        // Polls configured before the show start closed; the artist opens one
+        // from the live-show screen (PUT /api/fan/poll), which is when fans see it.
         const newPoll = await Poll.create({
-            eventId,
+            eventId: event._id,
             question,
-            options: options.map(opt => ({ text: opt, votes: 0 })),
-            isActive: true // Activate immediately? Or separate step? Let's say active for now.
+            options: options.map(opt => ({ text: String(opt), votes: 0 })),
+            isActive: false,
+            createdBy: artist.userId,
         });
 
         return NextResponse.json({ success: true, poll: newPoll });
 
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/artist/poll');
     }
 }
 
@@ -40,18 +35,17 @@ export async function GET(req) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
         const eventId = searchParams.get('eventId');
 
         if (!eventId) return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
 
-        const polls = await Poll.find({ eventId }).sort({ createdAt: -1 });
+        const event = await loadEventFor(artist, eventId, SHOW_CONTROL);
+        const polls = await Poll.find({ eventId: event._id }).sort({ createdAt: -1 });
 
         return NextResponse.json({ success: true, polls });
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/artist/poll');
     }
 }

@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,41 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# logs
+*.log
+
+# eval harness self-checks (not evidence)
+evals/patch/results/FAKE-*.json
+
+# 70 MB HDR environment map from the 3D prototype; unreferenced, keep it out of git history
+public/textures/env.exr
+
+# benchmark outputs (only the recorded before/after evidence is committed)
+bench/results/*
+!bench/results/live-before.json
+!bench/results/live-after.json
+
+# Songs are copyrighted recordings. By the owner's decision the two demo tracks are committed
+# (so the demo works after checkout); any other track stays local. The analysis/cue files
+# derived from them (beat times, our lighting program) are committed too.
+public/audio/*.mp3
+public/audio/*.wav
+public/audio/*.m4a
+public/audio/*.ogg
+public/audio/*.flac
+!public/audio/A Sky Full of Stars.mp3
+!public/audio/Yellow.mp3
+!bench/results/stage-*.json
+
+# Old /test-3d 3D prototype (replaced by the homepage show, docs/homepage-show.md). Kept on disk
+# for reference, never committed: ~12 MB of models and the code that used them.
+/app/test-3d/
+/components/canvas/
+/public/models/
+/public/moving-head/
+/public/low_moving_head.glb
+/public/scene-transformed.glb
+/public/strobe.glb
+/public/truss.glb
+/public/tunnel-transformed.glb

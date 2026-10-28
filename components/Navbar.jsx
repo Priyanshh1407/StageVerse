@@ -13,8 +13,6 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
-
-  // 1. Check Cookie via API on Mount
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -35,8 +33,6 @@ export default function Navbar() {
 
     checkSession();
   }, []);
-
-  // 2. Logout Function
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' }); 
@@ -48,8 +44,6 @@ export default function Navbar() {
       console.error('Logout failed', err);
     }
   };
-
-  // 3. Helper to get the correct Dashboard URL based on Role
   const getDashboardLink = () => {
     if (!user) return '/login';
     const role = (user.role || '').toLowerCase();
@@ -81,7 +75,7 @@ export default function Navbar() {
       <header className="fixed top-0 z-50 w-full bg-black/60 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
         <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-6 lg:px-12">
           
-          {/* Logo */}
+          {}
           <Link href="/" className="flex items-center gap-2 cursor-pointer group" onClick={() => setIsOpen(false)}>
             <Star className="w-8 h-8 text-[#00d4ff] group-hover:text-white transition-colors" />
             <span className="text-xl font-bold tracking-widest text-white uppercase group-hover:text-[#00d4ff] transition-colors">
@@ -89,7 +83,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Nav */}
+          {}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((item) => {
               const isActive = pathname === item.href;
@@ -114,14 +108,13 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Actions & Mobile Toggle */}
+          {}
           <div className="flex items-center gap-4">
             
-            {/* --- LOADING STATE --- */}
+            {}
             {isLoading ? (
                <div className="hidden sm:block w-24 h-8 bg-white/5 animate-pulse rounded-full"></div>
             ) : user ? (
-              // LOGGED IN VIEW
               <div className="hidden sm:flex items-center gap-4 pl-4 border-l border-white/10">
                 <div className="flex flex-col items-end leading-tight">
                     <span className="text-xs text-slate-400 uppercase tracking-wider">Welcome</span>
@@ -144,7 +137,6 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              // LOGGED OUT VIEW
               <div className="hidden sm:flex items-center gap-4">
                 <Link href="/login" className="text-sm font-bold text-slate-300 uppercase transition-colors hover:text-white hover:underline decoration-[#00d4ff] underline-offset-4">
                   Login
@@ -155,7 +147,7 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Mobile Menu Button */}
+            {}
             <button 
               className="md:hidden text-white hover:text-[#00d4ff] transition-colors p-1"
               onClick={() => setIsOpen(!isOpen)}
@@ -167,7 +159,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Menu Dropdown */}
+      {}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -201,7 +193,6 @@ export default function Navbar() {
               
               <div className="pt-6 flex flex-col gap-4 border-t border-white/10">
                 {user ? (
-                   // MOBILE LOGGED IN
                    <div className="flex flex-col gap-4">
                       <Link 
                         href={getDashboardLink()}
@@ -224,7 +215,6 @@ export default function Navbar() {
                       </button>
                    </div>
                 ) : (
-                   // MOBILE LOGGED OUT
                    <div className="grid grid-cols-2 gap-4">
                     <Link href="/login" onClick={() => setIsOpen(false)} className="py-3 rounded-lg border border-white/10 text-white font-bold text-center hover:bg-white/5 transition-colors uppercase">
                       Login

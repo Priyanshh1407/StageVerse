@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
+import { parseBody, eventCreateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue'; // Registry
 import { verifyAuth } from '@/lib/auth';
-
-// GET: Public (Published Only) OR Organizer (My Events)
+import { requireRole } from '@/lib/authz';
+import { nextEventId } from '@/lib/counters';
 export async function GET(req) {
   try {
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const mode = searchParams.get('mode'); // 'organizer' or null
-
-    // 1. Organizer Mode
     if (mode === 'organizer') {
       const user = await verifyAuth(req);
-      if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
       const events = await Event.find({ organizerId: user.userId })
         .populate('venue')
@@ -22,8 +21,6 @@ export async function GET(req) {
 
       return NextResponse.json({ success: true, data: events });
     }
-
-    // 2. Public Mode (Default) -> Only Published/Scheduled
     const events = await Event.find({
       status: { $in: ['Published', 'Scheduled', 'Live'] }
     })
@@ -34,43 +31,30 @@ export async function GET(req) {
     return NextResponse.json({ success: true, events });
 
   } catch (error) {
-    console.error('Failed to fetch events', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return apiError(error, '/api/events');
   }
 }
-
-// POST: Create Event (Organizer Only)
 export async function POST(req) {
   try {
     await dbConnect();
     const user = await verifyAuth(req);
-    if (!user || user.role !== 'organizer') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    requireRole(user, 'organizer');
 
-    const body = await req.json();
-    console.log("CREATE EVENT BODY:", body); // DEBUG LOG
-    console.log("ARTIST ID LINK:", body.artistId); // DEBUG LOG
-
-    // Generate short ID
-    // Note: In production, use a more robust counter/sequence
-    const count = await Event.countDocuments();
-    const eventId = 1000 + count + 1;
+    // The schema whitelists client fields, so server-owned ones (organizerId, eventId, sold...) can't be set
+    const fields = parseBody(eventCreateSchema, await req.json());
+    const eventId = await nextEventId();
 
     const newEvent = new Event({
-      ...body,
+      ...fields,
       eventId,
       organizerId: user.userId,
-      // artistId is passed in body if selected
     });
 
     const savedEvent = await newEvent.save();
-    console.log("SAVED EVENT:", savedEvent); // DEBUG LOG to confirm artistId is saved
 
     return NextResponse.json({ success: true, data: savedEvent });
 
   } catch (error) {
-    console.error("Create Event Error:", error);
-    return NextResponse.json({ error: error.message || 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/events');
   }
 }

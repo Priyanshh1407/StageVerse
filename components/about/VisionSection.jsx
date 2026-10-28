@@ -14,7 +14,7 @@ export default function VisionSection() {
             Building the <span className="text-[#00E5FF]">meta-layer</span> for live events.
         </h2>
         <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto">
-            We envision a future where the boundary between physical and digital attendance dissolves. Where you can feel the bass in your chest whether you're in the front row or in your living room. We are building the infrastructure for the next generation of entertainment.
+            We envision a future where the boundary between physical and digital attendance dissolves. Where you can feel the bass in your chest whether you&apos;re in the front row or in your living room. We are building the infrastructure for the next generation of entertainment.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-white/10 pt-12">
           <Stat number="2M+" label="Tickets Sold" />

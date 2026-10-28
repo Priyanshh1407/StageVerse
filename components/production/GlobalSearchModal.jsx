@@ -7,29 +7,30 @@ import { useRouter } from 'next/navigation';
 
 export default function GlobalSearchModal({ isOpen, onClose }) {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState(null);
+    const [fetchedResults, setResults] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef(null);
     const router = useRouter();
-
-    // Auto-focus input when opened
-    useEffect(() => {
-        if (isOpen) {
-            setTimeout(() => inputRef.current?.focus(), 50);
-        } else {
+    // Clear the search when the modal closes (adjusted during render, not in an effect)
+    const [wasOpen, setWasOpen] = useState(isOpen);
+    if (isOpen !== wasOpen) {
+        setWasOpen(isOpen);
+        if (!isOpen) {
             setQuery('');
             setResults(null);
             setSelectedIndex(0);
         }
-    }, [isOpen]);
-
-    // Handle Search Fetch
+    }
     useEffect(() => {
-        if (!query || query.length < 2) {
-            setResults(null);
-            return;
-        }
+        if (!isOpen) return;
+        const t = setTimeout(() => inputRef.current?.focus(), 50);
+        return () => clearTimeout(t);
+    }, [isOpen]);
+    // Queries shorter than 2 characters show nothing (derived, so no state reset needed)
+    const results = query.length >= 2 ? fetchedResults : null;
+    useEffect(() => {
+        if (!query || query.length < 2) return;
 
         const timer = setTimeout(async () => {
             setIsLoading(true);
@@ -49,8 +50,6 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
         return () => clearTimeout(timer);
     }, [query]);
-
-    // Flatten results for keyboard navigation
     const flatResults = useMemo(() => {
         if (!results) return [];
         const list = [];
@@ -61,8 +60,6 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
         return list;
     }, [results]);
-
-    // Keyboard Navigation
     useEffect(() => {
         if (!isOpen) return;
 
@@ -90,7 +87,6 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, flatResults, selectedIndex, router, onClose]);
 
-
     if (!isOpen) return null;
 
     return (
@@ -99,7 +95,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                 className="w-full max-w-2xl bg-[#0F0F10] border border-[#2c3e50] rounded-xl shadow-2xl overflow-hidden flex flex-col"
                 onClick={e => e.stopPropagation()}
             >
-                {/* Header / Input */}
+                {}
                 <div className="flex items-center gap-3 p-4 border-b border-[#2c3e50]">
                     <Search className="w-5 h-5 text-gray-500" />
                     <input
@@ -115,7 +111,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                     </button>
                 </div>
 
-                {/* Results Area */}
+                {}
                 <div className="max-h-[60vh] overflow-y-auto custom-scrollbar bg-[#16202a]">
 
                     {isLoading && (
@@ -128,19 +124,18 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                     {!isLoading && results && (
                         <div className="p-2 space-y-4">
 
-                            {/* No Results */}
+                            {}
                             {flatResults.length === 0 && (
                                 <div className="text-center py-12 text-gray-500">
-                                    No results found for "{query}"
+                                    No results found for &quot;{query}&quot;
                                 </div>
                             )}
 
-                            {/* SHOWS */}
+                            {}
                             {results.events.length > 0 && (
                                 <div>
                                     <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-3 py-2">Shows</h3>
                                     {results.events.map((event, idx) => {
-                                        // Calculate absolute index in flat list
                                         const absIndex = idx;
                                         const isSelected = selectedIndex === absIndex;
 
@@ -168,7 +163,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                                 </div>
                             )}
 
-                            {/* TASKS */}
+                            {}
                             {results.tasks.length > 0 && (
                                 <div>
                                     <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-3 py-2">Logistics Tasks</h3>
@@ -200,7 +195,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                                 </div>
                             )}
 
-                            {/* PATCHES */}
+                            {}
                             {results.patches.length > 0 && (
                                 <div>
                                     <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-3 py-2">Patches</h3>
@@ -235,7 +230,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                         </div>
                     )}
 
-                    {/* Empty State / Hints */}
+                    {}
                     {!query && (
                         <div className="p-8 text-center bg-[#16202a]">
                             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#1e2a36] mb-4">
@@ -250,7 +245,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
                 </div>
 
-                {/* Footer */}
+                {}
                 <div className="bg-[#141b22] px-4 py-2 border-t border-[#2c3e50] flex items-center justify-between text-[10px] text-gray-500 font-mono">
                     <div className="flex gap-4">
                         <span><kbd className="bg-[#27272A] px-1 rounded border border-[#3F3F46] text-gray-300">↑↓</kbd> Navigate</span>

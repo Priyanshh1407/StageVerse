@@ -9,18 +9,12 @@ import VenueIntel from '@/components/artist/daysheet/VenueIntel';
 
 import { useParams } from 'next/navigation';
 
-// Using use() hook or props for params in NextJS 14/15, but for standard compatibility:
-// Note: In Next 15 params is a Promise, but let's assume standard prop behavior first or handle it.
-// Next.js 15 requires awaiting params.
-
 export default function DaySheetDetailPage() {
     const params = useParams();
     const id = params?.id;
 
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-
-    // No need for separate useEffect to unwrap params anymore with useParams
 
     useEffect(() => {
         if (!id) return;
@@ -40,8 +34,6 @@ export default function DaySheetDetailPage() {
         }
         loadData();
     }, [id]);
-
-    // HANDLERS (Wait for API)
     const handleUpdateSchedule = async (newSchedule, notify = false) => {
         try {
             await fetch(`/api/artist/day-sheet/${id}`, {
@@ -52,7 +44,6 @@ export default function DaySheetDetailPage() {
                     notifyTeam: notify
                 })
             });
-            // Update local state is handled by component optimistic update or re-fetch
         } catch (e) {
             console.error("Failed to save schedule", e);
         }

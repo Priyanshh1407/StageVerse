@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import Event from '@/models/Event';
@@ -9,14 +10,10 @@ export async function GET(req, { params }) {
         const { id } = await params;
 
         console.log(`[API] Fetching artist with ID: ${id}`);
-
-        // Validate ID format (prevent CastError crash)
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
             console.warn(`[API] Invalid Metadata ID format: ${id}`);
             return NextResponse.json({ success: false, error: 'Artist not found (Invalid ID)' }, { status: 404 });
         }
-
-        // 1. Fetch Artist Profile
         const artist = await User.findById(id).select('name role bio location avatar socials stats').lean();
 
         if (!artist) {
@@ -25,8 +22,6 @@ export async function GET(req, { params }) {
         }
 
         console.log(`[API] Found artist: ${artist.name}`);
-
-        // 2. Fetch Artist's Events (Upcoming)
         const events = await Event.find({
             $or: [
                 { artistId: artist._id },
@@ -38,8 +33,6 @@ export async function GET(req, { params }) {
             .populate('venue', 'name city')
             .sort({ date: 1 })
             .lean();
-
-        // 3. Format Response
         const data = {
             id: artist._id,
             name: artist.name,
@@ -63,7 +56,6 @@ export async function GET(req, { params }) {
         return NextResponse.json({ success: true, data });
 
     } catch (error) {
-        console.error('Failed to fetch artist details:', error);
-        return NextResponse.json({ success: false, error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/[id]');
     }
 }

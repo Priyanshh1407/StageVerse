@@ -30,7 +30,7 @@ export default function LeaderboardModal({
 
             <div className="relative w-full max-w-lg bg-[#101b23] rounded-2xl border border-[#315168] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
 
-                {/* Header */}
+                {}
                 <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6 text-center relative overflow-hidden">
                     <div className="relative z-10">
                         <h2 className="text-white text-2xl font-black uppercase tracking-wider flex items-center justify-center gap-2">
@@ -42,14 +42,13 @@ export default function LeaderboardModal({
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
                 </div>
 
-
                 <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white p-2 rounded-full hover:bg-white/10 z-20">
                     <X className="w-5 h-5" />
                 </button>
 
-                {/* Content */}
+                {}
                 <div className="p-6">
-                    {/* GUESTLIST CONFIRMATION OVERLAY */}
+                    {}
                     {guestlistUser ? (
                         <div className="bg-[#182934] p-6 rounded-xl border border-[#315168] text-center animate-in fade-in zoom-in-95">
                             <div className="w-16 h-16 bg-[#0d93f2]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#0d93f2]/20">
@@ -57,7 +56,7 @@ export default function LeaderboardModal({
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Add {guestlistUser.name} to Guestlist?</h3>
 
-                            {/* USER DETAILS */}
+                            {}
                             <div className="bg-[#101b23] p-4 rounded-lg text-left mb-6 text-sm border border-[#315168]/50">
                                 <div className="grid grid-cols-[80px_1fr] gap-2">
                                     <span className="text-[#90b2cb]">Email:</span>
@@ -92,7 +91,7 @@ export default function LeaderboardModal({
                             </div>
                         </div>
                     ) : (
-                        /* NORMAL LEADERBOARD LIST */
+                        
                         loading ? (
                             <div className="text-center py-8 text-[#90b2cb]">
                                 <div className="animate-spin w-8 h-8 border-2 border-[#0d93f2] border-t-transparent rounded-full mx-auto mb-2" />
@@ -102,7 +101,7 @@ export default function LeaderboardModal({
                             <div className="space-y-3">
                                 {winners.map((winner, index) => (
                                     <div key={winner._id} className="flex items-center gap-4 bg-[#182934] p-4 rounded-xl border border-[#315168]/50 relative overflow-hidden group">
-                                        {/* Rank Badge */}
+                                        {}
                                         <div className={`flex-none w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold border-2 
                           ${index === 0 ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/50' :
                                                 index === 1 ? 'bg-slate-400/10 text-slate-300 border-slate-400/50' :
@@ -110,19 +109,19 @@ export default function LeaderboardModal({
                                             {index + 1}
                                         </div>
 
-                                        {/* User Info */}
+                                        {}
                                         <div className="flex-1 min-w-0">
                                             <p className="text-white font-bold truncate">{winner.userId?.name || 'Fan'}</p>
                                             <p className="text-[#90b2cb] text-xs truncate">{winner.userId?.email}</p>
                                         </div>
 
-                                        {/* Score */}
+                                        {}
                                         <div className="text-right">
                                             <p className="text-[#0d93f2] font-black text-xl">{winner.score}</p>
                                             <p className="text-[#90b2cb] text-[10px] uppercase font-bold tracking-wider">PTS</p>
                                         </div>
 
-                                        {/* Action */}
+                                        {}
                                         <button
                                             onClick={() => onAddToGuestlist && onAddToGuestlist(winner.userId)}
                                             className="ml-2 p-2 bg-[#0d93f2]/10 hover:bg-[#0d93f2] text-[#0d93f2] hover:text-white rounded-lg transition-colors"

@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import mongoose from 'mongoose';
 import Event from '@/models/Event';
@@ -12,19 +13,10 @@ import { verifyAuth } from '@/lib/auth';
 export async function GET(req) {
     try {
         await dbConnect();
-
-        // 1. Auth Check
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        // 2. Fetch User's Events (Shows + Requests)
-        const events = await Event.find({
+                const events = await Event.find({
             $or: [{ organizerId: user.userId }, { assignedTo: user.userId }]
         }).populate('venue').sort({ date: 1 });
-
-        // 3. Map Events to Dashboard Format
         const shows = events.map(event => {
             return {
                 id: event.eventId || event._id.toString(),
@@ -33,7 +25,6 @@ export async function GET(req) {
                 venue: event.city || (event.venue?.name || 'Unknown Venue'),
                 date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                // Prioritize 'productionStatus' (requested) if it exists and differs from public status
                 status: (event.productionStatus && event.productionStatus !== 'none') ? event.productionStatus : event.status,
                 originalStatus: event.status, // Keep original for reference
                 type: event.genre || 'General',
@@ -41,16 +32,13 @@ export async function GET(req) {
                 image: event.images?.hero || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
             };
         });
-
-        // 4. Calculate Stats
         const activeShows = shows.filter(s => s.status === 'active' || s.productionStatus === 'active');
         const archivedShows = shows.filter(s => s.status === 'archived');
         const requestedShows = shows.filter(s => s.status === 'requested' || s.productionStatus === 'requested');
-
-        // CHECK FOR CONFLICTS (Dynamic Analysis)
         let conflictCount = 0;
-        // Include 'requested' events so we see their tasks (e.g. New Assignment)
-        const activeEventIds = events.filter(e => e.status === 'active' || e.status === 'requested').map(e => e._id);
+        // A show is in production when its status or its productionStatus says so
+        const inProduction = (e) => ['active', 'requested'].includes(e.status) || ['active', 'requested'].includes(e.productionStatus);
+        const activeEventIds = events.filter(inProduction).map(e => e._id);
         if (activeEventIds.length > 0) {
             const patches = await Patch.find({ eventId: { $in: activeEventIds } });
 
@@ -66,9 +54,6 @@ export async function GET(req) {
             pending: requestedShows.length,
             conflicts: conflictCount
         };
-
-        // 5. FETCH REAL ACTIVITY LOGS
-        // Limit to last 10
         const logs = await Activity.find({ userId: user.userId })
             .sort({ timestamp: -1 })
             .limit(10);
@@ -80,13 +65,7 @@ export async function GET(req) {
             type: log.type,
             link: log.link
         }));
-
-        // 6. Mock Tasks (Still Mocked as requested to keep "Personal Planner")
-        // 6. Fetch Real Tasks
-        // We want tasks assigned to "Production Crew" OR tasks for these events in general
         const taskColorMap = { High: 'red', Medium: 'amber', Low: 'blue', Done: 'green' };
-
-        // Use existing activeEventIds from earlier scope
 
         const dbTasks = await Task.find({
             eventId: { $in: activeEventIds },
@@ -119,8 +98,7 @@ export async function GET(req) {
         });
 
     } catch (error) {
-        console.error("Dashboard API Error:", error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/production/dashboard');
     }
 }
 

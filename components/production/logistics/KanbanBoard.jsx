@@ -6,7 +6,6 @@ import { useState, useRef, useEffect } from 'react';
 
 export default function KanbanBoard({ columns = [], onDragEnd, onEditTask, onDeleteTask }) {
   return (
-    // FIX: Background #0F0F10
     <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 bg-[#0F0F10]">
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex h-full gap-6 min-w-max pb-4">
@@ -21,7 +20,6 @@ export default function KanbanBoard({ columns = [], onDragEnd, onEditTask, onDel
 
 function KanbanColumn({ data, onEditTask, onDeleteTask }) {
   return (
-    // FIX: Column Background #0F0F10 (Transparent) or very dark #121214, Border #27272A
     <div className={`flex flex-col w-80 bg-[#121214] rounded-xl border border-[#27272A] h-full max-h-full ${data.isGhost ? 'opacity-60' : ''}`}>
 
       <div className="p-4 flex items-center justify-between border-b border-[#27272A]">
@@ -52,8 +50,8 @@ function KanbanColumn({ data, onEditTask, onDeleteTask }) {
               ))
             ) : (
               <>
-                {/* Placeholder when empty, but we must render placeholder inside droppable always */}
-                {/* Only show "No tasks" if not dragging over? Optional. Keeping simple. */}
+                {}
+                {}
                 {provided.placeholder}
                 {data.cards.length === 0 && !snapshot.isDraggingOver && (
                   <div className="flex-1 flex flex-col items-center justify-center text-gray-600 h-32">

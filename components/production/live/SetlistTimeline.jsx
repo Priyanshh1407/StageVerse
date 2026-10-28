@@ -32,7 +32,6 @@ export default function SetlistTimeline({ items = [] }) {
 
 function TimelineItem({ item, index }) {
   const displayId = (index + 1).toString().padStart(2, '0');
-  // 1. COMPLETED ITEMS
   if (item.status === 'completed') {
     return (
       <div className="opacity-40 select-none pointer-events-none">
@@ -46,8 +45,6 @@ function TimelineItem({ item, index }) {
       </div>
     );
   }
-
-  // 2. LIVE ITEMS
   if (item.status === 'live') {
     return (
       <div className="relative">
@@ -62,8 +59,6 @@ function TimelineItem({ item, index }) {
       </div>
     );
   }
-
-  // 3. PENDING ITEMS (Default)
   return (
     <div className="group">
       <div className="flex gap-4 p-3 rounded-lg border border-[#223949] bg-[#101b22] hover:border-slate-600 transition-colors cursor-pointer">

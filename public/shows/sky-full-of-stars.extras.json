@@ -1,0 +1,57 @@
+{
+  "_note": "Hand-annotated structure of A Sky Full of Stars (Coldplay), by bar (1.92 s each at 125.1 BPM), from npm run song:bars. Piano intro; verse 1 at 0:16; drums build from 0:31; chorus 1 at 0:46; riser 1:02-1:17; first drop 1:17; verse 2 1:32 (quiet from 1:46); chorus 2 from 2:01, climbing from 2:26; the big drop 2:49-3:58; piano outro from 3:58.",
+  "sections": [
+    {
+      "fromBar": 0,
+      "kind": "intro"
+    },
+    {
+      "fromBar": 8,
+      "kind": "calm"
+    },
+    {
+      "fromBar": 16,
+      "kind": "build"
+    },
+    {
+      "fromBar": 24,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 32,
+      "kind": "build"
+    },
+    {
+      "fromBar": 40,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 48,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 55,
+      "kind": "calm"
+    },
+    {
+      "fromBar": 63,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 76,
+      "kind": "build"
+    },
+    {
+      "fromBar": 88,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 124,
+      "kind": "calm"
+    },
+    {
+      "fromBar": 136,
+      "kind": "outro"
+    }
+  ]
+}

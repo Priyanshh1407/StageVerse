@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import StudioNavbar from '@/components/production/StudioNavbar';
 import DashboardHeader from '@/components/production/dashboard/DashboardHeader';
 import ActiveShowsGrid from '@/components/production/dashboard/ActiveShowsGrid';
 import DashboardSidebar from '@/components/production/dashboard/DashboardSidebar';
-
-// Utility to handle API fetch
-// We removed MOCK_USER_DATA to force real data usage
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -61,38 +59,45 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-screen w-full bg-[#0F0F10] font-sans text-slate-300 overflow-hidden">
 
-      {/* 1. Global Nav */}
       <StudioNavbar />
 
-      {/* 2. Main Scrollable Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <main className="w-full max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10">
+        <motion.main
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.1 }
+            }
+          }}
+          className="w-full max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10"
+        >
 
-          {/* Header & Stats */}
-          {/* Mapping correct keys from API to Header props */}
-          <DashboardHeader
-            user={data.user}
-            stats={{
-              pending: data.stats.pending,
-              conflicts: data.stats.conflicts,
-              tasks: data.tasks ? data.tasks.length : 0
-            }}
-          />
+          <motion.div variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}>
+            <DashboardHeader
+              user={data.user}
+              stats={{
+                pending: data.stats.pending,
+                conflicts: data.stats.conflicts,
+                tasks: data.tasks ? data.tasks.length : 0
+              }}
+            />
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-            {/* LEFT COLUMN: Active Shows */}
-            <div className="lg:col-span-8 flex flex-col gap-6">
+            <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }} className="lg:col-span-8 flex flex-col gap-6">
               <ActiveShowsGrid initialActiveShows={data.shows} />
-            </div>
+            </motion.div>
 
-            {/* RIGHT COLUMN: Sidebar (Tasks & Activity) */}
-            <div className="lg:col-span-4 flex flex-col gap-8">
+            <motion.div variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }} className="lg:col-span-4 flex flex-col gap-8">
               <DashboardSidebar tasks={data.tasks} activity={data.activity} />
-            </div>
+            </motion.div>
 
           </div>
-        </main>
+        </motion.main>
       </div>
     </div>
   );

@@ -10,8 +10,6 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-
-// Default mock data if none provided
 const DEFAULT_DATA = [
   { date: 'Aug 01', velocity: 20 },
   { date: 'Aug 05', velocity: 45 },
@@ -27,14 +25,14 @@ export default function HypeChart({ data = DEFAULT_DATA, period = "Last 30 Days"
   return (
     <div className="bg-[#192734] rounded-xl border border-[#2c3b47] p-6 relative overflow-hidden h-full flex flex-col">
       
-      {/* Header Section */}
+      {}
       <div className="flex flex-wrap justify-between items-center mb-6 z-10">
         <div>
           <h3 className="text-xl font-bold text-white">Hype Analytics</h3>
           <p className="text-[#90b2cb] text-sm">Velocity Index (Sales + Social Mentions)</p>
         </div>
         
-        {/* Controls / Legend */}
+        {}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-[#0d93f2]"></span>
@@ -48,12 +46,12 @@ export default function HypeChart({ data = DEFAULT_DATA, period = "Last 30 Days"
         </div>
       </div>
 
-      {/* Chart Container */}
+      {}
       <div className="flex-1 min-h-[250px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <defs>
-              {/* Gradient Definition */}
+              {}
               <linearGradient id="colorVelocity" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#0d93f2" stopOpacity={0.3}/>
                 <stop offset="95%" stopColor="#0d93f2" stopOpacity={0}/>

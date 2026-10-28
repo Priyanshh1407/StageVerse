@@ -3,7 +3,6 @@
 import { ScrollText, FileJson, File, Share2 } from 'lucide-react';
 
 export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
-  // Calculate totals for summary
   const totalItems = gear.reduce((acc, item) => acc + item.count, 0) + (hazer ? 1 : 0);
   const activeGear = gear.filter(g => g.count > 0);
 
@@ -11,7 +10,7 @@ export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
     <aside className="w-full lg:w-80 flex-none">
       <div className="sticky top-24 flex flex-col gap-6">
 
-        {/* Receipt/Manifest */}
+        {}
         <div className="bg-[#1a2632] rounded-xl border border-[#223949] p-0 shadow-lg overflow-hidden">
           <div className="p-5 border-b border-[#223949] bg-black/20">
             <h3 className="text-white text-lg font-bold flex items-center gap-2">
@@ -61,7 +60,7 @@ export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
           </div>
         </div>
 
-        {/* Actions */}
+        {}
         <div className="bg-[#1a2632] rounded-xl border border-[#223949] p-5 shadow-lg">
           <h3 className="text-white text-sm font-bold mb-3 uppercase tracking-wider text-opacity-80">Export Options</h3>
           <div className="flex flex-col gap-2">

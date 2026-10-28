@@ -5,11 +5,8 @@ import { PlusCircle, Wand2, Info, ChevronDown, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtures = [] }) {
-   // ...
    const [profiles, setProfiles] = useState([]);
    const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
-
-   // Selection Inputs
    const [selectedProfileId, setSelectedProfileId] = useState("");
    const [quantity, setQuantity] = useState(8);
    const [role, setRole] = useState("Intro Sequence");
@@ -24,7 +21,6 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
 
       setIsGenerating(true);
       try {
-         // Create lightweight context
          const currentPatch = fixtures.map(f => ({
             u: f.universe,
             a: f.address,
@@ -48,12 +44,12 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
          } else if (json.patch && Array.isArray(json.patch)) {
             const newFixtures = json.patch.map(item => ({
                profile: item.type || 'Generic',
-               mode: 'Standard', // Default
-               channels: 16,     // Default assumption
+               mode: item.mode || 'Standard',
+               channels: item.channels || 16, // footprint from the allocator (no longer forced to 16)
                quantity: 1,
                patch: 'Auto',
-               address: item.address,   // Critical: Passing AI Address
-               universe: item.universe, // Critical: Passing AI Universe
+               address: item.address,   // assigned by lib/dmx/allocate, collision-free
+               universe: item.universe,
                cue: 'Ready',
                cueColor: 'blue',
                status: 'ok'
@@ -76,21 +72,17 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
          setIsGenerating(false);
       }
    };
-
-   // Modal State
    const [showModal, setShowModal] = useState(false);
    const [newManufacturer, setNewManufacturer] = useState("");
    const [newModel, setNewModel] = useState("");
    const [newModeName, setNewModeName] = useState("Standard");
    const [newChannels, setNewChannels] = useState(16);
    const [isCreating, setIsCreating] = useState(false);
-
-   // Fetch Profiles on Mount
    useEffect(() => {
       fetchProfiles();
    }, []);
 
-   const fetchProfiles = async () => {
+   async function fetchProfiles() {
       try {
          const res = await fetch('/api/production/fixture-profiles');
          const data = await res.json();
@@ -129,7 +121,6 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
             await fetchProfiles(); // Reload
             setSelectedProfileId(data.data._id); // Select new
             setShowModal(false);
-            // Reset
             setNewManufacturer("");
             setNewModel("");
             setNewChannels(16);
@@ -154,12 +145,8 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
 
       const profile = profiles.find(p => p._id === selectedProfileId);
       if (!profile) return;
-
-      // Use first mode defaults
       const modeData = profile.modes[0] || { name: 'Standard', channels: 16 };
       const channels = modeData.channels;
-
-      // Visual Cue Color Logic
       let cueColor = "blue";
       if (role.includes("Drum")) cueColor = "red";
       if (role.includes("Wash")) cueColor = "orange";
@@ -187,7 +174,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
             </div>
 
             <div className="flex flex-col gap-5">
-               {/* Inputs Row */}
+               {}
                <div className="flex flex-col gap-3">
                   <div className="flex flex-col gap-1.5">
                      <div className="flex items-center justify-between mb-0.5">
@@ -290,7 +277,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
             </div>
          </div>
 
-         {/* CREATE PROFILE MODAL */}
+         {}
          {showModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">

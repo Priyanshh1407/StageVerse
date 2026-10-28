@@ -11,8 +11,6 @@ import EncorePollConfig from '@/components/artist/setlist/EncorePollConfig';
 import GuestlistPanel from '@/components/artist/setlist/GuestlistPanel';
 import LeaderboardModal from '@/components/artist/setlist/LeaderboardModal';
 import { toast } from 'sonner';
-
-// Initial Mock Data
 const INITIAL_BANK = [
   { id: 1, title: "Mr. Brightside", duration: "03:42", bpm: "148 BPM", tag: "High Energy", tagColor: "orange" },
   { id: 2, title: "Someone Like You", duration: "04:45", bpm: "67 BPM", tag: "Sad/Chill", tagColor: "indigo" },
@@ -32,21 +30,14 @@ const INITIAL_SETLIST = [];
 
 function SetlistBuilderContent() {
   const searchParams = useSearchParams();
-  // We'll manage eventId mainly via URL, but if missing, we default to the first upcoming event?
-  // Or just allow user to pick.
-  // Actually, we can just use state if we want to change it without reloading, 
-  // OR push to router. using router.push is better for deep linking.
-  // For now, let's allow it to be driven by prop or state if we want smooth transitioning.
-
-  // But to sync with URL, let's keep it simple: URL is source of truth.
-  // "No Event Selected" means literally no param?
   const urlEventId = searchParams.get('eventId');
   const [selectedEventId, setSelectedEventId] = useState(urlEventId);
-
-  // Sync state if URL changes externally
-  useEffect(() => {
+  // Follow ?eventId= when the URL changes (adjusted during render, not in an effect)
+  const [prevUrlEventId, setPrevUrlEventId] = useState(urlEventId);
+  if (urlEventId !== prevUrlEventId) {
+    setPrevUrlEventId(urlEventId);
     if (urlEventId) setSelectedEventId(urlEventId);
-  }, [urlEventId]);
+  }
 
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -54,16 +45,10 @@ function SetlistBuilderContent() {
   const [bankSongs, setBankSongs] = useState(INITIAL_BANK);
   const [setlistItems, setSetlistItems] = useState([]);
   const [loadingSetlist, setLoadingSetlist] = useState(false);
-
-  // View Mode: 'builder' | 'guestlist'
   const [viewMode, setViewMode] = useState('builder');
-
-  // Leaderboard State
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [winners, setWinners] = useState([]);
   const [calculatingResults, setCalculatingResults] = useState(false);
-
-  // 1. Fetch Events on Mount
   useEffect(() => {
     async function fetchEvents() {
       try {
@@ -71,10 +56,6 @@ function SetlistBuilderContent() {
         const json = await res.json();
         if (json.success) {
           setEvents(json.events);
-          // Optional: Auto-select first event if none selected?
-          // if (!selectedEventId && json.events.length > 0) {
-          //    setSelectedEventId(json.events[0]._id);
-          // }
         }
       } catch (e) {
         console.error("Failed to fetch events", e);
@@ -84,8 +65,6 @@ function SetlistBuilderContent() {
     }
     fetchEvents();
   }, []);
-
-  // 2. Fetch Setlist when selectedEventId changes
   useEffect(() => {
     if (!selectedEventId) return;
 
@@ -95,7 +74,6 @@ function SetlistBuilderContent() {
         const res = await fetch(`/api/artist/setlist?eventId=${selectedEventId}`);
         const json = await res.json();
         if (json.success && json.data) {
-          // Restore items
           setSetlistItems(json.data.items.map(item => ({
             ...item,
             id: item._id || Date.now(), // Fallback ID
@@ -111,8 +89,6 @@ function SetlistBuilderContent() {
     }
     loadSetlist();
   }, [selectedEventId]);
-
-  // 3. Handlers
   const addToSetlist = (song) => {
     const newItem = {
       id: Date.now(),
@@ -120,7 +96,7 @@ function SetlistBuilderContent() {
       duration: song.duration,
       tags: [{ label: song.tag, color: song.tagColor }]
     };
-    /* @ts-ignore */
+    
     setSetlistItems([...setlistItems, newItem]);
   };
 
@@ -130,7 +106,7 @@ function SetlistBuilderContent() {
       ...newSongData,
       tagColor: 'blue' // Default color for custom songs
     };
-    /* @ts-ignore */
+    
     setBankSongs([newSong, ...bankSongs]); // Add to top of list
   };
 
@@ -148,7 +124,7 @@ function SetlistBuilderContent() {
           duration: item.duration,
           bpm: item.bpm || "",
           status: item.status || 'pending',
-          /* @ts-ignore */
+          
           tags: item.tags || []
         }))
       };
@@ -199,47 +175,36 @@ function SetlistBuilderContent() {
       setCalculatingResults(false);
     }
   };
-
-  // AI Suggest Logic
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("Suggest 3 unique, high-energy hit songs that would fit a modern setlist.");
-
-  // 1. Open Modal
   const handleAiSuggestClick = () => {
     setIsAiModalOpen(true);
   };
-
-  // 2. Execute Generation
   const executeAiGeneration = async () => {
     if (!aiPrompt) return;
     setIsAiLoading(true);
     setIsAiModalOpen(false); // Close modal during generation to show loading state in button or toast? 
-    // Actually, maybe keep it open or just show global loader? 
-    // Let's close it and let the button show "Dreaming..."
 
     try {
-      // Append instruction for JSON format to the user's prompt
-      const fullPrompt = `${aiPrompt} 
-      IMPORTANT: Return a JSON array ONLY. Format: [{"title": "Song Name", "duration": "03:30", "bpm": "120 BPM", "tag": "High Energy", "tagColor": "orange"}].`;
-
+      // The server owns the prompt and output format for this task and always answers:
+      // from a model, or (degraded) from the artist's own catalogue
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: fullPrompt })
+        body: JSON.stringify({ task: 'songs', request: aiPrompt })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+      const suggestions = data.result;
+      if (data.degraded) {
+        toast.info(suggestions.length
+          ? "AI is busy: suggested songs from your catalogue instead."
+          : "AI is busy and your catalogue is empty. Add songs manually for now.");
+      }
 
-      // Clean JSON
-      let text = data.result;
-      if (text.startsWith("```json")) text = text.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-      else if (text.startsWith("```")) text = text.replace(/^```\s*/, "").replace(/\s*```$/, "");
-
-      const suggestions = JSON.parse(text);
-
-      if (Array.isArray(suggestions)) {
+      if (Array.isArray(suggestions) && suggestions.length) {
         const newSongs = suggestions.map(s => ({
           id: Date.now() + Math.random(),
           title: s.title,
@@ -249,18 +214,16 @@ function SetlistBuilderContent() {
           tagColor: s.tagColor || 'purple'
         }));
         setBankSongs(prev => [...newSongs, ...prev]);
-        toast.success("AI added 3 songs to your bank!");
+        if (!data.degraded) toast.success(`AI added ${newSongs.length} songs to your bank!`);
       }
 
     } catch (e) {
       console.error(e);
-      toast.error("AI Failed to suggest songs.");
+      toast.error(e.message || "Couldn't suggest songs.");
     } finally {
       setIsAiLoading(false);
     }
   };
-
-  // Guestlist Logic (Existing)
   const [guestlistUser, setGuestlistUser] = useState(null);
   const [isGuestlistLoading, setIsGuestlistLoading] = useState(false);
 
@@ -296,15 +259,9 @@ function SetlistBuilderContent() {
       setIsGuestlistLoading(false);
     }
   };
-
-  // --- RENDER ---
-
-  // If loading events initially
   if (loadingEvents) {
     return <div className="flex h-screen items-center justify-center text-[#90b2cb]">Loading Your Events...</div>;
   }
-
-  // If no event selected, show SELECTION UI
   if (!selectedEventId) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] text-[#90b2cb] p-6">
@@ -319,7 +276,7 @@ function SetlistBuilderContent() {
                 className="flex flex-col text-left bg-[#101b23] border border-[#315168] hover:border-[#0d93f2] hover:bg-[#182934] rounded-xl overflow-hidden transition-all group shadow-lg"
               >
                 <div className="h-32 bg-slate-800 relative w-full">
-                  {/* Use img for simplicity or Image if configured */}
+                  {}
                   <img src={evt.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"} alt={evt.artist} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
                   <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur px-2 py-1 rounded text-xs font-mono text-white">
@@ -342,15 +299,13 @@ function SetlistBuilderContent() {
       </div>
     );
   }
-
-  // Find current event object for the header
   const activeEvent = events.find(e => e._id === selectedEventId);
 
   return (
     <main className="flex-1 flex flex-col items-center py-8 px-4 md:px-8 lg:px-12 xl:px-20 w-full overflow-y-auto custom-scrollbar">
       <div className="w-full max-w-[1600px] flex flex-col gap-6">
 
-        {/* Pass activeEvent and events list to BuilderHeader for potential dropdown switch */}
+        {}
         <BuilderHeader
           event={activeEvent}
           allEvents={events} // We need to update BuilderHeader to accept this and show dropdown
@@ -359,7 +314,7 @@ function SetlistBuilderContent() {
           onDeclareResults={handleDeclareResults}
         />
 
-        {/* Navigation Tabs */}
+        {}
         <div className="flex items-center border-b border-[#315168]/50 mb-2">
           <button
             onClick={() => setViewMode('builder')}
@@ -384,7 +339,7 @@ function SetlistBuilderContent() {
         {viewMode === 'builder' ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start h-full pb-12">
 
-            {/* Left Column: Song Bank */}
+            {}
             <div className="lg:col-span-4 flex flex-col gap-4 h-[calc(100vh-220px)] lg:sticky lg:top-24">
               <button
                 onClick={handleAiSuggestClick}
@@ -402,7 +357,7 @@ function SetlistBuilderContent() {
               />
             </div>
 
-            {/* Right Column: Setlist Canvas & Poll Config */}
+            {}
             <div className="lg:col-span-8 flex flex-col gap-6">
 
               {loadingSetlist ? (
@@ -411,7 +366,7 @@ function SetlistBuilderContent() {
                 </div>
               ) : (
                 <>
-                  {/* The Drag & Drop Canvas */}
+                  {}
                   <SetlistCanvas items={setlistItems} setItems={setSetlistItems} />
                   <EncorePollConfig eventId={selectedEventId} />
                 </>
@@ -426,7 +381,7 @@ function SetlistBuilderContent() {
         )}
       </div>
 
-      {/* AI Prompt Modal */}
+      {}
       {isAiModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsAiModalOpen(false)}>
           <div className="bg-[#1e2e38] border border-[#315168] rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -438,7 +393,7 @@ function SetlistBuilderContent() {
               <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
-            <p className="text-sm text-slate-400 mb-3">Describe the vibe you want (e.g., "Sad acoustic ballads" or "High energy 80s rock").</p>
+            <p className="text-sm text-slate-400 mb-3">Describe the vibe you want (e.g., &quot;Sad acoustic ballads&quot; or &quot;High energy 80s rock&quot;).</p>
 
             <textarea
               className="w-full bg-[#101b23] border border-[#315168] rounded-xl p-4 text-white text-sm focus:outline-none focus:border-purple-500 min-h-[100px] mb-6"
@@ -465,7 +420,7 @@ function SetlistBuilderContent() {
         </div>
       )}
 
-      {/* Leaderboard Modal */}
+      {}
       <LeaderboardModal
         isOpen={isLeaderboardOpen}
         onClose={() => setIsLeaderboardOpen(false)}

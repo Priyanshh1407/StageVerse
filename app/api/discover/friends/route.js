@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { apiError } from '@/lib/api';
+import { verifyAuth } from '@/lib/auth';
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import Ticket from "@/models/Ticket";
@@ -10,10 +11,7 @@ export async function GET(req) {
     try {
         await dbConnect();
 
-        const token = req.cookies.get('token')?.value;
-        if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret);
+        const payload = await verifyAuth(req);
 
         const currentUser = await User.findById(payload.userId).select('following');
         if (!currentUser || !currentUser.following.length) {
@@ -24,10 +22,10 @@ export async function GET(req) {
             userId: { $in: currentUser.following },
             status: 'Confirmed'
         })
-            .populate('userId', 'name image')
+            .populate('userId', 'name avatar')
             .populate({
                 path: 'eventId',
-                select: 'title date venue image',
+                select: 'title date venue images',
                 populate: {
                     path: 'venue',
                     model: 'Venue', // Explicitly state the model
@@ -43,7 +41,6 @@ export async function GET(req) {
             const eventId = ticket.eventId._id.toString();
 
             if (!groupedEvents[eventId]) {
-                // Calculate relative time (e.g., "In 2 days")
                 const eventDate = new Date(ticket.eventId.date);
                 const daysDiff = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
                 let statusText = "Upcoming";
@@ -56,7 +53,7 @@ export async function GET(req) {
                     title: ticket.eventId.title,
                     venue: ticket.eventId.venue?.name || "Unkown Venue",
                     date: new Date(ticket.eventId.date).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-                    image: ticket.eventId.image,
+                    image: ticket.eventId.images?.hero,
                     status: 'Going',
                     attendees: [],
                 };
@@ -67,7 +64,7 @@ export async function GET(req) {
                 groupedEvents[eventId].attendees.push({
                     id: friendId,
                     initials: ticket.userId.name.substring(0, 2).toUpperCase(),
-                    img: ticket.userId.image || null,
+                    img: ticket.userId.avatar || null,
                     name: ticket.userId.name
                 });
             }
@@ -76,7 +73,7 @@ export async function GET(req) {
         const result = Object.values(groupedEvents);
         return NextResponse.json({ success: true, data: result });
     } catch (error) {
-        nsole.error('Friends API Error:', error);
-        return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+        console.error('Friends API Error:', error);
+        return apiError(error, '/api/discover/friends');
     }
 }

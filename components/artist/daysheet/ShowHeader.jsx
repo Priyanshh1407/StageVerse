@@ -6,8 +6,6 @@ export default function ShowHeader({ city, venue, date }) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [events, setEvents] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-
-  // Close on ESC
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isCalendarOpen) setIsCalendarOpen(false);
@@ -15,8 +13,6 @@ export default function ShowHeader({ city, venue, date }) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isCalendarOpen]);
-
-  // Fetch all events for calendar highlights
   useEffect(() => {
     if (isCalendarOpen && events.length === 0) {
       fetch('/api/artist/day-sheet', { cache: 'no-store' })
@@ -27,8 +23,6 @@ export default function ShowHeader({ city, venue, date }) {
         .catch(err => console.error("Calendar fetch error:", err));
     }
   }, [isCalendarOpen]);
-
-  // Calendar Helpers
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -73,12 +67,12 @@ export default function ShowHeader({ city, venue, date }) {
         </div>
       </div>
 
-      {/* CALENDAR MODAL */}
+      {}
       {isCalendarOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-md bg-[#131d24] border border-[#315168] rounded-2xl shadow-2xl p-6">
 
-            {/* Header */}
+            {}
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">Tour Schedule</h3>
               <button onClick={() => setIsCalendarOpen(false)} className="text-slate-400 hover:text-white">
@@ -86,30 +80,28 @@ export default function ShowHeader({ city, venue, date }) {
               </button>
             </div>
 
-            {/* Controls */}
+            {}
             <div className="flex items-center justify-between mb-4">
               <button onClick={prevMonth} className="p-2 hover:bg-[#223949] rounded-full text-white"><ChevronLeft className="w-5 h-5" /></button>
               <span className="font-bold text-white uppercase tracking-wider">{monthName}</span>
               <button onClick={nextMonth} className="p-2 hover:bg-[#223949] rounded-full text-white"><ChevronRight className="w-5 h-5" /></button>
             </div>
 
-            {/* Grid Headers */}
+            {}
             <div className="grid grid-cols-7 mb-2 text-center">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
                 <div key={d} className="text-xs text-slate-500 font-bold">{d}</div>
               ))}
             </div>
 
-            {/* Grid Days */}
+            {}
             <div className="grid grid-cols-7 gap-2">
-              {/* Empty Slots */}
+              {}
               {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}
 
-              {/* Days */}
+              {}
               {Array.from({ length: days }).map((_, i) => {
                 const dayNum = i + 1;
-                // Check if event exists
-                // Note: Date comparison needs care. events date is ISO string.
                 const thisDateStr = new Date(year, month, dayNum).toDateString();
                 const eventOnDay = events.find(e => new Date(e.date).toDateString() === thisDateStr);
 

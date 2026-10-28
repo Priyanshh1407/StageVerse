@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { apiError } from '@/lib/api';
+import { containsRegex } from '@/lib/escapeRegex';
 import dbConnect from "@/lib/db";
 import Event from "@/models/Event";
 import Venue from "@/models/Venue"; // Import to ensure model registration
@@ -12,16 +14,12 @@ export async function GET(req) {
         const genre = searchParams.get('genre');
         const city = searchParams.get('city');
         const vibe = searchParams.get('vibe');
-        
-        // --- FIX 1: DEFINE DATEFILTER ---
-        const dateFilter = searchParams.get('date'); 
+        const dateFilter = searchParams.get('date');
 
-        // 1. Initial Match Stage (Status & Date & Genre & Vibe)
         const matchStage = {
             status: { $in: ['Published', 'Scheduled', 'Live'] }
         };
 
-        // 2. Date Logic
         if (dateFilter && dateFilter !== 'All') {
             const now = new Date();
             let start = new Date(now);
@@ -44,11 +42,10 @@ export async function GET(req) {
                 matchStage.date = { $gte: now, $lte: end };
             }
             else {
-                // Specific Month (e.g. "OCT")
                 const monthIndex = new Date(`${dateFilter} 1, 2000`).getMonth();
                 if (!isNaN(monthIndex)) {
                     let year = now.getFullYear();
-                    // If month has passed this year, assume next year
+                    // If the selected month (e.g., "OCT") is earlier than current month (e.g., NOV), assume next year
                     if (monthIndex < now.getMonth()) {
                         year += 1;
                     }
@@ -59,20 +56,15 @@ export async function GET(req) {
             }
         }
 
-        // 3. Direct Attribute Filters
         if (genre && genre !== 'All') {
-            matchStage.genre = { $regex: genre, $options: 'i' };
+            matchStage.genre = containsRegex(genre);
         }
         if (vibe && vibe !== 'All') {
-            matchStage.tags = { $regex: vibe, $options: 'i' };
+            matchStage.tags = containsRegex(vibe);
         }
 
-        // 4. Build Pipeline
         const pipeline = [
-            // A. Apply Primary Filters First (Efficiency)
             { $match: matchStage },
-            
-            // B. Populate Venue
             {
                 $lookup: {
                     from: 'venues',
@@ -81,41 +73,35 @@ export async function GET(req) {
                     as: 'venueData'
                 }
             },
-            
-            // --- FIX 2: PRESERVE EVENTS WITHOUT VENUES ---
-            // If an event has no venue or invalid venue ID, keep it in results instead of deleting it
-            { 
+            {
                 $unwind: {
                     path: '$venueData',
-                    preserveNullAndEmptyArrays: true 
-                } 
+                    preserveNullAndEmptyArrays: true
+                }
             }
         ];
 
-        // 5. Secondary Filters (City) - Depends on Venue Data
         if (city && city !== 'All') {
             pipeline.push({
                 $match: {
-                    'venueData.city': { $regex: city, $options: 'i' }
+                    'venueData.city': containsRegex(city)
                 }
             });
         }
 
-        // 6. Search Logic (Depends on Venue Data)
         if (searchQuery) {
             pipeline.push({
                 $match: {
                     $or: [
-                        { artist: { $regex: searchQuery, $options: 'i' } },
-                        { title: { $regex: searchQuery, $options: 'i' } },
-                        { 'venueData.name': { $regex: searchQuery, $options: 'i' } },
-                        { 'venueData.city': { $regex: searchQuery, $options: 'i' } }
+                        { artist: containsRegex(searchQuery) },
+                        { title: containsRegex(searchQuery) },
+                        { 'venueData.name': containsRegex(searchQuery) },
+                        { 'venueData.city': containsRegex(searchQuery) }
                     ]
                 }
             });
         }
 
-        // 7. Sort & Project
         pipeline.push(
             { $sort: { date: 1 } },
             { $limit: 20 },
@@ -128,8 +114,7 @@ export async function GET(req) {
                     genre: 1,
                     tags: 1,
                     price: 1,
-                    image: 1,
-                    // Return venue object if exists, otherwise fallback to original field or null
+                    image: { $ifNull: ['$images.hero', 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745'] },
                     venue: { $ifNull: ['$venueData', null] }
                 }
             }
@@ -137,13 +122,20 @@ export async function GET(req) {
 
         const events = await Event.aggregate(pipeline);
 
+        // Fetch facets independently for the dropdowns
+        const genres = await Event.distinct('genre', { status: { $in: ['Published', 'Scheduled', 'Live'] } });
+        const cities = await Venue.distinct('city');
+
         return NextResponse.json({
             success: true,
             count: events.length,
-            data: events
+            data: events,
+            facets: {
+                genres: genres.filter(Boolean).sort(),
+                cities: cities.filter(Boolean).sort()
+            }
         });
     } catch (error) {
-        console.error('Discover API error: ', error);
-        return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/discover');
     }
 }

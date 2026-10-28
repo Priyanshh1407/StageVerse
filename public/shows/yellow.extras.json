@@ -1,0 +1,154 @@
+{
+  "_note": "Hand-annotated structure of Yellow (Coldplay), by bar (2.76 s each at 86.8 BPM), from npm run song:bars. Quiet intro; the band kicks in at 0:13 (riff); verse 1 0:35; climbing 1:06; chorus 1 1:25; a breath at 1:47, riff and verse 2; chorus 2 2:48; a breath at 3:10, the bridge climbing from 3:27; the final, biggest section 3:41-4:11; fade-out. Colour: strong yellow from 1:27 (held to 1:54); yellow strobe hits at 1:50, 1:52, 1:54; 1:54-3:15 mostly shades of yellow with a few other colours; 3:15 to the end only yellow and its shades. Re-run npm run analyse:song -- \"public/audio/Yellow.mp3\" yellow \"Yellow\" after editing.",
+  "tintAtDrops": {
+    "color": "#ffd400",
+    "beats": 8
+  },
+  "tints": [
+    {
+      "bar": 5,
+      "color": "#ffd400",
+      "beats": 8,
+      "blinder": true
+    },
+    {
+      "t": 87,
+      "color": "#ffd400",
+      "beats": 39
+    },
+    {
+      "t": 110,
+      "color": "#ffd400",
+      "beats": 1,
+      "strobe": true,
+      "blinder": true
+    },
+    {
+      "t": 112,
+      "color": "#ffd400",
+      "beats": 1,
+      "strobe": true
+    },
+    {
+      "t": 114,
+      "color": "#ffd400",
+      "beats": 1,
+      "strobe": true
+    }
+  ],
+  "sections": [
+    {
+      "fromBar": 0,
+      "kind": "intro"
+    },
+    {
+      "fromBar": 5,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 13,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 24,
+      "kind": "build"
+    },
+    {
+      "fromBar": 31,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 39,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 49,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 61,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 69,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 75,
+      "kind": "build"
+    },
+    {
+      "fromBar": 80,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 91,
+      "kind": "calm"
+    },
+    {
+      "fromBar": 95,
+      "kind": "outro"
+    }
+  ],
+  "paletteSpans": [
+    {
+      "from": 114,
+      "to": 195,
+      "palettes": [
+        [
+          "#ffd400",
+          "#ffb000"
+        ],
+        [
+          "#ffe066",
+          "#19d9ff"
+        ],
+        [
+          "#ffc400",
+          "#ffa000"
+        ],
+        [
+          "#fff3b0",
+          "#ffd400"
+        ],
+        [
+          "#ffd400",
+          "#ff3df2"
+        ],
+        [
+          "#ffea00",
+          "#ffb000"
+        ]
+      ]
+    },
+    {
+      "from": 195,
+      "palettes": [
+        [
+          "#ffd400",
+          "#ffb000"
+        ],
+        [
+          "#fff176",
+          "#ffd400"
+        ],
+        [
+          "#ffea00",
+          "#ffc400"
+        ],
+        [
+          "#ffe066",
+          "#ff9f00"
+        ],
+        [
+          "#fff8e1",
+          "#ffd400"
+        ],
+        [
+          "#ffc400",
+          "#ffe066"
+        ]
+      ]
+    }
+  ]
+}

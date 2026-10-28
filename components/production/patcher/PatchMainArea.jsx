@@ -2,15 +2,13 @@
 
 import React from 'react';
 import { FileCode, FileJson, AlertTriangle, Wrench } from 'lucide-react';
-
-// Added onEditFixture prop
 export default function PatchMainArea({ patches = [], onEditFixture }) {
   return (
     <main className="flex-1 flex flex-col bg-[#0F0F10] relative overflow-hidden h-full min-w-0">
-      {/* Table Container */}
+      {}
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
 
-        {/* Table Head (Fixed) */}
+        {}
         <div className="grid grid-cols-12 bg-[#141b22] border-b border-[#2c3e50] py-3 px-6 text-[10px] font-bold text-[#90b2cb] uppercase tracking-wider select-none shrink-0 flex-none gap-4">
           <div className="col-span-1 text-center">ID</div>
           <div className="col-span-3">Fixture Name</div>
@@ -20,8 +18,8 @@ export default function PatchMainArea({ patches = [], onEditFixture }) {
           <div className="col-span-2 text-right">Status</div>
         </div>
 
-        {/* Table Body (Scrollable) */}
-        {/* Added min-h-0 to ensure flex container respects height limits */}
+        {}
+        {}
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#0F0F10] min-h-0">
           {patches.map((patch) => {
             const isConflict = ['conflict', 'collision', 'error'].includes(patch.status);
@@ -52,7 +50,7 @@ export default function PatchMainArea({ patches = [], onEditFixture }) {
                   {patch.universe}
                 </div>
 
-                {/* Address Visual Bar */}
+                {}
                 <div className="col-span-3 pr-8">
                   <div className="flex flex-col gap-1.5 w-full">
                     <span className="font-mono text-xs text-white tracking-wider">{String(patch.address).padStart(3, '0')}</span>
@@ -86,7 +84,7 @@ export default function PatchMainArea({ patches = [], onEditFixture }) {
             );
           })}
 
-          {/* Table Footer */}
+          {}
           <div className="py-2 px-6 bg-[#141b22] border-t border-[#2c3e50] text-[10px] text-gray-500 font-mono flex justify-between shrink-0 min-h-[40px] items-center">
             <span>Total Fixtures: {patches.length}</span>
             <span>Universe 1 Usage: {patches.length > 0 ? '25.6%' : '0%'}</span>

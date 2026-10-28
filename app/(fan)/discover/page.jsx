@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import FanSidebar from '@/components/fan/FanSidebar';
 import CreateAlertModal from '@/components/fan/discover/CreateAlertModal';
 import AllReleasesModal from '@/components/fan/discover/AllReleaseModal';
@@ -12,164 +13,19 @@ import {
   Sparkles, Heart, Users, Bell, Plus, ChevronDown, ChevronUp, X
 } from 'lucide-react';
 
-// --- MOCK DATA ---
-// const RECOMMENDED_EVENTS = [
-//   {
-//     id: 1,
-//     artist: "Radiohead",
-//     tour: "Moon Shaped Pool Tour",
-//     date: { month: "OCT", day: "24" },
-//     venue: "Madison Square Garden, NY",
-//     city: "New York",
-//     genre: "Alt-Rock",
-//     tags: ["Alt-Rock", "Electronic"],
-//     vibe: "Intimate",
-//     price: 85,
-//     match: "98% Match",
-//     image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop"
-//   },
-//   {
-//     id: 2,
-//     artist: "Tame Impala",
-//     tour: "Sound System",
-//     date: { month: "NOV", day: "12" },
-//     venue: "The Greek Theatre, LA",
-//     city: "Los Angeles",
-//     genre: "Psychedelic",
-//     tags: ["Psychedelic", "Indie"],
-//     vibe: "Outdoor",
-//     price: 65,
-//     match: "Based on Tame Impala",
-//     image: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=800&auto=format&fit=crop"
-//   },
-//   {
-//     id: 3,
-//     artist: "Khruangbin",
-//     tour: "World Tour",
-//     date: { month: "DEC", day: "05" },
-//     venue: "Red Rocks Amphitheatre, CO",
-//     city: "Colorado",
-//     genre: "Funk",
-//     tags: ["Funk", "Soul"],
-//     vibe: "Festival",
-//     price: 55,
-//     match: "Selling Fast",
-//     image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop"
-//   },
-//   // -- Extra Items for Expansion --
-//   {
-//     id: 4,
-//     artist: "Fred again..",
-//     tour: "Actual Life",
-//     date: { month: "NOV", day: "18" },
-//     venue: "Brooklyn Mirage, NY",
-//     city: "New York",
-//     genre: "Electronic",
-//     tags: ["House", "Garage"],
-//     vibe: "Rave",
-//     price: 90,
-//     match: "Trending",
-//     image: "https://images.unsplash.com/photo-1574155376612-c84efdd3a64f?q=80&w=800&auto=format&fit=crop"
-//   },
-//   {
-//     id: 5,
-//     artist: "The 1975",
-//     tour: "At Their Very Best",
-//     date: { month: "JAN", day: "10" },
-//     venue: "O2 Arena, London",
-//     city: "London",
-//     genre: "Pop",
-//     tags: ["Pop", "Rock"],
-//     vibe: "Arena",
-//     price: 75,
-//     match: "For You",
-//     image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=800&auto=format&fit=crop"
-//   },
-//   {
-//     id: 6,
-//     artist: "Arctic Monkeys",
-//     tour: "The Car Tour",
-//     date: { month: "FEB", day: "14" },
-//     venue: "Kia Forum, LA",
-//     city: "Los Angeles",
-//     genre: "Rock",
-//     tags: ["Indie", "Rock"],
-//     vibe: "Arena",
-//     price: 80,
-//     match: "Popular",
-//     image: "https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=800&auto=format&fit=crop"
-//   }
-// ];
-
-// const FRIENDS_EVENTS = [
-//   {
-//     id: 1,
-//     title: "Electric Daisy Carnival",
-//     venue: "Las Vegas Motor Speedway",
-//     date: "Fri, Nov 18",
-//     status: "Next Week",
-//     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8",
-//     attendees: [
-//       { initials: "SJ", img: null },
-//       { initials: null, img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" },
-//       { count: 3 }
-//     ]
-//   },
-//   {
-//     id: 2,
-//     title: "The Killers - Live",
-//     venue: "TD Garden, Boston",
-//     date: "Sat, Nov 12",
-//     status: "Tomorrow",
-//     statusColor: "text-green-500",
-//     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA8Rmm3uq1-2OEiQe7gSWxyfJiWrk4GuiL1Eb6GI1YS-h168pIiJDuOgnLDAobGaYy-Mkr6tLaIIDUZgf0XTB1WH8Vq5dMPQEFFSgYstKC1x0s5dFYwMd249Mb9_U6p22Rl1AL2nNoVoecA1EvJ4INIlZkl1PyH9OPgWx-bWdPvWC6Huwg_rmqG04pkcmUZCFEjT9QbuZQ6317VD8a8Qg1HltQfptOQsV_XMVkpinE-uE0yferTHC_yZ4EYC73sy0pFXBHOEHVXkqWi",
-//     attendees: [
-//       { initials: "M", color: "bg-purple-500" },
-//       { initials: "D", color: "bg-blue-500" }
-//     ]
-//   },
-//   // -- Extra Item for Expansion --
-//   {
-//     id: 3,
-//     title: "Coachella 2025",
-//     venue: "Empire Polo Club",
-//     date: "Fri, Apr 14",
-//     status: "Going Soon",
-//     statusColor: "text-[#0d93f2]",
-//     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8",
-//     attendees: [
-//       { initials: "AL", color: "bg-orange-500" },
-//       { count: 5 }
-//     ]
-//   }
-// ];
-
-// const NEW_RELEASES = [
-//   { id: 1, artist: "Adele", title: "World Tour 2024 Announced", type: "NEW ALBUM", color: "bg-[#0d93f2]", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8" },
-//   { id: 2, artist: "Metallica", title: "72 Seasons - Out Now", type: "SINGLE", color: "bg-purple-600", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAjhght7KFz6rinfM1d5OY5S0IpCdQQLln3QXd4sJ0O6iQgKQXuM6Ts7xNcV9sMO80my7lqs3tu9QI_XZvIZLA2c2sWmHMOGoSFHE1ukVFSbRyyd6n0ctliyp9dlIoFQ-UySMdA3EnufIKBsFgN4Ki-LI-dpCQkPZxbm2pRW5P7ZgZEFW5-iLCXJRinswEIA65iWBk7ND8F5KqyTdesZaj-DfxORMqNHJnSXdZr3qrpIqdwOvXsfhYDCMqufjGvjbrYVSTOo9vTOjWy" },
-//   { id: 3, artist: "Skrillex", title: "Summer Festivals Lineup", type: "TOUR", color: "bg-green-600", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhE6R5DCg8Qj_P5sXgqH1pRxNxNgpTdRJjoDAwzYgHvVfrf9fDoMe5tzq5SJOfJPbwWkY5v1n9397jXBS2S9wvjc4ri3BvrBchIy2h9c89Nh13slVHxz92u6bkKJECrVpQKjHz1S41ALWjQNKzjHU1y7U5lTTdMqAMptIsHK-D4ABKcH4xJbkEK2ZsHpDM-68DMrD7Pr5OX7sOWhjiWt7S9SLTdAKhpm42kH4VW5I1Ua5JSYaF9TAztzpBagjysUQPUE_sJqWFaHC8" },
-// ];
 export default function DiscoverPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [events, setEvents] = useState([]);
   const [friendEvents, setFriendEvents] = useState([]);
   const [releases, setReleases] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // --- MODAL STATES ---
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
-  const [isReleasesModalOpen, setIsReleasesModalOpen] = useState(false);
-
-  // --- FILTER STATE ---
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filterOptions, setFilterOptions] = useState({ genres: [], cities: [] });
+  const [isLoading, setIsLoading] = useState(false); const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [isReleasesModalOpen, setIsReleasesModalOpen] = useState(false); const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All');
   const [selectedDate, setSelectedDate] = useState('All');
-  const [selectedVibe, setSelectedVibe] = useState('All');
-
-  // --- EXPANSION STATE ---
-  const [expandedSections, setExpandedSections] = useState({
+  const [selectedVibe, setSelectedVibe] = useState('All'); const [expandedSections, setExpandedSections] = useState({
     recommended: false,
     friends: false
   });
@@ -210,6 +66,13 @@ export default function DiscoverPage() {
             };
           });
           setEvents(formattedEvents);
+          // Only update filter options if they are populated (or on first load)
+          if (result.facets) {
+            setFilterOptions({
+              genres: ['All', ...result.facets.genres.filter(Boolean).sort()],
+              cities: ['All', ...result.facets.cities.filter(Boolean).sort()]
+            });
+          }
         }
 
         const resFriends = await fetch('/api/discover/friends');
@@ -229,22 +92,8 @@ export default function DiscoverPage() {
     const timeoutId = setTimeout(() => fetchAll(), 300);
     return () => clearTimeout(timeoutId);
   }, [searchQuery, selectedGenre, selectedCity, selectedDate, selectedVibe])
-
-  // --- DYNAMIC OPTIONS ---
-  const genres = useMemo(() => ['All', ...new Set(events.map(e => e.genre))], [events]);
-  const cities = useMemo(() => ['All', ...new Set(events.map(e => e.city))], [events]);
   const dateOptions = ['All', 'Today', 'This Week', 'This Month', 'OCT', 'NOV', 'DEC'];
   const vibes = ['All', 'Intimate', 'Festival', 'Rave', 'Arena', 'Outdoor'];
-
-  // --- FILTER LOGIC ---
-  // const filteredRecommended = RECOMMENDED_EVENTS.filter(event => {
-  //   const matchesSearch = event.artist.toLowerCase().includes(searchQuery.toLowerCase()) || event.venue.toLowerCase().includes(searchQuery.toLowerCase());
-  //   const matchesGenre = selectedGenre === 'All' || event.genre === selectedGenre;
-  //   const matchesCity = selectedCity === 'All' || event.city === selectedCity;
-  //   const matchesDate = selectedDate === 'All' || event.date.month === selectedDate;
-  //   const matchesVibe = selectedVibe === 'All' || event.vibe === selectedVibe;
-  //   return matchesSearch && matchesGenre && matchesCity && matchesDate && matchesVibe;
-  // });
 
   const filteredRecommended = events;
 
@@ -253,10 +102,7 @@ export default function DiscoverPage() {
   const filteredReleases = releases.filter(item =>
     item.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // --- DISPLAY LOGIC (Fixing the undefined error) ---
-  const displayedRecommended = expandedSections.recommended ? filteredRecommended : filteredRecommended.slice(0, 6);
+  ); const displayedRecommended = expandedSections.recommended ? filteredRecommended : filteredRecommended.slice(0, 6);
   const displayedFriends = expandedSections.friends ? filteredFriends : filteredFriends.slice(0, 2);
   const displayedReleases = filteredReleases.slice(0, 3);
 
@@ -284,7 +130,6 @@ export default function DiscoverPage() {
         <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:px-12 lg:py-10 scroll-smooth">
           <div className="max-w-7xl mx-auto flex flex-col gap-10 pb-10">
 
-            {/* HERO & FILTERS */}
             <section className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Discover your next experience</h1>
@@ -294,13 +139,19 @@ export default function DiscoverPage() {
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0d93f2] outline-none shadow-sm transition-all" placeholder="Search artists, venues, or cities..." type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                  <input
+                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0d93f2] outline-none shadow-sm transition-all"
+                    placeholder="Search artists, venues, or cities..."
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                   {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>}
                 </div>
 
                 <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
-                  <FilterDropdown icon={Music} label="Genre" options={genres} value={selectedGenre} onChange={setSelectedGenre} />
-                  <FilterDropdown icon={MapPin} label="City" options={cities} value={selectedCity} onChange={setSelectedCity} />
+                  <FilterDropdown icon={Music} label="Genre" options={filterOptions.genres} value={selectedGenre} onChange={setSelectedGenre} />
+                  <FilterDropdown icon={MapPin} label="City" options={filterOptions.cities} value={selectedCity} onChange={setSelectedCity} />
                   <FilterDropdown icon={Calendar} label="Date" options={dateOptions} value={selectedDate} onChange={setSelectedDate} />
                   <button onClick={resetFilters} className="flex items-center gap-2 px-4 py-3 bg-[#0d93f2]/5 border border-[#0d93f2]/30 rounded-xl transition-colors whitespace-nowrap shadow-sm text-sm font-medium text-[#0d93f2] hover:bg-[#0d93f2]/10"><SlidersHorizontal className="w-4 h-4" /> Reset</button>
                 </div>
@@ -313,14 +164,30 @@ export default function DiscoverPage() {
               </div>
             </section>
 
-            {/* RECOMMENDED SECTION */}
+            { }
             <section>
               <SectionHeader icon={Sparkles} title="Recommended for You" />
               {filteredRecommended.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {displayedRecommended.map(event => <RecommendedCard key={event.id} event={event} />)}
-                  </div>
+                  <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-50px" }}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.1 }
+                      }
+                    }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  >
+                    {displayedRecommended.map(event => (
+                      <motion.div key={event.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                        <RecommendedCard event={event} />
+                      </motion.div>
+                    ))}
+                  </motion.div>
                   {filteredRecommended.length > 3 && (
                     <div className="flex justify-center mt-6">
                       <button onClick={() => toggleSection('recommended')} className="flex items-center gap-2 text-sm font-bold text-[#0d93f2] hover:bg-[#0d93f2]/10 px-4 py-2 rounded-lg transition-colors">
@@ -332,13 +199,26 @@ export default function DiscoverPage() {
               ) : <EmptyState message="No events match your filters." />}
             </section>
 
-            {/* FRIENDS SECTION */}
+            { }
             {filteredFriends.length > 0 && (
               <section>
                 <SectionHeader icon={Users} title="Friends Are Going To" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {displayedFriends.map(event => <FriendEventCard key={event.id} event={event} />)}
-                </div>
+                <motion.div
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                  }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                >
+                  {displayedFriends.map(event => (
+                    <motion.div key={event.id} variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}>
+                      <FriendEventCard event={event} />
+                    </motion.div>
+                  ))}
+                </motion.div>
                 {filteredFriends.length > 2 && (
                   <div className="flex justify-center mt-6">
                     <button onClick={() => toggleSection('friends')} className="flex items-center gap-2 text-sm font-bold text-[#0d93f2] hover:bg-[#0d93f2]/10 px-4 py-2 rounded-lg transition-colors">
@@ -349,32 +229,46 @@ export default function DiscoverPage() {
               </section>
             )}
 
-            {/* NEW RELEASES */}
+            { }
             {filteredReleases.length > 0 && (
               <section>
                 <SectionHeader icon={Bell} title="New Releases & Announcements" />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {/* Map the DISPLAYED releases, not the filtered ones, so we respect the limit */}
-                  {displayedReleases.map(item => <ReleaseCard key={item.id} item={item} />)}
+                <motion.div
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                  }}
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                >
+                  { }
+                  {displayedReleases.map(item => (
+                    <motion.div key={item.id} variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}>
+                      <ReleaseCard item={item} />
+                    </motion.div>
+                  ))}
 
-                  {/* View All Button Card */}
-                  <div
+                  { }
+                  <motion.div
+                    variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}
                     onClick={() => setIsReleasesModalOpen(true)}
                     className="group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer bg-slate-800 border border-slate-700 flex flex-col items-center justify-center hover:bg-slate-700 transition-colors"
                   >
                     <Plus className="w-10 h-10 text-slate-600 mb-2 group-hover:text-slate-400 transition-colors" />
                     <span className="text-sm font-medium text-slate-400 group-hover:text-white transition-colors">View All</span>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               </section>
             )}
 
-            {/* CALL TO ACTION */}
+            { }
             <section className="mt-4 rounded-2xl bg-gradient-to-r from-[#0d93f2] to-blue-600 p-8 md:p-12 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="max-w-xl">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Can't find what you're looking for?</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Can&apos;t find what you&apos;re looking for?</h2>
                   <p className="text-blue-100">Set up alerts for your favorite artists and never miss a show again.</p>
                 </div>
                 <button onClick={() => setIsAlertModalOpen(true)} className="bg-white text-[#0d93f2] hover:bg-blue-50 px-6 py-3 rounded-xl font-bold shadow-lg transition-colors whitespace-nowrap">
@@ -385,17 +279,16 @@ export default function DiscoverPage() {
 
           </div>
         </div>
-      </main>
+      </main >
 
-      {/* MODALS */}
-      <CreateAlertModal isOpen={isAlertModalOpen} onClose={() => setIsAlertModalOpen(false)} />
-      <AllReleasesModal isOpen={isReleasesModalOpen} onClose={() => setIsReleasesModalOpen(false)} releases={releases} />
+      { }
+      < CreateAlertModal isOpen={isAlertModalOpen} onClose={() => setIsAlertModalOpen(false)
+      } />
+      < AllReleasesModal isOpen={isReleasesModalOpen} onClose={() => setIsReleasesModalOpen(false)} releases={releases} />
 
-    </div>
+    </div >
   );
 }
-
-// ... (Sub-components: FilterDropdown, VibeTag, SectionHeader, EmptyState, RecommendedCard, FriendEventCard, ReleaseCard remain unchanged) ...
 function FilterDropdown({ icon: Icon, label, options, value, onChange }) {
   return (
     <div className="relative min-w-[140px]">
@@ -438,20 +331,20 @@ function RecommendedCard({ event }) {
   return (
     <Link href={`/events/${event.id}`} className="group flex flex-col bg-white dark:bg-[#1a2632] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-lg hover:border-[#0d93f2]/50 transition-all duration-300 cursor-pointer">
       <div className="relative h-48 overflow-hidden">
-        {/* Date Badge */}
+        { }
         <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/80 backdrop-blur text-slate-900 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold z-10 text-center shadow-sm">
           <span className="block text-red-500 uppercase">{event.date?.month || 'OCT'}</span>
           <span className="text-lg leading-none">{event.date?.day || '24'}</span>
         </div>
 
-        {/* Heart Icon */}
+        { }
         <div className="absolute top-3 right-3 z-10">
           <button className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur transition-colors">
             <Heart className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Image - Added Fallback */}
+        { }
         <Image
           src={event.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"}
           alt={event.artist || "Event"}
@@ -475,7 +368,7 @@ function RecommendedCard({ event }) {
           <span>{event.venue}</span>
         </div>
 
-        {/* --- FIX IS HERE: Added (event.tags || []) --- */}
+        { }
         <div className="flex flex-wrap gap-2 mb-4">
           {(event.tags || []).map(tag => (
             <span key={tag} className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">

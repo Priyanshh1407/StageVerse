@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Activity, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 
-export default function LiveHeader({ showName, status, bpm, showTime }) {
+export default function LiveHeader({ showName, status, bpm, showTime, onResync }) {
   const [time, setTime] = useState("00:00:00");
 
   useEffect(() => {
-    // Client-side clock
     const updateTime = () => setTime(new Date().toLocaleTimeString('en-GB', { hour12: false }));
     updateTime();
     const timer = setInterval(updateTime, 1000);
@@ -37,7 +37,7 @@ export default function LiveHeader({ showName, status, bpm, showTime }) {
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs text-[#90b2cb] uppercase font-bold">BPM</span>
-            {/* Dynamic BPM */}
+            {}
             <span className="text-xl font-bold font-mono tracking-widest text-[#0d93f2]">{bpm}</span>
           </div>
           <div className="flex flex-col items-end">
@@ -48,33 +48,34 @@ export default function LiveHeader({ showName, status, bpm, showTime }) {
           </div>
         </div>
 
-        <ConnectionStatus />
+        <ConnectionStatus onResync={onResync} />
       </div>
     </div>
   );
 }
-
-// Sub-component to prevent hydration issues or hook rules conflicts if needed, but safe here
 function ConnectionStatus({ onResync }) {
   const { socket, isConnected } = require("@/components/providers/SocketProvider").useSocket();
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleResync = async () => {
     setIsSyncing(true);
-    // 1. Force Socket Reconnect
     if (socket) {
       socket.disconnect();
       socket.connect();
     }
-    // 2. Trigger Parent Refetch (if passed)
-    if (onResync) await onResync();
+    // Reload the show from the server: status, setlist and the show clock (back on track)
+    if (onResync) {
+      const ok = await onResync();
+      if (ok) toast.success('Re-synced: back on track');
+      else toast.error('Re-sync failed: showing the last known state');
+    }
 
     setTimeout(() => setIsSyncing(false), 1000);
   };
 
   return (
     <div className="flex items-center gap-2">
-      {/* Resync Button */}
+      {}
       <button
         onClick={handleResync}
         disabled={isSyncing}
@@ -84,7 +85,7 @@ function ConnectionStatus({ onResync }) {
         <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-[#0d93f2]' : ''}`} />
       </button>
 
-      {/* Status Badge */}
+      {}
       <div className={`flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-10 px-4 text-white text-sm font-bold leading-normal tracking-wide shadow-lg transition-all ${isConnected ? 'bg-emerald-500 shadow-emerald-500/20' : 'bg-red-500/50'}`}>
         <Activity className={`w-4 h-4 mr-2 ${isConnected ? 'text-white' : 'animate-pulse'}`} />
         <span className="truncate">{isConnected ? 'ONLINE' : 'OFFLINE'}</span>

@@ -3,71 +3,61 @@
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { Loader2, Monitor, ArrowLeft } from 'lucide-react';
-
-// Adjust this import path if your StudioNavbar is elsewhere
 import StudioNavbar from '@/components/production/StudioNavbar';
 import LiveHeader from '@/components/production/live/LiveHeader';
 import LiveControls from '@/components/production/live/LiveControls';
 import SetlistTimeline from '@/components/production/live/SetlistTimeline';
-
-// --- IMPORTS ---
-import { useSocket } from '@/components/providers/SocketProvider';
+import { useSocket, useShowRoom } from '@/components/providers/SocketProvider';
 
 import { toast } from "sonner";
 import ShowTimer from "@/components/artist/live/ShowTimer"; // Reuse Artist Timer
 
+// Reconciliation poll. Was 1000 ms (10 screens = 10 requests/s); see bench/results.
+const RECONCILE_MS = 20000;
+
 export default function LiveShowPage(props) {
   const params = use(props.params);
   const showId = params.id;
-  const { socket, isConnected } = useSocket(); // Use Socket
-
-  // Debug: Monitor Socket Connection
+  const { socket } = useSocket();
+  useShowRoom(showId);
   useEffect(() => {
-    if (socket) {
-      console.log(`[Production Page] Socket Status: ${socket.connected ? 'Connected' : 'Disconnected'} (ID: ${socket.id})`);
-      socket.on("connect", () => toast.success("Crew: Connected to Sync Server"));
-      socket.on("disconnect", () => toast.error("Crew: Lost Connection"));
-    }
+    if (!socket) return;
+    const onConnect = () => toast.success("Crew: Connected to Sync Server");
+    const onDisconnect = () => toast.error("Crew: Lost Connection");
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
   }, [socket]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [show, setShow] = useState(null);
-
-  // New State for Timer & Polls
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [pollStats, setPollStats] = useState(null); // { question, options: [{id, text, votes}] }
+  const [pollStats, setPollStats] = useState(null);
   const [showEncoreReveal, setShowEncoreReveal] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [winner, setWinner] = useState(null);
-
-  // Helper: Format Time
+  // Set when the last state refresh failed; the screen keeps the last good data and says so
+  const [syncError, setSyncError] = useState(null);
+  const warningDismissed = React.useRef(false); // Prevent re-trigger after dismiss
   const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
     const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
     const seconds = (totalSeconds % 60).toString().padStart(2, '0');
     return { hours, minutes, seconds };
   };
-
-  // --- TIMER & AUTO-ADVANCE LOGIC ---
   useEffect(() => {
     let interval;
     if (show && show.status === 'Live') {
       interval = setInterval(() => {
         setElapsedSeconds(prev => {
           const newTime = prev + 1;
-
-          // AUTO-ADVANCE & PROGRESS LOGIC
           if (show.currentSong) {
             const parts = (show.currentSong.duration || "0:00").split(':');
             const durationSecs = (parseInt(parts[0]) * 60) + parseInt(parts[1]);
-
-            // Calculate Progress
             const progress = durationSecs > 0 ? (newTime / durationSecs) * 100 : 0;
-
-            // Limit progress updates to avoid excessive re-renders, or just update local ref? 
-            // Better: merge into show state periodically or use a dedicated progress state?
-            // For now, let's update show.currentSong with progress on the fly or pass it separately.
-            // React batching handles it reasonably well.
             setShow(curr => ({
               ...curr,
               currentSong: {
@@ -78,7 +68,6 @@ export default function LiveShowPage(props) {
             }));
 
             if (durationSecs > 0 && newTime >= durationSecs) {
-              // STOP at end of song. Do NOT auto-advance.
               return durationSecs;
             }
           }
@@ -88,94 +77,82 @@ export default function LiveShowPage(props) {
     }
     return () => clearInterval(interval);
   }, [show?.status, show?.currentSong?._id]);
-
-  // Fetch Real Data
   const fetchShowData = async () => {
     try {
       const res = await fetch(`/api/production/live?eventId=${showId}`);
       const json = await res.json();
+      if (!res.ok) {
+        setSyncError(res.status === 403 ? 'You are not on the crew for this show.' : (json.error || 'Show data unavailable'));
+        return false;
+      }
+      setSyncError(null);
       if (json.success) {
-        // Map API response to Component State Structure
-        // Map API response to Component State Structure
+        // The server keeps the show clock: coming back to this show, or re-syncing, puts the timer back on track
+        if (typeof json.elapsedSeconds === 'number') setElapsedSeconds(json.elapsedSeconds);
         setShow(prev => {
-          // LOGIC: "Latched Standby"
-          // 1. If currently Standby (or null/first load), STAY Standby (ignore DB 'Live').
-          //    This prevents auto-start on load/refresh.
-          // 2. If currently Live (set via Socket), respect DB status (allows Stop).
-          const currentStatus = prev?.status || 'Standby';
-          const newStatus = currentStatus === 'Live' ? (json.showStatus || 'Standby') : 'Standby';
+          // Always trust the DB status — artist writes to DB on every action (start, pause, resume)
+          // Sockets handle polls/warnings; DB polling handles show status reliably
+          const newStatus = json.showStatus || 'Standby';
 
-          console.log(`[Poll] DB Status: ${json.showStatus}, Local: ${currentStatus} -> Result: ${newStatus}`);
+          console.log(`[Poll] DB Status: ${json.showStatus} -> Setting: ${newStatus}`);
 
           return {
-            ...prev, // Keep existing fields if needed
+            ...prev,
             name: json.event.title,
             status: newStatus,
-            bpm: 128,
             currentSong: json.setlist.find(s => s.status === 'live') || json.setlist[0],
             currentCue: {},
             setlist: json.setlist
           };
         });
 
-        // Sync Active Poll if exists (Backup to Socket)
         if (json.activePoll) {
           setPollStats({
             question: json.activePoll.question,
             options: json.activePoll.options
           });
         }
-
-        // Sync Warning (Backup to Socket)
-        if (json.showWarning) {
+        // Show warning from DB if artist set it and user hasn't dismissed it this session
+        if (json.showWarning && !warningDismissed.current) {
           setShowWarning(true);
+        } else if (!json.showWarning) {
+          // Reset dismiss guard when artist clears the warning (after 30s)
+          warningDismissed.current = false;
         }
       }
+      return Boolean(json.success);
     } catch (e) {
-      console.error("Error fetching show data", e);
+      setSyncError('Connection lost. Retrying...');
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Sockets deliver every state change within milliseconds (the server broadcasts after each
+  // DB write). The poll only reconciles anything missed, so it can be slow; every (re)connect
+  // also refetches, because events sent while disconnected are never replayed.
   useEffect(() => {
-    // Initial Load
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchShowData();
-
-    // Silent Heartbeat Sync (Fail-safe)
-    const interval = setInterval(() => {
-      fetchShowData();
-    }, 3000);
-
+    const interval = setInterval(fetchShowData, RECONCILE_MS);
     return () => clearInterval(interval);
   }, [showId]);
 
   useEffect(() => {
     if (!socket) return;
-    // ... (Socket Listeners remain same)
+    socket.on("connect", fetchShowData);
+    return () => socket.off("connect", fetchShowData);
+  }, [socket, showId]);
 
-    // ... (Socket Listeners remain same)
+  useEffect(() => {
+    if (!socket) return;
+    // The server only sends this room's events; the id check is defence in depth
+    const isOtherShow = (data) => data?.eventId && String(data.eventId) !== String(showId);
 
-    // --- SOCKET LISTENERS ---
-
-
-
-    // 1. Show Update (Start/Pause) & Timer Sync
     const onShowUpdate = (data) => {
-      console.log(`[Socket RX] show:update`, data);
+      if (isOtherShow(data) || !data.status) return;
       toast.info(`Signal Received: ${data.status}`);
-
-      // Critical Mismatch Check (Non-Blocking for Debug)
-      if (data.eventId && String(data.eventId) !== String(showId)) {
-        console.error(`[Sync Warning] Mismatch! Page: ${showId} vs Socket: ${data.eventId}`);
-        toast.warning(`Event ID Mismatch (P:${showId} vs S:${data.eventId})`, {
-          description: "Proceeding with update anyway (Debug Mode)",
-          duration: 5000
-        });
-        // return; // DISABLED BLOCKING TO FIX "SOCKET DEAD" ISSUE
-      }
-
-      // Sync Time if provided (Pause/Resume Exact Sync)
       if (typeof data.time === 'number') {
         console.log(`[Sync] Force Time to ${data.time}`);
         setElapsedSeconds(data.time);
@@ -183,13 +160,10 @@ export default function LiveShowPage(props) {
 
       setShow(prev => {
         if (!prev) return prev;
-
-        // If Starting Fresh (Live), ensure reset logic
         let newSetlist = prev.setlist;
         let newCurrentSong = prev.currentSong;
 
         if (data.status === 'Live' && prev.status === 'Standby') {
-          // START FROM FIRST SONG (Reset)
           newSetlist = prev.setlist.map((s, i) => ({ ...s, status: i === 0 ? 'live' : 'pending' }));
           newCurrentSong = newSetlist[0];
         }
@@ -201,47 +175,32 @@ export default function LiveShowPage(props) {
           currentSong: newCurrentSong
         };
       });
-
-      // Sync Timer for start
       if (data.status === 'Live' && elapsedSeconds === 0) {
-        // Typically handled by above time sync, but good fallback
       }
     };
-
-    // 2. Poll Start
     const onPollStart = (data) => {
-      console.log("Socket: Poll Started", data);
+      if (isOtherShow(data)) return;
       toast.info("ENCORE POLL STARTED");
-      setPollStats({
-        question: data.question,
-        options: data.options.map(o => ({ ...o, votes: 0 }))
-      });
+      setPollStats({ question: data.question, options: data.options });
     };
-
-    // 3. Poll Update (Real-time Votes)
+    // Tallies are the persisted counts from the server, not client-side +1s
     const onPollUpdate = (data) => {
-      setPollStats(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          options: prev.options.map(opt =>
-            (opt.id === data.optionId || opt._id === data.optionId)
-              ? { ...opt, votes: opt.votes + 1 }
-              : opt
-          )
-        };
-      });
+      if (isOtherShow(data)) return;
+      setPollStats(prev => ({ question: data.question ?? prev?.question, options: data.options }));
     };
-
-    // 4. Poll Reveal (Winner)
+    // The server fixes the winner when the poll closes
+    const onPollEnd = (data) => {
+      if (isOtherShow(data)) return;
+      setPollStats(prev => ({ question: data.question ?? prev?.question, options: data.options }));
+      if (data.winner?.text) setWinner(data.winner.text);
+    };
     const onPollReveal = (data) => {
-      setWinner(data?.winner || "Midnight City");
+      if (isOtherShow(data) || !data?.winner) return;
+      setWinner(data.winner);
       setShowEncoreReveal(true);
     };
-
-    // 5. Last Song Warning
-    const onWarning = () => {
-      console.log("[Socket RX] show:warning RECEIVED");
+    const onWarning = (data) => {
+      if (isOtherShow(data)) return;
       toast.warning("LAST SONG ALERT: Prepare for Finale");
       setShowWarning(true); // Active UI Alert
     };
@@ -249,6 +208,7 @@ export default function LiveShowPage(props) {
     socket.on("show:update", onShowUpdate);
     socket.on("poll:start", onPollStart);
     socket.on("poll:update", onPollUpdate);
+    socket.on("poll:end", onPollEnd);
     socket.on("poll:reveal", onPollReveal);
     socket.on("show:warning", onWarning);
 
@@ -256,6 +216,7 @@ export default function LiveShowPage(props) {
       socket.off("show:update", onShowUpdate);
       socket.off("poll:start", onPollStart);
       socket.off("poll:update", onPollUpdate);
+      socket.off("poll:end", onPollEnd);
       socket.off("poll:reveal", onPollReveal);
       socket.off("show:warning", onWarning);
     };
@@ -269,16 +230,13 @@ export default function LiveShowPage(props) {
     );
   }
 
-  if (!show) return <div className="text-white p-10">Show not found</div>;
+  if (!show) return <div className="text-white p-10">{syncError || 'Show not found'}</div>;
 
   return (
     <>
-      {/* ========================================
-        MOBILE BLOCKING OVERLAY (Visible < 1024px)
-        ======================================== 
-      */}
+      { }
       <div className="lg:hidden flex h-screen w-full bg-[#0F0F10] items-center justify-center p-6 text-center relative overflow-hidden">
-        {/* Background glow decoration */}
+        { }
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#0d93f2]/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10 flex flex-col items-center max-w-sm">
@@ -301,41 +259,45 @@ export default function LiveShowPage(props) {
         </div>
       </div>
 
-      {/* ========================================
-        DESKTOP UI (Hidden < 1024px)
-        ======================================== 
-      */}
+      { }
       <div className="hidden lg:flex flex-col h-screen w-full bg-[#0F0F10] font-sans text-white overflow-hidden">
 
-        {/* 1. Global Navigation */}
+        { }
         <StudioNavbar />
 
-        {/* 2. Show Status Header */}
+        {syncError && (
+          <div role="alert" className="bg-amber-500/15 border-b border-amber-500/40 text-amber-300 text-sm font-medium px-6 py-2">
+            Sync problem: {syncError} The screen is showing the last known state.
+          </div>
+        )}
+
+        { }
         <LiveHeader
           showName={show.event?.name}
           onResync={fetchShowData} // Pass the data fetcher
           status={show.status}
-          bpm={show.currentSong?.bpm || show.bpm || 128} // Dynamic BPM
+          bpm={show.currentSong?.bpm ?? '—'} // tempo of the current song, if the setlist has one
           showTime={formatTime(elapsedSeconds)}
         />
 
-        {/* 3. Main Workspace */}
+        { }
         <div className="flex flex-1 overflow-hidden">
 
-          {/* Left: Controls & Visuals */}
+          { }
           <LiveControls
             currentSong={show.currentSong}
             currentCue={show.currentCue}
             pollStats={pollStats}
             winner={winner}
             showWarning={showWarning} // Pass alert state
-            onCloseWarning={() => setShowWarning(false)} // Allow dismissal
-            onRevealEncore={(poll) => {
-              if (socket) socket.emit("poll:reveal", { winner: poll.options.find(o => o.winning)?.title });
+            onCloseWarning={() => { setShowWarning(false); warningDismissed.current = true; }}
+            onRevealEncore={(winnerName) => {
+              // Prefer the winner the server fixed at poll close; fall back to the live tally
+              if (socket) socket.emit("poll:reveal", { eventId: showId, winner: winner || winnerName });
             }}
           />
 
-          {/* Right: Setlist */}
+          { }
           <SetlistTimeline items={show.setlist} />
 
         </div>

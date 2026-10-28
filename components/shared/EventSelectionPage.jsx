@@ -14,7 +14,6 @@ export default function EventSelectionPage({ role = 'artist' }) {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                // Fetch from the correct Events API
                 const res = await fetch('/api/artist/events');
                 const json = await res.json();
                 if (json.success) {
@@ -57,9 +56,9 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                     href={`${linkPrefix}/${event._id}`}
                                     className="group relative flex flex-col md:flex-row w-full bg-[#0d131a]/80 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:border-[#00d4ff]/50 transition-all duration-300 hover:shadow-[0_0_40px_-10px_rgba(0,212,255,0.2)]"
                                 >
-                                    {/* Left Side: Image & Main Info */}
+                                    {}
                                     <div className="flex-1 p-6 flex gap-6 relative">
-                                        {/* Image Thumbnail */}
+                                        {}
                                         <div className="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-2xl overflow-hidden bg-slate-800 shadow-lg relative group-hover:scale-105 transition-transform duration-500">
                                             {event.images?.hero ? (
                                                 <img src={event.images.hero} alt={event.title} className="w-full h-full object-cover" />
@@ -70,7 +69,7 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                             )}
                                         </div>
 
-                                        {/* Text Info */}
+                                        {}
                                         <div className="flex flex-col justify-center space-y-2 z-10">
                                             <h3 className="text-2xl md:text-3xl font-bold text-white group-hover:text-[#00d4ff] transition-colors">
                                                 {event.title}
@@ -90,25 +89,25 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                             </p>
                                         </div>
 
-                                        {/* Background Glow */}
+                                        {}
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                                     </div>
 
-                                    {/* Perforation Line (Desktop: Vertical, Mobile: Horizontal) */}
+                                    {}
                                     <div className="relative flex md:flex-col items-center justify-center">
-                                        {/* The Dots */}
+                                        {}
                                         <div className="absolute inset-0 flex md:flex-col justify-between py-2 md:px-0 px-2 opacity-30">
-                                            {/* Standard border-dashed could work, but lets act like cutouts */}
+                                            {}
                                         </div>
-                                        {/* Actual Separator Visual */}
+                                        {}
                                         <div className="w-full h-[1px] md:w-[1px] md:h-full border-t md:border-t-0 md:border-l border-dashed border-white/20 my-4 md:my-0 md:mx-4 relative">
-                                            {/* Cutout Circles */}
+                                            {}
                                             <div className="absolute left-[-6px] md:left-[-6px] top-[-10px] md:top-[-6px] w-3 h-3 md:w-4 md:h-4 bg-[#050505] rounded-full"></div>
                                             <div className="absolute right-[-6px] md:left-[-6px] bottom-[-6px] md:bottom-[-6px] w-3 h-3 md:w-4 md:h-4 bg-[#050505] rounded-full"></div>
                                         </div>
                                     </div>
 
-                                    {/* Right Side: Ticket Action */}
+                                    {}
                                     <div className="w-full md:w-72 bg-white/[0.02] p-6 flex flex-col justify-center items-center text-center space-y-4 relative">
 
                                         <div className="space-y-1">

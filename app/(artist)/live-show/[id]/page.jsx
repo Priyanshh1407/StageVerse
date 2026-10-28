@@ -12,25 +12,22 @@ import PollModal from '@/components/artist/live/PollModal';
 import PollSelectionModal from '@/components/artist/live/PollSelectionModal';
 import WarningModal from '@/components/artist/live/WarningModal';
 import EncoreScreen from '@/components/EncoreScreen';
+import { useSocket, useShowRoom } from '@/components/providers/SocketProvider';
+import { use } from 'react';
 
 const INITIAL_LOGS = [
   { id: 1, time: "20:45:12", msg: "System standby confirmed.", sub: "All nodes responding.", active: true },
   { id: 2, time: "20:30:00", msg: "Support Act Finished." },
 ];
 
-// --- IMPORTS ---
-import { useSocket } from '@/components/providers/SocketProvider'; // Import Hook
-import { use } from 'react'; // React 19+
-
 export default function LiveModePage(props) {
   const params = use(props.params);
   const eventId = params.id;
 
-  const { socket } = useSocket(); // Use Socket
-  // --- STATE MANAGEMENT ---
-  // --- STATE MANAGEMENT ---
+  const { socket } = useSocket();
+  const room = useShowRoom(eventId);
   const [logs, setLogs] = useState(INITIAL_LOGS);
-  const [showStatus, setShowStatus] = useState('Standby'); // 'Standby' | 'Live' | 'Paused'
+  const [showStatus, setShowStatus] = useState('Standby');
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showEncoreScreen, setShowEncoreScreen] = useState(false);
   const [showSelectionModal, setShowSelectionModal] = useState(false);
@@ -38,7 +35,6 @@ export default function LiveModePage(props) {
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [selectedPollData, setSelectedPollData] = useState(null);
 
-  // --- HELPERS ---
   const addLog = (msg, sub = "", type = "normal") => {
     setLogs(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString('en-US', { hour12: false }), msg, sub, active: type === "active", critical: type === "critical" }, ...prev]);
   };
@@ -50,7 +46,6 @@ export default function LiveModePage(props) {
     return { hours, minutes, seconds };
   };
 
-  // --- TIMER EFFECT ---
   useEffect(() => {
     let interval;
     if (showStatus === 'Live') {
@@ -61,86 +56,103 @@ export default function LiveModePage(props) {
     return () => clearInterval(interval);
   }, [showStatus]);
 
-  // Debug: Monitor Socket Connection
   useEffect(() => {
-    if (socket) {
-      console.log(`[Artist Page] Socket Status: ${socket.connected ? 'Connected' : 'Disconnected'} (ID: ${socket.id})`);
-      socket.on("connect", () => toast.success("Connected to Sync Server"));
-      socket.on("disconnect", () => toast.error("Lost Connection to Sync Server"));
-    }
+    if (!socket) return;
+    const onConnect = () => toast.success("Connected to Sync Server");
+    const onDisconnect = () => toast.error("Lost Connection to Sync Server");
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
   }, [socket]);
 
-  // Helper: Persist Status
-  const updateShowStatus = async (newStatus) => {
+  useEffect(() => {
+    if (room.error) toast.error(`Sync unavailable: ${room.error}`);
+  }, [room.error]);
+
+  // Persist show state. The server broadcasts it to the crew after saving,
+  // so the DB and every screen agree on what happened.
+  const updateLiveState = async (patch) => {
     try {
-      await fetch('/api/production/live', {
+      const res = await fetch('/api/production/live', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId, status: newStatus })
+        body: JSON.stringify({ eventId, ...patch })
       });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        toast.error(body.error || 'Could not update the show');
+        return false;
+      }
+      return true;
     } catch (e) {
-      console.error("Failed to persist status", e);
+      toast.error('Network error: show state not saved');
+      return false;
     }
   };
+  // `time` is this screen's timer: the server's show clock follows it, so every screen agrees
+  const updateShowStatus = (newStatus, time) => updateLiveState({ status: newStatus, time });
 
-  // 1. Start Show
+  // Coming back to a show: pick up where it is (status and clock) instead of Standby at 0:00
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/production/live?eventId=${eventId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (cancelled || !json?.success) return;
+        setShowStatus(json.showStatus || 'Standby');
+        if (typeof json.elapsedSeconds === 'number') setElapsedSeconds(json.elapsedSeconds);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [eventId]);
+
   const handleStartShow = () => {
     console.log("Triggering Start Show...");
-
-    // Check Status Logic
     if (showStatus === 'Live') return;
 
     if (showStatus === 'Standby') {
       setElapsedSeconds(0);
       addLog("Show Started", "Intro Sequence 01 Initiated", "active");
-
-      // EMIT EVENT
+      updateShowStatus('Live', 0).then((ok) => ok && toast.success("Show started: crew notified"));
+    } else {
+      // Resuming from Paused — must emit socket and persist to DB too
+      addLog("Show Resumed", "Timer continued", "active");
       if (socket && socket.connected) {
-        console.log(`[Socket TX] show:start | EventID: ${eventId} | SocketID: ${socket.id}`);
-        // Removed hardcoded BPM to let Production handle it
-        socket.emit("show:start", { eventId, status: 'Live' });
+        socket.emit("show:update", { eventId, status: 'Live', time: elapsedSeconds });
         toast.success("Sync Signal Broadcasted");
       } else {
-        console.error("[Socket Error] Socket not connected! Cannot emit show:start");
         toast.error("Sync Failed: Socket Offline");
-        // Fallback: Still update local state? Yes, for UI responsiveness.
       }
-      // PERSIST
-      updateShowStatus('Live');
-    } else {
-      addLog("Show Resumed", "Timer continued", "active");
+      updateShowStatus('Live', elapsedSeconds);
     }
     setShowStatus('Live');
     console.log("State set to Live");
   };
 
-  // 2. Poll Flow
   const handleTriggerPollClick = () => {
-    setShowSelectionModal(true); // Open List
+    setShowSelectionModal(true);
   };
 
   const handleSelectPoll = (poll) => {
     setSelectedPollData(poll);
-    setShowSelectionModal(false); // Close List
-    setShowPreviewModal(true);    // Open Preview
+    setShowSelectionModal(false);
+    setShowPreviewModal(true);
   };
 
   const handleConfirmPoll = async () => {
     setShowPreviewModal(false);
 
     let activePollId = selectedPollData?.id;
-    // EXTRACT DATA ROBUSTLY (Handle both DB objects and Template strings)
     let pollQuestion = selectedPollData?.data?.question || "Encore Poll";
     let rawOptions = selectedPollData?.data?.options || [];
-
-    // Normalize options to simple strings for creation, or keep objects for existing
     let pollOptions = rawOptions.map(o => (typeof o === 'object' ? o.text : o));
 
-    // 1. Create or Activate via API
     try {
       let res;
       if (selectedPollData?.isTemplate) {
-        // Create New
         res = await fetch('/api/fan/poll', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -152,7 +164,6 @@ export default function LiveModePage(props) {
           })
         });
       } else {
-        // Activate Existing
         res = await fetch('/api/fan/poll', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -166,25 +177,12 @@ export default function LiveModePage(props) {
       const json = await res.json();
       if (json.success) {
         activePollId = json.poll._id;
-        pollOptions = json.poll.options; // Ensure we have DB IDs
+        pollOptions = json.poll.options;
         pollQuestion = json.poll.question;
 
         addLog(`${pollQuestion} Activated`, "Live Pulse System: Voting Open", "active");
-
-        // 2. EMIT POLL START (With DB ID so fans vote on correct object)
-        if (socket) {
-          console.log(`[Artist] Emitting poll:start for Poll: ${activePollId}`);
-          socket.emit("poll:start", {
-            eventId,
-            pollId: activePollId,
-            question: pollQuestion,
-            options: pollOptions.map((o, idx) => ({
-              id: o._id || `opt-${idx}`,
-              text: typeof o === 'string' ? o : (o.text || "Option")
-            }))
-          });
-          toast.success("Poll Distributed to Fans");
-        }
+        // The server broadcasts poll:start to fans and crew once the poll is open
+        toast.success("Poll Distributed to Fans");
       } else {
         toast.error("Failed to activate poll");
         return;
@@ -195,14 +193,8 @@ export default function LiveModePage(props) {
       toast.error("Error activating poll");
     }
 
-    // 3. Deactivate after Timeout
     setTimeout(async () => {
       addLog("Poll Results Finalized", "Voting Closed", "active");
-
-      // Notify Frontend
-      if (socket) socket.emit("poll:end");
-
-      // Update DB
       try {
         await fetch('/api/fan/poll', {
           method: 'PUT',
@@ -213,79 +205,40 @@ export default function LiveModePage(props) {
           })
         });
       } catch (e) { console.error("Error closing poll", e); }
-
     }, 60000);
   };
 
-  // 3. Warning Flow
   const handleWarningClick = () => setShowWarningModal(true);
 
   const handleConfirmWarning = async () => {
     setShowWarningModal(false);
     addLog("Last Song Alert Sent", "Crew prepared for finale/egress", "critical");
-
-    // 1. Persist to DB (Reliability)
-    try {
-      await fetch('/api/production/live', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId, warning: true })
-      });
-    } catch (e) {
-      console.error("Failed to persist warning", e);
-    }
-
-    // 2. Emit Socket (Speed)
-    if (socket) {
-      console.log(`[Artist] Emitting show:warning for Event: ${eventId}`);
-      socket.emit("show:warning", { eventId });
-      toast.success("Alert Signal Sent to Production");
-    } else {
-      console.error("[Artist] Socket disconnected. Cannot send warning.");
-      toast.error("Socket Error: Check Connection");
-    }
-
-    // 3. Auto-Clear Warning after 30s (Optional)
-    setTimeout(async () => {
-      try {
-        await fetch('/api/production/live', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventId, warning: false })
-        });
-      } catch (e) { }
-    }, 30000);
+    // Saving the warning makes the server alert the crew's screens
+    if (await updateLiveState({ warning: true })) toast.success("Alert Signal Sent to Production");
+    setTimeout(() => { updateLiveState({ warning: false }); }, 30000);
   };
 
-  // 4. Emergency
   const handleEmergencyPause = () => {
     console.log("Triggering Emergency Pause...");
     if (showStatus === 'Paused') {
       setShowStatus('Live');
       addLog("TECHNICAL PAUSE ENDED", "Resuming show flow.", "active");
-
-      // EMIT EVENT (Resume - Continued Flow)
       if (socket && socket.connected) {
-        // Resume from current time, do NOT restart
         socket.emit("show:update", { eventId, status: 'Live', time: elapsedSeconds });
         toast.success("Show Resumed");
       }
-      updateShowStatus('Live');
+      updateShowStatus('Live', elapsedSeconds);
     } else {
       setShowStatus('Paused');
       addLog("EMERGENCY PAUSE ACTIVATED", "Timer halted. Audio Cut.", "critical");
-
-      // EMIT EVENT (Pause)
       if (socket && socket.connected) {
-        // Send current time so crew pauses at EXACT same second
         socket.emit("show:update", { eventId, status: 'Paused', time: elapsedSeconds });
         toast.error("Emergency Signal Sent");
       }
-      updateShowStatus('Paused');
+      updateShowStatus('Paused', elapsedSeconds);
     }
   };
 
-  // 5. Manual Log
   const handleManualLog = (text) => addLog(text, "Manual Entry");
   const handleOpenSettings = () => toast.info("Opening Settings...");
 
@@ -293,7 +246,6 @@ export default function LiveModePage(props) {
     <div className="h-screen bg-[#f5f7f8] dark:bg-[#101b22] text-slate-900 dark:text-white font-sans flex flex-col overflow-hidden">
       <ArtistNavbar />
 
-      {/* --- FULL SCREEN OVERLAY (Conditionally Rendered) --- */}
       {showEncoreScreen && (
         <EncoreScreen
           winnerName="MIDNIGHT CITY"
@@ -306,22 +258,18 @@ export default function LiveModePage(props) {
 
         <div className="flex flex-col xl:flex-row gap-6 mt-6 h-full">
 
-          {/* LEFT COLUMN: Controls */}
           <div className="flex-1 flex flex-col gap-6">
             <ShowTimer time={formatTime(elapsedSeconds)} status={showStatus} />
 
             <ActionGrid
               status={showStatus}
               onStartShow={handleStartShow}
-              onEncorePoll={handleTriggerPollClick} // Starts Selection Flow
-              onWarning={handleWarningClick}        // Starts Warning Flow
+              onEncorePoll={handleTriggerPollClick}
+              onWarning={handleWarningClick}
               onEmergency={handleEmergencyPause}
-            // Optional: Manual Trigger for Screen if you want a button for it
-            // onReveal={() => setShowEncoreScreen(true)} 
             />
           </div>
 
-          {/* RIGHT COLUMN: Logs & Venue */}
           <div className="w-full xl:w-[400px] flex flex-col gap-6">
             <SystemLog logs={logs} onAddLog={handleManualLog} />
             <VenueInfo />
@@ -330,9 +278,6 @@ export default function LiveModePage(props) {
         </div>
       </main>
 
-      {/* --- MODALS --- */}
-
-      {/* 1. Poll Selection Modal */}
       <PollSelectionModal
         isOpen={showSelectionModal}
         onClose={() => setShowSelectionModal(false)}
@@ -340,7 +285,6 @@ export default function LiveModePage(props) {
         eventId={eventId}
       />
 
-      {/* 2. Poll Preview Modal */}
       <PollModal
         isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
@@ -348,7 +292,6 @@ export default function LiveModePage(props) {
         pollData={selectedPollData}
       />
 
-      {/* 3. Last Song Warning Modal */}
       <WarningModal
         isOpen={showWarningModal}
         onClose={() => setShowWarningModal(false)}

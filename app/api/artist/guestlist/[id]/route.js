@@ -1,51 +1,51 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
 import Notification from '@/models/Notification';
 import User from '@/models/User';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor } from '@/lib/authz';
+import { NotFoundError } from '@/lib/errors';
 
-// UPDATE NOTES (PATCH)
+const GUEST_MANAGERS = ['artist', 'organizer'];
+
+async function loadGuestFor(user, id) {
+    const guest = await Guest.findById(id);
+    if (!guest) throw new NotFoundError('Guest not found');
+    await loadEventFor(user, guest.eventId, GUEST_MANAGERS);
+    return guest;
+}
 export async function PATCH(req, { params }) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { id } = await params;
         const body = await req.json();
         const { notes } = body;
 
+        await loadGuestFor(artist, id);
         const guest = await Guest.findByIdAndUpdate(
             id,
             { notes },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!guest) return NextResponse.json({ error: 'Guest not found' }, { status: 404 });
 
         return NextResponse.json({ success: true, guest });
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/artist/guestlist/[id]');
     }
 }
-
-// REVOKE ACCESS (DELETE)
 export async function DELETE(req, { params }) {
     try {
         await dbConnect();
         const artist = await verifyAuth(req);
-        if (!artist) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { id } = await params;
-
-        // 1. Find Guest to get details
-        const guest = await Guest.findById(id);
-        if (!guest) return NextResponse.json({ error: 'Guest not found' }, { status: 404 });
-
-        // 2. Delete Notification
-        // Robust strategy: Use userId if present, otherwise fallback to email lookup
+        const guest = await loadGuestFor(artist, id);
         let targetUserId = guest.userId;
 
         if (!targetUserId && guest.email) {
@@ -54,14 +54,6 @@ export async function DELETE(req, { params }) {
         }
 
         if (targetUserId) {
-            // New Request: Don't delete old notification. Send a NEW one informing of revocation.
-            // We need the event details for a good message.
-            // Since guest.eventId is just an ID, we might need to fetch the Event title if we want to be fancy,
-            // but for speed, we can say "for the event you were on the guestlist for".
-            // OR we can populate it if we did a population query, but we did findById.
-
-            // Let's try to be helpful and specific if possible.
-            // We can assume the frontend or user knows which event it was, but the notification needs text.
 
             await Notification.create({
                 userId: targetUserId,
@@ -79,13 +71,10 @@ export async function DELETE(req, { params }) {
         } else {
             console.warn(`[Guestlist] Could not resolve User for guest ${id}. No notification sent.`);
         }
-
-        // 3. Delete Guest
         await Guest.findByIdAndDelete(id);
 
         return NextResponse.json({ success: true });
     } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(e, '/api/artist/guestlist/[id]');
     }
 }

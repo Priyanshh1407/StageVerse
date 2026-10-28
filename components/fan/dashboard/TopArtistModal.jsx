@@ -3,22 +3,16 @@ import React, { useState, useEffect, use } from 'react';
 import { X, Search, Ticket, ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 
-// const ALL_ARTISTS = [
-//   { rank: 1, name: "Radiohead", genre: "Alt-Rock / Electronic", count: 5, image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop" },
-//   { rank: 2, name: "Tame Impala", genre: "Psychedelic Rock", count: 3, image: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=800&auto=format&fit=crop" },
-//   { rank: 3, name: "Khruangbin", genre: "Funk / Soul", count: 3, image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop" },
-//   { rank: 4, name: "The Strokes", genre: "Indie Rock", count: 2, image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=800&auto=format&fit=crop" },
-//   { rank: 5, name: "Arcade Fire", genre: "Indie / Alternative", count: 2, image: "https://images.unsplash.com/photo-1514525253440-b393332569ca?q=80&w=800&auto=format&fit=crop" },
-//   { rank: 6, name: "Daft Punk", genre: "Electronic / House", count: 1, image: "https://images.unsplash.com/photo-1459749411177-3c0714b62437?q=80&w=800&auto=format&fit=crop" },
-// ];
-
 export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Reset search when modal opens/closes
-  useEffect(() => {
-    if (isOpen) setSearchQuery('');
-  }, [isOpen]);
+  // Reset when the modal opens (adjusted during render, not in an effect)
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) {
+      setSearchQuery('');
+    }
+  }
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -35,8 +29,6 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
-
-  // --- FILTER LOGIC ---
   const filteredArtists = artists.filter((artist) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -49,7 +41,7 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-white dark:bg-[#1a2632] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[85vh] zoom-in-95">
 
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800 shrink-0">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Top Artists Seen</h2>
@@ -60,7 +52,7 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
           </button>
         </div>
 
-        {/* Search Bar */}
+        {}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#151f28] shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -74,23 +66,23 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
           </div>
         </div>
 
-        {/* List */}
+        {}
         <div className="overflow-y-auto flex-1 p-2 space-y-1">
           {filteredArtists.length > 0 ? (
             filteredArtists.map((artist) => (
               <div key={artist.name} className="flex items-center gap-4 p-3 hover:bg-slate-100 dark:hover:bg-[#1e2a35] rounded-lg transition-colors group cursor-pointer">
-                {/* Image */}
+                {}
                 <div className="relative h-12 w-12 rounded-lg shadow-md shrink-0 overflow-hidden">
                   <Image src={artist.image} alt={artist.name} fill className="object-cover" />
                 </div>
 
-                {/* Info */}
+                {}
                 <div className="flex-1 min-w-0">
                   <p className="text-slate-900 dark:text-white font-bold truncate text-base">{artist.name}</p>
                   <p className="text-xs text-slate-500">{artist.genre}</p>
                 </div>
 
-                {/* Stats & Action */}
+                {}
                 <div className="shrink-0 flex flex-col items-end gap-1">
                   <div className="flex items-center gap-1 bg-[#0d93f2]/10 px-2 py-0.5 rounded text-[#0d93f2] border border-[#0d93f2]/20">
                     <Ticket className="w-3 h-3" />
@@ -104,12 +96,12 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
             ))
           ) : (
             <div className="flex flex-col items-center justify-center py-10 text-slate-500">
-              <p>No artists found matching "{searchQuery}"</p>
+              <p>No artists found matching &quot;{searchQuery}&quot;</p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end shrink-0">
           <button onClick={onClose} className="px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-sm rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors shadow-sm">
             Close

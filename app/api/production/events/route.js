@@ -1,12 +1,13 @@
 
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
 import { verifyAuth } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
-
-// Helper to determine color based on type
+import { requireRole } from '@/lib/authz';
+import { nextEventId } from '@/lib/counters';
 function getTypeColor(type) {
     switch (type) {
         case 'Touring': return 'bg-blue-500';
@@ -20,35 +21,23 @@ function getTypeColor(type) {
 export async function POST(req) {
     try {
         await dbConnect();
-
-        // 1. Auth Check
         const user = await verifyAuth(req);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
+        requireRole(user, 'production', 'organizer');
+        
         const body = await req.json();
-
-        // Basic Validation
         if (!body.title || !body.date) {
             return NextResponse.json({ error: 'Title and Date are required' }, { status: 400 });
         }
-
-        // Validate or Create Venue 
         let venueDoc = await Venue.findOne({ name: body.venue });
         if (!venueDoc) {
             venueDoc = await Venue.create({
                 name: body.venue || 'Unknown Venue',
                 city: 'Unknown City',
-                capacity: 1000,
-                location: 'Unknown Address'
+                capacity: '1000',
+                address: 'TBA' // required by the Venue schema; edited later
             });
         }
-
-        // Generate a random 4-digit Event ID if not provided
-        const newEventId = Math.floor(1000 + Math.random() * 9000);
-
-        // Create the Event
+        const newEventId = await nextEventId();
         const newEvent = await Event.create({
             eventId: newEventId,
             title: body.title,
@@ -67,8 +56,6 @@ export async function POST(req) {
             ticketTiers: [],
             discounts: []
         });
-
-        // LOG ACTIVITY
         await logActivity(
             user.userId,
             'create',
@@ -92,7 +79,6 @@ export async function POST(req) {
         });
 
     } catch (error) {
-        console.error("Create Event Error:", error);
-        return NextResponse.json({ error: error.message || 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/production/events');
     }
 }

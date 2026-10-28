@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Task from '@/models/Task';
+import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -9,10 +11,9 @@ export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-        // Find tasks that are "Crew Messages"
+        const myEvents = await Event.find({ artistId: user.userId }).select('_id');
         const notifications = await Task.find({
+            eventId: { $in: myEvents.map((e) => e._id) },
             status: { $ne: 'Done' },
             urgent: true,
             title: { $regex: '^Crew Message:', $options: 'i' }
@@ -21,7 +22,6 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: notifications });
 
     } catch (error) {
-        console.error("Artist Notifications Error:", error);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/notifications');
     }
 }

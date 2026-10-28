@@ -32,7 +32,7 @@ export default function DaySheetListPage() {
 
       <main className="w-full max-w-7xl mx-auto px-4 lg:px-10 py-12">
 
-        {/* HERO SECTION */}
+        {}
         <div className="relative mb-16 rounded-3xl overflow-hidden bg-gradient-to-r from-[#0d93f2]/10 to-transparent border border-[#0d93f2]/10 p-8 md:p-12">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2600&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-overlay pointer-events-none"></div>
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
@@ -52,7 +52,7 @@ export default function DaySheetListPage() {
           </div>
         </div>
 
-        {/* SHOWS GRID */}
+        {}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 opacity-50">
             <Loader2 className="w-10 h-10 animate-spin text-[#0d93f2] mb-4" />
@@ -70,11 +70,11 @@ export default function DaySheetListPage() {
                 href={`/day-sheet/${event._id}`}
                 className="group relative flex flex-col bg-[#131d24] rounded-2xl border border-[#223949] overflow-hidden hover:border-[#0d93f2] hover:shadow-[0_0_30px_rgba(13,147,242,0.1)] transition-all duration-300"
               >
-                {/* Status Strip */}
+                {}
                 <div className="h-1.5 w-full bg-gradient-to-r from-[#223949] to-[#101b22] group-hover:from-[#0d93f2] group-hover:to-[#60a5fa] transition-all duration-500"></div>
 
                 <div className="p-6 flex flex-col h-full relative">
-                  {/* Decorative Number */}
+                  {}
                   <span className="absolute top-4 right-6 text-6xl font-black text-[#1c2a35] -z-0 select-none group-hover:text-[#223949] transition-colors">
                     {String(index + 1).padStart(2, '0')}
                   </span>
@@ -99,7 +99,7 @@ export default function DaySheetListPage() {
                     </div>
                   </div>
 
-                  {/* Hover Action */}
+                  {}
                   <div className="mt-8 pt-4 flex items-center text-sm font-bold text-[#0d93f2] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                     View Full Itinerary <ArrowRight className="w-4 h-4 ml-2" />
                   </div>

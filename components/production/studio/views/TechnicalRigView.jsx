@@ -7,8 +7,6 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [editingFixture, setEditingFixture] = useState(null);
   const [viewingFixture, setViewingFixture] = useState(null);
-
-  // Close menu when clicking outside AND handle ESC key
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.action-menu-container')) {
@@ -18,7 +16,6 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
-        // Close everything
         setEditingFixture(null);
         setViewingFixture(null);
         setActiveMenuId(null);
@@ -95,7 +92,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
         </tbody>
       </table>
 
-      {/* EDIT MODAL */}
+      {}
       {editingFixture && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -136,7 +133,6 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                 <select
                   value={editingFixture.cue}
                   onChange={e => {
-                    // Simple color logic map
                     const colors = { "Intro Sequence": "blue", "Drum Solo": "red", "Main Wash": "orange", "Audience Blinders": "orange", "Specials": "blue" };
                     setEditingFixture({ ...editingFixture, cue: e.target.value, cueColor: colors[e.target.value] || 'blue' })
                   }}
@@ -162,7 +158,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
         </div>
       )}
 
-      {/* VIEW DETAILS MODAL */}
+      {}
       {viewingFixture && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -224,11 +220,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
     </div>
   );
 }
-
-// --- SUB-COMPONENT: Single Row with Dropdown Logic ---
 function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConflict, isOpen, onToggle, onDelete, onEdit, onView }) {
-
-  // Color mapping helper
   const getCueColors = (color) => {
     const map = {
       blue: { bg: 'bg-blue-900/20', text: 'text-blue-400', border: 'border-blue-500/20', dot: 'bg-blue-500' },
@@ -273,7 +265,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
         </div>
       </td>
 
-      {/* ACTIONS COLUMN WITH DROPDOWN */}
+      {}
       <td className="py-3 px-4 text-right relative action-menu-container">
 
         {isConflict && (
@@ -292,7 +284,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
           <MoreHorizontal className="w-5 h-5" />
         </button>
 
-        {/* THE DROPDOWN MENU */}
+        {}
         {isOpen && (
           <div className="absolute right-8 top-8 w-40 bg-[#27272A] border border-[#3F3F46] rounded-lg shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
             <div className="flex flex-col py-1">

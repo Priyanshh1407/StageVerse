@@ -23,7 +23,6 @@ export default function CreateAlertModal({ isOpen, onClose }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         setSuccess(true);
-        // Reset after 2 seconds and close
         setTimeout(() => {
             setSuccess(false);
             onClose();
@@ -34,7 +33,7 @@ export default function CreateAlertModal({ isOpen, onClose }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="relative w-full max-w-md bg-white dark:bg-[#1a2632] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
 
-                {/* Header */}
+                {}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-[#0d93f2]/10 rounded-lg text-[#0d93f2]">
@@ -47,7 +46,7 @@ export default function CreateAlertModal({ isOpen, onClose }) {
                     </button>
                 </div>
 
-                {/* Content */}
+                {}
                 <div className="p-6">
                     {success ? (
                         <div className="flex flex-col items-center justify-center py-8 text-center animate-in zoom-in duration-300">
@@ -55,12 +54,12 @@ export default function CreateAlertModal({ isOpen, onClose }) {
                                 <Check className="w-8 h-8" />
                             </div>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Alert Created!</h3>
-                            <p className="text-slate-500 text-sm mt-1">We'll notify you when tickets drop.</p>
+                            <p className="text-slate-500 text-sm mt-1">We&apos;ll notify you when tickets drop.</p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-6">
 
-                            {/* Alert Type */}
+                            {}
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-slate-900 dark:text-white">Notify me about:</label>
                                 <div className="grid grid-cols-2 gap-3">
@@ -75,7 +74,7 @@ export default function CreateAlertModal({ isOpen, onClose }) {
                                 </div>
                             </div>
 
-                            {/* Channel */}
+                            {}
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-slate-900 dark:text-white">Send notifications via:</label>
                                 <div className="space-y-2">

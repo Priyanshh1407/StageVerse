@@ -33,7 +33,7 @@ export default function RiderHeader({
             </select>
           </div>
 
-          {/* Prominent LD Selector */}
+          {}
           <div className="flex items-center gap-2">
             <span className="text-white/60 text-sm w-24">Assign LD:</span>
             <LDSelector selectedLD={selectedLD} onSelect={onLDSelect} />
@@ -41,7 +41,6 @@ export default function RiderHeader({
         </div>
       </div>
       <div className="mt-4 md:mt-0 flex flex-wrap gap-3 items-center">
-
 
         <span className="flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-400 rounded-full border border-green-500/20 text-xs font-bold uppercase tracking-wider">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>

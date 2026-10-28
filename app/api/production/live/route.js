@@ -1,113 +1,69 @@
 import { NextResponse } from 'next/server';
+import { apiError, readJson } from '@/lib/api';
 import dbConnect from '@/lib/db';
-import Event from '@/models/Event';
 import Setlist from '@/models/Setlist';
-import Song from '@/models/Song';
 import Poll from '@/models/Poll';
+import Venue from '@/models/Venue';
+import { verifyAuth } from '@/lib/auth';
+import { loadEventFor, EVENT_TEAM, SHOW_CONTROL } from '@/lib/authz';
+import { NotFoundError, ValidationError } from '@/lib/errors';
+import { emitToEvent } from '@/lib/realtime';
+import { advanceClock, elapsedAt } from '@/lib/showClock';
 
-// Mock Data for "Demo" or Fallback
+const SHOW_STATUSES = ['Standby', 'Live', 'Paused'];
+
+// Demo data is served only for the explicit demo id, never as an error fallback.
+const DEMO_EVENT_ID = 'demo-event';
 const MOCK_EVENT_DATA = {
     event: {
-        _id: 'demo-event',
+        _id: DEMO_EVENT_ID,
         title: 'The Epoch World Tour (Demo)',
         date: new Date().toISOString(),
         city: 'London, UK',
         venue: { name: 'Wembley Stadium' }
     },
     setlist: [
-        {
-            _id: 'song-1',
-            title: 'Neon Lights',
-            bp: 128,
-            key: 'Cm',
-            status: 'played',
-            duration: '3:45'
-        },
-        {
-            _id: 'song-2',
-            title: 'Midnight City',
-            bp: 130,
-            key: 'Am',
-            status: 'live', // Current song
-            duration: '4:12'
-        },
-        {
-            _id: 'song-3',
-            title: 'Echoes of Time',
-            bp: 95,
-            key: 'G',
-            status: 'next',
-            duration: '5:00'
-        },
-        {
-            _id: 'song-4',
-            title: 'Starlight',
-            bp: 140,
-            key: 'D',
-            status: 'pending',
-            duration: '3:30'
-        }
-    ]
+        { _id: 'song-1', title: 'Neon Lights', bpm: 128, key: 'Cm', status: 'completed', duration: '3:45' },
+        { _id: 'song-2', title: 'Midnight City', bpm: 130, key: 'Am', status: 'live', duration: '4:12' },
+        { _id: 'song-3', title: 'Echoes of Time', bpm: 95, key: 'G', status: 'pending', duration: '5:00' },
+        { _id: 'song-4', title: 'Starlight', bpm: 140, key: 'D', status: 'pending', duration: '3:30' }
+    ],
+    showStatus: 'Standby',
+    showWarning: false,
+    activePoll: null,
 };
 
+// GET ?eventId= -> current show state (event team only)
 export async function GET(req) {
     try {
         await dbConnect();
-
-        // Get ID from URL search params or route params (Next.js App Router uses dynamic route folder [id])
-        // But since this is a route handler in app/api/production/live/route.js, it might handle generic requests or receive ID in query
-        // The page `app/(production)/live/[id]/page.jsx` calls `/api/production/live?eventId=${id}`.
-
         const { searchParams } = new URL(req.url);
         const eventId = searchParams.get('eventId');
+        if (!eventId) throw new ValidationError('Missing Event ID');
+        if (eventId === DEMO_EVENT_ID) return NextResponse.json({ success: true, demo: true, ...MOCK_EVENT_DATA });
 
-        // OPTION 1: Demo Logic
-        if (eventId === 'demo-event' || eventId === 'test') {
-            return NextResponse.json({ success: true, ...MOCK_EVENT_DATA });
-        }
+        const user = await verifyAuth(req);
+        const event = await loadEventFor(user, eventId, EVENT_TEAM, { populate: { path: 'venue', model: Venue, select: 'name city address' } });
 
-        // OPTION 2: DB Lookup
-        // console.log(`[ProductionAPI] Looking up Event ID: ${eventId}`);
+        // Plain objects with only the fields the crew screen shows (the setlist items
+        // already carry title/bpm/key/duration, so songs aren't populated)
+        const [setlistDoc, activePoll] = await Promise.all([
+            Setlist.findOne({ eventId: event._id })
+                .select('items._id items.songId items.title items.bpm items.key items.status items.duration showStatus showWarning clock')
+                .lean(),
+            Poll.findOne({ eventId: event._id, isActive: true }).select('question options isActive').lean(),
+        ]);
 
-        let event;
-        const mongoose = require('mongoose');
-
-        if (mongoose.isValidObjectId(eventId)) {
-            event = await Event.findById(eventId).populate('venue');
-        } else {
-            // Try lookup by custom eventId (e.g. 999)
-            event = await Event.findOne({ eventId: eventId }).populate('venue');
-        }
-
-        if (!event) {
-            console.warn(`[ProductionAPI] Event ${eventId} not found.`);
-            return NextResponse.json({ success: false, message: "Event not found" }, { status: 404 });
-        }
-        // console.log(`[ProductionAPI] Found Event: ${event.title}`);
-
-        // Fetch Setlist
-        // Assuming one setlist per event or finding the latest
-        const setlistDoc = await Setlist.findOne({ eventId: eventId }).populate('items.songId');
-
-        // Debugging
-        if (!setlistDoc) console.warn(`No setlist found for eventId: ${eventId}`); // Keep for logs
-
-        // Transform Setlist Data (Handle new 'items' array structure from Schema)
-        const formattedSetlist = setlistDoc ? setlistDoc.items.map(item => {
-            // Handle case where populate might fail or structure differs
-            const song = item.songId || {};
+        const setlist = (setlistDoc?.items || []).map((item) => {
             return {
-                _id: song._id || item._id, // Fallback
+                _id: item.songId || item._id,
                 title: item.title,
-                bpm: item.bpm || 120,
-                key: item.key || 'C',
+                bpm: item.bpm || null, // null = unknown (no invented tempo)
+                key: item.key || null,
                 status: item.status || 'pending',
                 duration: item.duration || '0:00'
             };
-        }) : MOCK_EVENT_DATA.setlist;
-
-        // Fetch Active Poll
-        const activePoll = await Poll.findOne({ eventId: eventId, isActive: true });
+        });
 
         return NextResponse.json({
             success: true,
@@ -118,58 +74,62 @@ export async function GET(req) {
                 city: event.city,
                 venue: event.venue
             },
-            setlist: formattedSetlist,
+            setlist,
+            hasSetlist: Boolean(setlistDoc),
             showStatus: setlistDoc?.showStatus || 'Standby',
             showWarning: setlistDoc?.showWarning || false,
-            activePoll: activePoll
+            // Where the show is now, so a screen that (re)opens or re-syncs is back on track
+            elapsedSeconds: elapsedAt(setlistDoc?.clock, setlistDoc?.showStatus || 'Standby'),
+            activePoll
         });
-
     } catch (error) {
-        console.error("Live API Error:", error);
-        // Fallback on error too
-        return NextResponse.json({ success: true, ...MOCK_EVENT_DATA });
+        return apiError(error, '/api/production/live');
     }
 }
 
+// PUT { eventId, status?, warning?, time? } -> change show state (event's artist or crew);
+// `time` is the artist's timer in seconds, which the show clock follows
 export async function PUT(req) {
     try {
         await dbConnect();
-        const body = await req.json();
+        const body = await readJson(req);
         const { eventId, status } = body;
 
-        if (!eventId) return NextResponse.json({ success: false, message: "Missing Event ID" }, { status: 400 });
-
-        // Allow partial updates: Status OR Warning
-        if (!status && typeof body.warning === 'undefined') {
-            return NextResponse.json({ success: false, message: "No update fields provided" }, { status: 400 });
+        if (!eventId) throw new ValidationError('Missing Event ID');
+        if (eventId === DEMO_EVENT_ID) return NextResponse.json({ success: true, status: status || 'Live' });
+        if (status === undefined && typeof body.warning !== 'boolean') {
+            throw new ValidationError('No update fields provided');
+        }
+        if (status !== undefined && !SHOW_STATUSES.includes(status)) {
+            throw new ValidationError(`status must be one of ${SHOW_STATUSES.join(', ')}`);
         }
 
-        // Find Setlist
-        let setlist = await Setlist.findOne({ eventId: eventId });
+        const user = await verifyAuth(req);
+        const event = await loadEventFor(user, eventId, SHOW_CONTROL);
 
-        if (!setlist) {
-            return NextResponse.json({ success: false, message: "Setlist not found" }, { status: 404 });
+        const setlist = await Setlist.findOne({ eventId: event._id });
+        if (!setlist) throw new NotFoundError('Setlist not found');
+
+        if (status) {
+            setlist.clock = advanceClock(setlist.clock, setlist.showStatus, status, new Date(), body.time);
+            setlist.showStatus = status;
         }
-
-        // Update Setlist Fields
-        if (body.status) setlist.showStatus = body.status;
         if (typeof body.warning === 'boolean') setlist.showWarning = body.warning;
-
-        // LOGIC: If Show is Live, ensure we have an Active Song
         if (status === 'Live') {
             const hasLive = setlist.items.some(i => i.status === 'live');
             const hasCompleted = setlist.items.some(i => i.status === 'completed');
-
-            // If fresh start (nothing live, nothing completed), activate first song
             if (!hasLive && !hasCompleted && setlist.items.length > 0) {
                 setlist.items[0].status = 'live';
             }
         }
-
         await setlist.save();
+
+        // Broadcast only after the state is persisted
+        emitToEvent(event._id, 'show:update', { status: setlist.showStatus, warning: setlist.showWarning, time: elapsedAt(setlist.clock, setlist.showStatus) });
+        if (body.warning === true) emitToEvent(event._id, 'show:warning', {});
 
         return NextResponse.json({ success: true, status: setlist.showStatus });
     } catch (e) {
-        return NextResponse.json({ success: false, error: e.message }, { status: 500 });
+        return apiError(e, '/api/production/live');
     }
 }

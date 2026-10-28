@@ -26,7 +26,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-3xl bg-white dark:bg-[#1a2632] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden">
 
-        {/* Hero Header with Image */}
+        {}
         <div className="relative h-48 sm:h-64 shrink-0">
           <Image
             src={venue.image || "https://images.unsplash.com/photo-1514525253440-b393332569ca?q=80&w=800&auto=format&fit=crop"}
@@ -52,10 +52,10 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
           </button>
         </div>
 
-        {/* Scrollable Content */}
+        {}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar bg-slate-50 dark:bg-[#101b22]">
 
-          {/* Quick Stats Grid */}
+          {}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatItem icon={Users} label="Capacity" value={venue.capacity} />
             <StatItem icon={Map} label="Type" value={venue.type} />
@@ -65,7 +65,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            {/* Left Column: Description & Amenities */}
+            {}
             <div className="lg:col-span-2 space-y-6">
               <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
@@ -87,11 +87,11 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
               </section>
             </div>
 
-            {/* Right Column: Map Placeholder */}
+            {}
             <div className="lg:col-span-1">
               <div className="bg-white dark:bg-[#1a2632] p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div className="relative aspect-square w-full bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden group cursor-pointer">
-                  {/* Placeholder Map Image */}
+                  {}
                   <Image
                     src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop"
                     alt="Map Location"
@@ -116,7 +116,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
           </div>
         </div>
 
-        {/* Footer Actions */}
+        {}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632] flex justify-end gap-3 shrink-0">
           <button onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
             Close
@@ -130,8 +130,6 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
     </div>
   );
 }
-
-// --- Helper Components for Modal ---
 function StatItem({ icon: Icon, label, value }) {
   return (
     <div className="p-3 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center text-center shadow-sm">

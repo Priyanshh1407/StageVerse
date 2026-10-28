@@ -25,7 +25,7 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
   return (
     <div className="w-full lg:col-span-2 flex flex-col gap-4">
 
-      {/* --- CONTROLS SECTION --- */}
+      {}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -49,12 +49,12 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
         </select>
       </div>
 
-      {/* --- DATA DISPLAY CONTAINER --- */}
+      {}
       <div className="bg-white dark:bg-[#182934] rounded-xl border border-slate-200 dark:border-[#315168] shadow-sm overflow-hidden flex-1 flex flex-col min-h-[400px]">
 
         {filteredData.length > 0 ? (
           <>
-            {/* 1. DESKTOP VIEW (Table) - Hidden on Mobile */}
+            {}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 dark:bg-[#223949] border-b border-slate-200 dark:border-[#315168]">
@@ -74,7 +74,7 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
               </table>
             </div>
 
-            {/* 2. MOBILE VIEW (Cards) - Hidden on Desktop */}
+            {}
             <div className="md:hidden flex flex-col divide-y divide-slate-200 dark:divide-[#315168]">
               {filteredData.map((guest) => (
                 <MobileGuestCard key={guest.id} guest={guest} timeAgo={timeAgo} onDelete={onDelete} onEdit={onEdit} onCheckIn={onCheckIn} />
@@ -82,13 +82,13 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
             </div>
           </>
         ) : (
-          /* EMPTY STATE */
+          
           <div className="flex-1 flex flex-col items-center justify-center p-10 text-center text-slate-500">
             <p>No guests found matching your filters.</p>
           </div>
         )}
 
-        {/* PAGINATION FOOTER */}
+        {}
         <div className="border-t border-slate-200 dark:border-[#315168] bg-slate-50 dark:bg-[#223949] px-4 md:px-6 py-3 flex items-center justify-between mt-auto">
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Showing {filteredData.length} of {data.length} guests
@@ -102,8 +102,6 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
     </div>
   );
 }
-
-// --- DESKTOP ROW COMPONENT ---
 function GuestRow({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
   const tierStyles = {
     'All Access': 'text-amber-600 dark:text-amber-500 bg-amber-500/10 border-amber-500/20',
@@ -162,8 +160,6 @@ function GuestRow({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
     </tr>
   );
 }
-
-// --- MOBILE CARD COMPONENT ---
 function MobileGuestCard({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
   const tierStyles = {
     'All Access': 'text-amber-600 dark:text-amber-500 bg-amber-500/10 border-amber-500/20',

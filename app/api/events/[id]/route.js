@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
+import { parseBody, eventUpdateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import Venue from '@/models/Venue';
 import mongoose from 'mongoose';
-import { jwtVerify } from 'jose';
-
-// Helper to determine query type (ID or ShortID)
+import { verifyAuth } from '@/lib/auth';
 const getQuery = (id) => {
   if (mongoose.Types.ObjectId.isValid(id)) {
     return { _id: id };
@@ -14,8 +14,6 @@ const getQuery = (id) => {
   }
   return null;
 };
-
-// 1. GET SINGLE EVENT
 export async function GET(req, { params }) {
   try {
     await dbConnect();
@@ -38,7 +36,6 @@ export async function GET(req, { params }) {
       .select('title date city venue images ticketTiers genre');
 
     const similarEvents = similarEventsRaw.map(sim => {
-      //Find lowest price
       const minPrice = sim.ticketTiers?.length > 0
         ? Math.min(...sim.ticketTiers.map(t => t.price))
         : 0;
@@ -51,7 +48,6 @@ export async function GET(req, { params }) {
         venue: sim.venue?.name || 'TBA',
         price: minPrice,
         genre: sim.genre,
-        // Fallback image if hero is missing
         image: sim.images?.hero || "https://images.unsplash.com/photo-1459749411177-2a2965bda36c?q=80&w=500&auto=format&fit=crop"
       }
     })
@@ -64,59 +60,44 @@ export async function GET(req, { params }) {
       }
     }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/events/[id]');
   }
 }
-
-// 2. UPDATE EVENT
 export async function PUT(req, { params }) {
   try {
     await dbConnect();
-
-    // Auth Check
-    const token = req.cookies.get('token')?.value;
-    if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = await verifyAuth(req);
 
     const { id } = await params;
-    const body = await req.json();
+    // Ownership, identifiers and ticket inventory can't be changed through this endpoint
+    const fields = parseBody(eventUpdateSchema, await req.json());
 
     const query = getQuery(id);
     if (!query) return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
 
     const event = await Event.findOne(query);
-
-    // CHECK OWNERSHIP
+    if (!event) return NextResponse.json({ message: 'Event not found' }, { status: 404 });
     if (event.organizerId.toString() !== payload.userId) {
       return NextResponse.json({ message: 'Forbidden: Not your event' }, { status: 403 });
     }
 
-
     const updatedEvent = await Event.findOneAndUpdate(
       query,
-      { ...body },
-      { new: true, runValidators: true }
+      fields,
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!updatedEvent) return NextResponse.json({ message: 'Event not found' }, { status: 404 });
 
     return NextResponse.json({ success: true, data: updatedEvent }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/events/[id]');
   }
 }
-
-// 3. DELETE EVENT (This was missing) 🚨
 export async function DELETE(req, { params }) {
   try {
     await dbConnect();
-
-    // Auth Check
-    const token = req.cookies.get('token')?.value;
-    if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = await verifyAuth(req);
 
     const { id } = await params;
 
@@ -124,8 +105,7 @@ export async function DELETE(req, { params }) {
     if (!query) return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
 
     const event = await Event.findOne(query);
-
-    // CHECK OWNERSHIP
+    if (!event) return NextResponse.json({ message: 'Event not found' }, { status: 404 });
     if (event.organizerId.toString() !== payload.userId) {
       return NextResponse.json({ message: 'Forbidden: Not your event' }, { status: 403 });
     }
@@ -138,7 +118,6 @@ export async function DELETE(req, { params }) {
 
     return NextResponse.json({ success: true, message: 'Event deleted successfully' }, { status: 200 });
   } catch (error) {
-    console.error("Delete Error:", error);
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
+    return apiError(error, '/api/events/[id]');
   }
 }

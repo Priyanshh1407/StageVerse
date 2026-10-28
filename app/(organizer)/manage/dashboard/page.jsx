@@ -1,26 +1,47 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DollarSign, Ticket, Hourglass, Calendar,
   Search, Bell, ChevronDown, MoreHorizontal,
   Zap, Send, Download, ArrowRight, Menu,
   Sparkles, Wand2, Copy, Check, Rocket, ArrowLeft, Loader2
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-
-// --- COMPONENT IMPORTS ---
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 import HypeChart from '@/components/organizer/HypeChart';
-import StatsCard from '@/components/organizer/StatsCard';
 import Link from 'next/link';
 
-// ==================================================================================
-// --- TEMPORARY: COMING SOON MODE ---
-const IS_COMING_SOON = false;
-// ==================================================================================
+function StatsCard({ label, value, icon: Icon, trend, trendLabel, progress }) {
+  return (
+    <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] shadow-lg hover:border-[#0d93f2]/50 transition-colors group">
+      <div className="flex justify-between items-start mb-4">
+        <div className="p-2 bg-[#101b22] rounded-lg group-hover:bg-[#0d93f2]/10 transition-colors">
+          <Icon className="w-5 h-5 text-[#90b2cb] group-hover:text-[#0d93f2]" />
+        </div>
+        {trend && (
+          <span className="flex items-center gap-1 text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
+            +{trend}%
+          </span>
+        )}
+      </div>
+      <div className="space-y-1">
+        <h3 className="text-2xl font-bold text-white">{value}</h3>
+        <p className="text-xs text-[#90b2cb] font-medium">{label}</p>
+      </div>
+      {progress && (
+        <div className="mt-4 w-full bg-[#101b22] h-1.5 rounded-full overflow-hidden">
+          <div className="bg-[#0d93f2] h-full rounded-full" style={{ width: `${progress}%` }}></div>
+        </div>
+      )}
+      {trendLabel && <p className="text-[10px] text-[#587386] mt-3">{trendLabel}</p>}
+    </div>
+  );
+}
 
-// Mock Data
+const IS_COMING_SOON = false;
+
 const dashboardData = {
   stats: {
     revenue: "$142,500",
@@ -51,11 +72,19 @@ const dashboardData = {
 
 export default function OrganizerDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
 
   return (
     <div className="flex h-screen w-full bg-[#101b22] text-white font-sans overflow-hidden relative">
 
-      {/* COMING SOON OVERLAY */}
       {IS_COMING_SOON && (
         <div className="absolute inset-0 z-[100] bg-[#101b22]/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-500">
           <div className="bg-[#192734] p-8 rounded-2xl border border-[#2c3b47] shadow-2xl max-w-md w-full relative overflow-hidden">
@@ -74,16 +103,14 @@ export default function OrganizerDashboard() {
         </div>
       )}
 
-      {/* 1. SIDEBAR */}
       <OrganizerSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      {/* 2. MAIN CONTENT */}
       <main className="flex-1 flex flex-col min-w-0 h-full relative">
 
-        {/* Header */}
+        { }
         <header className="h-20 border-b border-[#2c3b47] flex items-center justify-between px-4 md:px-8 bg-[#101b22]/95 backdrop-blur-sm sticky top-0 z-30 shrink-0">
           <div className="flex items-center gap-4">
             <button
@@ -118,17 +145,19 @@ export default function OrganizerDashboard() {
           </div>
         </header>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
-          <div className="max-w-[1600px] mx-auto space-y-6 pb-10">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="max-w-[1600px] mx-auto space-y-6 pb-10"
+          >
 
-            {/* Row 1: KPI Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatsCard label="Gross Revenue" value={dashboardData.stats.revenue} icon={DollarSign} trend={15} trendLabel="vs last 30 days" />
               <StatsCard label="Tickets Sold" value={dashboardData.stats.ticketsSold} icon={Ticket} progress={78} />
               <StatsCard label="Waitlist Count" value={dashboardData.stats.waitlist} icon={Hourglass} trend={24} trendLabel="new since yesterday" />
 
-              {/* Quick Actions Panel */}
               <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] flex flex-col justify-center gap-3 shadow-lg">
                 <h4 className="text-white font-bold text-sm flex items-center gap-2 mb-1">
                   <Zap className="w-4 h-4 text-[#0d93f2]" /> Quick Actions
@@ -145,26 +174,21 @@ export default function OrganizerDashboard() {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Row 2: Charts & AI Generator */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[450px]">
+            <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[450px]">
 
-              {/* Hype Chart */}
               <div className="lg:col-span-2 h-[300px] lg:h-full">
                 <HypeChart data={dashboardData.hypeData} />
               </div>
 
-              {/* AI Description Generator (WITH 2 FIELDS & PINK BUTTON) */}
               <div className="lg:col-span-1 h-[450px] lg:h-full">
                 <AIDescriptionGenerator />
               </div>
-            </div>
+            </motion.div>
 
-            {/* Row 3: Demographics & Map */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-              {/* Demographics */}
               <div className="bg-[#192734] rounded-xl border border-[#2c3b47] p-6 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-bold text-white">Attendee Profile</h3>
@@ -190,7 +214,7 @@ export default function OrganizerDashboard() {
                 </div>
               </div>
 
-              {/* Top Locations */}
+              { }
               <div className="bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col shadow-sm h-[350px]">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold text-white">Top Locations</h3>
@@ -217,17 +241,13 @@ export default function OrganizerDashboard() {
                 </div>
               </div>
 
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </main>
+      </main >
     </div>
   );
 }
-
-// ==========================================
-// SUB-COMPONENT: AI DESCRIPTION GENERATOR (UPDATED)
-// ==========================================
 
 function AIDescriptionGenerator() {
   const [prompt, setPrompt] = useState('');
@@ -244,7 +264,7 @@ function AIDescriptionGenerator() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ task: 'insight', prompt })
       });
 
       const data = await res.json();
@@ -274,7 +294,7 @@ function AIDescriptionGenerator() {
 
   return (
     <div className="bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col h-full relative overflow-hidden group">
-      {/* Header */}
+      { }
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2 text-white font-bold">
           <Sparkles className="w-5 h-5 text-pink-500/90" />
@@ -283,10 +303,10 @@ function AIDescriptionGenerator() {
         <div className="text-xs text-[#90b2cb] bg-[#101b22] px-2 py-1 rounded border border-[#2c3b47]">Beta</div>
       </div>
 
-      {/* Content Area - Split View for Input & Output */}
+      { }
       <div className="flex-1 flex flex-col gap-4 min-h-0 mb-4">
 
-        {/* FIELD 1: INPUT (Always Visible) */}
+        { }
         <div className={`flex flex-col ${generatedText ? 'h-1/3' : 'h-full'} transition-all duration-300`}>
           <label className="text-xs text-[#90b2cb] mb-2 uppercase font-semibold">Event Keywords / Context</label>
           <textarea
@@ -297,7 +317,7 @@ function AIDescriptionGenerator() {
           />
         </div>
 
-        {/* FIELD 2: OUTPUT (Visible only after generation) */}
+        { }
         {generatedText && (
           <div className="flex-1 flex flex-col h-2/3 animate-in slide-in-from-bottom-4 duration-300">
             <div className="flex justify-between items-center mb-2">
@@ -316,7 +336,7 @@ function AIDescriptionGenerator() {
         )}
       </div>
 
-      {/* PINK BUTTON */}
+      { }
       <button
         onClick={handleGenerate}
         disabled={isGenerating || !prompt}

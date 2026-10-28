@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
-import { cookies } from "next/headers";
+import { apiError } from '@/lib/api';
+import { verifyAuth } from '@/lib/auth';
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import Ticket from "@/models/Ticket";
@@ -11,44 +11,25 @@ import Song from "@/models/Song";
 import Prediction from "@/models/Prediction";
 import Setlist from "@/models/Setlist";
 
-export async function GET() {
+export async function GET(req) {
     try {
         await dbConnect();
-
-        // 1. Auth Check
-        const cookieStore = await cookies();
-        const token = cookieStore.get("token");
-        if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token.value, secret);
+        const payload = await verifyAuth(req);
         const userId = payload.userId;
-
-        // 2. Fetch User & Memories in Parallel (Faster) ⚡
         const [user, tickets, memories] = await Promise.all([
-            User.findById(userId).populate('following', 'name image'),
+            User.findById(userId).populate('following', 'name avatar'),
             Ticket.find({ userId })
                 .populate({
                     path: 'eventId',
-                    select: 'title artist genre image venue organizerId date',
+                    select: 'title artist genre images venue organizerId artistId date',
                     populate: { path: 'venue', select: 'name city' }
                 }),
             Memory.find({ userId }).sort({ date: -1 }).limit(5)
         ]);
 
         if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
-
-        // --- CALCULATIONS ---
-
-        // A. Separate lists for robustness
-        // List 1: validEvents (Has an event attached) -> Use for Artists
         const ticketsWithEvents = tickets.filter(t => t.eventId);
-
-        // List 2: validVenues (Has an event AND a venue attached) -> Use for Stats/Venues
         const ticketsWithVenues = tickets.filter(t => t.eventId && t.eventId.venue);
-
-        // Create "Upcoming Events" for Predictor
-        // Sort by date ascending (closest future date) - Include TODAY
         const now = new Date();
         now.setHours(0, 0, 0, 0); // Start of today
 
@@ -56,8 +37,6 @@ export async function GET() {
             .filter(t => new Date(t.eventId.date) >= now)
             .sort((a, b) => new Date(a.eventId.date) - new Date(b.eventId.date))
             .slice(0, 5); // Limit to top 5
-
-        // Fetch data for ALL upcoming events
         const upcomingEventsCallback = upcomingTickets.map(async (ticket) => {
             const evt = ticket.eventId;
 
@@ -68,22 +47,16 @@ export async function GET() {
                 artist: evt.artist,
                 date: evt.date,
                 venue: evt.venue?.name,
-                image: evt.image
+                image: evt.images?.hero
             };
-
-            // Fetch Songs for this Artist
             let songs = [];
-            if (evt.organizerId) {
-                songs = await Song.find({ artistId: evt.organizerId }).sort({ title: 1 }).lean();
+            if (evt.artistId || evt.organizerId) {
+                songs = await Song.find({ artistId: evt.artistId || evt.organizerId }).sort({ title: 1 }).lean();
             }
-
-            // Fetch Existing Prediction
             const prediction = await Prediction.findOne({
                 userId: user._id,
                 eventId: evt._id
             }).lean();
-
-            // Fetch Actual Setlist if Graded
             let setlistResult = null;
             if (prediction && prediction.status === 'graded') {
                 setlistResult = await Setlist.findOne({ eventId: evt._id }).lean();
@@ -101,20 +74,13 @@ export async function GET() {
         });
 
         const upcomingEventsData = await Promise.all(upcomingEventsCallback);
-
-        // Maintain backward compatibility or simplify usage
         const activeEventData = upcomingEventsData.length > 0 ? upcomingEventsData[0] : null;
-
-        // B. Stats
         const totalShows = ticketsWithEvents.length;
         const cities = new Set(ticketsWithVenues.map(t => t.eventId.venue.city).filter(Boolean));
-
-        // C. TOP ARTISTS CALCULATION
         const artistMap = {};
 
         ticketsWithEvents.forEach(t => {
             const artist = t.eventId.artist;
-            // Normalizing names to prevent duplicates like "The Strokes" vs "the strokes"
             if (artist) {
                 const key = artist.trim();
                 artistMap[key] = (artistMap[key] || 0) + 1;
@@ -122,10 +88,7 @@ export async function GET() {
         });
 
         const sortedArtistNames = Object.keys(artistMap).sort((a, b) => artistMap[b] - artistMap[a]);
-
-        // 1. Create FULL list
         const allArtists = sortedArtistNames.map((name, i) => {
-            // Find a ticket for this artist to get the image/genre
             const exampleTicket = ticketsWithEvents.find(t => t.eventId.artist && t.eventId.artist.trim() === name);
             const evt = exampleTicket?.eventId;
 
@@ -134,14 +97,10 @@ export async function GET() {
                 name: name,
                 genre: evt?.genre || "Music",
                 count: artistMap[name],
-                image: evt?.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"
+                image: evt?.images?.hero || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"
             };
         });
-
-        // 4. Create topArtists by SLICING the master list
         const topArtists = allArtists.slice(0, 3);
-
-        // D. TOP VENUES
         const venueMap = {};
         ticketsWithVenues.forEach(t => {
             const v = t.eventId.venue;
@@ -154,33 +113,31 @@ export async function GET() {
         });
         const topVenues = Object.values(venueMap).sort((a, b) => b.visits - a.visits).slice(0, 3);
         if (topVenues.length > 0) topVenues[0].active = true;
-
-        // E. Format Memories
         const formattedMemories = memories.map(m => ({
             id: m._id,
             title: m.title,
+            subtitle: m.subtitle,
+            venue: m.venue,
+            location: m.location,
+            artist: m.artist,
             date: new Date(m.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-            image: m.imageUrl || m.videoSrc,
+            image: m.image || m.videoSrc,
             type: m.videoSrc ? 'video' : 'image',
-            featured: !!m.videoSrc
+            featured: m.featured || !!m.videoSrc
         }));
-
-        // F. Format Friends
         const topFriends = user.following ? user.following.map(f => ({
             name: f.name,
-            avatar: f.image || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+            avatar: f.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
             sharedShows: Math.floor(Math.random() * 5) + 1,
             role: "Concert Buddy"
         })) : [];
-
-        // 5. Construct Final Response
         const dashboardData = {
             user: {
                 name: user.name,
                 id: `#${user._id.toString().slice(-5).toUpperCase()}`,
                 level: Math.floor(totalShows / 2) + 1,
                 memberSince: new Date(user.createdAt).getFullYear().toString(),
-                avatar: user.image || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+                avatar: user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
                 predictionScore: 1250,
                 location: user.location || "Global Citizen",
                 bio: user.bio || "Music junkie. Festival hopper.",
@@ -195,9 +152,7 @@ export async function GET() {
             topFriends,
             topVenues,
             memories: formattedMemories,
-            // NEW: Predictor Data (Full Array)
             upcomingEvents: upcomingEventsData,
-            // Legacy/Convenience helpers for the main card (still points to the first one)
             activeEvent: activeEventData?.event || null,
             activeEventSongs: activeEventData?.songs || [],
             activeEventPrediction: activeEventData?.prediction || null,
@@ -207,7 +162,6 @@ export async function GET() {
         return NextResponse.json({ success: true, data: dashboardData });
 
     } catch (error) {
-        console.error("Dashboard API Error:", error);
-        return NextResponse.json({ message: "Server Error" }, { status: 500 });
+        return apiError(error, '/api/fan-dashboard');
     }
 }

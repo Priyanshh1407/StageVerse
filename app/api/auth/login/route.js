@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
+import { apiError } from '@/lib/api';
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { SignJWT } from "jose";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
+import { rateLimit, clientIp, LIMITS } from '@/lib/rateLimit';
 
 export async function POST(req) {
     try {
         await dbConnect();
-        const { email, password } = await req.json();
+        const body = await req.json();
+        const email = String(body.email ?? '').trim();
+        const password = String(body.password ?? '');
 
         if (!email || !password) {
             return NextResponse.json(
@@ -16,7 +20,11 @@ export async function POST(req) {
             );
         }
 
-        const user = await User.findOne({ email }).select('+password');
+        // Slow down password guessing: 5 attempts per minute per IP + email
+        rateLimit(`login:${clientIp(req)}:${email.toLowerCase()}`, LIMITS.login);
+
+        // New accounts store lowercase emails; older ones may not, so accept both spellings
+        const user = await User.findOne({ email: { $in: [email, email.toLowerCase()] } }).select('+password');
 
         if (!user) {
             return NextResponse.json(
@@ -24,8 +32,6 @@ export async function POST(req) {
                 { status: 401 }
             );
         }
-
-        // Compare passwords
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return NextResponse.json(
@@ -33,15 +39,11 @@ export async function POST(req) {
                 { status: 401 }
             );
         }
-
-        // Generate JWT
-        const token = jwt.sign(
-            { userId: user._id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        // Return success response(Hide password again)
+        const token = await new SignJWT({ userId: String(user._id), role: user.role })
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setExpirationTime('7d')
+            .sign(new TextEncoder().encode(process.env.JWT_SECRET));
         const response = NextResponse.json(
             {
                 message: 'Login successful',
@@ -54,10 +56,6 @@ export async function POST(req) {
             }, {
                 status: 200
         });
-
-        // 3. SET THE COOKIE (The Key Change 🍪)
-        // httpOnly: true -> Client JS cannot read it (Secure!)
-        // secure: true   -> Only sends over HTTPS (essential for production)
         response.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -68,10 +66,6 @@ export async function POST(req) {
 
         return response;
     } catch (error) {
-        console.log('Login Error:',error)
-        return NextResponse.json(
-            { message: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return apiError(error, '/api/auth/login');
     }
 }

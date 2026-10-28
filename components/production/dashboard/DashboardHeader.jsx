@@ -20,7 +20,7 @@ export default function DashboardHeader({ user, stats }) {
         </div>
       </div>
 
-      {/* Status Badges */}
+      {}
       <div className="flex flex-wrap gap-4 w-full lg:w-auto">
         <StatCard 
           icon={Clock} 

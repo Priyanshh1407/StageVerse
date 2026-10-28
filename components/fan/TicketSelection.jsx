@@ -7,19 +7,13 @@ import { toast } from "sonner";
 
 export default function TicketSelection({ eventId, tiers = [] }) {
   const router = useRouter();
-
-  // --- STATE ---
   const [step, setStep] = useState(1); // 1 = Select, 2 = Details/Pay
   const [selectedTierId, setSelectedTierId] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [buyerName, setBuyerName] = useState(""); // 🆕 Collect Name
   const [isBuying, setIsBuying] = useState(false);
-
-  // --- DERIVED STATE ---
   const selectedTier = tiers.find(t => t._id === selectedTierId);
   const totalPrice = selectedTier ? (selectedTier.price * quantity) : 0;
-
-  // --- HANDLERS ---
   const handleProceed = () => {
     if (!selectedTierId) return toast.error("Please select a ticket");
     setStep(2);
@@ -46,7 +40,6 @@ export default function TicketSelection({ eventId, tiers = [] }) {
       if (res.ok) {
         toast.success(`Success! Order ID: ${data.trxId}`);
         router.refresh();
-        // Reset or redirect to a "Success" page
         setStep(1);
         setQuantity(1);
         setSelectedTierId(null);
@@ -71,7 +64,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
   return (
     <div className="bg-white dark:bg-[#192734] border border-slate-200 dark:border-[#2c3b47] rounded-xl p-6 shadow-xl top-24 overflow-hidden">
 
-      {/* HEADER WITH BACK BUTTON */}
+      {}
       <div className="flex items-center gap-3 mb-6">
         {step === 2 && (
           <button onClick={() => setStep(1)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#2c3b47] transition-colors">
@@ -83,7 +76,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
         </h3>
       </div>
 
-      {/* === STEP 1: SELECTION === */}
+      {}
       {step === 1 && (
         <div className="animate-in slide-in-from-left-4 fade-in duration-300">
           <div className="flex flex-col gap-3 mb-6">
@@ -145,11 +138,11 @@ export default function TicketSelection({ eventId, tiers = [] }) {
         </div>
       )}
 
-      {/* === STEP 2: DETAILS & PAY === */}
+      {}
       {step === 2 && (
         <div className="animate-in slide-in-from-right-4 fade-in duration-300">
 
-          {/* ORDER SUMMARY */}
+          {}
           <div className="bg-slate-50 dark:bg-[#101b22] p-4 rounded-lg border border-slate-200 dark:border-[#2c3b47] mb-6">
             <div className="flex justify-between text-sm mb-1">
               <span className="text-slate-500 dark:text-[#90b2cb]">{selectedTier?.name} <span className="text-xs">x{quantity}</span></span>
@@ -162,7 +155,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
             </div>
           </div>
 
-          {/* INPUT FIELDS */}
+          {}
           <div className="space-y-4 mb-6">
             <div>
               <label className="block text-xs font-bold text-slate-500 dark:text-[#90b2cb] uppercase mb-1.5">Booking Name</label>
@@ -178,7 +171,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
               <p className="text-[10px] text-slate-400 mt-1">This name will appear on the ticket.</p>
             </div>
 
-            {/* Mock Payment Field (Visual Only) */}
+            {}
             <div>
               <label className="block text-xs font-bold text-slate-500 dark:text-[#90b2cb] uppercase mb-1.5">Payment Method</label>
               <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[#101b22] border border-slate-200 dark:border-[#2c3b47] rounded-lg opacity-80">

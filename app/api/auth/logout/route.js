@@ -5,8 +5,6 @@ export async function POST() {
     { message: 'Logged out successfully' },
     { status: 200 }
   );
-
-  // Delete the cookie by setting it to expire immediately
   response.cookies.set('token', '', {
     httpOnly: true,
     expires: new Date(0), 

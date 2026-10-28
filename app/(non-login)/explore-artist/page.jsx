@@ -6,19 +6,12 @@ import MainFooter from '@/components/MainFooter';
 import ArtistsFilter from '@/components/explore-artist/ArtistFilter';
 import ArtistsFeed from '@/components/explore-artist/ArtistFeed';
 
-// --- MOCK DATA ---
-// --- MOCK DATA (Removed - using API) ---
-
 export default function ArtistsPage() {
   const [allArtists, setAllArtists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // State
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [sortOption, setSortOption] = useState('popularity');
-
-  // PAGINATION STATE
   const [visibleCount, setVisibleCount] = useState(6);
 
   const [filters, setFilters] = useState({
@@ -66,8 +59,6 @@ export default function ArtistsPage() {
 
     return result;
   }, [allArtists, searchQuery, filters, sortOption]);
-
-  // PAGINATION LOGIC
   const visibleArtists = filteredArtists.slice(0, visibleCount);
   const hasMore = visibleCount < filteredArtists.length;
 

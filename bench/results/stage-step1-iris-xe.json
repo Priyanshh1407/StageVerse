@@ -1,0 +1,14 @@
+{
+  "label": "stage-step1-iris-xe",
+  "machine": "Intel Core i5-1155G7, Intel Iris Xe (ANGLE / D3D11), 1536x776 viewport, display 60 Hz",
+  "build": "next build && next start (production)",
+  "scene": "step-1 lab: beams + lens glows + floor + backdrop; DPR forced to 1; FPS overlay hidden",
+  "note": "Every configuration is capped by the 60 Hz display (vsync), so these numbers show no stutter but not the remaining headroom. GPU frame time from r3f-perf at 72 beams + bloom: ~1.7 ms.",
+  "results": [
+    { "config": "56 beams, no bloom", "avgFps": 60, "low1Fps": 59, "worstMs": 17, "frames": 360 },
+    { "config": "72 beams, no bloom", "avgFps": 60, "low1Fps": 59, "worstMs": 17, "frames": 360 },
+    { "config": "72 beams, bloom", "avgFps": 60, "low1Fps": 59, "worstMs": 17, "frames": 360 },
+    { "config": "100 beams, no bloom", "avgFps": 60, "low1Fps": 59, "worstMs": 17, "frames": 360 },
+    { "config": "140 beams, no bloom", "avgFps": 60, "low1Fps": 59, "worstMs": 17, "frames": 360 }
+  ]
+}

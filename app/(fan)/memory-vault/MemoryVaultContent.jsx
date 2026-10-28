@@ -5,123 +5,33 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import FanSidebar from '@/components/fan/FanSidebar';
 import UploadMediaModal from '@/components/fan/dashboard/UploadMediaModal';
+import MemoryLightbox from '@/components/fan/MemoryLightbox';
 
 import { 
   Menu, Plus, Search, Grid, Share2, Info, Play, 
   MapPin, Ticket, ChevronDown, Filter, Loader2, ArrowUp 
 } from 'lucide-react';
 
-// --- BASE DATA ---
-// const BASE_MEMORIES = [
-//   { 
-//     id: 1, 
-//     type: 'video', 
-//     duration: '4:20 min', 
-//     title: "Electric Daisy Carnival Finale", 
-//     location: "Las Vegas, NV", 
-//     date: "2023-05-20", 
-//     artist: "Various",
-//     venue: "Las Vegas Motor Speedway",
-//     image: "https://images.unsplash.com/photo-1459749411177-3c0714b62437?q=80&w=800&auto=format&fit=crop",
-//     videoSrc: "https://videos.pexels.com/video-files/2022395/2022395-hd_1920_1080_30fps.mp4",
-//     featured: true 
-//   },
-//   { 
-//     id: 2, 
-//     type: 'photo', 
-//     title: "Tame Impala", 
-//     subtitle: "The Slow Rush Tour • 2022",
-//     date: "2022-03-15",
-//     artist: "Tame Impala",
-//     venue: "Barclays Center",
-//     image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop" 
-//   },
-//   { 
-//     id: 3, 
-//     type: 'ticket', 
-//     title: "Coachella 2022", 
-//     subtitle: "Weekend 1 • VIP Pass",
-//     date: "2022-04-15",
-//     venue: "Empire Polo Club"
-//   },
-//   { 
-//     id: 4, 
-//     type: 'photo', 
-//     title: "The Killers", 
-//     subtitle: "Imploding The Mirage • 2022",
-//     date: "2022-09-30",
-//     artist: "The Killers",
-//     venue: "Madison Square Garden",
-//     image: "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=800&auto=format&fit=crop" 
-//   },
-//   { 
-//     id: 5, 
-//     type: 'photo', 
-//     title: "Adele", 
-//     subtitle: "Hyde Park • 2022",
-//     date: "2022-07-01",
-//     artist: "Adele",
-//     venue: "Hyde Park",
-//     image: "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=800&auto=format&fit=crop" 
-//   },
-//   { 
-//     id: 6, 
-//     type: 'album', 
-//     title: "Radiohead", 
-//     subtitle: "A Moon Shaped Pool Tour",
-//     count: 42,
-//     date: "2018-07-10",
-//     artist: "Radiohead",
-//     venue: "Madison Square Garden",
-//     image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop" 
-//   },
-//   { 
-//     id: 10, 
-//     type: 'video', 
-//     duration: '0:15 sec', 
-//     title: "Guitar Solo Close-up", 
-//     location: "Denver, CO", 
-//     date: "2023-11-12", 
-//     artist: "John Mayer",
-//     venue: "Ball Arena",
-//     image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop",
-//     videoSrc: "https://videos.pexels.com/video-files/4763826/4763826-uhd_2560_1440_24fps.mp4" 
-//   }
-// ];
-
-// --- GENERATE LARGE DATASET ---
-// const ALL_MEMORIES = Array.from({ length: 5 }).flatMap((_, i) => 
-//   BASE_MEMORIES.map(item => ({
-//     ...item,
-//     id: `${item.id}-${i}`,
-//     title: i > 0 ? `${item.title} (Archived ${i})` : item.title
-//   }))
-// );
-
 export default function MemoryVaultPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
-  // --- REFS & SCROLL STATE ---
   const scrollContainerRef = useRef(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(() => searchParams.get('action') === 'upload');
 
   const [memories,setMemories]=useState([]);
   const [isLoading,setIsLoading]=useState(true);
-
-  // --- FILTER STATE ---
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArtist, setSelectedArtist] = useState('All Artists');
   const [selectedVenue, setSelectedVenue] = useState('All Venues');
   const [selectedYear, setSelectedYear] = useState('Any Date');
-
-  // --- PAGINATION STATE ---
   const ITEMS_PER_PAGE = 8;
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Index into the visible memories of the one shown full size (null = none)
+  const [openIndex, setOpenIndex] = useState(null);
 
   useEffect(()=>{
     const fetchMemories = async()=>{
@@ -141,15 +51,12 @@ export default function MemoryVaultPage() {
 
     fetchMemories();
   },[isUploadModalOpen])
-
-  // Open Modal from URL
-  useEffect(() => {
-    if (searchParams.get('action') === 'upload') {
-      setIsUploadModalOpen(true);
-    }
-  }, [searchParams]);
-
-  // --- SCROLL HANDLER ---
+  // ?action=upload opens the upload modal (initial value above; this handles later navigations)
+  const [prevSearchParams, setPrevSearchParams] = useState(searchParams);
+  if (searchParams !== prevSearchParams) {
+    setPrevSearchParams(searchParams);
+    if (searchParams.get('action') === 'upload') setIsUploadModalOpen(true);
+  }
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const { scrollTop } = scrollContainerRef.current;
@@ -165,19 +72,6 @@ export default function MemoryVaultPage() {
     setIsUploadModalOpen(false);
     router.replace('/memory-vault', { scroll: false });
   };
-
-  // --- FILTER LOGIC ---
-  // const filteredMemories = useMemo(()=>{})
-  //  ALL_MEMORIES.filter((item) => {
-  //   const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-  //   const matchesArtist = selectedArtist === 'All Artists' || item.artist === selectedArtist;
-  //   const matchesVenue = selectedVenue === 'All Venues' || item.venue === selectedVenue;
-    
-  //   const itemYear = new Date(item.date).getFullYear().toString();
-  //   const matchesYear = selectedYear === 'Any Date' || itemYear === selectedYear;
-
-  //   return matchesSearch && matchesArtist && matchesVenue && matchesYear;
-  // });
   const filteredMemories= useMemo(()=>{
     return memories.filter((item)=>{
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -190,11 +84,13 @@ export default function MemoryVaultPage() {
     return matchesSearch && matchesArtist&&matchesVenue&&matchesYear;
     });
   },[memories,searchQuery,selectedArtist,selectedVenue,selectedYear]);
-
-  // --- RESET PAGINATION ON FILTER CHANGE ---
-  useEffect(() => {
+  // Back to the first page whenever a filter changes
+  const filterKey = [searchQuery, selectedArtist, selectedVenue, selectedYear].join('\u0000');
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [searchQuery, selectedArtist, selectedVenue, selectedYear]);
+  }
 
   const visibleMemories = filteredMemories.slice(0, visibleCount);
   const hasMore = visibleCount < filteredMemories.length;
@@ -218,7 +114,7 @@ export default function MemoryVaultPage() {
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         
-        {/* Mobile Header */}
+        {}
         <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632]">
           <span className="font-bold text-lg">Concert Passport</span>
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300">
@@ -226,9 +122,7 @@ export default function MemoryVaultPage() {
           </button>
         </div>
 
-        {/* MAIN SCROLL CONTAINER 
-            Added ref={scrollContainerRef} and onScroll={handleScroll}
-        */}
+        {}
         <div 
           ref={scrollContainerRef}
           onScroll={handleScroll}
@@ -236,12 +130,12 @@ export default function MemoryVaultPage() {
         >
           <div className="max-w-7xl mx-auto flex flex-col gap-8 pb-10">
             
-            {/* Header */}
+            {}
             <div className="flex flex-col md:flex-row justify-between md:items-end gap-6">
               <div className="flex flex-col gap-2">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Your Memory Vault</h2>
                 <p className="text-slate-500 dark:text-slate-400 text-base max-w-2xl">
-                  Browse and relive your past concert experiences. You've captured <span className="text-[#0d93f2] font-bold">1,204 photos</span> and <span className="text-[#0d93f2] font-bold">86 videos</span> across 42 shows.
+                  Browse and relive your past concert experiences. You&apos;ve captured <span className="text-[#0d93f2] font-bold">1,204 photos</span> and <span className="text-[#0d93f2] font-bold">86 videos</span> across 42 shows.
                 </p>
               </div>
               <button 
@@ -253,14 +147,12 @@ export default function MemoryVaultPage() {
               </button>
             </div>
 
-            {/* --- FILTERS --- 
-                Removed: sticky top-0 z-30 backdrop-blur-xl bg-opacity-95
-            */}
+            {}
             <div className="bg-white dark:bg-[#1a2632] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
               
               <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 no-scrollbar">
                 
-                {/* Artist Filter */}
+                {}
                 <div className="relative group min-w-[140px]">
                   <select 
                     className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
@@ -272,7 +164,7 @@ export default function MemoryVaultPage() {
                   <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-500 w-4 h-4" />
                 </div>
 
-                {/* Venue Filter */}
+                {}
                 <div className="relative group min-w-[140px]">
                   <select 
                     className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
@@ -284,7 +176,7 @@ export default function MemoryVaultPage() {
                   <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-500 w-4 h-4" />
                 </div>
 
-                {/* Date Filter */}
+                {}
                 <div className="relative group min-w-[140px]">
                   <select 
                     className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
@@ -314,10 +206,10 @@ export default function MemoryVaultPage() {
               </div>
             </div>
 
-            {/* --- MASONRY GRID --- */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[280px]">
               
-              {/* Static Add Button */}
+              {}
               <div 
                 onClick={() => setIsUploadModalOpen(true)}
                 className="group relative rounded-2xl overflow-hidden cursor-pointer border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center p-6 hover:bg-slate-50 dark:hover:bg-[#1e2a35] transition-colors"
@@ -330,8 +222,8 @@ export default function MemoryVaultPage() {
               </div>
 
               {filteredMemories.slice(0,visibleCount).length > 0 ? (
-                filteredMemories.slice(0,visibleCount).map((item) => (
-                  <MemoryCard key={item.id} item={item} />
+                visibleMemories.map((item, i) => (
+                  <MemoryCard key={item.id} item={item} onOpen={() => setOpenIndex(i)} />
                 ))
               ) : (
                 <div className="col-span-full text-center py-20 text-slate-500">
@@ -341,7 +233,7 @@ export default function MemoryVaultPage() {
 
             </div>
 
-            {/* --- LOAD MORE BUTTON --- */}
+            {}
             {hasMore && (
               <div className="flex justify-center mt-6">
                 <button 
@@ -368,7 +260,7 @@ export default function MemoryVaultPage() {
         </div>
       </main>
 
-      {/* --- SCROLL TO TOP BUTTON --- */}
+      {}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
@@ -379,6 +271,8 @@ export default function MemoryVaultPage() {
         </button>
       )}
 
+      <MemoryLightbox items={visibleMemories} index={openIndex} onClose={() => setOpenIndex(null)} onIndex={setOpenIndex} />
+
       <UploadMediaModal 
         isOpen={isUploadModalOpen} 
         onClose={handleCloseModal} 
@@ -388,11 +282,7 @@ export default function MemoryVaultPage() {
   );
 }
 
-// ==========================================
-// 2. MEMORY CARD (Unchanged)
-// ==========================================
-
-function MemoryCard({ item }) {
+function MemoryCard({ item, onOpen }) {
   const overlayClasses = "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6";
   const videoRef = useRef(null);
 
@@ -416,6 +306,7 @@ function MemoryCard({ item }) {
     return (
       <div 
         className="group relative rounded-2xl overflow-hidden cursor-pointer sm:col-span-2 sm:row-span-2 shadow-md bg-black"
+        onClick={onOpen}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -452,11 +343,9 @@ function MemoryCard({ item }) {
       </div>
     );
   }
-
-  // ... Ticket and Photo cards remain exactly the same ...
   if (item.type === 'ticket') {
     return (
-      <div className="group relative rounded-2xl overflow-hidden cursor-pointer bg-[#223949] border border-slate-700/50 border-dashed flex flex-col shadow-sm">
+      <div onClick={onOpen} className="group relative rounded-2xl overflow-hidden cursor-pointer bg-[#223949] border border-slate-700/50 border-dashed flex flex-col shadow-sm">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center relative z-10">
           <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:bg-[#0d93f2]/20 group-hover:scale-110 transition-all duration-300">
             <Ticket className="text-slate-400 w-8 h-8 group-hover:text-[#0d93f2] transition-colors" />
@@ -473,7 +362,7 @@ function MemoryCard({ item }) {
 
   if (item.type === 'map') {
     return (
-      <div className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm bg-slate-800">
+      <div onClick={onOpen} className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm bg-slate-800">
         <div className="w-full h-full relative">
            <Image src={item.image} alt={item.title} fill className="object-cover opacity-60 transition-transform duration-500 group-hover:scale-110" />
         </div>
@@ -489,7 +378,7 @@ function MemoryCard({ item }) {
   }
 
   return (
-    <div className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm ${item.type === 'album' ? 'row-span-2' : ''}`}>
+    <div onClick={onOpen} className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm ${item.type === 'album' ? 'row-span-2' : ''}`}>
       <Image src={item.image} alt={item.title} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
       <div className={overlayClasses.replace('p-6', 'p-4')}>
         <div className="flex justify-end gap-2 translate-y-[-10px] group-hover:translate-y-0 transition-transform duration-300">

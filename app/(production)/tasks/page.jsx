@@ -7,20 +7,15 @@ import {
   MoreHorizontal, Calendar, ArrowUpRight, X, Trash2, Pencil, Check, ArrowLeft, Loader2
 } from 'lucide-react';
 import StudioNavbar from '@/components/production/StudioNavbar';
-
-// --- INITIAL DATA (Removed, replaced by fetch) ---
+import { toast } from 'sonner';
 
 export default function GlobalTasksPage() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-
-  // --- FETCH TASKS ---
   const fetchTasks = async () => {
     try {
       const res = await fetch('/api/production/tasks');
@@ -34,32 +29,28 @@ export default function GlobalTasksPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchTasks();
   }, []);
 
-  // --- ACTIONS ---
-
   const handleSaveTask = async (taskData) => {
     try {
-      if (editingTask) {
-        // Update existing
-        const res = await fetch('/api/production/tasks', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingTask.id, ...taskData })
-        });
-        if (res.ok) fetchTasks(); // Refresh
-      } else {
-        // Create new
-        const res = await fetch('/api/production/tasks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(taskData)
-        });
-        if (res.ok) fetchTasks();
+      const res = await fetch('/api/production/tasks', {
+        method: editingTask ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingTask ? { id: editingTask.id, ...taskData } : taskData)
+      });
+      if (!res.ok) {
+        // Keep the modal open so the user can fix the problem (e.g. no show selected)
+        const body = await res.json().catch(() => ({}));
+        toast.error(body.error || 'Could not save the task');
+        return;
       }
+      fetchTasks();
       closeModal();
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      toast.error('Network error: task not saved');
+    }
   };
 
   const handleDelete = async (id) => {
@@ -74,8 +65,6 @@ export default function GlobalTasksPage() {
   const handleToggleComplete = async (id) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
-
-    // Optimistic Update
     setTasks(tasks.map(t => t.id === id ? { ...t, status: t.status === 'completed' ? 'pending' : 'completed' } : t));
 
     try {
@@ -104,8 +93,6 @@ export default function GlobalTasksPage() {
     setIsModalOpen(false);
     setEditingTask(null);
   };
-
-  // --- FILTERING LOGIC ---
   const filteredTasks = tasks.filter(task => {
     const matchesFilter = filter === 'all' || (filter === 'completed' && task.status === 'completed') || (filter === 'pending' && task.status === 'pending');
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) || task.show.toLowerCase().includes(searchQuery.toLowerCase());
@@ -119,7 +106,7 @@ export default function GlobalTasksPage() {
       <div className="flex flex-1 overflow-hidden">
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#0F0F10]">
 
-          {/* Header & Toolbar */}
+          {}
           <div className="px-6 py-8 border-b border-[#27272A]">
             <div className='mb-2'>
               <Link
@@ -144,7 +131,7 @@ export default function GlobalTasksPage() {
               </button>
             </div>
 
-            {/* Filter Bar */}
+            {}
             <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
               <div className="flex items-center gap-2 bg-[#18181B] p-1 rounded-lg border border-[#27272A]">
                 {['all', 'pending', 'completed'].map((f) => (
@@ -173,7 +160,7 @@ export default function GlobalTasksPage() {
             </div>
           </div>
 
-          {/* Task List */}
+          {}
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
             <div className="max-w-5xl mx-auto space-y-3">
               {loading ? (
@@ -205,7 +192,7 @@ export default function GlobalTasksPage() {
         </main>
       </div>
 
-      {/* --- CREATE / EDIT MODAL --- */}
+      {}
       {isModalOpen && (
         <TaskModal
           task={editingTask}
@@ -218,13 +205,9 @@ export default function GlobalTasksPage() {
   );
 }
 
-// --- SUB COMPONENTS ---
-
 function TaskRow({ task, onToggle, onDelete, onEdit }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
-
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -244,7 +227,7 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
   return (
     <div className="group flex items-center gap-4 bg-[#18181B] border border-[#27272A] p-4 rounded-xl hover:border-blue-500/30 transition-all shadow-sm relative">
 
-      {/* Checkbox */}
+      {}
       <button
         onClick={onToggle}
         className={`shrink-0 transition-colors ${task.status === 'completed' ? 'text-green-500' : 'text-gray-600 hover:text-blue-500'}`}
@@ -252,7 +235,7 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
         {task.status === 'completed' ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
       </button>
 
-      {/* Details */}
+      {}
       <div className="flex-1 min-w-0 flex flex-col gap-1">
         <div className="flex items-center gap-3">
           <span className={`text-sm font-medium ${task.status === 'completed' ? 'text-gray-500 line-through' : 'text-white'}`}>
@@ -270,13 +253,13 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
         </div>
       </div>
 
-      {/* Meta & Actions */}
+      {}
       <div className="flex items-center gap-6">
         <div className="text-xs font-medium text-right text-gray-400 flex items-center gap-1">
           <Calendar className="w-3 h-3" /> {task.dueDate}
         </div>
 
-        {/* Action Menu Container */}
+        {}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -285,7 +268,7 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
             <MoreHorizontal className="w-5 h-5" />
           </button>
 
-          {/* DROPDOWN POPUP */}
+          {}
           {menuOpen && (
             <div className="absolute right-0 top-10 w-48 bg-[#18181B] border border-[#27272A] rounded-lg shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
               <div className="flex flex-col p-1">
@@ -321,10 +304,7 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
   );
 }
 
-// --- POPUP MODAL ---
-
 function TaskModal({ task, onClose, onSave }) {
-  // Local state for the form
   const [formData, setFormData] = useState({
     title: task ? task.title : '',
     show: task ? task.show : 'General',

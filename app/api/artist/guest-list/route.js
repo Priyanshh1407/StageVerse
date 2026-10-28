@@ -1,96 +1,75 @@
-import Event from '@/models/Event';
 import { NextResponse } from 'next/server';
+import { apiError, readJson } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import Guest from '@/models/Guest';
 import { verifyAuth } from '@/lib/auth';
+import { loadEventFor } from '@/lib/authz';
+import { NotFoundError, ValidationError } from '@/lib/errors';
 
-// GET: Fetch guests for a specific event
+// Guest lists are managed by the event's artist or organizer
+const GUEST_MANAGERS = ['artist', 'organizer'];
+const TIERS = ['VIP', 'All Access', 'Afterparty', 'Guest'];
+const STATUSES = ['Pending', 'Checked In', 'approved'];
+
+async function loadGuestFor(user, guestId) {
+    const guest = await Guest.findById(guestId);
+    if (!guest) throw new NotFoundError('Guest not found');
+    await loadEventFor(user, guest.eventId, GUEST_MANAGERS);
+    return guest;
+}
+
 export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { searchParams } = new URL(req.url);
-        let eventId = searchParams.get('eventId');
+        const eventId = new URL(req.url).searchParams.get('eventId');
+        if (!eventId) throw new ValidationError('Event ID is required');
 
-        if (!eventId) return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
-
-        // Resolve
-        const numericEventId = parseInt(eventId);
-        console.log(`[Guest GET] Resolving Event ID: ${eventId} -> ${numericEventId}`);
-
-        const event = await Event.findOne({ eventId: numericEventId });
-
-        if (event) {
-            console.log(`[Guest GET] Found Event: ${event._id}`);
-            eventId = event._id;
-        } else {
-            console.log(`[Guest GET] Event ${numericEventId} not found. Returning empty.`);
-            // Avoid CastError by returning empty list immediately
-            return NextResponse.json({ success: true, data: [] });
-        }
-
-        const guests = await Guest.find({ eventId }).sort({ addedAt: -1 });
-
+        const event = await loadEventFor(user, eventId, GUEST_MANAGERS);
+        const guests = await Guest.find({ eventId: event._id }).sort({ addedAt: -1 });
         return NextResponse.json({ success: true, data: guests });
-
     } catch (error) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guest-list');
     }
 }
 
-// POST: Add a new guest
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const body = await req.json();
-        let { eventId, name, tier, email } = body;
+        const { eventId, name, tier, email } = await readJson(req);
+        if (!eventId || !name) throw new ValidationError('Missing required fields');
+        if (tier && !TIERS.includes(tier)) throw new ValidationError('Invalid tier');
 
-        if (!eventId || !name) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }
-
-        // Resolve
-        console.log(`[Guest POST] Looking for Event ID: ${eventId}`);
-        const numericEventId = parseInt(eventId);
-
-        const event = await Event.findOne({ eventId: numericEventId });
-        if (!event) {
-            console.error(`[Guest POST] Event ${numericEventId} not found`);
-            return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-        }
-        const mongoEventId = event._id;
-
+        const event = await loadEventFor(user, eventId, GUEST_MANAGERS);
         const newGuest = await Guest.create({
-            eventId: mongoEventId,
+            eventId: event._id,
+            artistId: event.artistId,
             name,
             tier: tier || 'Guest',
             email,
-            status: 'Pending'
+            status: 'Pending',
+            addedBy: user.userId,
         });
-
-        console.log(`[Guest POST] Created Guest ${newGuest.name} for Event ${numericEventId}`);
         return NextResponse.json({ success: true, data: newGuest });
     } catch (error) {
-        console.error("Guest Add Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guest-list');
     }
 }
-// PUT: Update a guest (Check-In or Edit)
+
 export async function PUT(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const body = await req.json();
-        const { id, status, name, email, tier } = body;
+        const { id, status, name, email, tier } = await readJson(req);
+        if (!id) throw new ValidationError('Guest ID required');
+        if (tier && !TIERS.includes(tier)) throw new ValidationError('Invalid tier');
+        if (status && !STATUSES.includes(status)) throw new ValidationError('Invalid status');
 
-        if (!id) return NextResponse.json({ error: 'Guest ID required' }, { status: 400 });
+        await loadGuestFor(user, id);
 
         const updateData = {};
         if (status) updateData.status = status;
@@ -98,56 +77,31 @@ export async function PUT(req) {
         if (email) updateData.email = email;
         if (tier) updateData.tier = tier;
 
-        const updatedGuest = await Guest.findByIdAndUpdate(
-            id,
-            { $set: updateData },
-            { new: true }
-        );
-
-        if (!updatedGuest) return NextResponse.json({ error: 'Guest not found' }, { status: 404 });
-
+        const updatedGuest = await Guest.findByIdAndUpdate(id, { $set: updateData }, { returnDocument: 'after' });
         return NextResponse.json({ success: true, data: updatedGuest });
-
     } catch (error) {
-        console.error("Guest Update Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guest-list');
     }
 }
 
-// DELETE: Remove a guest (or all guests for an event)
 export async function DELETE(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const body = await req.json();
-        const { id, eventId, clearAll } = body;
-
-        // Mode 1: Delete Single Guest
+        const { id, eventId, clearAll } = await readJson(req);
         if (id) {
+            await loadGuestFor(user, id);
             await Guest.findByIdAndDelete(id);
             return NextResponse.json({ success: true });
         }
-
-        // Mode 2: Clear All Guests for Event
         if (clearAll && eventId) {
-            console.log(`[Guest DELETE] Clearing list for Event: ${eventId}`);
-
-            // Resolve Event ID
-            const numericEventId = parseInt(eventId);
-            const event = await Event.findOne({ eventId: numericEventId });
-
-            if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-
+            const event = await loadEventFor(user, eventId, GUEST_MANAGERS);
             await Guest.deleteMany({ eventId: event._id });
             return NextResponse.json({ success: true });
         }
-
-        return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
-
+        throw new ValidationError('Invalid request');
     } catch (error) {
-        console.error("Guest Delete Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/guest-list');
     }
 }

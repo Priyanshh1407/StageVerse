@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Twitter, Facebook, Instagram, Youtube, Sparkles, BarChart3 } from "lucide-react";
 
 const MainFooter = ({ isLoggedIn = false }) => {
-  // --- CONFIGURATION ---
   
   const publicLinks = [
     { label: "About Us", href: "/about" },
@@ -12,8 +11,6 @@ const MainFooter = ({ isLoggedIn = false }) => {
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },
   ];
-
-  // App footer usually has less marketing fluff
   const appLinks = [
     { label: "About Us", href: "/about" },
     { label: "Careers", href: "/careers" },
@@ -27,8 +24,6 @@ const MainFooter = ({ isLoggedIn = false }) => {
     { icon: Instagram, href: "#", label: "Instagram" },
     { icon: Youtube, href: "#", label: "YouTube" },
   ];
-
-  // --- RENDER LOGGED IN FOOTER (Simpler, App Style) ---
   if (isLoggedIn) {
     return (
       <footer className="bg-background-light dark:bg-[#101b23] border-t border-slate-200 dark:border-[#223949] py-10 px-6 lg:px-40">
@@ -45,7 +40,7 @@ const MainFooter = ({ isLoggedIn = false }) => {
             ))}
           </div>
           <div className="flex gap-4 text-[#90b2cb]">
-             {/* Simplified Socials for App */}
+             {}
              {socialLinks.slice(0, 2).map((social) => (
                 <Link key={social.label} href={social.href} className="hover:text-primary transition-colors">
                   <social.icon className="w-5 h-5" />
@@ -59,8 +54,6 @@ const MainFooter = ({ isLoggedIn = false }) => {
       </footer>
     );
   }
-
-  // --- RENDER LOGGED OUT FOOTER (Marketing Style) ---
   return (
     <footer className="border-t border-white/5 bg-black py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

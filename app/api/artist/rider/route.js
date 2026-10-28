@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
+import { parseBody, riderUpdateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Event from '@/models/Event';
 import { verifyAuth } from '@/lib/auth';
 import Task from '@/models/Task';
-import User from '@/models/User'; // Ensure User model is registered
+import User from '@/models/User';
+import { loadEventFor, EVENT_TEAM } from '@/lib/authz';
+import { ValidationError } from '@/lib/errors';
 import { riderTemplates } from '@/lib/riderTemplates'; // Import the new templates
-
-// GET: Fetch Rider for a Specific Event + Assigned User
 export async function GET(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(req.url);
         const eventId = searchParams.get('eventId');
@@ -20,8 +21,7 @@ export async function GET(req) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
         }
 
-        const event = await Event.findById(eventId).populate('assignedTo', 'name email role');
-        if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        const event = await loadEventFor(user, eventId, EVENT_TEAM, { populate: { path: 'assignedTo', select: 'name email role' } });
 
         return NextResponse.json({
             success: true,
@@ -30,24 +30,17 @@ export async function GET(req) {
         });
 
     } catch (error) {
-        console.error("Rider Fetch Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/rider');
     }
 }
 
 function generateDiff(oldRider, newPayload) {
     const changes = [];
     if (!oldRider || !oldRider.gear) return ["Initial Rider Created"];
-
-    // 1. Gear Diff
     const oldGear = oldRider.gear || [];
     const newGear = newPayload.gear || [];
-
-    // Map for easy lookup
     const oldMap = new Map(oldGear.map(g => [g.id, g]));
     const newMap = new Map(newGear.map(g => [g.id, g]));
-
-    // Check for modifications & additions
     newGear.forEach(newItem => {
         const oldItem = oldMap.get(newItem.id);
         if (!oldItem) {
@@ -58,15 +51,11 @@ function generateDiff(oldRider, newPayload) {
             }
         }
     });
-
-    // Check for removals
     oldGear.forEach(oldItem => {
         if (!newMap.has(oldItem.id)) {
             changes.push(`• Removed: ${oldItem.name}`);
         }
     });
-
-    // 2. Plot Diff
     if (newPayload.stageLocation && newPayload.stageLocation !== oldRider.stageLocation) {
         changes.push(`• Stage Location: ${oldRider.stageLocation || 'None'} ➝ ${newPayload.stageLocation}`);
     }
@@ -79,64 +68,50 @@ function generateDiff(oldRider, newPayload) {
 
     return changes;
 }
-
-// POST: Update Rider & Assign LD
 export async function POST(req) {
     try {
         await dbConnect();
         const user = await verifyAuth(req);
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const body = await req.json();
-        const { eventId, gear, stageLocation, mountingPreference, placementNotes, hazer, assigneeId, assigneeName } = body;
+        const { eventId, gear, stageLocation, mountingPreference, placementNotes, hazer, assigneeId, assigneeName } = parseBody(riderUpdateSchema, await req.json());
 
         if (!eventId) {
             return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
         }
-
-        // 1. Fetch Existing Event to Compare
-        const oldEvent = await Event.findById(eventId);
-        if (!oldEvent) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        // The rider belongs to the artist; only they can change it or pick the LD
+        const oldEvent = await loadEventFor(user, eventId, ['artist']);
+        if (assigneeId) {
+            const assignee = await User.findById(assigneeId).select('role');
+            if (!assignee || assignee.role !== 'production') {
+                throw new ValidationError('Assignee must be a production crew account');
+            }
+        }
 
         const oldRider = oldEvent.rider ? oldEvent.rider.toObject() : {};
-
-        // 2. Prepare Update (Rider + Assignment)
         const updateData = {};
         if (gear) updateData['rider.gear'] = gear;
         if (stageLocation !== undefined) updateData['rider.stageLocation'] = stageLocation;
         if (mountingPreference !== undefined) updateData['rider.mountingPreference'] = mountingPreference;
         if (placementNotes !== undefined) updateData['rider.placementNotes'] = placementNotes;
         if (hazer !== undefined) updateData['rider.hazer'] = hazer;
-
-        // NEW: Handle LD Assignment
         if (assigneeId) {
             updateData['assignedTo'] = assigneeId;
             updateData['status'] = 'requested';
         }
-
-        // 3. Calculate Diff
         const changes = generateDiff(oldRider, { gear, stageLocation, mountingPreference, placementNotes, hazer });
-
-        // 4. Update Event (Persist Rider)
         const updatedEvent = await Event.findByIdAndUpdate(
-            eventId,
+            oldEvent._id,
             { $set: updateData },
-            { new: true }
+            { returnDocument: 'after' }
         ).populate('assignedTo', 'name role');
-
-        // 5. Create Notification Task
         const isNewAssignment = assigneeId && (!oldEvent.assignedTo || oldEvent.assignedTo.toString() !== assigneeId);
 
         if (changes.length > 0 || isNewAssignment) {
-
-            // Default Language
             const lang = 'English';
-
-            // 1. Handle New Assignment (Single high-level event)
             if (isNewAssignment) {
                 const title = riderTemplates.new_assignment[lang]();
                 await Task.create({
-                    eventId: eventId,
+                    eventId: oldEvent._id,
                     title: title,
                     description: 'Artist has assigned this event to you.',
                     assignee: assigneeName || 'Production Crew',
@@ -150,8 +125,6 @@ export async function POST(req) {
                     status: 'pending'
                 });
             }
-
-            // 2. Handle Individual Changes (One Notification Per Change)
             for (const change of changes) {
                 let title = '';
                 let description = change; // The specific change line
@@ -177,7 +150,6 @@ export async function POST(req) {
                     }
                 }
                 else if (change.startsWith('• Stage Location:') || change.startsWith('• Mounting:')) {
-                    // Extract "Stage Location" or "Mounting"
                     const [feature, values] = change.replace('• ', '').split(': ');
                     const [oldVal, newVal] = values ? values.split(' ➝ ') : ['?', '?'];
                     title = riderTemplates.stage_plot_updated[lang](feature, oldVal, newVal);
@@ -188,10 +160,8 @@ export async function POST(req) {
                     title = riderTemplates.hazer_updated[lang](oldVal, newVal);
                 }
                 else title = riderTemplates.general_update[lang](1); // Fallback
-
-                // Create Task for this specific change
                 await Task.create({
-                    eventId: eventId,
+                    eventId: oldEvent._id,
                     title: title,
                     description: description,
                     assignee: assigneeName || 'Production Crew',
@@ -211,7 +181,6 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: updatedEvent.rider, changes, assignedTo: updatedEvent.assignedTo });
 
     } catch (error) {
-        console.error("Rider Update Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return apiError(error, '/api/artist/rider');
     }
 }

@@ -19,8 +19,6 @@ export default function PublicArtistPage() {
   const [artist, setArtist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Scroll Animation Hooks
   const ref = useRef(null);
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 200]);
@@ -76,8 +74,6 @@ export default function PublicArtistPage() {
       </div>
     );
   }
-
-  // --- DATA ---
   const heroImage = artist.image || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop";
   const bio = artist.bio || ["No bio available."];
   const shows = artist.upcomingShows || [];
@@ -88,7 +84,7 @@ export default function PublicArtistPage() {
 
       <main className="flex-1 flex flex-col relative w-full">
 
-        {/* 1. IMMERSIVE HERO SECTION */}
+        {}
         <div className="relative w-full h-[70vh] lg:h-[80vh] overflow-hidden" ref={ref}>
           <motion.div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -136,14 +132,14 @@ export default function PublicArtistPage() {
           </div>
         </div>
 
-        {/* 2. MAIN GRID */}
+        {}
         <div className="relative z-20 -mt-12 px-6 md:px-12 lg:px-24 pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-            {/* LEFT: Info & Layout */}
+            {}
             <div className="lg:col-span-8 flex flex-col gap-16">
 
-              {/* BIO */}
+              {}
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -162,7 +158,7 @@ export default function PublicArtistPage() {
                 </div>
               </motion.section>
 
-              {/* POPULAR TRACKS (Mockup) */}
+              {}
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -197,7 +193,7 @@ export default function PublicArtistPage() {
 
             </div>
 
-            {/* RIGHT: Sidebar (Upcoming Shows) */}
+            {}
             <div className="lg:col-span-4 relative">
               <div className="sticky top-28 flex flex-col gap-6">
                 <div className="bg-[#111] border border-[#00d4ff]/20 rounded-3xl p-6 shadow-[0_0_40px_-10px_rgba(0,212,255,0.15)] relative overflow-hidden">

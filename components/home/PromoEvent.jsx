@@ -8,10 +8,10 @@ export default function PromoSection() {
       <div className="mx-auto max-w-[1440px] px-6 lg:px-12">
         <div className="flex flex-col lg:flex-row gap-12 items-center bg-[#141414] rounded-3xl p-8 lg:p-12 border border-white/5">
           
-          {/* Image Side */}
+          {}
           <div className="lg:w-1/2 w-full">
             <div className="rounded-xl overflow-hidden aspect-video relative">
-              {/* Background Image */}
+              {}
               <img 
                 src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop" 
                 alt="Dashboard BG" 
@@ -21,7 +21,7 @@ export default function PromoSection() {
                 <div className="w-full h-full bg-gradient-to-r from-[#141414] to-transparent absolute inset-0"></div>
               </div>
               
-              {/* Overlay Image */}
+              {}
               <img 
                 src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop" 
                 alt="Analytics" 
@@ -31,7 +31,7 @@ export default function PromoSection() {
             </div>
           </div>
 
-          {/* Text Side */}
+          {}
           <div className="lg:w-1/2 w-full space-y-6">
             <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
               Manage Your Event. <br/>

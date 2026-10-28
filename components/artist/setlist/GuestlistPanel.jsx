@@ -8,18 +8,7 @@ export default function GuestlistPanel({ eventId }) {
     const [guests, setGuests] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedGuest, setSelectedGuest] = useState(null);
-
-    // Initial Fetch
-    useEffect(() => {
-        if (eventId) {
-            fetchGuests();
-        } else {
-            setGuests([]);
-        }
-        setSelectedGuest(null);
-    }, [eventId]);
-
-    const fetchGuests = async () => {
+    async function fetchGuests() {
         try {
             setLoading(true);
             const res = await fetch(`/api/artist/guestlist?eventId=${eventId}`);
@@ -34,17 +23,29 @@ export default function GuestlistPanel({ eventId }) {
         }
     };
 
-    // --- ACTIONS ---
+    useEffect(() => {
+        if (eventId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
+            fetchGuests();
+        } else {
+            setGuests([]);
+        }
+        setSelectedGuest(null);
+    }, [eventId]);
+
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [notesBuffer, setNotesBuffer] = useState("");
     const [actionLoading, setActionLoading] = useState(false);
 
-    useEffect(() => {
+    // Load the selected guest's notes into the editor when the selection changes
+    const [prevSelectedGuest, setPrevSelectedGuest] = useState(selectedGuest);
+    if (selectedGuest !== prevSelectedGuest) {
+        setPrevSelectedGuest(selectedGuest);
         if (selectedGuest) {
             setNotesBuffer(selectedGuest.notes || "");
             setIsEditingNotes(false);
         }
-    }, [selectedGuest]);
+    }
 
     const handleSaveNotes = async () => {
         if (!selectedGuest) return;
@@ -57,7 +58,6 @@ export default function GuestlistPanel({ eventId }) {
             });
             const json = await res.json();
             if (json.success) {
-                // Update local list
                 setGuests(prev => prev.map(g => g._id === selectedGuest._id ? json.guest : g));
                 setSelectedGuest(json.guest);
                 setIsEditingNotes(false);
@@ -83,7 +83,6 @@ export default function GuestlistPanel({ eventId }) {
             });
             const json = await res.json();
             if (json.success) {
-                // Update local list
                 setGuests(prev => prev.filter(g => g._id !== selectedGuest._id));
                 setSelectedGuest(null);
                 toast.success("Access revoked");
@@ -99,11 +98,11 @@ export default function GuestlistPanel({ eventId }) {
 
     return (
         <div className="bg-[#0b1217] rounded-3xl overflow-hidden flex flex-col h-full shadow-2xl border border-[#315168]/30 relative">
-            {/* Ambient Background Glows */}
+            {}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#0d93f2]/5 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Glass Header */}
+            {}
             <div className="p-5 border-b border-[#315168]/30 bg-[#0b1217]/60 backdrop-blur-xl flex items-center justify-between z-10">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-[#0d93f2]/10 rounded-xl">
@@ -118,10 +117,10 @@ export default function GuestlistPanel({ eventId }) {
                 </div>
             </div>
 
-            {/* Main Content Area */}
+            {}
             <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden relative z-10">
 
-                {/* List Column */}
+                {}
                 <div className={`w-full md:w-[400px] border-r border-[#315168]/30 flex flex-col bg-[#0b1217]/40 backdrop-blur-sm ${selectedGuest ? 'hidden md:flex' : 'flex'}`}>
                     <div className="p-4 border-b border-[#315168]/30">
                         <div className="relative group">
@@ -174,12 +173,12 @@ export default function GuestlistPanel({ eventId }) {
                     </div>
                 </div>
 
-                {/* Details Column */}
+                {}
                 <div className={`flex-1 bg-[#101b23]/30 p-6 md:p-10 flex flex-col ${!selectedGuest ? 'hidden md:flex items-center justify-center' : 'flex'}`}>
                     {selectedGuest ? (
                         <div className="w-full max-w-2xl mx-auto animate-in fade-in slide-in-from-right-8 duration-500">
 
-                            {/* Back Button Mobile */}
+                            {}
                             <button
                                 onClick={() => setSelectedGuest(null)}
                                 className="md:hidden text-[#90b2cb] hover:text-white text-sm mb-6 flex items-center gap-2 font-bold"
@@ -187,9 +186,9 @@ export default function GuestlistPanel({ eventId }) {
                                 ← Back to List
                             </button>
 
-                            {/* ID Card */}
+                            {}
                             <div className="bg-gradient-to-br from-[#182934]/80 to-[#101b23]/80 backdrop-blur-xl border border-[#315168]/50 rounded-3xl p-8 relative overflow-hidden shadow-2xl">
-                                {/* Decorative Glow */}
+                                {}
                                 <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#0d93f2]/20 rounded-full blur-[80px]" />
 
                                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-10 text-center md:text-left">
@@ -238,7 +237,7 @@ export default function GuestlistPanel({ eventId }) {
                                     </div>
                                 </div>
 
-                                {/* Notes Section */}
+                                {}
                                 <div className="mt-6 bg-[#0b1217]/50 rounded-2xl p-5 border border-[#315168]/30">
                                     <div className="flex items-center justify-between mb-3">
                                         <p className="text-[#587b94] text-xs font-bold uppercase tracking-wider flex items-center gap-2">
@@ -281,13 +280,13 @@ export default function GuestlistPanel({ eventId }) {
                                         </div>
                                     ) : (
                                         <p className="text-slate-300 text-sm leading-relaxed italic opacity-80">
-                                            "{selectedGuest.notes || 'No internal notes added.'}"
+                                            &quot;{selectedGuest.notes || 'No internal notes added.'}&quot;
                                         </p>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Actions */}
+                            {}
                             <div className="mt-8 flex justify-end">
                                 <button
                                     onClick={handleRevoke}

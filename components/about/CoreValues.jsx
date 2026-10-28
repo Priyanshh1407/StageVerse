@@ -9,7 +9,7 @@ export default function CoreValues() {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">What We Believe</h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Our core values aren't just words on a wall. They are the riffs we play on repeat, guiding every feature we build and every partnership we make.
+            Our core values aren&apos;t just words on a wall. They are the riffs we play on repeat, guiding every feature we build and every partnership we make.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

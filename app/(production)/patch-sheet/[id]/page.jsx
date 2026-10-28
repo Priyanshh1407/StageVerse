@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { Loader2, Table2, Calculator, Save, RefreshCw, Pencil, X } from 'lucide-react';
-
-// --- NEW IMPORTS ---
 import StudioNavbar from '@/components/production/StudioNavbar';
 import PatchingSidebar from '@/components/production/patcher/PatchingSidebar';
 import PatchMainArea from '@/components/production/patcher/PatchMainArea';
@@ -20,8 +18,6 @@ export default function PatchSheetPage(props) {
   const [mobileView, setMobileView] = useState('sheet');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
-
-  // EDIT STATE
   const [editingFixture, setEditingFixture] = useState(null);
 
   const fetchPatch = async () => {
@@ -62,11 +58,9 @@ export default function PatchSheetPage(props) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch: syncing with the server is what this effect is for
     fetchPatch();
-
-    // Auto-refresh when tab comes into focus to prevent stale data overwrites
     const handleFocus = () => {
-      // Only fetch if we are not currently saving
       if (!isSaving) fetchPatch();
     };
     window.addEventListener('focus', handleFocus);
@@ -92,12 +86,9 @@ export default function PatchSheetPage(props) {
       if (res.ok) {
         toast.success('Patch saved successfully');
         setLastSaved(new Date());
-
-        // IMMEDIATE SYNC: Update local state with what the server has stored
         if (data.data && data.data.fixtures) {
           setPatches(data.data.fixtures);
         } else {
-          // Fallback refetch
           fetchPatch();
         }
 
@@ -113,14 +104,10 @@ export default function PatchSheetPage(props) {
   };
 
   const handleAddFixtures = (newFixtures) => {
-    // Determine the next available ID
     const maxId = patches.length > 0 ? Math.max(...patches.map(p => p.fixtureId || 0)) : 0;
-
-    // Process new fixtures to ensure they have unique IDs and required fields
     const processedFixtures = newFixtures.map((f, index) => ({
       ...f,
       fixtureId: maxId + index + 1,
-      // Ensure other fields are present if not provided by the form
       status: f.status || 'ok',
       cue: f.cue || 'General',
       cueColor: f.cueColor || 'blue'
@@ -129,8 +116,6 @@ export default function PatchSheetPage(props) {
     setPatches(prev => [...prev, ...processedFixtures]);
     toast.success(`Added ${newFixtures.length} new fixtures. Don't forget to save!`);
   };
-
-  // --- EDIT HANDLERS ---
   const handleEditSubmission = (e) => {
     e.preventDefault();
     if (editingFixture) {
@@ -173,10 +158,10 @@ export default function PatchSheetPage(props) {
   return (
     <div className="flex flex-col h-screen w-full bg-[#0F0F10] text-gray-300 font-sans overflow-hidden">
 
-      {/* 1. TOP NAVBAR */}
+      {}
       <StudioNavbar projectId={showId} />
 
-      {/* MOBILE VIEW TOGGLE */}
+      {}
       <div className="md:hidden px-4 py-3 bg-[#0F0F10] border-b border-[#2c3e50] shrink-0 z-10">
         <div className="flex bg-[#1a1a1a] p-1 rounded-lg border border-[#2c3e50] shadow-sm">
           <button
@@ -204,10 +189,10 @@ export default function PatchSheetPage(props) {
         </div>
       </div>
 
-      {/* 2. MAIN CONTENT SPLIT */}
+      {}
       <div className="flex-1 flex overflow-hidden relative w-full">
 
-        {/* Left Sidebar (Tools) - FIXED WIDTH and FLEX BEHAVIOR */}
+        {}
         <div className={`
           ${mobileView === 'tools' ? 'flex w-full absolute inset-0 z-20' : 'hidden'} 
           md:flex md:relative md:w-[360px] md:min-w-[360px] md:border-r md:border-[#2c3e50] flex-col bg-[#16202a]
@@ -220,16 +205,16 @@ export default function PatchSheetPage(props) {
           />
         </div>
 
-        {/* Right Main Area (Sheet) */}
+        {}
         <div className={`
           ${mobileView === 'sheet' ? 'flex w-full' : 'hidden'} 
           md:flex flex-1 flex-col bg-[#0F0F10] relative overflow-hidden
         `}>
 
-          {/* --- PAGE HEADER --- */}
+          {}
           <div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between md:px-6 md:py-5 border-b border-[#2c3e50] shrink-0 bg-[#0F0F10] z-10">
 
-            {/* Title Section */}
+            {}
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-bold text-white tracking-tight leading-none">Active Patch Sheet</h1>
               <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-[#546b81] uppercase tracking-wider">
@@ -240,7 +225,7 @@ export default function PatchSheetPage(props) {
               </div>
             </div>
 
-            {/* Actions Toolbar */}
+            {}
             <div className="grid grid-cols-2 md:flex items-center gap-3">
               <button
                 onClick={fetchPatch}
@@ -262,9 +247,9 @@ export default function PatchSheetPage(props) {
             </div>
           </div>
 
-          {/* Pass data to Main Area (Table) - WRAPPED IN FLEX-1 for scrolling */}
+          {}
           <div className="flex-1 overflow-hidden">
-            {/* PASSED onEditFixture handler */}
+            {}
             <PatchMainArea patches={patches} onEditFixture={setEditingFixture} />
           </div>
 
@@ -272,7 +257,7 @@ export default function PatchSheetPage(props) {
 
       </div>
 
-      {/* EDIT MODAL (Copied from Technical View) */}
+      {}
       {editingFixture && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">

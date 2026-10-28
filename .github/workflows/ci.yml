@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main, deployment, 'phase-*']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Placeholders only: tests run against an in-memory MongoDB and mock Gemini,
+      # and the build never connects to a database. No real secrets in CI.
+      MONGODB_URI: mongodb://127.0.0.1:27017/ci
+      JWT_SECRET: ci-only-not-a-real-secret
+      GEMINI_API_KEY: ci-placeholder
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # mongodb-memory-server downloads a mongod binary on first use
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - run: npm ci
+
+      - name: Lint (errors fail the build)
+        run: npm run lint
+
+      - name: Tests with coverage
+        run: npm run test:coverage
+
+      - name: Production build
+        run: npm run build
+
+      - name: Dependency audit (production deps)
+        # Reported, not enforced: the one remaining advisory (xlsx) has no fixed release
+        # and isn't reachable (the app only writes spreadsheets). See FIX_LOG.md, SEC-07.
+        run: npm audit --omit=dev || true

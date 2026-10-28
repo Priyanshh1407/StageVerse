@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api';
+import { containsRegex } from '@/lib/escapeRegex';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 
@@ -12,17 +14,13 @@ export async function GET(req) {
 
         if (search) {
             query.$or = [
-                { name: { $regex: search, $options: 'i' } },
-                { location: { $regex: search, $options: 'i' } }
+                { name: containsRegex(search) },
+                { location: containsRegex(search) }
             ];
         }
-
-        // Fetch artists
         const artists = await User.find(query)
             .select('name avatar bio location stats role')
             .lean();
-
-        // Transform to Feed Format
         const formattedArtists = artists.map(a => ({
             id: a._id,
             name: a.name,
@@ -37,7 +35,6 @@ export async function GET(req) {
         return NextResponse.json({ success: true, data: formattedArtists });
 
     } catch (error) {
-        console.error('Failed to fetch artists:', error);
-        return NextResponse.json({ success: false, error: 'Server Error' }, { status: 500 });
+        return apiError(error, '/api/artists');
     }
 }

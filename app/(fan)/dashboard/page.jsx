@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
-// --- IMPORTS ---
 import FanSidebar from '@/components/fan/FanSidebar';
 import TopArtistsModal from '@/components/fan/dashboard/TopArtistModal';
 import TopFriendsModal from '@/components/fan/dashboard/TopFriendsModal';
@@ -14,8 +14,8 @@ import PredictionModal from '@/components/fan/dashboard/SetListPredictor';
 import ScorecardModal from '@/components/fan/dashboard/ScoreCardModal';
 import NotificationsModal from '@/components/fan/dashboard/NotificationsModal';
 import LivePollCard from '@/components/fan/dashboard/LivePollCard';
+import MemoryLightbox from '@/components/fan/MemoryLightbox';
 
-// --- ICONS ---
 import {
   Menu, Edit, MapPin, PlaneTakeoff, Ticket as TicketStub, Plus, Image as ImageIcon, ArrowRight, Filter, Loader2, Instagram, ListMusic
 } from 'lucide-react';
@@ -25,17 +25,16 @@ export default function FanDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // --- MODAL STATES ---
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTopFriendsOpen, setIsTopFriendsOpen] = useState(false);
+  const [openMemory, setOpenMemory] = useState(null); // index of the memory shown full size
   const [isTopArtistsOpen, setIsTopArtistsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-  // --- FETCH DATA FROM API ---
   useEffect(() => {
     async function fetchData() {
       try {
@@ -57,7 +56,6 @@ export default function FanDashboard() {
   }, [isUploadModalOpen, isEditProfileOpen]); // Re-fetch if upload or edit happens
 
   const handleUpdateProfile = (updatedUser) => {
-    // Optimistic update or trigger refetch
     setIsEditProfileOpen(false);
     window.location.reload();
   };
@@ -85,7 +83,7 @@ export default function FanDashboard() {
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
 
-        {/* Mobile Header */}
+        {}
         <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632]">
           <span className="font-bold text-lg">Concert Passport</span>
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300">
@@ -94,10 +92,21 @@ export default function FanDashboard() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 scroll-smooth">
-          <div className="max-w-6xl mx-auto flex flex-col gap-8 pb-10">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.15 }
+              }
+            }}
+            className="max-w-6xl mx-auto flex flex-col gap-8 pb-10"
+          >
 
-            {/* Profile Header */}
-            <section className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-white dark:bg-[#1a2632] p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50 relative overflow-hidden group">
+            {}
+            <motion.section variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-white dark:bg-[#1a2632] p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50 relative overflow-hidden group">
               <div className="absolute -left-20 -top-20 w-64 h-64 bg-[#0d93f2]/10 rounded-full blur-[80px] group-hover:bg-[#0d93f2]/20 transition-all duration-700"></div>
               <div className="flex items-center gap-6 relative z-10">
                 <div className="relative">
@@ -124,7 +133,7 @@ export default function FanDashboard() {
                   </div>
 
                   {data.user.bio && (
-                    <p className="text-sm text-slate-600 dark:text-slate-300 italic mb-3 max-w-md">"{data.user.bio}"</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 italic mb-3 max-w-md">&quot;{data.user.bio}&quot;</p>
                   )}
 
                   <div className="flex items-center gap-2">
@@ -136,16 +145,15 @@ export default function FanDashboard() {
               <button onClick={() => setIsEditProfileOpen(true)} className="relative z-10 flex cursor-pointer items-center gap-2 justify-center rounded-lg px-6 py-3 bg-white dark:bg-[#22303c] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-bold hover:bg-slate-100 dark:hover:bg-[#2a3b4a] transition-colors w-full md:w-auto shadow-sm">
                 <Edit className="w-4 h-4" /> <span>Edit Profile</span>
               </button>
-            </section>
+            </motion.section>
 
-            {/* --- GRID: STATS & PREDICTOR --- */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <motion.section variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
               <StatCard icon={TicketStub} label="Total Shows" value={data.stats.showsAttended.value} subtext={data.stats.showsAttended.subtext} progress={data.stats.showsAttended.progress} />
 
               <StatCard icon={MapPin} label="Cities Visited" value={data.stats.citiesVisited.value} extra={<div className="flex items-center gap-2 mt-4 text-[#0d93f2] text-sm font-medium"><PlaneTakeoff className="w-4 h-4" /><span>{data.stats.citiesVisited.value} cities</span></div>} />
 
-              {/* --- DYNAMIC CARD: SETLIST PREDICTOR --- */}
+              {}
               {activeEvent ? (
                 <div className="flex flex-col gap-1 rounded-xl p-6 bg-gradient-to-br from-[#101b22] to-[#1a2632] border border-[#0d93f2]/30 shadow-lg relative overflow-hidden group cursor-pointer" onClick={() => setIsPredictorOpen(true)}>
                   <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -170,7 +178,6 @@ export default function FanDashboard() {
                   </div>
                 </div>
               ) : (
-                // Fallback Card when no active event
                 <div className="flex flex-col gap-1 rounded-xl p-6 bg-[#1a2632] border border-slate-800 shadow-sm relative overflow-hidden opacity-75">
                   <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Predict Setlist</p>
                   <h3 className="text-slate-200 text-xl font-bold leading-tight mt-1">No Upcoming Shows</h3>
@@ -178,7 +185,7 @@ export default function FanDashboard() {
                 </div>
               )}
 
-              {/* Top Friends Card */}
+              {}
               <div className="flex flex-col gap-1 rounded-xl p-6 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
                 <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider relative z-10">Top Friends</p>
                 <div className="flex items-center justify-between gap-4 mt-2">
@@ -204,10 +211,10 @@ export default function FanDashboard() {
                 </div>
               </div>
 
-            </section>
+            </motion.section>
 
-            {/* Lists */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {}
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold tracking-tight">TOP ARTISTS SEEN</h3>
@@ -242,23 +249,18 @@ export default function FanDashboard() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Memory Vault - UPDATED WITH FIXES */}
-            <section className="flex flex-col gap-6 pt-4">
+            {}
+            <motion.section variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col gap-6 pt-4">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div><h3 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-2"><ImageIcon className="w-6 h-6 text-[#0d93f2]" />Memory Vault</h3><p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Your curated collection of moments.</p></div>
                 <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
-                {data.memories.length > 0 ? data.memories.slice(0, 5).map((memory) => {
-                  // FIX 1: Ensure fallback is used
+                {data.memories.length > 0 ? data.memories.slice(0, 5).map((memory, memoryIndex) => {
                   const safeImage = memory.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745";
-
-                  // FIX 2: Detect video types
                   const isVideo = safeImage.includes(".mp4") || memory.type === 'video';
-
-                  // Helper to render correct media type
                   const MediaContent = () => {
                     if (isVideo) {
                       return (
@@ -281,7 +283,7 @@ export default function FanDashboard() {
 
                   if (memory.featured) {
                     return (
-                      <div key={memory.id} className="group relative rounded-xl overflow-hidden cursor-pointer md:col-span-2 md:row-span-2">
+                      <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer md:col-span-2 md:row-span-2">
                         <MediaContent />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                           <p className="text-white font-bold text-lg">{memory.title}</p>
@@ -293,17 +295,15 @@ export default function FanDashboard() {
 
                   if (memory.type === "ticket") {
                     return (
-                      <div key={memory.id} className="group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed hover:border-[#0d93f2] transition-colors">
+                      <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed hover:border-[#0d93f2] transition-colors">
                         <TicketStub className="text-slate-500 w-10 h-10 mb-2 group-hover:text-[#0d93f2] transition-colors" />
                         <p className="text-slate-300 text-center text-sm font-mono uppercase">TICKET STUB</p>
                         <p className="text-white font-bold text-center mt-1">{memory.title}</p>
                       </div>
                     );
                   }
-
-                  // Standard Memory Item
                   return (
-                    <div key={memory.id} className="group relative rounded-xl overflow-hidden cursor-pointer">
+                    <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer">
                       <MediaContent />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                         <p className="text-white font-bold text-xs">{memory.title}</p>
@@ -314,14 +314,20 @@ export default function FanDashboard() {
                   <div className="col-span-full py-10 text-center text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">No memories yet. Upload one!</div>
                 )}
               </div>
+              <MemoryLightbox
+                items={data.memories.slice(0, 5).map((m) => ({ ...m, videoSrc: m.type === 'video' ? m.image : undefined }))}
+                index={openMemory}
+                onClose={() => setOpenMemory(null)}
+                onIndex={setOpenMemory}
+              />
               <div className="flex justify-center mt-2"><Link href="/memory-vault" className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-[#0d93f2] transition-colors flex items-center gap-1">Enter Memory Vault<ArrowRight className="w-4 h-4" /></Link></div>
-            </section>
+            </motion.section>
 
-          </div>
+          </motion.div>
         </div>
       </main>
 
-      {/* --- RENDER ALL MODALS --- */}
+      {}
       <EditProfileModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
@@ -351,7 +357,6 @@ export default function FanDashboard() {
         onClose={() => setIsNotificationsOpen(false)}
       />
 
-      {/* --- PREDICTION MODALS --- */}
       {isPredictorOpen && activeEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsPredictorOpen(false)} />
@@ -360,13 +365,6 @@ export default function FanDashboard() {
               initialEventId={activeEvent._id}
               events={upcomingEvents}
             />
-            {/* Close Button Override or ensure Modal handles closing via prop if refactored. 
-                     Wait, SetListPredictor doesn't have an typical 'isOpen' prop anymore, it just renders.
-                     So wrapping it here in a conditional render is correct.
-                     However, I need to pass a way to CLOSE it. 
-                     I checked SetListPredictor, it doesn't seem to have an explicit 'onClose' in my last refactor?
-                     Let me check SetListPredictor again.
-                 */}
             <button onClick={() => setIsPredictorOpen(false)} className="absolute top-4 right-4 text-white bg-black/50 p-2 rounded-full hover:bg-red-500/50 z-50 transition-colors">
               <span className="sr-only">Close</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -375,14 +373,12 @@ export default function FanDashboard() {
         </div>
       )}
 
-      {/* --- LIVE POLL OVERLAY (Always Mounted to Listen) --- */}
+      {}
       <LivePollCard eventId={activeEvent?._id} onComplete={() => console.log("Poll Ended")} />
 
     </div>
   );
 }
-
-// --- SUB COMPONENTS ---
 
 function StatCard({ icon: Icon, label, value, valueColor, subtext, progress, extra }) {
   return (

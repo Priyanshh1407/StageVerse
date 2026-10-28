@@ -4,7 +4,6 @@ import React from 'react';
 
 export default function LogisticsSidebar({ crew = [], docs = [] }) {
   return (
-    // FIX: Sidebar Background #0F0F10, Border #27272A
     <aside className="w-80 border-l border-[#27272A] bg-[#0F0F10] hidden xl:flex flex-col gap-0 z-10 h-full">
 
       <div className="p-6 border-b border-[#27272A]">
@@ -36,7 +35,7 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
             <Lightbulb className="text-blue-500 w-6 h-6 shrink-0" />
             <div>
               <p className="text-white text-sm font-bold mb-1">Tip of the day</p>
-              <p className="text-gray-500 text-xs leading-relaxed">Use "Group Mode" to assign tasks to multiple electricians at once during load-in.</p>
+              <p className="text-gray-500 text-xs leading-relaxed">Use &quot;Group Mode&quot; to assign tasks to multiple electricians at once during load-in.</p>
             </div>
           </div>
         </div>
@@ -48,7 +47,6 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
 import { Lightbulb, Map, Grid, Box } from 'lucide-react';
 
 function DocItem({ title, type, url }) {
-  // Map string type to Icon component
   let Icon = Box;
   let color = "text-blue-400";
   let bgColor = "bg-blue-500/10";
@@ -57,7 +55,6 @@ function DocItem({ title, type, url }) {
   if (type === 'Grid') { Icon = Grid; color = "text-green-400"; bgColor = "bg-green-500/10"; }
 
   return (
-    // FIX: Item BG #18181B
     <a className="group flex items-center p-3 rounded-lg bg-[#18181B] border border-transparent hover:border-blue-500/50 transition-all" href={url || '#'}>
       <div className={`size-10 rounded ${bgColor} flex items-center justify-center ${color} mr-3 group-hover:text-white transition-colors`}>
         <Icon className="w-5 h-5" />

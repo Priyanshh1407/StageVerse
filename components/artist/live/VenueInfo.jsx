@@ -2,7 +2,7 @@
 export default function VenueInfo() {
   return (
     <div className="bg-white dark:bg-[#15232d] rounded-xl border border-slate-200 dark:border-[#223949] overflow-hidden shadow-sm h-[200px] relative group">
-      {/* Background Image */}
+      {}
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-60 group-hover:opacity-40 transition-opacity" 
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=1000&auto=format&fit=crop")' }}

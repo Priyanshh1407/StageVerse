@@ -4,8 +4,6 @@ import { X, Loader2 } from 'lucide-react';
 export default function TaskModal({ task, showId, onClose, onSave }) {
     const [events, setEvents] = useState([]);
     const [isLoadingEvents, setIsLoadingEvents] = useState(false);
-
-    // Form State
     const [formData, setFormData] = useState({
         title: task ? task.title : '',
         eventId: task ? task.eventId : (showId || ''), // Use eventId, not "show" (name)
@@ -22,10 +20,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
         const fetchEvents = async () => {
             setIsLoadingEvents(true);
             try {
-                // Assuming /api/events returns a list of events. 
-                // If it doesn't exist, we might fail, but let's try.
-                // We'll use a fallback if it fails or if we are in a specific context.
-                const res = await fetch('/api/events');
+                const res = await fetch('/api/artist/events'); // shows where I'm the artist or assigned crew
                 if (res.ok) {
                     const data = await res.json();
                     setEvents(data.events || data); // Handle array or { events: [] }
@@ -38,9 +33,10 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
         };
         fetchEvents();
     }, []);
-
-    // Update formData if task changes (though usually modal re-mounts)
-    useEffect(() => {
+    // Refill the form when a different task is opened
+    const [prevTask, setPrevTask] = useState(task);
+    if (task !== prevTask) {
+        setPrevTask(task);
         if (task) {
             setFormData({
                 title: task.title || '',
@@ -54,13 +50,10 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                 assignee: task.assignee || 'Alex M.'
             });
         }
-    }, [task, showId]);
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Pass eventId explicitly. 
-        // Note: The parent Component currently OVERRIDES eventId with the page's showId.
-        // If we want to allow creating tasks for OTHER shows, parent needs to respect this.
         await onSave(formData);
     };
 
@@ -86,10 +79,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                         />
                     </div>
 
-                    {/* Show Dropdown - Always visible or only if !showId? 
-                        User asked to fetch all events in pop up. 
-                        If we are on a specific show page, usually we lock it, but let's enable it if they want.
-                    */}
+                    {}
                     <div>
                         <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Show / Event</label>
                         {isLoadingEvents ? (
@@ -100,10 +90,6 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                                 value={formData.eventId} // Use eventId
                                 onChange={(e) => setFormData({ ...formData, eventId: e.target.value })}
                                 disabled={!!showId} // Lock if we are on a specific page? User request implies they want to see/select. Let's unlock if that's the request, BUT parent overrides it.
-                            // Actually, if I unlock it, the parent function logic needs to change to NOT override it.
-                            // For now, I'll keep it enabled but warn if parent overrides. 
-                            // Wait, the prompt said "in the create task pop fetch all the events". 
-                            // I'll assume they might want to change it.
                             >
                                 <option value="">Select Event...</option>
                                 {events.map(ev => (
@@ -111,7 +97,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                                         {ev.name || ev.title || 'Untitled Event'}
                                     </option>
                                 ))}
-                                {/* Fallback options if fetch fails or empty */}
+                                {}
                                 {!events.length && (
                                     <>
                                         <option value="13">Hamlet World Tour</option>
@@ -147,7 +133,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                         </div>
                     </div>
 
-                    {/* Tag & Urgent */}
+                    {}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Tag</label>

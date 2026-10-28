@@ -7,12 +7,9 @@ import { toast } from 'sonner';
 import ScorecardModal from './ScoreCardModal';
 
 export default function SetListPredictor({ initialEventId, events = [] }) {
-  // --- STATE ---
   const [selectedEventId, setSelectedEventId] = useState(initialEventId || (events[0]?.event?._id));
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  // Computed Active Data
   const currentEventData = events.find(e => e.event._id === selectedEventId) || events[0];
   const { event, songs: availableSongs = [], prediction: initialPrediction = null, setlist: actualSetlist = null } = currentEventData || {};
 
@@ -22,17 +19,14 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
   const [showScorecard, setShowScorecard] = useState(false);
 
   const isGraded = initialPrediction?.status === 'graded';
-
-  // --- EFFECT: SYNC ON SELECTION CHANGE ---
-  useEffect(() => {
+  // Switching events (or a fresh prediction from the server) resets the editor
+  const [prevKey, setPrevKey] = useState({ selectedEventId, initialPrediction });
+  if (prevKey.selectedEventId !== selectedEventId || prevKey.initialPrediction !== initialPrediction) {
+    setPrevKey({ selectedEventId, initialPrediction });
     setPrediction(initialPrediction?.songs || []);
     setSearchQuery("");
-    // If graded, we default to showing scorecard? Or just available to view.
-    // Let's reset scorecard visibility unless we want to force it.
     setShowScorecard(false);
-  }, [selectedEventId, initialPrediction]);
-
-  // Close dropdown on click outside
+  }
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -42,14 +36,10 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Filter Logic
   const filteredPool = availableSongs.filter(song =>
     !prediction.find(p => (p.id === song._id || p.id === song.id)) && // Handle _id vs id
     song.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  // --- HANDLERS ---
   const addToPrediction = (song) => {
     if (prediction.length >= 10) return;
     setPrediction([...prediction, { id: song._id || song.id, title: song.title, album: song.album || "Single" }]);
@@ -88,9 +78,6 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
       const json = await res.json();
       if (json.success) {
         toast.success("Prediction Locked In!");
-        // Force refresh or update state to reflect 'submitted' status if needed
-        // Ideally we fetch again or update local 'initialPrediction' prop logic 
-        // For now, toast confirms it.
       } else {
         toast.error(json.error || "Failed to save");
       }
@@ -103,22 +90,17 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
   };
 
   if (!event) return <div className="p-10 text-white">Loading Event...</div>;
-
-  // Render Graded View
   if (isGraded && !showScorecard) {
-    // We allow them to toggle scorecard. But if they are just browsing events, 
-    // maybe we show a "View Result" Summary Card instead of the full editor?
-    // Yes, let's keep the editor hidden and show "Results Declared Button".
   }
 
   return (
     <div className="flex flex-col w-full h-[85vh] sm:max-w-6xl mx-auto bg-[#101b23] rounded-xl border border-[#315168] shadow-2xl overflow-hidden relative">
 
-      {/* Header with Dropdown */}
+      {}
       <div className="flex-none px-6 py-4 border-b border-[#315168] bg-[#101b23] flex items-center justify-between z-20 relative">
         <div className="flex items-center gap-4">
 
-          {/* Custom Dropdown */}
+          {}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -138,7 +120,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
               <ChevronDown className={`w-4 h-4 text-[#90b2cb] group-hover:text-white transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Dropdown Menu */}
+            {}
             {isDropdownOpen && (
               <div className="absolute top-full left-0 mt-2 w-72 bg-[#182934]/95 backdrop-blur-xl border border-[#315168] rounded-xl shadow-2xl overflow-hidden py-2 animate-in fade-in zoom-in-95">
                 <p className="px-4 py-2 text-[10px] uppercase font-bold text-[#5a7c96] tracking-wider">Select Event to Predict</p>
@@ -176,7 +158,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
         </div>
       </div>
 
-      {/* Main Display Logic: Graded vs Editor */}
+      {}
       {isGraded && !showScorecard ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center p-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#1a2f3d] to-[#101b23]">
           <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mb-6 animate-pulse">
@@ -192,10 +174,10 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
           </button>
         </div>
       ) : (
-        /* EDITOR VIEW */
+
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative z-10">
 
-          {/* SECTION 1: Song Pool */}
+          {}
           <div className="w-full md:w-1/3 h-1/2 md:h-auto border-b md:border-b-0 md:border-r border-[#315168] flex flex-col bg-[#0b1217]">
             <div className="p-4 border-b border-[#315168]">
               <div className="relative">
@@ -234,7 +216,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
             </div>
           </div>
 
-          {/* SECTION 2: My Prediction */}
+          {}
           <div className="flex-1 flex flex-col bg-[#101b23] h-1/2 md:h-auto">
             <div className="p-4 border-b border-[#315168] flex justify-between items-center bg-[#142029]">
               <h3 className="text-white font-bold flex items-center gap-2">
@@ -254,7 +236,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                         <p className="text-white text-sm font-medium truncate">{song.title}</p>
                       </div>
 
-                      {/* Controls */}
+                      {}
                       {!isGraded && (
                         <div className="flex items-center gap-1">
                           <div className="flex flex-col gap-0.5 mr-1">
@@ -292,7 +274,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
               )}
             </div>
 
-            {/* Footer */}
+            {}
             <div className="p-4 border-t border-[#315168] bg-[#142029] flex justify-end gap-3 shrink-0">
               <button
                 onClick={handleSave}
@@ -307,7 +289,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
         </div>
       )}
 
-      {/* Scorecard Modal (Rendered on top if open) */}
+      {}
       {showScorecard && (
         <ScorecardModal
           isOpen={showScorecard}

@@ -20,8 +20,6 @@ export default function TicketingPage() {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-
-    // --- REAL DATA STATE ---
     const [data, setData] = useState({
         eventTitle: "Loading...",
         events: [],
@@ -30,17 +28,11 @@ export default function TicketingPage() {
         orders: [],
         discounts: []
     });
-
-    // --- UI STATES ---
     const [pricingMode, setPricingMode] = useState(false); // Controls the "Adjust Pricing" inputs
     const [tierFilter, setTierFilter] = useState("All");
-
-    // --- DROPDOWN & MODAL STATES ---
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [activeModal, setActiveModal] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
-
-    // --- FETCH DATA ---
     const fetchData = async () => {
         if (!eventId) return;
         setIsLoading(true);
@@ -56,8 +48,6 @@ export default function TicketingPage() {
             setIsLoading(false);
         }
     };
-
-    // --- HELPERS ---
     const toggleDropdown = (name, e) => {
         e?.stopPropagation();
         setActiveDropdown(activeDropdown === name ? null : name);
@@ -73,10 +63,7 @@ export default function TicketingPage() {
         setActiveModal(null);
         setSelectedItem(null);
     };
-
-    // --- GENERIC API HANDLER ---
     const handleApiAction = async (type, action, payload) => {
-        // Note: We don't set global isLoading to true here to prevent full page flicker on small edits
         try {
             const res = await fetch(`/api/events/${eventId}/ticketing`, {
                 method: 'POST',
@@ -96,15 +83,11 @@ export default function TicketingPage() {
             toast.error("Error processing request.");
         }
     };
-
-    // --- TIER HANDLERS ---
     const handleSaveTier = (formData) => {
         const action = selectedItem ? 'update' : 'create';
         const payload = { ...formData, _id: selectedItem?._id };
         handleApiAction('tier', action, payload);
     };
-
-    // ⚡ New Function: Handles the inline "Adjust Pricing" save
     const handleQuickTierUpdate = (id, updates) => {
         handleApiAction('tier', 'update', { _id: id, ...updates });
     };
@@ -126,8 +109,6 @@ export default function TicketingPage() {
             });
         }
     };
-
-    // --- DISCOUNT HANDLERS ---
     const handleSaveDiscount = (formData) => {
         const action = selectedItem ? 'update' : 'create';
         const payload = { ...formData, _id: selectedItem?._id };
@@ -141,8 +122,6 @@ export default function TicketingPage() {
             if (confirm(`Delete code ${discount.code}?`)) handleApiAction('discount', 'delete', { _id: discount._id });
         }
     };
-
-    // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = () => setActiveDropdown(null);
         window.addEventListener('click', handleClickOutside);
@@ -174,7 +153,7 @@ export default function TicketingPage() {
 
             <main className="flex-1 flex flex-col h-full overflow-hidden relative">
 
-                {/* HEADER */}
+                {}
                 <header className="h-20 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 bg-white/95 dark:bg-[#1a2632]/95 backdrop-blur-sm z-10 shrink-0">
                     <div className="flex items-center gap-4">
                         <button onClick={() => setIsSidebarOpen(true)} className="md:hidden p-2 text-slate-600 dark:text-slate-300">
@@ -196,11 +175,11 @@ export default function TicketingPage() {
                     </div>
                 </header>
 
-                {/* CONTENT */}
+                {}
                 <div className="flex-1 overflow-y-auto p-4 md:p-8">
                     <div className="max-w-[1400px] mx-auto flex flex-col gap-6">
 
-                        {/* STATS */}
+                        {}
                         <div className="grid grid-cols-12 gap-6">
                             <div className="col-span-12 lg:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <StatCard label="Total Revenue" value={`$${(data.stats?.revenue || 0).toLocaleString()}`} icon={DollarSign} footer={<span className="text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded text-xs font-bold">Live Data</span>} />
@@ -216,7 +195,7 @@ export default function TicketingPage() {
                             </div>
                         </div>
 
-                        {/* TICKET TIERS TABLE */}
+                        {}
                         <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden shadow-sm">
                             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">Ticket Tiers</h3>
@@ -264,7 +243,7 @@ export default function TicketingPage() {
                             </div>
                         </div>
 
-                        {/* ORDERS & DISCOUNTS */}
+                        {}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
                             <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col shadow-sm">
                                 <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
@@ -330,17 +309,9 @@ export default function TicketingPage() {
         </div>
     );
 }
-
-// --- UPDATED SUB COMPONENTS ---
-
-// 1. UPDATED TICKET TIER ROW (Handles Inline Editing)
 function TicketTierRow({ tier, isEditing, activeDropdown, onToggleDropdown, onAction, onQuickUpdate }) {
     const percentSold = tier.capacity > 0 ? (tier.sold / tier.capacity) * 100 : 0;
-
-    // Local state for inline editing
     const [localPrice, setLocalPrice] = useState(tier.price);
-
-    // Sync local state when the tier prop updates
     useEffect(() => { setLocalPrice(tier.price) }, [tier.price]);
 
     const handleInlineSave = () => {
@@ -362,7 +333,7 @@ function TicketTierRow({ tier, isEditing, activeDropdown, onToggleDropdown, onAc
                             onChange={(e) => setLocalPrice(e.target.value)}
                             className="w-20 p-1 bg-white dark:bg-[#101b22] border border-slate-300 dark:border-slate-600 rounded text-sm focus:border-[#0d93f2] outline-none"
                         />
-                        {/* Show Save Button only if value changed */}
+                        {}
                         {Number(localPrice) !== tier.price && (
                             <button onClick={handleInlineSave} className="p-1 bg-green-500 text-white rounded hover:bg-green-600" title="Save Price">
                                 <Check className="w-3 h-3" />
@@ -393,15 +364,10 @@ function TicketTierRow({ tier, isEditing, activeDropdown, onToggleDropdown, onAc
         </tr>
     );
 }
-
-// 2. UPDATED DISCOUNT FORM (Fixes state reset and value types)
 function DiscountForm({ initialData, onSave }) {
-    // We use key/useEffect pattern or state reset to ensure form clears when switching modes
     const [code, setCode] = useState('');
     const [type, setType] = useState('percentage'); // Lowercase default
     const [value, setValue] = useState('');
-
-    // Effect to load data when the modal opens/initialData changes
     useEffect(() => {
         if (initialData) {
             setCode(initialData.code || '');
@@ -446,8 +412,6 @@ function DiscountForm({ initialData, onSave }) {
         </form>
     );
 }
-
-// ... (Other components GenericModal, CreateTierForm, StatCard, ActionButton, DiscountRow remain the same)
 function GenericModal({ isOpen, onClose, title, children }) {
     if (!isOpen) return null;
     return (

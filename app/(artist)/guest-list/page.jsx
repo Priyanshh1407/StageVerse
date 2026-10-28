@@ -9,17 +9,40 @@ import AddGuestForm from '@/components/artist/guestlist/AddGuestForm';
 import GuestTable from '@/components/artist/guestlist/GuestTable';
 import { Loader2 } from 'lucide-react';
 
-// MOCK_DB_GUESTS removed. We fetch real data now.
-
 export default function GuestListPage() {
   const [guests, setGuests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingGuest, setEditingGuest] = useState(null);
+  // The artist's own shows (this page used to be hardcoded to event 13)
+  const [events, setEvents] = useState([]);
+  const [eventId, setEventId] = useState(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadEvents = async () => {
       try {
-        const res = await fetch('/api/artist/guest-list?eventId=13');
+        const res = await fetch('/api/artist/day-sheet', { cache: 'no-store' });
+        const json = await res.json();
+        const list = json.success ? json.data : [];
+        setEvents(list);
+        // Default to the next upcoming show, else the most recent one
+        const upcoming = list.find(e => new Date(e.date) >= new Date());
+        const fallback = list[list.length - 1];
+        if (upcoming || fallback) setEventId((upcoming || fallback)._id);
+        else setIsLoading(false);
+      } catch (e) {
+        toast.error("Could not load your shows");
+        setIsLoading(false);
+      }
+    };
+    loadEvents();
+  }, []);
+
+  useEffect(() => {
+    if (!eventId) return;
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/artist/guest-list?eventId=${eventId}`);
         const json = await res.json();
         if (json.success) {
           const mapped = json.data.map(g => ({
@@ -37,7 +60,7 @@ export default function GuestListPage() {
       }
     };
     loadData();
-  }, []);
+  }, [eventId]);
 
   const stats = useMemo(() => {
     return {
@@ -48,15 +71,13 @@ export default function GuestListPage() {
     };
   }, [guests]);
 
-  // --- ACTIONS ---
-
   const handleAddGuest = async (formData) => {
     try {
       const res = await fetch('/api/artist/guest-list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          eventId: '13',
+          eventId,
           name: formData.name,
           email: formData.email,
           tier: formData.tier
@@ -110,15 +131,13 @@ export default function GuestListPage() {
       if (editingGuest?.id === id) setEditingGuest(null);
     }
   };
-
-  // NEW: Handle New List (Clear All)
   const handleNewList = async () => {
     if (confirm('Are you sure you want to clear the entire list? This action cannot be undone.')) {
       try {
         const res = await fetch('/api/artist/guest-list', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventId: '13', clearAll: true })
+          body: JSON.stringify({ eventId, clearAll: true })
         });
         if (res.ok) {
           setGuests([]);
@@ -131,8 +150,6 @@ export default function GuestListPage() {
       }
     }
   };
-
-  // NEW: Handle CSV Export
   const handleExportCSV = () => {
     if (guests.length === 0) return toast.error("List is empty!");
 
@@ -152,7 +169,7 @@ export default function GuestListPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `guest_list_event_13_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `guest_list_${events.find(e => e._id === eventId)?.title?.replace(/W+/g, '_') || 'event'}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -161,7 +178,6 @@ export default function GuestListPage() {
   const handleCheckIn = async (guestId, currentStatus) => {
     const newStatus = currentStatus === 'Checked In' ? 'Pending' : 'Checked In'; // Toggle
     try {
-      // Optimistic Update
       setGuests(prev => prev.map(g =>
         g.id === guestId ? { ...g, status: newStatus } : g
       ));
@@ -176,7 +192,6 @@ export default function GuestListPage() {
 
     } catch (e) {
       console.error("Check-in failed", e);
-      // Revert on failure
       setGuests(prev => prev.map(g =>
         g.id === guestId ? { ...g, status: currentStatus } : g
       ));
@@ -190,8 +205,27 @@ export default function GuestListPage() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto p-6 flex flex-col gap-6">
 
-        {/* Pass the handler to the header */}
+        {}
         <GuestListHeader onNewList={handleNewList} onExport={handleExportCSV} />
+
+        {events.length > 0 ? (
+          <label className="flex items-center gap-3 text-sm text-slate-500 dark:text-[#90b2cb]">
+            Show
+            <select
+              value={eventId || ''}
+              onChange={(e) => setEventId(e.target.value)}
+              className="bg-white dark:bg-[#182934] border border-slate-200 dark:border-[#315168] rounded-lg px-3 py-2 text-slate-900 dark:text-white"
+            >
+              {events.map(ev => (
+                <option key={ev._id} value={ev._id}>
+                  {ev.title} — {new Date(ev.date).toLocaleDateString()}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          !isLoading && <p className="text-sm text-slate-500 dark:text-[#90b2cb]">You have no shows yet, so there is no guest list to manage.</p>
+        )}
 
         <StatsGrid stats={stats} isLoading={isLoading} />
 

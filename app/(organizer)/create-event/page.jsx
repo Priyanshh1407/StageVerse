@@ -3,14 +3,10 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { History, Zap, ArrowLeft, RefreshCw } from 'lucide-react';
-
-// --- COMPONENT IMPORTS ---
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 import EventDetailsForm from '@/components/organizer/create-event/EventDetailsForm';
 import AIContentPreview from '@/components/organizer/create-event/AIContentPreview';
 import CreateVenueModal from '@/components/organizer/create-event/CreateVenueModal';
-
-// Loading Fallback Component
 function FormLoading() {
   return (
     <div className="flex flex-col items-center justify-center h-96 bg-[#101622] rounded-xl border border-[#314368] text-[#90a4cb] gap-3">
@@ -27,13 +23,9 @@ export default function CreateEventPage() {
   const handleAiRequest = (type) => {
     setAiRequest({ type, ts: Date.now() });
   };
-
-  // --- MODAL STATE ---
   const [isVenueModalOpen, setIsVenueModalOpen] = useState(false);
   const [venueSearchTerm, setVenueSearchTerm] = useState('');
   const [newlyCreatedVenue, setNewlyCreatedVenue] = useState(null);
-
-  // --- HANDLERS ---
   const handleOpenVenueModal = (searchTerm) => {
     setVenueSearchTerm(searchTerm);
     setIsVenueModalOpen(true);
@@ -48,7 +40,7 @@ export default function CreateEventPage() {
   return (
     <div className="flex h-screen w-full bg-[#101b22] text-white font-sans overflow-hidden">
 
-      {/* --- CUSTOM SCROLLBAR CSS --- */}
+      {}
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #101b22; }
@@ -60,13 +52,13 @@ export default function CreateEventPage() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #0d93f2; }
       `}</style>
 
-      {/* 1. SIDEBAR */}
+      {}
       <OrganizerSidebar />
 
-      {/* 2. MAIN AREA */}
+      {}
       <main className="flex-1 flex flex-col min-w-0 h-full relative">
 
-        {/* HEADER */}
+        {}
         <header className="flex-none flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#2c3b47] p-8 bg-[#101b22] z-10">
           <div className="flex flex-col gap-2">
             <Link
@@ -92,11 +84,11 @@ export default function CreateEventPage() {
           </div>
         </header>
 
-        {/* CONTENT AREA */}
+        {}
         <div className="flex-1 overflow-y-auto p-8 scroll-smooth custom-scrollbar">
           <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 pb-10">
 
-            {/* Left: Input Controls */}
+            {}
             <div className="lg:col-span-5">
 
               <Suspense fallback={<FormLoading />}>
@@ -110,7 +102,7 @@ export default function CreateEventPage() {
 
             </div>
 
-            {/* Right: AI Output / Preview */}
+            {}
             <div className="lg:col-span-7">
               <AIContentPreview
                 content={aiDescription}
@@ -121,7 +113,7 @@ export default function CreateEventPage() {
           </div>
         </div>
 
-        {/* VENUE CREATION MODAL */}
+        {}
         <CreateVenueModal
           isOpen={isVenueModalOpen}
           onClose={() => setIsVenueModalOpen(false)}
