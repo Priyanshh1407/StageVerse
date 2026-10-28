@@ -92,7 +92,22 @@ export default function LiveModePage(props) {
       return false;
     }
   };
-  const updateShowStatus = (newStatus) => updateLiveState({ status: newStatus });
+  // `time` is this screen's timer: the server's show clock follows it, so every screen agrees
+  const updateShowStatus = (newStatus, time) => updateLiveState({ status: newStatus, time });
+
+  // Coming back to a show: pick up where it is (status and clock) instead of Standby at 0:00
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/production/live?eventId=${eventId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (cancelled || !json?.success) return;
+        setShowStatus(json.showStatus || 'Standby');
+        if (typeof json.elapsedSeconds === 'number') setElapsedSeconds(json.elapsedSeconds);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [eventId]);
 
   const handleStartShow = () => {
     console.log("Triggering Start Show...");
@@ -101,7 +116,7 @@ export default function LiveModePage(props) {
     if (showStatus === 'Standby') {
       setElapsedSeconds(0);
       addLog("Show Started", "Intro Sequence 01 Initiated", "active");
-      updateShowStatus('Live').then((ok) => ok && toast.success("Show started: crew notified"));
+      updateShowStatus('Live', 0).then((ok) => ok && toast.success("Show started: crew notified"));
     } else {
       // Resuming from Paused — must emit socket and persist to DB too
       addLog("Show Resumed", "Timer continued", "active");
@@ -111,7 +126,7 @@ export default function LiveModePage(props) {
       } else {
         toast.error("Sync Failed: Socket Offline");
       }
-      updateShowStatus('Live');
+      updateShowStatus('Live', elapsedSeconds);
     }
     setShowStatus('Live');
     console.log("State set to Live");
@@ -212,7 +227,7 @@ export default function LiveModePage(props) {
         socket.emit("show:update", { eventId, status: 'Live', time: elapsedSeconds });
         toast.success("Show Resumed");
       }
-      updateShowStatus('Live');
+      updateShowStatus('Live', elapsedSeconds);
     } else {
       setShowStatus('Paused');
       addLog("EMERGENCY PAUSE ACTIVATED", "Timer halted. Audio Cut.", "critical");
@@ -220,7 +235,7 @@ export default function LiveModePage(props) {
         socket.emit("show:update", { eventId, status: 'Paused', time: elapsedSeconds });
         toast.error("Emergency Signal Sent");
       }
-      updateShowStatus('Paused');
+      updateShowStatus('Paused', elapsedSeconds);
     }
   };
 

@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Activity, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 
-export default function LiveHeader({ showName, status, bpm, showTime }) {
+export default function LiveHeader({ showName, status, bpm, showTime, onResync }) {
   const [time, setTime] = useState("00:00:00");
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function LiveHeader({ showName, status, bpm, showTime }) {
           </div>
         </div>
 
-        <ConnectionStatus />
+        <ConnectionStatus onResync={onResync} />
       </div>
     </div>
   );
@@ -62,7 +63,12 @@ function ConnectionStatus({ onResync }) {
       socket.disconnect();
       socket.connect();
     }
-    if (onResync) await onResync();
+    // Reload the show from the server: status, setlist and the show clock (back on track)
+    if (onResync) {
+      const ok = await onResync();
+      if (ok) toast.success('Re-synced: back on track');
+      else toast.error('Re-sync failed: showing the last known state');
+    }
 
     setTimeout(() => setIsSyncing(false), 1000);
   };

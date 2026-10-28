@@ -47,7 +47,12 @@ const SetlistSchema = new mongoose.Schema({
   // Global Show Status for Persistence
   showStatus: { type: String, enum: ['Standby', 'Live', 'Paused'], default: 'Standby' },
   // Feature: Last Song Warning Persistence
-  showWarning: { type: Boolean, default: false }
+  showWarning: { type: Boolean, default: false },
+  // Show clock (lib/showClock.js): seconds banked before the current run, and when that run began
+  clock: {
+    elapsed: { type: Number, default: 0 },
+    liveSince: { type: Date, default: null }
+  }
 }, { timestamps: true });
 
 // Every live-show read and write looks a setlist up by its event

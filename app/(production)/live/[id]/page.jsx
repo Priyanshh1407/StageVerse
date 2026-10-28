@@ -83,10 +83,12 @@ export default function LiveShowPage(props) {
       const json = await res.json();
       if (!res.ok) {
         setSyncError(res.status === 403 ? 'You are not on the crew for this show.' : (json.error || 'Show data unavailable'));
-        return;
+        return false;
       }
       setSyncError(null);
       if (json.success) {
+        // The server keeps the show clock: coming back to this show, or re-syncing, puts the timer back on track
+        if (typeof json.elapsedSeconds === 'number') setElapsedSeconds(json.elapsedSeconds);
         setShow(prev => {
           // Always trust the DB status — artist writes to DB on every action (start, pause, resume)
           // Sockets handle polls/warnings; DB polling handles show status reliably
@@ -118,8 +120,10 @@ export default function LiveShowPage(props) {
           warningDismissed.current = false;
         }
       }
+      return Boolean(json.success);
     } catch (e) {
       setSyncError('Connection lost. Retrying...');
+      return false;
     } finally {
       setIsLoading(false);
     }

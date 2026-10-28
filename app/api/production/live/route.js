@@ -8,6 +8,7 @@ import { verifyAuth } from '@/lib/auth';
 import { loadEventFor, EVENT_TEAM, SHOW_CONTROL } from '@/lib/authz';
 import { NotFoundError, ValidationError } from '@/lib/errors';
 import { emitToEvent } from '@/lib/realtime';
+import { advanceClock, elapsedAt } from '@/lib/showClock';
 
 const SHOW_STATUSES = ['Standby', 'Live', 'Paused'];
 
@@ -48,7 +49,7 @@ export async function GET(req) {
         // already carry title/bpm/key/duration, so songs aren't populated)
         const [setlistDoc, activePoll] = await Promise.all([
             Setlist.findOne({ eventId: event._id })
-                .select('items._id items.songId items.title items.bpm items.key items.status items.duration showStatus showWarning')
+                .select('items._id items.songId items.title items.bpm items.key items.status items.duration showStatus showWarning clock')
                 .lean(),
             Poll.findOne({ eventId: event._id, isActive: true }).select('question options isActive').lean(),
         ]);
@@ -77,6 +78,8 @@ export async function GET(req) {
             hasSetlist: Boolean(setlistDoc),
             showStatus: setlistDoc?.showStatus || 'Standby',
             showWarning: setlistDoc?.showWarning || false,
+            // Where the show is now, so a screen that (re)opens or re-syncs is back on track
+            elapsedSeconds: elapsedAt(setlistDoc?.clock, setlistDoc?.showStatus || 'Standby'),
             activePoll
         });
     } catch (error) {
@@ -84,7 +87,8 @@ export async function GET(req) {
     }
 }
 
-// PUT { eventId, status?, warning? } -> change show state (event's artist or crew)
+// PUT { eventId, status?, warning?, time? } -> change show state (event's artist or crew);
+// `time` is the artist's timer in seconds, which the show clock follows
 export async function PUT(req) {
     try {
         await dbConnect();
@@ -106,7 +110,10 @@ export async function PUT(req) {
         const setlist = await Setlist.findOne({ eventId: event._id });
         if (!setlist) throw new NotFoundError('Setlist not found');
 
-        if (status) setlist.showStatus = status;
+        if (status) {
+            setlist.clock = advanceClock(setlist.clock, setlist.showStatus, status, new Date(), body.time);
+            setlist.showStatus = status;
+        }
         if (typeof body.warning === 'boolean') setlist.showWarning = body.warning;
         if (status === 'Live') {
             const hasLive = setlist.items.some(i => i.status === 'live');
@@ -118,7 +125,7 @@ export async function PUT(req) {
         await setlist.save();
 
         // Broadcast only after the state is persisted
-        emitToEvent(event._id, 'show:update', { status: setlist.showStatus, warning: setlist.showWarning });
+        emitToEvent(event._id, 'show:update', { status: setlist.showStatus, warning: setlist.showWarning, time: elapsedAt(setlist.clock, setlist.showStatus) });
         if (body.warning === true) emitToEvent(event._id, 'show:warning', {});
 
         return NextResponse.json({ success: true, status: setlist.showStatus });
