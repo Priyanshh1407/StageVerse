@@ -10,8 +10,9 @@ export const TIER_SETTINGS = {
     0: { beams: 0, bloom: false, dpr: 1 },
     // Full-scene benchmark on an Iris Xe: 140 beams, and 100 + bloom at native DPR, all held 60 FPS
     // (1% low 58), so integrated GPUs get bloom too; the auto step-down turns it off first if needed
-    1: { beams: 72, bloom: true, dpr: 1 },
-    2: { beams: 100, bloom: true, dpr: [1, 1.5] },
+    // Moving heads are the detailed model (~16.5k vertices each), so counts stay moderate
+    1: { beams: 52, bloom: true, dpr: 1 },
+    2: { beams: 72, bloom: true, dpr: [1, 1.5] },
 };
 
 function hasWebGL() {

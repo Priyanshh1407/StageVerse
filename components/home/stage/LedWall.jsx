@@ -7,9 +7,9 @@ import { createLedMaterial, createScreenTextTexture } from './stageMaterials';
 
 // Main wall plus two angled side screens (positions line up with the truss frame)
 const SCREENS = [
-    { key: 'main', position: [0, 6.6, -12.5], rotation: [0, 0, 0], size: [20, 10.4], grid: [180, 94], text: true, seed: 0 },
-    { key: 'left', position: [-12.6, 6.5, -8.5], rotation: [0, 0.38, 0], size: [5.6, 10], grid: [52, 94], text: false, seed: 3 },
-    { key: 'right', position: [12.6, 6.5, -8.5], rotation: [0, -0.38, 0], size: [5.6, 10], grid: [52, 94], text: false, seed: 7 },
+    { key: 'main', position: [0, 6.3, -13.5], rotation: [0, 0, 0], size: [20, 9.8], grid: [180, 88], text: true, seed: 0 },
+    { key: 'left', position: [-12.3, 6.2, -11.8], rotation: [0, 0.38, 0], size: [5.6, 9.4], grid: [52, 88], text: false, seed: 3 },
+    { key: 'right', position: [12.3, 6.2, -11.8], rotation: [0, -0.38, 0], size: [5.6, 9.4], grid: [52, 88], text: false, seed: 7 },
 ];
 
 /** The LED screens: one draw call each. Colours and brightness follow the show's `look`. */

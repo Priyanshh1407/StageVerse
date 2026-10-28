@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { roomFlash } from './flash';
 
 // Stage smoke: a few large planes at different depths with slowly drifting noise, tinted by the
 // show's colours and lit more where the rig is brightest (low, centre-stage). Real haze is what
@@ -22,6 +23,8 @@ function createHazeMaterial(seed) {
             uColorA: { value: new THREE.Color('#19d9ff') },
             uColorB: { value: new THREE.Color('#ff3df2') },
             uLevel: { value: 0.5 },
+            uHouse: { value: 0 },
+            uFlash: { value: 0 },
         },
         vertexShader: /* glsl */ `
             varying vec2 vUv;
@@ -33,6 +36,8 @@ function createHazeMaterial(seed) {
             uniform vec3 uColorA;
             uniform vec3 uColorB;
             uniform float uLevel;
+            uniform float uHouse;
+            uniform float uFlash;
             varying vec2 vUv;
 
             float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + uSeed) * 43758.5453); }
@@ -56,7 +61,11 @@ function createHazeMaterial(seed) {
                 float mask = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x)
                            * smoothstep(1.0, 0.25, vUv.y) * smoothstep(0.0, 0.08, vUv.y);
                 vec3 color = mix(uColorA, uColorB, smoothstep(0.2, 0.8, vUv.x)) * 0.5 + 0.08;
-                gl_FragColor = vec4(color, smoke * smoke * mask * uLevel);
+                // House lights warm the smoke in the room
+                color = mix(color, vec3(1.0, 0.68, 0.3), uHouse * 0.8);
+                // A strobe or blinder hit lights the smoke white
+                color = mix(color, vec3(1.0), min(1.0, uFlash));
+                gl_FragColor = vec4(color, smoke * smoke * mask * (uLevel + uHouse * 0.06 + uFlash * 0.5));
             }
         `,
         transparent: true,
@@ -66,12 +75,12 @@ function createHazeMaterial(seed) {
     });
 }
 
-export default function Haze({ look }) {
+export default function Haze({ look, blinders }) {
     const materials = useMemo(() => LAYERS.map((l) => createHazeMaterial(l.seed)), []);
     useEffect(() => () => materials.forEach((m) => m.dispose()), [materials]);
     const group = useRef();
 
-    useFrame((_, delta) => {
+    useFrame(({ clock }, delta) => {
         if (!group.current) return;
         const target = look.current;
         // Haze shows up where there's light in it: thicker smoke and a brighter rig both raise it
@@ -82,6 +91,8 @@ export default function Haze({ look }) {
             u.uColorA.value.set(target.colorA);
             u.uColorB.value.set(target.colorB);
             u.uLevel.value += (level * LAYERS[i].strength - u.uLevel.value) * Math.min(1, delta * 2);
+            u.uHouse.value += ((target.house ?? 0) - u.uHouse.value) * Math.min(1, delta * 1.5);
+            u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
         });
     });
 

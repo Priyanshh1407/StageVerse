@@ -17,7 +17,23 @@ const PRESETS = {
     Drop: { sweep: 0.1, converge: 1, intensity: 1.4, speed: 2.2, haze: 0.3 },
     Breakdown: { sweep: 0.6, converge: 0, intensity: 0.7, speed: 0.4, haze: 0.9 },
 };
-const PALETTE = ['#19d9ff', '#ff3df2', '#a855f7', '#ff0099', '#39ff14', '#ffffff', '#ef4444'];
+const PALETTE = [
+    { value: '#ff0000', label: 'Red' },
+    { value: '#ff6a00', label: 'Orange' },
+    { value: '#ffb000', label: 'Amber' },
+    { value: '#ffe600', label: 'Yellow' },
+    { value: '#9dff00', label: 'Lime' },
+    { value: '#00ff3c', label: 'Green' },
+    { value: '#00ffc8', label: 'Teal' },
+    { value: '#19d9ff', label: 'Cyan' },
+    { value: '#0066ff', label: 'Blue' },
+    { value: '#3b2bff', label: 'Deep blue' },
+    { value: '#a855f7', label: 'Purple' },
+    { value: '#ff3df2', label: 'Magenta' },
+    { value: '#ff69b4', label: 'Pink' },
+    { value: '#ffe8c8', label: 'Warm white' },
+    { value: '#ffffff', label: 'White' },
+].map((c) => c.value);
 
 // Automatic step-down when the frame rate can't keep up (each level keeps the previous ones)
 const ADAPTIVE_LEVELS = ['full quality', 'bloom off', '70% beams', 'lower resolution'];
@@ -108,7 +124,6 @@ export default function LabStage() {
     const [adaptive, setAdaptive] = useState(true);
     const [adaptiveLevel, setAdaptiveLevel] = useState(0);
     const [showPerf, setShowPerf] = useState(true);
-    const [crowdSeed, setCrowdSeed] = useState(7);
     const [events, setEvents] = useState([]);
     const [look, setLookState] = useState({ ...DEFAULT_LOOK, ...PRESETS.Build });
     const lookRef = useRef(look); // read by the rig every frame, without re-rendering it
@@ -171,14 +186,14 @@ export default function LabStage() {
         <div className="relative h-screen w-full bg-[#010208] overflow-hidden">
             <Canvas
                 dpr={dpr}
-                camera={{ position: [0, 1.8, 26], fov: 55, near: 0.1, far: 200 }}
-                gl={{ antialias: false, powerPreference: 'high-performance' }}
+                camera={{ position: [0, 1.8, 26], fov: 55, near: 0.5, far: 200 }}
+                gl={{ antialias: !bloom, powerPreference: 'high-performance' }} // MSAA only without bloom (the composer does SMAA)
             >
                 <PerformanceMonitor
                     flipflops={3}
                     onDecline={() => adaptive && setAdaptiveLevel((l) => Math.min(l + 1, ADAPTIVE_LEVELS.length - 1))}
                 />
-                <StageScene beams={count} bloom={bloom} look={lookRef} events={events} crowdSeed={crowdSeed} />
+                <StageScene beams={count} bloom={bloom} look={lookRef} events={events} />
                 <OrbitControls ref={controls} target={[0, 7, -6]} enableDamping />
                 {showPerf && (
                     <Suspense fallback={null}>
@@ -256,7 +271,6 @@ export default function LabStage() {
 
                 <div className="flex gap-2 mt-4 text-xs">
                     <button onClick={() => controls.current?.reset()} className="flex-1 py-1.5 rounded bg-white/10 hover:bg-white/20">Hero camera</button>
-                    <button onClick={() => setCrowdSeed((s) => s + 1)} className="flex-1 py-1.5 rounded bg-white/10 hover:bg-white/20">New crowd</button>
                     <button onClick={() => setShowPerf((v) => !v)} className="flex-1 py-1.5 rounded bg-white/10 hover:bg-white/20">
                         {showPerf ? 'Hide' : 'Show'} FPS
                     </button>

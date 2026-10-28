@@ -36,7 +36,7 @@ flowchart LR
 - **The server is the source of truth for live state.** Clients request changes over HTTP; the server writes to MongoDB and *then* broadcasts to the show's Socket.IO room. Details, sequence diagram and numbers: [`docs/live-sync.md`](docs/live-sync.md).
 - **AI requests are always answered.** Providers are tried in order (Gemini 3.8 Flash → Gemini 3.5 Flash-Lite → Groq `gpt-oss-120b`), and a provider that just hit overload or quota is skipped for a while (circuit breaker). If none answers, each feature falls back to something useful without AI: template copy, the artist's own song catalogue, a BPM energy curve for setlist order, or a rule-based reader for patch requests. Responses say `degraded: true` when that happens ([`lib/llm.js`](lib/llm.js)).
 - **The LLM interprets, code computes.** The DMX patch assistant asks Gemini only for intent (`{action, fixtures:[{type,count}]}`, JSON-schema constrained and validated, with one repair retry). A deterministic allocator assigns collision-free addresses ([`lib/dmx`](lib/dmx)).
-- **The homepage is a 3D concert that runs on integrated graphics.** Light is faked instead of computed: one instanced mesh of additive cones animated in a vertex shader (no real spotlights), about 15 draw calls, quality tiers with a live step-down and a 2D fallback. Scrolling runs a lighting cue stack, a lighting desk takes the lights over by hand, and concert mode plays a song with a show programmed from its own beats and sections ([`docs/homepage-show.md`](docs/homepage-show.md)).
+- **The homepage is a 3D concert that runs on integrated graphics.** Light is faked instead of computed: instanced real fixture models whose pan and tilt are solved in a vertex shader, with additive cone beams (no real spotlights), each group of lights doing one job, about 31 draw calls, quality tiers with a live step-down and a 2D fallback. Scrolling runs a lighting cue stack, a lighting desk takes the lights over by hand, and concert mode plays a song with a show programmed from its own beats and sections ([`docs/homepage-show.md`](docs/homepage-show.md)).
 
 ## Run it locally (about 10 minutes)
 
@@ -77,7 +77,7 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 
 ## Testing and quality
 
-- **234 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, and the homepage show's song analysis (against a synthetic click track) and cue engine.
+- **232 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, and the homepage show's song analysis (against a synthetic click track) and cue engine.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, tests with coverage, a production build and a dependency audit on every push.
 - **Manual test guide:** [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md) walks through every upgraded feature in the browser (including how to force each AI fallback level) and lists the automated test commands.
 - The engineering history (each bug, how it was found, the fix and the trade-off) is in [`FIX_LOG.md`](FIX_LOG.md). The audit that started it is in [`PROJECT_AUDIT_REPORT.md`](PROJECT_AUDIT_REPORT.md).
@@ -121,3 +121,7 @@ tests/          Vitest suites (unit, security, characterization)
 bench/ evals/   performance benchmark and LLM evaluation harness
 docs/           design notes
 ```
+
+## Credits
+
+3D fixture models (CC BY 4.0): "Moving Head Beam (high Poly)" by Lord Henry and "STROBO LIGHTING WASIS" by eventdesignws, both from Sketchfab. Details in [`public/fixtures/CREDITS.md`](public/fixtures/CREDITS.md).

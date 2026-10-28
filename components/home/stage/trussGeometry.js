@@ -45,23 +45,30 @@ function trussBar(from, to) {
 }
 
 // Every bar in the rig: [from, to]
+// The four horizontal rows, top to bottom, all above the LED wall (top edge y = 11.2).
+// Each spans the full width and lands on the tower boxes (directly on a column, or on a side tie).
+export const ROWS = [
+    { y: 17.4, z: -6 },     // 1: aerials hanging underneath, facing the audience
+    { y: 15.8, z: -4 },     // 2: stage wash, hanging (sits on the front columns)
+    { y: 14.3, z: -7.5 },   // 3: stage wash, hanging
+    { y: 12.9, z: -10 },    // 4: aerials hanging underneath (sits on the rear columns)
+];
+
 export const TRUSS_BARS = [
-    // Top truss carrying the top fan, spanning between the towers
-    [[-15.6, 16.6, -6], [15.6, 16.6, -6]],
-    // Side towers (stage left / right) and their tops
-    [[-15.6, 0, -4], [-15.6, 17, -4]],
-    [[15.6, 0, -4], [15.6, 17, -4]],
-    [[-15.6, 16.6, -4], [-15.6, 16.6, -6]],
-    [[15.6, 16.6, -4], [15.6, 16.6, -6]],
-    // Front truss
-    [[-13, 13.1, -3], [13, 13.1, -3]],
-    // Mid-row trusses inside the stage frame, with their posts
-    [[-10.5, 11.6, -10], [10.5, 11.6, -10]],
-    [[-10.5, 9.1, -10], [10.5, 9.1, -10]],
-    [[-10.5, 0, -10], [-10.5, 12, -10]],
-    [[10.5, 0, -10], [10.5, 12, -10]],
+    ...ROWS.map(({ y, z }) => [[-15.6, y, z], [15.6, y, z]]),
+    // Side towers: a box on each side, a front and a rear column tied together at the top,
+    // middle and bottom (the top truss lands on the top tie). Side moving heads hang on the rear
+    // columns' inner faces.
+    [[-15.6, 0, -4], [-15.6, 18, -4]],
+    [[15.6, 0, -4], [15.6, 18, -4]],
+    [[-15.6, 0, -10], [-15.6, 18, -10]],
+    [[15.6, 0, -10], [15.6, 18, -10]],
+    ...[17.4, 14.3, 8.5, 0.6].flatMap((y) => [
+        [[-15.6, y, -4], [-15.6, y, -10]],
+        [[15.6, y, -4], [15.6, y, -10]],
+    ]),
     // Frame around the main LED wall
-    [[-10.5, 12.2, -12.6], [10.5, 12.2, -12.6]],
+    [[-10.5, 11.55, -13.6], [10.5, 11.55, -13.6]],
 ];
 
 export function createTrussGeometry(bars = TRUSS_BARS) {

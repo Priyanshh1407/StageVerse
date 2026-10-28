@@ -25,5 +25,6 @@ export function songTime(control, now = performance.now()) {
 export function currentState(control) {
     if (control.mode === 'manual' && control.desk) return { look: control.desk, shot: control.shot || 'wide', name: 'Lighting desk' };
     if (control.mode === 'song' && control.song && control.audio) return sampleSongShow(control.song, songTime(control));
-    return sampleCueSheet(control.sheet, control.progress);
+    // The director smooths scroll progress (wheel notches arrive in jumps); fall back to the raw value
+    return sampleCueSheet(control.sheet, control.smoothProgress ?? control.progress);
 }

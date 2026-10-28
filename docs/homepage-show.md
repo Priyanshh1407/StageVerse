@@ -17,33 +17,39 @@ light instead of computing it:
 | Beams | a SpotLight + volumetric cone each | one `InstancedMesh` of additive cones |
 | Beam movement | JavaScript per fixture | vertex shader (pan/tilt/convergence from uniforms) |
 | LED screens | 3 `RenderTexture` scenes per frame | a procedural shader + one canvas texture |
-| Draw calls | hundreds (estimate) | 15, plus lasers/blinders (1 each, skipped while off) and bloom |
+| Draw calls | hundreds (estimate) | ~31 (5 per fixture group), plus lasers, blinders and house lights (skipped while off) and bloom |
 
-- **Beams** (`stage/beamShader.js`): open cones with additive blending and `depthWrite: false`, a
-  fresnel core and length fade, and world-space value noise for haze. The moving-head bodies use the
-  same aiming code, so a head always points where its beam goes.
+- **Fixtures are a real model.** The moving heads are Lord Henry's detailed "Moving Head Beam" model
+  (CC BY 4.0, credits in `public/fixtures/CREDITS.md`), drawn instanced: base, yoke and head are one
+  draw call each per fixture group. The vertex shader works out where each fixture should point,
+  solves the pan and tilt that aim the model's lens there, and turns the yoke by pan and the head by
+  tilt, so every head visibly points along its own beam. The beam starts at the lens.
+- **Every light has one job**, like a real rig (`stage/rigLayout.js`, `stage/Fixtures.jsx`), each with its
+  own level in the look and its own movement character:
+  - **aerial beams**: standing on the top truss and hanging from the mid trusses; movement and the drop
+  - **side towers**: crossing in over the stage
+  - **floor**: up-lights on the deck
+  - **wash**: wide, soft, nearly still, colouring the stage (the deck takes their colour)
+  - **strobes**: the real strobe model (eventdesignws, CC BY 4.0) in the gaps between moving heads; they only fire on strobe cues and hits
+  - **blinders**: audience hits
+  - **lasers**: a fan sheet from the deck, scanning up over the audience
+  - **house lights**: warm lamps on the ceiling and walls. On before the show; a cue can bring them up (`house` in the look)
 - **Truss** (`stage/trussGeometry.js`): every bar merged into one geometry (one draw call).
-- **Crowd** (`stage/crowdTexture.js`): only heads and shoulders, three rows drawn into a canvas from a
-  seed. One plane pinned to the bottom of the camera's view in every shot, rim-lit in the show colours.
 
 ### Making it look real, not like a game
-- **Lenses flare only toward the camera.** Each lens glow and lens face computes its fixture's aim
-  (the same shader code as the beam) and brightens with how directly the beam points at the camera:
-  a dim glass disc from the side, a white-hot point when it sweeps across you. Housings are dark metal
-  with no colour on them.
+- **Lenses flare only toward the camera.** A lens is dim tinted glass from the side and a white-hot
+  point (plus a glow sprite) when its beam sweeps across you.
 - **Beams** are tight, near-white where they leave the lens and saturate with distance, carry
-  two-scale billowing haze grain, and soften close to the camera (out of focus, spread thin).
-- **Haze** (`stage/Haze.jsx`): three drifting, domain-warped noise layers tinted by the show colours,
-  thicker low and centre-stage. Their bottom edges sit on the floor (a plane poking below the floor is
-  cut off in a hard line).
-- **Steel** is dark and lit by a coloured bounce from below, the side the camera looks up at, the way
-  real truss picks up the show colour. The **floor** catches spill from the stage.
-- **Bloom** on integrated GPUs too (measured below), and a slow, tiny handheld camera sway.
+  two-scale billowing haze grain, and soften close to the camera.
+- **Haze** (`stage/Haze.jsx`): three drifting, domain-warped noise layers tinted by the show colours
+  (warm when the house lights are up). Their bottom edges sit on the floor.
+- **Steel** is dark and lit by a coloured bounce from below; the **floor** catches spill from the stage.
+- **Bloom** on integrated GPUs too, and a slow, tiny handheld camera sway.
 - **Quality tiers** (`stage/useQualityTier.js`): `detect-gpu` (its benchmark data is self-hosted in
   `public/gpu-benchmarks`, so there is no third-party request) picks a tier, and `?tier=0|1|2` forces one.
   drei's `PerformanceMonitor` steps down live: first bloom off, then 70% beams, then lower resolution.
-  - Tier 2: 100 beams + bloom
-  - Tier 1: 72 beams, half-resolution bloom
+  - Tier 2: 72 moving heads + bloom
+  - Tier 1: 52 moving heads, half-resolution bloom
   - Tier 0: no WebGL, or "reduce motion": the poster plus the 2D lights, or the poster alone
 - **Nothing renders off-screen**: the canvas `frameloop` is `never` while the section is scrolled
   away (IntersectionObserver).
@@ -114,7 +120,7 @@ hi-hats off-beat, a quiet half and a loud half) and checks the following:
 - beat pulses, drop hits, risers and phrase cuts behave as programmed
 - a full programmed show samples cleanly from start to blackout
 
-`truss.test.js`, `crowd.test.js` and `rigLayout.test.js` cover the geometry.
+`truss.test.js` and `rigLayout.test.js` cover the geometry (fixture jobs, mounting, tower direction, strobes between heads).
 
 ## Measured (Intel Iris Xe, production build, 60 Hz display)
 
@@ -122,7 +128,37 @@ Step-1 benchmark (beams only, DPR 1): 56, 72, 100 and 140 beams, and 72 beams wi
 **60 FPS average, 59 FPS 1% low, 17 ms worst frame** (`bench/results/stage-step1-iris-xe.json`). GPU time
 at 72 beams + bloom was ~1.7 ms per frame.
 
-Full-scene benchmark (truss, fixtures, screens, crowd; the **Benchmark** button on `/lab/stage`): 72 beams
+Full-scene benchmark, before the switch to the detailed fixture model (truss, fixtures, screens; the **Benchmark** button on `/lab/stage`): 72 beams
 and 100 beams + bloom at DPR 1, and 72 beams, 100 + bloom and 140 beams at native DPR 1.25, all **60 FPS
 average, 58–59 FPS 1% low, 17–21 ms worst frame** (`bench/results/stage-step2-iris-xe.json`). That's why
 tier 1 gets bloom. The 60 Hz display caps every reading, so the remaining headroom isn't visible.
+
+## Rig layout and effects (latest)
+
+- **Four truss rows, stacked above the LED wall** (`trussGeometry.js` `ROWS`), landing on two **tower boxes** (front and rear column per side, tied at the top, middle and bottom):
+  - row 1: aerial heads standing on top
+  - rows 2–3: washes hanging underneath, aimed down onto the stage
+  - row 4: aerial heads standing on top, so nothing hangs in front of the screen
+
+  The screens sit behind the truss.
+- **Side moving heads** are clamped sideways to the rear tower columns (the mount is a full basis: standing, hanging or sideways).
+- **Strobes** (1.5 m) sit between the moving heads on rows 1 and 4, plus a row standing on the deck. **Laser projectors** sit on the deck front, with the fans leaving their apertures.
+- **Strobes and blinders light the room** (`flash.js`). On one clock, the strobe panels, blinders, steel, deck, floor and haze go white, and the camera's exposure blows out. More blinders throw more light.
+- **DROP** (desk button, scroll drop and every song drop hit):
+  - a white blast, then ~1.5 s of hard strobing
+  - every aerial and side beam focuses on the stage centre
+  - the floor fixtures swing fully sideways
+  - the lasers chase on and off in sequence
+  - then everything releases
+- **Colours**: every colour control offers 15 basic lighting colours plus a custom picker.
+- **Anti-flicker**:
+  - every `pow`/`normalize`/`atan` in the shaders is guarded against NaN (bloom smears NaN pixels into flashing blocks)
+  - the camera holds still
+  - the LED pixel grid fades out when its cells get smaller than ~3 px (moiré)
+  - SMAA runs with bloom
+  - the near plane is 0.5 and fixture bases sit 3 cm clear of the truss (no z-fighting)
+- **Positions and coordinated movement, like a programmed show.** Each cue is a *position* (`fan` width and `tiltShift` lift) plus at most one movement effect. A sweep shared by the whole row, offset by `phaseSpread`: 0 is unison, 1 is a wave travelling along the row (each head's phase is its place in the row). The aerials hang upside down under rows 1 and 4, facing the audience. On the drop, the floor fixtures swing out and up into a V.
+- **Silky transitions:**
+  - Movement uses an *accumulated* phase. Computing `sin(time × speed)` made every beam leap whenever a cue changed the speed, because time has been counting since page load.
+  - The scroll position is smoothed before it drives the show, since wheel notches arrive in jumps.
+  - Cues ease in and out (smoothstep), and camera moves glide (1.4 s damping).

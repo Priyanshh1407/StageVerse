@@ -108,7 +108,7 @@ export default function ShowSection({ events = [] }) {
         c.mode = 'manual';
         setMode('manual');
         setDesk(c.desk);
-        setCounts((n) => ({ ...n, beams: n.beams ?? 72 }));
+        setCounts((n) => ({ ...n, beams: n.beams ?? 52 }));
     };
 
     const changeDesk = (patch) => {
@@ -128,10 +128,13 @@ export default function ShowSection({ events = [] }) {
         takeOver();
         const c = control.current;
         if (kind === 'pulse') {
-            const saved = { converge: c.desk.converge, intensity: c.desk.intensity, strobe: 0, blinder: c.desk.blinder };
-            c.desk = { ...c.desk, ...patch };
-            setTimeout(() => { c.desk = { ...c.desk, strobe: 0, blinder: saved.blinder }; }, 450);
-            setTimeout(() => { c.desk = { ...c.desk, ...saved }; }, 1600);
+            // DROP: white blast, ~1.5 s of hard strobing with every beam on the stage centre, the
+            // floor fixtures thrown sideways and the lasers chasing, then back to the desk's look
+            const saved = { converge: c.desk.converge, intensity: c.desk.intensity, laser: c.desk.laser, blinder: c.desk.blinder, strobe: 0, dropFx: 0, laserChase: 0 };
+            c.desk = { ...c.desk, ...patch, laser: Math.max(c.desk.laser, 1) };
+            setTimeout(() => { c.desk = { ...c.desk, blinder: saved.blinder }; }, 350);
+            setTimeout(() => { c.desk = { ...c.desk, strobe: 0 }; }, 1500);
+            setTimeout(() => { c.desk = { ...c.desk, ...saved }; }, 2600);
         } else {
             c.desk = { ...c.desk, ...patch };
         }
@@ -178,7 +181,7 @@ export default function ShowSection({ events = [] }) {
     };
 
     const songSection = song.show?.sections.find((s) => song.time >= s.start && song.time < s.end);
-    const deskCounts = { ...counts, beams: counts.beams ?? 72 };
+    const deskCounts = { ...counts, beams: counts.beams ?? 52 };
     const showOverlays = mode !== 'song';
     const currentRole = role && { ...ROLES.find((r) => r.key === role), Icon: ROLE_ICONS[role] };
 
@@ -228,7 +231,7 @@ export default function ShowSection({ events = [] }) {
                         <Fade show={phase === 'encore'} className="flex-col items-center justify-end text-center px-4 pb-28 sm:pb-32">
                             <h2 className="text-4xl sm:text-6xl font-black drop-shadow-2xl">You call the encore.</h2>
                             <p className="mt-3 text-gray-300">Pick the colour for the finale.</p>
-                            <div className="pointer-events-auto mt-5 flex gap-3" role="group" aria-label="Encore colour">
+                            <div className="pointer-events-auto mt-5 flex flex-wrap justify-center gap-3 max-w-md" role="group" aria-label="Encore colour">
                                 {ENCORE_CHOICES.map((c) => (
                                     <button key={c.label} onClick={() => pickEncore(c)} aria-label={`Encore colour ${c.label}`} aria-pressed={encore.label === c.label}
                                         className={`w-10 h-10 rounded-full border-2 transition-transform hover:scale-110 ${encore.label === c.label ? 'border-white scale-110' : 'border-white/20'}`}

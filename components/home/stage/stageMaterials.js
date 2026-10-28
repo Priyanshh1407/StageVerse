@@ -57,7 +57,7 @@ export function createLedMaterial({ textTexture = null, grid = [160, 70], seed =
                 vec3 color = mix(uColorA, uColorB, wave) * (0.12 + 0.55 * streak);
 
                 // Sparkle: "stars" on the panel; the song's peaks fill the screens with them
-                float sparkle = step(0.999 - uStars * 0.012, hash(cell * 97.0 + floor(uTime * 6.0)));
+                float sparkle = step(0.999 - uStars * 0.012, hash(cell * 97.0 + floor(uTime * 2.0)));
                 color += vec3(sparkle) * 0.8;
 
                 if (uHasText > 0.5) {
@@ -68,7 +68,12 @@ export function createLedMaterial({ textTexture = null, grid = [160, 70], seed =
                 // Dark gaps between LED pixels
                 vec2 f = fract(uv * uGrid);
                 float pixel = smoothstep(0.0, 0.18, f.x) * smoothstep(1.0, 0.82, f.x) * smoothstep(0.0, 0.18, f.y) * smoothstep(1.0, 0.82, f.y);
-                gl_FragColor = vec4(color * (0.35 + 0.65 * pixel) * uBrightness, 1.0);
+                // When an LED cell is smaller than ~3 screen pixels the grid can't be drawn without
+                // aliasing (shimmering moire), so fade it to its average brightness instead
+                vec2 cellPx = 1.0 / max(fwidth(uv * uGrid), vec2(1e-4));
+                float visible = smoothstep(2.0, 4.0, min(cellPx.x, cellPx.y));
+                float grid = mix(0.62, 0.35 + 0.65 * pixel, visible);
+                gl_FragColor = vec4(color * grid * uBrightness, 1.0);
             }
         `,
         toneMapped: false,
@@ -85,6 +90,8 @@ export function createFloorMaterial() {
             uColorA: { value: new THREE.Color('#19d9ff') },
             uColorB: { value: new THREE.Color('#ff3df2') },
             uLight: { value: 0.5 },
+            uHouse: { value: 0 },
+            uFlash: { value: 0 },
         },
         vertexShader: /* glsl */ `
             varying vec3 vWorld;
@@ -98,13 +105,17 @@ export function createFloorMaterial() {
             uniform vec3 uColorA;
             uniform vec3 uColorB;
             uniform float uLight;
+            uniform float uHouse;
+            uniform float uFlash;
             varying vec3 vWorld;
             void main() {
+                // House lights: the whole room in warm, even light
+                vec3 house = vec3(1.0, 0.7, 0.28) * uHouse * (0.22 + 0.1 * smoothstep(40.0, 0.0, abs(vWorld.x)));
                 float fromStage = max(0.0, vWorld.z);                    // stage front is at z = 0
                 float spill = exp(-fromStage * 0.055) * smoothstep(30.0, 4.0, abs(vWorld.x));
                 float streak = exp(-abs(vWorld.x) * 0.35) * exp(-fromStage * 0.05) * 0.5;
                 vec3 tint = mix(uColorA, uColorB, smoothstep(-14.0, 14.0, vWorld.x));
-                gl_FragColor = vec4(vec3(0.008, 0.009, 0.016) + tint * (spill + streak) * 0.22 * uLight, 1.0);
+                gl_FragColor = vec4(vec3(0.008, 0.009, 0.016) + tint * (spill + streak) * 0.22 * uLight + house + vec3(0.55) * uFlash, 1.0);
             }
         `,
     });

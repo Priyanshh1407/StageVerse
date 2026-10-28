@@ -14,6 +14,9 @@ import hero from '@/public/images/hero.jpg';
 
 /** One frame of the show: put the current look on the rig and fly the camera toward its shot. */
 function directFrame(control, look, camera, aim, delta) {
+    // Glide toward the scroll position instead of jumping a wheel notch at a time
+    const raw = control.progress;
+    control.smoothProgress = control.smoothProgress === undefined ? raw : control.smoothProgress + (raw - control.smoothProgress) * (1 - Math.exp(-delta * 2.5));
     const state = currentState(control);
     look.current = state.look;
     if (control.mode !== 'manual') control.shot = state.shot;
@@ -24,19 +27,16 @@ function directFrame(control, look, camera, aim, delta) {
         aim.target.set(...shot.target);
         aim.placed = true;
     }
-    // A slow, tiny handheld sway so no shot ever looks frozen
-    const t = performance.now() / 1000;
-    aim.sway[0] = shot.pos[0] + Math.sin(t * 0.31) * 0.12 + Math.sin(t * 0.73) * 0.04;
-    aim.sway[1] = shot.pos[1] + Math.sin(t * 0.47 + 1.3) * 0.07;
-    aim.sway[2] = shot.pos[2];
-    easing.damp3(camera.position, aim.sway, 0.9, delta);
-    easing.damp3(aim.target, shot.target, 0.9, delta);
+    // No handheld sway: a constantly moving camera makes every sub-pixel detail (truss bracing,
+    // LED pixels, fixture vents) crawl, which reads as flicker
+    easing.damp3(camera.position, shot.pos, 1.4, delta);
+    easing.damp3(aim.target, shot.target, 1.4, delta);
     camera.lookAt(aim.target);
 }
 
 /** Inside the canvas: runs the show every frame. */
 function Director({ control, look }) {
-    const aim = useRef({ target: new THREE.Vector3(), sway: [0, 0, 0], placed: false });
+    const aim = useRef({ target: new THREE.Vector3(), placed: false });
     useFrame(({ camera }, delta) => directFrame(control.current, look, camera, aim.current, delta));
     return null;
 }
@@ -55,8 +55,8 @@ function Stage3D({ tier, control, look, visible, counts, events }) {
         <Canvas
             frameloop={visible ? 'always' : 'never'}   // nothing renders while scrolled away
             dpr={dpr}
-            camera={{ position: SHOTS.house.pos, fov: 55, near: 0.1, far: 200 }}
-            gl={{ antialias: false, powerPreference: 'high-performance' }}
+            camera={{ position: SHOTS.house.pos, fov: 55, near: 0.5, far: 200 }}
+            gl={{ antialias: !bloom, powerPreference: 'high-performance' }} // MSAA only without bloom (the composer does SMAA)
         >
             <PerformanceMonitor flipflops={3} onDecline={() => setStep((s) => Math.min(s + 1, MAX_STEP))} />
             <Director control={control} look={look} />

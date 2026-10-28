@@ -1,61 +1,71 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { Suspense, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
-import Beams from './Beams';
+import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
+import Fixtures from './Fixtures';
+import Strobes from './Strobes';
 import LedWall from './LedWall';
-import Crowd from './Crowd';
 import Lasers from './Lasers';
 import Blinders from './Blinders';
 import Haze from './Haze';
+import HouseLights, { HOUSE_COLOR } from './HouseLights';
 import { createTrussGeometry } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
+import { roomFlash } from './flash';
 
 /**
- * Everything on stage, for use inside a <Canvas>: backdrop, deck, truss, fixtures and beams,
- * LED screens and the crowd. The camera and controls belong to whoever renders this (the lab
- * uses orbit controls; the homepage drives the camera from scroll).
+ * Everything on stage, for use inside a <Canvas>: backdrop, floor, deck, truss, the moving heads
+ * (grouped by job: aerial, sides, floor, wash), strobes, LED screens, lasers, blinders, haze and
+ * house lights. The camera and controls belong to whoever renders this (the lab uses orbit
+ * controls; the homepage drives the camera from scroll).
  *
- * Draw calls: backdrop 1, floor 1, deck 1, truss 1, fixtures 4, screens 3, haze 3, crowd 1 = 15, plus
- * lasers and blinders (1 each, skipped while off) and the bloom passes.
+ * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
+ * + haze 3 = 31, plus lasers, blinders and house lights (1 each, skipped while off) and bloom.
  */
 
 /**
- * The only real lights: a dim front fill so the steel has detail, and a coloured "bounce" from
- * below (beams hitting the floor and the crowd) that tints the undersides the camera looks up at.
+ * The only real lights: a dim front fill so the steel has detail, a coloured "bounce" from below
+ * (beams hitting the floor) that tints the undersides the camera looks up at, and warm house light.
  */
-function StageLights({ look }) {
+function StageLights({ look, blinders }) {
     const bounce = useRef();
-    const colors = useRef({ a: new THREE.Color(), b: new THREE.Color() });
-    useFrame(() => {
+    const hemi = useRef();
+    const colors = useRef({ a: new THREE.Color(), b: new THREE.Color(), cool: new THREE.Color('#5a6688'), warm: new THREE.Color(HOUSE_COLOR), white: new THREE.Color('#ffffff') });
+    useFrame(({ clock }) => {
         if (!bounce.current) return;
         const target = look.current;
-        const { a, b } = colors.current;
-        bounce.current.color.copy(a.set(target.colorA).lerp(b.set(target.colorB), 0.5));
-        bounce.current.intensity = (target.master ?? 1) * Math.min(target.intensity, 1.4) * 1.4 + (target.blinder ?? 0) * 2;
+        const { a, b, cool, warm, white } = colors.current;
+        const flash = roomFlash(target, clock.elapsedTime, blinders).total;
+        bounce.current.color.copy(a.set(target.colorA).lerp(b.set(target.colorB), 0.5)).lerp(white, Math.min(1, flash));
+        bounce.current.intensity = (target.master ?? 1) * Math.min(target.intensity, 1.4) * 1.4 + flash * 6;
+        const house = target.house ?? 0;
+        hemi.current.color.copy(cool).lerp(warm, house).lerp(white, Math.min(1, flash));
+        hemi.current.intensity = 0.5 + house * 1.2 + flash * 5; // a strobe hit lights every surface
     });
     return (
         <>
-            <hemisphereLight args={['#5a6688', '#05060a', 0.5]} />
+            <hemisphereLight ref={hemi} args={['#5a6688', '#05060a', 0.5]} />
             <directionalLight position={[0, 3, 30]} intensity={0.35} color="#c8d4ff" />
             <directionalLight ref={bounce} position={[0, -6, 10]} intensity={1} />
         </>
     );
 }
 
-/** Arena floor, lit by the stage's spill in the show's colours. */
-function Floor({ look }) {
+/** Arena floor: spill from the stage in the show's colours, warm when the house lights are up. */
+function Floor({ look, blinders }) {
     const material = useMemo(() => createFloorMaterial(), []);
     const mesh = useRef();
-    useFrame(() => {
+    useFrame(({ clock }, delta) => {
         if (!mesh.current) return;
         const target = look.current;
         const u = mesh.current.material.uniforms;
         u.uColorA.value.set(target.colorA);
         u.uColorB.value.set(target.colorB);
-        u.uLight.value = (target.master ?? 1) * Math.min(target.intensity, 1.4) * (1 + (target.pulse ?? 0) * 0.4) + (target.blinder ?? 0);
+        u.uLight.value = (target.master ?? 1) * Math.min(target.intensity, 1.4) * (1 + (target.pulse ?? 0) * 0.4);
+        u.uHouse.value += ((target.house ?? 0) - u.uHouse.value) * Math.min(1, delta * 1.5);
+        u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
     });
     return (
         <mesh ref={mesh} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 4]} material={material}>
@@ -64,39 +74,83 @@ function Floor({ look }) {
     );
 }
 
-export default function StageScene({ beams, bloom, look, events = [], crowdSeed = 7, lasers = 24, blinders = 8 }) {
+/** The stage deck: dark, tinted by the washes that light it. */
+function Deck({ look }) {
+    const mesh = useRef();
+    const color = useRef(new THREE.Color());
+    useFrame(() => {
+        if (!mesh.current) return;
+        const target = look.current;
+        const level = (target.master ?? 1) * (target.wash ?? 0) * Math.min(target.intensity, 1.4);
+        mesh.current.material.emissive.copy(color.current.set(target.washColor ?? '#3b5bff')).multiplyScalar(0.12 * level);
+    });
+    return (
+        <mesh ref={mesh} position={[0, 0.25, -7]}>
+            <boxGeometry args={[30, 0.5, 14]} />
+            <meshLambertMaterial color="#14161d" />
+        </mesh>
+    );
+}
+
+/**
+ * The camera's exposure blowing out on a strobe or blinder hit: a white veil over the whole view,
+ * like a phone filming a strobe. Rides in front of the camera; drawn last, no depth test.
+ */
+function CameraFlash({ look, blinders }) {
+    const mesh = useRef();
+    useFrame(({ camera, clock }) => {
+        if (!mesh.current) return;
+        const level = roomFlash(look.current, clock.elapsedTime, blinders).total;
+        mesh.current.visible = level > 0.01;
+        if (!mesh.current.visible) return;
+        mesh.current.material.opacity = Math.min(0.9, level * 0.5);
+        camera.updateMatrixWorld();
+        mesh.current.position.set(0, 0, -1).applyMatrix4(camera.matrixWorld);
+        mesh.current.quaternion.copy(camera.quaternion);
+    });
+    return (
+        <mesh ref={mesh} renderOrder={1000} frustumCulled={false} visible={false}>
+            <planeGeometry args={[4, 4]} />
+            <meshBasicMaterial color="#fff8ee" transparent opacity={0} depthTest={false} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+        </mesh>
+    );
+}
+
+export default function StageScene({ beams, bloom, look, events = [], lasers = 24, blinders = 8 }) {
     const truss = useMemo(() => createTrussGeometry(), []);
     const backdrop = useMemo(() => createBackdropMaterial(), []);
 
     return (
         <>
             <color attach="background" args={['#010208']} />
-            <StageLights look={look} />
+            <StageLights look={look} blinders={blinders} />
 
             <mesh position={[0, 12, -16]} material={backdrop}>
                 <planeGeometry args={[80, 34]} />
             </mesh>
-            <Floor look={look} />
-            {/* Stage deck */}
-            <mesh position={[0, 0.25, -7]}>
-                <boxGeometry args={[30, 0.5, 14]} />
-                <meshLambertMaterial color="#14161d" />
-            </mesh>
-
+            <Floor look={look} blinders={blinders} />
+            <Deck look={look} />
             <mesh geometry={truss}>
                 <meshLambertMaterial color="#565c69" emissive="#040507" />
             </mesh>
 
             <LedWall look={look} events={events} />
-            <Beams count={beams} look={look} />
+            {/* Fixture models stream in; the rest of the stage shows meanwhile */}
+            <Suspense fallback={null}>
+                <Fixtures count={beams} look={look} />
+                <Strobes count={beams} look={look} />
+            </Suspense>
             <Lasers look={look} count={lasers} />
             <Blinders look={look} count={blinders} />
-            <Haze look={look} />
-            <Crowd seed={crowdSeed} look={look} />
+            <HouseLights look={look} />
+            <Haze look={look} blinders={blinders} />
+            <CameraFlash look={look} blinders={blinders} />
 
             {bloom && (
                 <EffectComposer multisampling={0}>
                     <Bloom mipmapBlur luminanceThreshold={0.3} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} resolutionScale={0.5} />
+                    {/* Edge anti-aliasing: without it thin truss bracing and fixture details sparkle */}
+                    <SMAA />
                 </EffectComposer>
             )}
         </>

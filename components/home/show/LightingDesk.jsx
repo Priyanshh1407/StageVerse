@@ -1,14 +1,23 @@
 'use client';
 
-import { Power, Settings2, Sun, Zap, Music, Play, Square, RotateCcw, X } from 'lucide-react';
+import { Power, Settings2, Sun, Zap, Music, Play, Square, RotateCcw, X, Lamp, SunDim } from 'lucide-react';
 
+// The basic lighting palette (what a console's colour picker offers), plus a custom picker
 const COLORS = [
+    { value: '#ff0000', label: 'Red' },
+    { value: '#ff6a00', label: 'Orange' },
+    { value: '#ffb000', label: 'Amber' },
+    { value: '#ffe600', label: 'Yellow' },
+    { value: '#9dff00', label: 'Lime' },
+    { value: '#00ff3c', label: 'Green' },
+    { value: '#00ffc8', label: 'Teal' },
     { value: '#19d9ff', label: 'Cyan' },
-    { value: '#ff3df2', label: 'Magenta' },
+    { value: '#0066ff', label: 'Blue' },
+    { value: '#3b2bff', label: 'Deep blue' },
     { value: '#a855f7', label: 'Purple' },
-    { value: '#ff0055', label: 'Red' },
-    { value: '#ffd400', label: 'Gold' },
-    { value: '#39ff14', label: 'Green' },
+    { value: '#ff3df2', label: 'Magenta' },
+    { value: '#ff69b4', label: 'Pink' },
+    { value: '#ffe8c8', label: 'Warm white' },
     { value: '#ffffff', label: 'White' },
 ];
 
@@ -33,12 +42,18 @@ const Slider = ({ label, value, min, max, step = 1, onChange }) => (
 );
 
 const Swatches = ({ value, onChange, label }) => (
-    <div className="flex gap-1.5 flex-wrap" role="group" aria-label={label}>
+    <div className="flex gap-1.5 flex-wrap items-center" role="group" aria-label={label}>
         {COLORS.map((c) => (
-            <button key={c.value} onClick={() => onChange(c.value)} aria-label={`${label}: ${c.label}`}
-                className={`w-5 h-5 rounded-full border-2 transition-transform ${value === c.value ? 'border-white scale-110' : 'border-transparent'}`}
+            <button key={c.value} onClick={() => onChange(c.value)} aria-label={`${label}: ${c.label}`} title={c.label}
+                className={`w-5 h-5 rounded-full border-2 transition-transform ${value === c.value ? 'border-white scale-110' : 'border-white/10'}`}
                 style={{ background: c.value }} />
         ))}
+        {/* Any other colour */}
+        <label title="Custom colour" className="relative w-5 h-5 rounded-full border-2 border-white/40 overflow-hidden cursor-pointer"
+            style={{ background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)' }}>
+            <input type="color" value={value} onChange={(e) => onChange(e.target.value)} aria-label={`${label}: custom`}
+                className="absolute inset-0 opacity-0 cursor-pointer" />
+        </label>
     </div>
 );
 
@@ -89,13 +104,25 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 <Slider label="Intensity" value={desk.intensity} min={0} max={2} step={0.05} onChange={(v) => set({ intensity: v })} />
             </Section>
 
-            <Section icon={Sun} title="Beams" right={<Toggle on={desk.beams > 0.5} onClick={() => set({ beams: desk.beams > 0.5 ? 0 : 1 })} />}>
-                <Slider label="Count" value={counts.beams} min={10} max={140} onChange={(v) => onCounts({ beams: v })} />
+            <Section icon={Sun} title="Moving heads">
+                <div className="grid grid-cols-2 gap-1.5">
+                    {[['beams', 'Aerial beams'], ['sides', 'Side towers'], ['floor', 'Floor'], ['wash', 'Stage wash']].map(([key, label]) => (
+                        <button key={key} onClick={() => set({ [key]: desk[key] > 0.05 ? 0 : 1 })} aria-pressed={desk[key] > 0.05}
+                            className={`py-1.5 rounded-md text-[11px] font-bold ${desk[key] > 0.05 ? 'bg-cyan-400 text-black' : 'bg-white/10 text-gray-400'}`}>
+                            {label}
+                        </button>
+                    ))}
+                </div>
+                <Slider label="Count" value={counts.beams} min={10} max={100} onChange={(v) => onCounts({ beams: v })} />
+                <Slider label="Spread" value={desk.fan ?? 1} min={0.3} max={1.6} step={0.01} onChange={(v) => set({ fan: v })} />
+                <Slider label="Tilt" value={desk.tiltShift ?? 0} min={-0.6} max={0.8} step={0.01} onChange={(v) => set({ tiltShift: v })} />
                 <Slider label="Sweep" value={desk.sweep} min={0} max={1} step={0.01} onChange={(v) => set({ sweep: v })} />
+                <Slider label="Wave (0 = unison)" value={desk.phaseSpread ?? 0.25} min={0} max={1} step={0.01} onChange={(v) => set({ phaseSpread: v })} />
                 <Slider label="Speed" value={desk.speed} min={0} max={3} step={0.05} onChange={(v) => set({ speed: v })} />
                 <Slider label="Haze" value={desk.haze} min={0} max={1} step={0.01} onChange={(v) => set({ haze: v })} />
                 <Swatches label="Beam colour A" value={desk.colorA} onChange={(c) => set({ colorA: c })} />
                 <Swatches label="Beam colour B" value={desk.colorB} onChange={(c) => set({ colorB: c })} />
+                <Swatches label="Wash colour" value={desk.washColor} onChange={(c) => set({ washColor: c, wash: Math.max(desk.wash, 1) })} />
             </Section>
 
             <Section icon={Zap} title="Lasers" right={<Toggle on={desk.laser > 0.05} onClick={() => set({ laser: desk.laser > 0.05 ? 0 : 1 })} />}>
@@ -103,7 +130,9 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 <Swatches label="Laser colour" value={desk.laserColor} onChange={(c) => set({ laserColor: c, laser: Math.max(desk.laser, 1) })} />
             </Section>
 
-            <Section icon={Sun} title="Blinders" right={<Toggle on={desk.blinder > 0.05} onClick={() => set({ blinder: desk.blinder > 0.05 ? 0 : 1 })} />}>
+            <Section icon={Lamp} title="House lights" right={<Toggle on={desk.house > 0.05} onClick={() => set({ house: desk.house > 0.05 ? 0 : 1 })} />} />
+
+            <Section icon={SunDim} title="Blinders" right={<Toggle on={desk.blinder > 0.05} onClick={() => set({ blinder: desk.blinder > 0.05 ? 0 : 1 })} />}>
                 <Slider label="Count" value={counts.blinders} min={1} max={20} onChange={(v) => onCounts({ blinders: v })} />
             </Section>
 
@@ -115,7 +144,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     className="py-3 rounded-lg bg-white/10 active:bg-white active:text-black text-xs font-black tracking-widest select-none touch-none">
                     STROBE <span className="block text-[9px] font-normal text-gray-400">hold</span>
                 </button>
-                <button onClick={() => onMomentary({ converge: 1, intensity: 1.6, strobe: 1, blinder: 1 }, 'pulse')}
+                <button onClick={() => onMomentary({ converge: 1, intensity: 1.6, strobe: 1, blinder: 1, dropFx: 1, laserChase: 1 }, 'pulse')}
                     className="py-3 rounded-lg bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-xs font-black tracking-widest">
                     DROP
                 </button>

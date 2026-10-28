@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { roomFlash } from './flash';
 
 const MAX_BLINDERS = 20;
 
@@ -10,7 +11,7 @@ const MAX_BLINDERS = 20;
 // (screen-facing points); the strobe flickers them too.
 function createBlinderMaterial() {
     return new THREE.ShaderMaterial({
-        uniforms: { uLevel: { value: 0 }, uSize: { value: 300 } },
+        uniforms: { uLevel: { value: 0 }, uSize: { value: 520 } },
         vertexShader: /* glsl */ `
             uniform float uSize;
             void main() {
@@ -58,14 +59,10 @@ export default function Blinders({ look, count = 8 }) {
     useEffect(() => layoutBlinders(geometry, count), [count, geometry]);
 
     const points = useRef();
-    const time = useRef(0);
-    useFrame((_, delta) => {
+    useFrame(({ clock }) => {
         if (!points.current) return;
-        time.current += delta;
-        const target = look.current;
-        const strobe = target.strobe ?? 0;
-        const flash = (time.current * 12.5) % 1 < 0.3 ? 1 : 0;
-        const level = Math.max(target.blinder ?? 0, strobe * flash) * (target.master ?? 1);
+        const f = roomFlash(look.current, clock.elapsedTime, count);
+        const level = Math.max(Math.min(f.blinder, 1.5), f.strobe) * 1.8; // blinders are meant to blind
         points.current.material.uniforms.uLevel.value = level;
         points.current.visible = level > 0.01;
     });

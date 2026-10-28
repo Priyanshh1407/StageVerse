@@ -88,10 +88,19 @@ describe('song show', () => {
         expect(sampleSongShow(show, 0.9).look.pulse).toBeLessThan(0.05);
     });
 
-    it('a drop hit fires strobe and blinders that fade over its duration', () => {
-        expect(sampleSongShow(show, 1).look.strobe).toBeCloseTo(1);
-        expect(sampleSongShow(show, 1.25).look.blinder).toBeCloseTo(0.5);
-        expect(sampleSongShow(show, 1.6).look.strobe).toBe(0);
+    it('a drop hit: white blast, hard strobing, beams focused, lasers chasing, then release', () => {
+        const start = sampleSongShow(show, 1).look;
+        expect(start.blinder).toBeCloseTo(1);           // the blast
+        expect(start.strobe).toBe(1);
+        expect(start.dropFx).toBeCloseTo(1);
+        expect(start.laserChase).toBe(1);
+        const mid = sampleSongShow(show, 1.25).look;   // halfway through the hit
+        expect(mid.blinder).toBe(0);                    // the blast is short
+        expect(mid.strobe).toBe(1);                     // the strobing keeps going
+        expect(mid.dropFx).toBeCloseTo(0.5);            // releasing
+        const after = sampleSongShow(show, 1.6).look;
+        expect(after.strobe).toBe(0);
+        expect(after.dropFx ?? 0).toBe(0);
     });
 });
 
