@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import FanSidebar from '@/components/fan/FanSidebar';
 import UploadMediaModal from '@/components/fan/dashboard/UploadMediaModal';
+import MemoryLightbox from '@/components/fan/MemoryLightbox';
 
 import { 
   Menu, Plus, Search, Grid, Share2, Info, Play, 
@@ -29,6 +30,8 @@ export default function MemoryVaultPage() {
   const ITEMS_PER_PAGE = 8;
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Index into the visible memories of the one shown full size (null = none)
+  const [openIndex, setOpenIndex] = useState(null);
 
   useEffect(()=>{
     const fetchMemories = async()=>{
@@ -219,8 +222,8 @@ export default function MemoryVaultPage() {
               </div>
 
               {filteredMemories.slice(0,visibleCount).length > 0 ? (
-                filteredMemories.slice(0,visibleCount).map((item) => (
-                  <MemoryCard key={item.id} item={item} />
+                visibleMemories.map((item, i) => (
+                  <MemoryCard key={item.id} item={item} onOpen={() => setOpenIndex(i)} />
                 ))
               ) : (
                 <div className="col-span-full text-center py-20 text-slate-500">
@@ -268,6 +271,8 @@ export default function MemoryVaultPage() {
         </button>
       )}
 
+      <MemoryLightbox items={visibleMemories} index={openIndex} onClose={() => setOpenIndex(null)} onIndex={setOpenIndex} />
+
       <UploadMediaModal 
         isOpen={isUploadModalOpen} 
         onClose={handleCloseModal} 
@@ -277,7 +282,7 @@ export default function MemoryVaultPage() {
   );
 }
 
-function MemoryCard({ item }) {
+function MemoryCard({ item, onOpen }) {
   const overlayClasses = "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6";
   const videoRef = useRef(null);
 
@@ -301,6 +306,7 @@ function MemoryCard({ item }) {
     return (
       <div 
         className="group relative rounded-2xl overflow-hidden cursor-pointer sm:col-span-2 sm:row-span-2 shadow-md bg-black"
+        onClick={onOpen}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -339,7 +345,7 @@ function MemoryCard({ item }) {
   }
   if (item.type === 'ticket') {
     return (
-      <div className="group relative rounded-2xl overflow-hidden cursor-pointer bg-[#223949] border border-slate-700/50 border-dashed flex flex-col shadow-sm">
+      <div onClick={onOpen} className="group relative rounded-2xl overflow-hidden cursor-pointer bg-[#223949] border border-slate-700/50 border-dashed flex flex-col shadow-sm">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center relative z-10">
           <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:bg-[#0d93f2]/20 group-hover:scale-110 transition-all duration-300">
             <Ticket className="text-slate-400 w-8 h-8 group-hover:text-[#0d93f2] transition-colors" />
@@ -356,7 +362,7 @@ function MemoryCard({ item }) {
 
   if (item.type === 'map') {
     return (
-      <div className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm bg-slate-800">
+      <div onClick={onOpen} className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm bg-slate-800">
         <div className="w-full h-full relative">
            <Image src={item.image} alt={item.title} fill className="object-cover opacity-60 transition-transform duration-500 group-hover:scale-110" />
         </div>
@@ -372,7 +378,7 @@ function MemoryCard({ item }) {
   }
 
   return (
-    <div className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm ${item.type === 'album' ? 'row-span-2' : ''}`}>
+    <div onClick={onOpen} className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm ${item.type === 'album' ? 'row-span-2' : ''}`}>
       <Image src={item.image} alt={item.title} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
       <div className={overlayClasses.replace('p-6', 'p-4')}>
         <div className="flex justify-end gap-2 translate-y-[-10px] group-hover:translate-y-0 transition-transform duration-300">

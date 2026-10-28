@@ -14,6 +14,7 @@ import PredictionModal from '@/components/fan/dashboard/SetListPredictor';
 import ScorecardModal from '@/components/fan/dashboard/ScoreCardModal';
 import NotificationsModal from '@/components/fan/dashboard/NotificationsModal';
 import LivePollCard from '@/components/fan/dashboard/LivePollCard';
+import MemoryLightbox from '@/components/fan/MemoryLightbox';
 
 import {
   Menu, Edit, MapPin, PlaneTakeoff, Ticket as TicketStub, Plus, Image as ImageIcon, ArrowRight, Filter, Loader2, Instagram, ListMusic
@@ -28,6 +29,7 @@ export default function FanDashboard() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTopFriendsOpen, setIsTopFriendsOpen] = useState(false);
+  const [openMemory, setOpenMemory] = useState(null); // index of the memory shown full size
   const [isTopArtistsOpen, setIsTopArtistsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -256,7 +258,7 @@ export default function FanDashboard() {
                 <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
-                {data.memories.length > 0 ? data.memories.slice(0, 5).map((memory) => {
+                {data.memories.length > 0 ? data.memories.slice(0, 5).map((memory, memoryIndex) => {
                   const safeImage = memory.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745";
                   const isVideo = safeImage.includes(".mp4") || memory.type === 'video';
                   const MediaContent = () => {
@@ -281,7 +283,7 @@ export default function FanDashboard() {
 
                   if (memory.featured) {
                     return (
-                      <div key={memory.id} className="group relative rounded-xl overflow-hidden cursor-pointer md:col-span-2 md:row-span-2">
+                      <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer md:col-span-2 md:row-span-2">
                         <MediaContent />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                           <p className="text-white font-bold text-lg">{memory.title}</p>
@@ -293,7 +295,7 @@ export default function FanDashboard() {
 
                   if (memory.type === "ticket") {
                     return (
-                      <div key={memory.id} className="group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed hover:border-[#0d93f2] transition-colors">
+                      <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed hover:border-[#0d93f2] transition-colors">
                         <TicketStub className="text-slate-500 w-10 h-10 mb-2 group-hover:text-[#0d93f2] transition-colors" />
                         <p className="text-slate-300 text-center text-sm font-mono uppercase">TICKET STUB</p>
                         <p className="text-white font-bold text-center mt-1">{memory.title}</p>
@@ -301,7 +303,7 @@ export default function FanDashboard() {
                     );
                   }
                   return (
-                    <div key={memory.id} className="group relative rounded-xl overflow-hidden cursor-pointer">
+                    <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer">
                       <MediaContent />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                         <p className="text-white font-bold text-xs">{memory.title}</p>
@@ -312,6 +314,12 @@ export default function FanDashboard() {
                   <div className="col-span-full py-10 text-center text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">No memories yet. Upload one!</div>
                 )}
               </div>
+              <MemoryLightbox
+                items={data.memories.slice(0, 5).map((m) => ({ ...m, videoSrc: m.type === 'video' ? m.image : undefined }))}
+                index={openMemory}
+                onClose={() => setOpenMemory(null)}
+                onIndex={setOpenMemory}
+              />
               <div className="flex justify-center mt-2"><Link href="/memory-vault" className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-[#0d93f2] transition-colors flex items-center gap-1">Enter Memory Vault<ArrowRight className="w-4 h-4" /></Link></div>
             </motion.section>
 

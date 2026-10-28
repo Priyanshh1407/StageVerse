@@ -15,7 +15,7 @@ const homeFor = {
 
 // Pages that belong to one role (mirrors the app/(role) route groups)
 const rolePages = {
-  fan: ['/dashboard', '/discover', '/memory-vault', '/ticket'],
+  fan: ['/dashboard', '/discover', '/memory-vault', '/social', '/ticket'],
   artist: ['/artist-dashboard', '/day-sheet', '/guest-list', '/live-show', '/setlist-builder', '/tech-rider'],
   organizer: ['/manage', '/analysis', '/create-event', '/reports', '/ticketing'],
   production: ['/prod-dashboard', '/live', '/logistics', '/patch-sheet', '/patch-studio', '/tasks'],
