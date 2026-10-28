@@ -280,10 +280,14 @@ describe('programming rules (concert-style)', () => {
         const open = at(113);
         expect(open.beams + open.floor + open.wash + open.laser).toBe(0);
         expect(open.sides).toBe(1);
-        expect(open.sidesAim).toBeGreaterThan(0.9);
-        expect(at(127.5).sidesAim).toBeLessThan(0.2);
-        expect(at(127.5).sidesAim).toBeGreaterThan(-0.2);   // ends crossing (left beams go right), not opened out
-        expect(Math.abs(at(127.5).tiltShift + 0.15)).toBeLessThan(0.01); // level, straight at the audience
+        // one line, no wiggle, level; turning only horizontally:
+        // crossing -> flared outside (~100 deg) -> straight at the audience -> crossing
+        expect(open.sweep).toBe(0);
+        expect(Math.abs(open.sidesAim)).toBeLessThan(0.05);
+        expect(at(120.6).sidesAim).toBeLessThan(-1.8);
+        expect(Math.abs(at(123.9).sidesAim + 1)).toBeLessThan(0.1);
+        expect(Math.abs(at(127.95).sidesAim)).toBeLessThan(0.1);
+        for (const t of [113, 118, 122, 126]) expect(Math.abs(at(t).tiltShift + 0.15)).toBeLessThan(0.01);
     });
 
     it('a breakdown between peaks: blinders alone, then washes alone, then slowing down', () => {
@@ -307,8 +311,16 @@ describe('programming rules (concert-style)', () => {
         expect(buildIdleShow().cues.some((c) => c.name.startsWith('Solo'))).toBe(true);
     });
 
-    it('the ending pans: side towers sweeping as they fade', () => {
-        expect(at(116).sweep).toBeGreaterThan(0.5);
+    it('washes stay in the beams\' colour family', () => {
+        for (const c of show.cues.filter((x) => x.look?.washColor && x.look?.colorA && x.look.colorA !== x.look.colorB)) {
+            const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+            const [a, b, w] = [c.look.colorA, c.look.colorB, c.look.washColor].map(hex);
+            // the wash sits between the two beam colours, channel by channel
+            for (let k = 0; k < 3; k++) {
+                expect(w[k]).toBeGreaterThanOrEqual(Math.min(a[k], b[k]) - 1);
+                expect(w[k]).toBeLessThanOrEqual(Math.max(a[k], b[k]) + 1);
+            }
+        }
     });
 
     it('grooves have no lasers', () => {
