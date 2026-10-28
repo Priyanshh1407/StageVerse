@@ -4,7 +4,7 @@ A click-by-click checklist for every upgrade made during the audit (see [`FIX_LO
 
 Some protections can only be checked by trying something the UI never lets you do (another user's data, voting twice). For those there's a snippet to paste into the browser's DevTools console (F12 → Console) **while on the app's page**, so it runs with that browser's login.
 
-> Everything here is also covered by the automated suite (`npm test`, 268 tests). This guide is for seeing it work end to end in a real browser.
+> Everything here is also covered by the automated suite (`npm test`, 279 tests). This guide is for seeing it work end to end in a real browser.
 
 ---
 
@@ -13,7 +13,7 @@ Some protections can only be checked by trying something the UI never lets you d
 ```bash
 npm install
 cp .env.example .env.local      # fill in MONGODB_URI and JWT_SECRET; GEMINI_API_KEY and GROQ_API_KEY for AI
-npm run seed -- --yes           # demo users, 2 shows, setlists, fan tickets, song catalogue
+npm run seed -- --yes           # demo accounts plus a full demo tour: 7 shows, tickets, setlists, crew, patches
 npm run dev                     # http://localhost:3000
 ```
 
@@ -42,7 +42,7 @@ The seed prints both shows' URLs. **Re-run `npm run seed -- --yes` any time to r
 | 1.2 | Bad email rejected (SEC-09) | `/signup`, email `not-an-email` | "Please enter a valid email address" |
 | 1.3 | Emails are case-insensitive (SEC-09) | Sign up `Test@Example.com`, then try `test@example.com` | Second signup: "User already exists" |
 | 1.4 | Password guessing is throttled (SEC-09) | `/login` as `fan@stageverse.demo` with a wrong password 6 times within a minute | Attempts 1–5: "Invalid credentials."; 6th: "Too many requests…". Works again after a minute |
-| 1.5 | Real profile in the session (BUG-11) | Log in as the artist, open `/api/auth/me` | `name: "Demo Artist"` and the real email (used to say "User") |
+| 1.5 | Real profile in the session (BUG-11) | Log in as the artist, open `/api/auth/me` | The artist account's real name (e.g. "Demo Artist" if the seed created it) and email (used to say "User") |
 | 1.6 | Logged out = 401, not 500 (ERR-01) | In a logged-out window, open `/api/fan/notifications` | Status **401** with `"Unauthorized: No token provided"` |
 
 ## 2. Page access by role (proxy.js)
@@ -120,6 +120,7 @@ Optional fourth window, crew on the **other** show: `/live` → "StageVerse Demo
 | 4.8 | Late joiners see the open poll | While the poll is open, reload the fan window | Poll card comes back (used to be lost) |
 | 4.9 | Server decides the winner (BUG-04) | Wait for the poll to close (60 s), then crew: **Reveal Winner** | The encore screen shows the option with the most votes (used to say "Midnight City" on other screens) |
 | 4.10 | Crew sees sync problems (ERR-02) | Stop `npm run dev` while the crew screen is open | "Lost Connection" toast; amber "Sync problem" banner within ~20 s; restart the server and it recovers |
+| 4.11 | Crew refresh gets back on track | Start the show, let the timer run, open another show on the crew screen, then come back | The timer shows the show's real time straight away. The refresh button next to ONLINE re-syncs it too ("Re-synced: back on track"), and the artist's screen keeps its status and time when you come back to it |
 
 ```js
 // 4.7: in the FAN console while a poll is open
@@ -158,6 +159,13 @@ await fetch('/api/fan/predict?eventId=9001').then(r => r.json()).then(j => ({ sc
 | 6.4 | Tech rider loading | `/tech-rider` | Loads the first show's rider without flashing an empty state |
 | 6.5 | Polls start closed | `/setlist-builder` → configure an encore poll | Fans don't see it until the artist activates it on the live-show screen |
 
+## 6b. Fan pages
+
+| # | Check | Steps | Expected |
+|---|---|---|---|
+| 6b.1 | Memories enlarge | Fan: `/memory-vault` (or the dashboard's Memory Vault strip) → click a photo | It opens full size with its title, artist, venue and date; arrow keys or the side buttons step through; Esc, × or a click outside closes it |
+| 6b.2 | Friends page | Fan: sidebar → **Friends** (`/social`) | Shows your friends are going to, the people you follow (shows together, their next show) and people going to your shows. Follow someone: they move to Following; unfollow them again |
+
 ## 7. Organizer and production tools
 
 | # | Check | Steps | Expected |
@@ -168,6 +176,7 @@ await fetch('/api/fan/predict?eventId=9001').then(r => r.json()).then(j => ({ sc
 | 7.4 | Tasks need a show and stay scoped (BUG-08) | Crew: `/tasks` → new task without picking a show → save | Error toast, modal stays open. With a show picked it saves. The show dropdown lists only your shows |
 | 7.5 | No invented data (BUG-10) | Organizer: `/analysis` | Reviews are labelled "Sample Reviews (demo data)" and the copy says sentiment analysis isn't built |
 | 7.6 | Search input is literal (SEC-08) | `/explore` and the create-event venue search: type `(` | No error, just no results |
+| 7.7 | New events save on the first try | Organizer: `/create-event` → fill it in → publish | Saved on the first attempt (it used to fail with a duplicate id until the counter passed the ids older events already used) |
 
 **Validation (VAL-01).** As the organizer, in the console:
 
@@ -237,7 +246,7 @@ With **level 4** active, repeat 8.1–8.5. Each still answers, with an "AI is bu
 |---|---|---|---|
 | 9.1 | Health endpoint | Open `/api/health` | `{"status":"ok","db":"up","latencyMs":…}`; no connection strings or error details |
 | 9.2 | No tempo invented | Crew live screen on a song without a BPM | Shows "—" (used to show 128) |
-| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 268 tests passing, build succeeds |
+| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 279 tests passing, build succeeds |
 | 9.4 | Benchmark | `npm run bench`, then open `bench/results/live-run.json` | Push p50 of a few ms; setlist lookup examines 1 document |
 | 9.5 | AI eval | `npm run eval:patch -- --provider groq` (~65 Groq calls, ~15 min) | A new file in `evals/patch/results/` with 0% collisions for the new pipeline |
 
@@ -281,7 +290,7 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 Run from the project folder (`cd /d/Projects/stageverse`). None of these touch your real database: the tests start an in-memory MongoDB (the first run downloads a ~100 MB `mongod` binary and caches it) and mock every AI provider.
 
 ```bash
-# Everything: 268 tests, about 1-2 minutes
+# Everything: 279 tests, about 1-2 minutes
 npm test
 
 # Watch mode while editing (re-runs affected tests on save)

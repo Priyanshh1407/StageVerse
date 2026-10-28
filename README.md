@@ -6,7 +6,20 @@
 
 StageVerse is a full-stack platform for live concert production that connects the four groups behind a show: **fans**, **artists**, **organizers** and the **production crew**. Organizers publish shows, artists build setlists, tech riders and day sheets, crews patch lighting and track logistics, and during the show the artist's console, the crew's screens and fans' phones stay in sync in real time, including a live encore vote. It aims to cut the technical overhead, signal collisions and communication gaps of concert production for technical directors, systems engineers and front-of-house (FOH) crews.
 
-[Live Demo](https://stage-verse.vercel.app/) | [LinkedIn](https://www.linkedin.com/in/priyansh-waghela-3b754b282/)
+**Live site: [stage-verse.vercel.app](https://stage-verse.vercel.app/)** | [LinkedIn](https://www.linkedin.com/in/priyansh-waghela-3b754b282/)
+
+### Try it live
+
+Sign in at [stage-verse.vercel.app/login](https://stage-verse.vercel.app/login) with any of these demo accounts (password `stageverse-demo`). They share one demo tour, so you can see the same shows from every side:
+
+| Role | Email | Start here |
+|---|---|---|
+| Fan | `recruiter.fan@stageverse.demo` | Passport dashboard, Discover, Memories, Friends |
+| Artist | `recruiter.artist@stageverse.demo` | Tour dashboard, setlist builder, tech rider, live show control |
+| Organizer | `recruiter.organizer@stageverse.demo` | Events, ticket sales reports, create an event with AI copy |
+| Production crew | `recruiter.crew@stageverse.demo` | Production dashboard, DMX patch studio (one show has an address clash to find), logistics board |
+
+For the live sync, log in as the artist and the crew in two browser windows (one private), open the same show's live pages and start the show. The demo data is reset regularly.
 
 Built with Next.js 16 (App Router), MongoDB/Mongoose, Socket.IO, React Three Fiber and Google Gemini.
 
@@ -78,11 +91,11 @@ git clone https://github.com/Priyanshh1407/StageVerse.git
 cd StageVerse
 npm install
 cp .env.example .env.local      # then fill in MONGODB_URI and JWT_SECRET (GEMINI_API_KEY / GROQ_API_KEY optional)
-npm run seed -- --yes           # demo users, venue, event and setlist
+npm run seed -- --yes           # demo accounts and a full demo tour (shows, tickets, crew, patches)
 npm run dev                     # http://localhost:3000
 ```
 
-Demo accounts created by the seed script (password `password123`):
+Testing accounts created by the seed script (password `password123`; the seed also creates the recruiter accounts above):
 
 | Role | Email |
 |---|---|
@@ -92,6 +105,8 @@ Demo accounts created by the seed script (password `password123`):
 | Production crew | `production@stageverse.demo` |
 
 To see the live sync, open the artist's live-show page, the crew's live page and the fan dashboard for the seeded event in three browser windows.
+
+**Deploying:** the site runs on Vercel. [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) covers environment variables, MongoDB Atlas, shipping and rolling back, seeding production and the checks to run after a deploy.
 
 ## Scripts
 
@@ -109,7 +124,7 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 
 ## Testing and quality
 
-- **268 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, and the homepage show: song analysis (against a synthetic click track), the cue engine and every lighting-programming rule.
+- **279 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, and the homepage show: song analysis (against a synthetic click track), the cue engine and every lighting-programming rule.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, tests with coverage, a production build and a dependency audit on every push.
 - **Manual test guide:** [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md) walks through every upgraded feature in the browser (including how to force each AI fallback level) and lists the automated test commands.
 - The engineering history (each bug, how it was found, the fix and the trade-off) is in [`FIX_LOG.md`](FIX_LOG.md). The audit that started it is in [`PROJECT_AUDIT_REPORT.md`](PROJECT_AUDIT_REPORT.md).
@@ -133,7 +148,7 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 Written down on purpose: this is a portfolio project, and these are the honest edges.
 
 - **Ticketing is on hold.** The purchase widget has a known crash (BUG-01), purchases don't issue tickets (BUG-02), and inventory updates aren't atomic (BUG-03). No real payments are taken. See "Parked: Ticketing" in [`UPGRADE_PLAN.md`](UPGRADE_PLAN.md).
-- **Real-time needs one long-running Node server.** Socket.IO attaches to Next's HTTP server, so it doesn't work on serverless hosts, and rooms are in-process (multiple instances would need the Socket.IO Redis adapter).
+- **Real-time needs one long-running Node server.** Socket.IO attaches to Next's HTTP server, so its pushes don't work on serverless hosts like Vercel, where the live screens fall back to re-syncing every 20 seconds and on refresh ([deployment guide](docs/DEPLOYMENT.md#7-known-limits-on-vercel)). Rooms are in-process (multiple instances would need the Socket.IO Redis adapter).
 - **Rate limits are per process** (in-memory token buckets).
 - **Free AI tiers are tight** (Gemini: 5 requests/minute and 20/day per model). The provider chain and non-AI fallbacks keep features working, but fallback answers are simpler; heavy AI use needs a billed key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
