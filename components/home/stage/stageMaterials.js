@@ -120,6 +120,28 @@ export function createFloorMaterial() {
             uniform float uHouse;
             uniform float uFlash;
             varying vec3 vWorld;
+
+            // Outside the venue (beyond the gate wall at z = 34.75): wet asphalt. Bright things in
+            // the scene smear into long vertical streaks on a wet road, so the reflections are
+            // drawn as streaks under each light: the doorway, the pillar floods, the neon sign.
+            float rnoise(vec2 p) { return fract(sin(dot(floor(p), vec2(127.1, 311.7))) * 43758.5453); }
+            vec3 wetRoad(vec3 w) {
+                float outside = smoothstep(34.8, 35.6, w.z);
+                if (outside <= 0.0) return vec3(0.0);
+                float d = w.z - 34.8;
+                float ripple = 0.75 + 0.5 * rnoise(w.xz * vec2(6.0, 1.5));
+                float fade = exp(-d * 0.07);
+                vec3 refl = vec3(0.0);
+                refl += vec3(0.25, 0.75, 1.0) * exp(-abs(w.x + 2.4) * 0.9) * 0.55;   // doorway (cyan side)
+                refl += vec3(0.75, 0.3, 1.0) * exp(-abs(w.x - 2.4) * 0.9) * 0.55;    // doorway (magenta side)
+                refl += vec3(0.8, 0.85, 1.0) * exp(-abs(abs(w.x) - 8.6) * 1.4) * 0.5; // pillar floods
+                refl += vec3(0.1, 0.8, 1.0) * exp(-abs(w.x + 4.0) * 0.5) * 0.18 + vec3(0.8, 0.25, 1.0) * exp(-abs(w.x - 4.0) * 0.5) * 0.18; // sign
+                // Lane markings and a kerb line
+                float dash = step(0.5, fract(w.x / 5.0)) * smoothstep(0.12, 0.0, abs(w.z - 48.0));
+                float solid = smoothstep(0.1, 0.0, abs(w.z - 58.0)) + smoothstep(0.15, 0.0, abs(w.z - 37.2));
+                vec3 asphalt = vec3(0.012, 0.014, 0.022) + vec3(0.18) * (dash + solid) * (0.35 + 0.65 * fade);
+                return (asphalt + refl * fade * ripple) * outside;
+            }
             void main() {
                 // House lights: the whole room in warm, even light
                 vec3 house = vec3(1.0, 0.7, 0.28) * uHouse * (0.09 + 0.05 * smoothstep(40.0, 0.0, abs(vWorld.x))) * step(vWorld.z, 33.4);
@@ -127,7 +149,7 @@ export function createFloorMaterial() {
                 float spill = exp(-fromStage * 0.055) * smoothstep(30.0, 4.0, abs(vWorld.x));
                 float streak = exp(-abs(vWorld.x) * 0.35) * exp(-fromStage * 0.05) * 0.5;
                 vec3 tint = mix(uColorA, uColorB, smoothstep(-14.0, 14.0, vWorld.x));
-                gl_FragColor = vec4(vec3(0.008, 0.009, 0.016) + tint * (spill + streak) * 0.22 * uLight + house + vec3(0.55) * uFlash, 1.0);
+                gl_FragColor = vec4(vec3(0.008, 0.009, 0.016) + tint * (spill + streak) * 0.22 * uLight + house + vec3(0.55) * uFlash + wetRoad(vWorld), 1.0);
             }
         `,
     });

@@ -270,13 +270,16 @@ export default function ShowSection({ events = [] }) {
 
                 {showOverlays && (
                     <div className="absolute inset-0 pointer-events-none text-white">
-                        <Fade show={phase === 'outside'} className="flex-col items-center justify-start text-center px-4 pt-28 sm:pt-32">
-                            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight drop-shadow-2xl">
-                                The Entire Concert<br />
-                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-400 to-fuchsia-400">Ecosystem. One Platform.</span>
-                            </h1>
-                            <p className="mt-5 text-lg md:text-xl text-cyan-100/80 font-light max-w-2xl">The show is about to start. Scroll to walk in.</p>
-                            <ChevronDown className="mt-6 w-8 h-8 text-cyan-300 animate-bounce" aria-hidden />
+                        {/* Welcome banner, framed in the gate's doorway like a lit sign inside */}
+                        <Fade show={phase === 'outside'} className="flex-col items-center justify-end text-center px-4 pb-[18vh]">
+                            <div className="relative px-6 sm:px-10 py-4 sm:py-5 bg-[#071226]/70 backdrop-blur-[2px] border-y border-cyan-300/50 shadow-[0_0_40px_rgba(34,211,238,0.25)]">
+                                <h1 className={`${orbitron.className} text-2xl sm:text-4xl lg:text-5xl font-bold tracking-wide text-cyan-100 drop-shadow-[0_0_14px_rgba(103,232,249,0.85)]`}>
+                                    WELCOME TO STAGEVERSE
+                                </h1>
+                                <p className="mt-2 text-xs sm:text-sm tracking-[0.3em] text-white/85">SCROLL TO ENTER THE EXPERIENCE</p>
+                                <p className="sr-only">The entire concert ecosystem, one platform: from discovery to production.</p>
+                            </div>
+                            <ChevronDown className="mt-4 w-7 h-7 text-cyan-300 animate-bounce" aria-hidden />
                         </Fade>
 
                         <Fade show={phase === 'cues'} className="items-end justify-start p-6 sm:p-12 pb-24">

@@ -95,16 +95,17 @@ export function rigLayout(count) {
 
 /**
  * Strobe positions, in the gaps between moving heads (like a real rig alternating beams and
- * strobes): on the front faces of the top and lowest truss rows, and standing on the front of the
- * deck between the floor fixtures.
+ * strobes): hanging under the top and lowest truss rows, and standing on the front of the deck
+ * between the floor fixtures. Positions are the strobe's centre (it's ~0.7 m tall).
  */
+export const STROBE_DROP = 0.225 + 0.36 + 0.03; // truss half-section + half the strobe + a gap
 export function strobeLayout(count) {
     const fixtures = rigLayout(count);
     const between = (xs) => xs.slice(1).map((x, i) => (x + xs[i]) / 2);
     const xsOf = (group, y) => fixtures.filter((f) => f.group === group && (y === undefined || f.position[1] === y))
         .map((f) => f.position[0]).sort((a, b) => a - b);
-    const top = between(xsOf('topFan')).map((x) => [x, ROWS[0].y, ROWS[0].z + 0.3]);
-    const low = between(xsOf('lowFan')).map((x) => [x, ROWS[3].y, ROWS[3].z + 0.3]);
+    const top = between(xsOf('topFan')).map((x) => [x, ROWS[0].y - STROBE_DROP, ROWS[0].z]);
+    const low = between(xsOf('lowFan')).map((x) => [x, ROWS[3].y - STROBE_DROP, ROWS[3].z]);
     const floor = between(xsOf('floor')).map((x) => [x, 0.5 + 0.36, -0.6]); // on the deck (strobe ~0.7 m tall)
     return [...top, ...low, ...floor];
 }

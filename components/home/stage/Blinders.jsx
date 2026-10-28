@@ -7,7 +7,7 @@ import { roomFlash } from './flash';
 
 const MAX_BLINDERS = 20;
 
-// Audience blinders: warm-white flashes along the front truss, facing the crowd. One draw call
+// Audience blinders: warm-white flashes hanging under the front-most truss (row 2), facing the crowd. One draw call
 // (screen-facing points); the strobe flickers them too.
 function createBlinderMaterial() {
     return new THREE.ShaderMaterial({
@@ -40,7 +40,7 @@ function createBlinderMaterial() {
 function layoutBlinders(geometry, count) {
     const n = Math.min(count, MAX_BLINDERS);
     const pos = geometry.attributes.position;
-    for (let i = 0; i < n; i++) pos.setXYZ(i, n > 1 ? -11 + (22 * i) / (n - 1) : 0, 12.55, -2.6);
+    for (let i = 0; i < n; i++) pos.setXYZ(i, n > 1 ? -11 + (22 * i) / (n - 1) : 0, 15.8 - 0.55, -3.7);
     pos.needsUpdate = true;
     geometry.setDrawRange(0, n);
 }

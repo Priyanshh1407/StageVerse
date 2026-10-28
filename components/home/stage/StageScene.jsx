@@ -12,6 +12,7 @@ import Blinders from './Blinders';
 import Haze from './Haze';
 import HouseLights, { HOUSE_COLOR } from './HouseLights';
 import Venue from './Venue';
+import Rain from './Rain';
 import { createTrussGeometry } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
@@ -53,6 +54,20 @@ function StageLights({ look, blinders }) {
         </>
     );
 }
+
+const SKY_VERTEX = /* glsl */ `
+    varying vec3 vDir;
+    void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`;
+const SKY_FRAGMENT = /* glsl */ `
+    varying vec3 vDir;
+    void main() {
+        float up = clamp(vDir.y, 0.0, 1.0);
+        vec3 horizon = vec3(0.045, 0.06, 0.13);
+        vec3 zenith = vec3(0.008, 0.01, 0.025);
+        gl_FragColor = vec4(mix(horizon, zenith, pow(up, 0.45)), 1.0);
+    }
+`;
 
 /** Arena floor: spill from the stage in the show's colours, warm when the house lights are up. */
 function Floor({ look, blinders }) {
@@ -124,6 +139,11 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 2
     return (
         <>
             <color attach="background" args={['#010208']} />
+            {/* Night sky: deep navy at the horizon, near-black overhead */}
+            <mesh>
+                <sphereGeometry args={[180, 24, 12]} />
+                <shaderMaterial side={THREE.BackSide} depthWrite={false} vertexShader={SKY_VERTEX} fragmentShader={SKY_FRAGMENT} />
+            </mesh>
             <StageLights look={look} blinders={blinders} />
 
             <mesh position={[0, 12, -16]} material={backdrop}>
@@ -137,6 +157,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 2
 
             <LedWall look={look} events={events} screen={screen} font={font} />
             <Venue look={look} font={font} />
+            <Rain />
             {/* Fixture models stream in; the rest of the stage shows meanwhile */}
             <Suspense fallback={null}>
                 <Fixtures count={beams} look={look} />

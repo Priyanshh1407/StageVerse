@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rigLayout, strobeLayout, GROUPS } from '@/components/home/stage/rigLayout';
+import { rigLayout, strobeLayout, GROUPS, STROBE_DROP } from '@/components/home/stage/rigLayout';
 import { ROWS } from '@/components/home/stage/trussGeometry';
 
 describe('rigLayout', () => {
@@ -74,13 +74,15 @@ describe('strobeLayout', () => {
     it('puts strobes in the gaps between moving heads on the top and mid trusses', () => {
         const strobes = strobeLayout(52);
         const top = rigLayout(52).filter((f) => f.group === 'topFan').map((f) => f.position[0]).sort((a, b) => a - b);
-        const onTop = strobes.filter((s) => s[1] === ROWS[0].y).map((s) => s[0]);
+        // hanging under the top truss, not on or above it
+        const onTop = strobes.filter((s) => s[1] === ROWS[0].y - STROBE_DROP).map((s) => s[0]);
         expect(onTop).toHaveLength(top.length - 1);
         onTop.forEach((x, i) => {
             expect(x).toBeGreaterThan(top[i]);
             expect(x).toBeLessThan(top[i + 1]);
         });
-        expect(strobes.some((s) => s[1] === ROWS[3].y)).toBe(true);
+        expect(strobes.some((s) => s[1] === ROWS[3].y - STROBE_DROP)).toBe(true);
+        for (const s of strobes) expect(ROWS.every((r) => !(Math.abs(s[2] - r.z) < 0.5 && s[1] > r.y - 0.5))).toBe(true);
         expect(strobes.some((s) => s[1] < 1.5)).toBe(true); // a row standing on the deck
     });
 });
