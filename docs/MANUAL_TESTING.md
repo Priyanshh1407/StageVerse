@@ -4,7 +4,7 @@ A click-by-click checklist for every upgrade made during the audit (see [`FIX_LO
 
 Some protections can only be checked by trying something the UI never lets you do (another user's data, voting twice). For those there's a snippet to paste into the browser's DevTools console (F12 → Console) **while on the app's page**, so it runs with that browser's login.
 
-> Everything here is also covered by the automated suite (`npm test`, 232 tests). This guide is for seeing it work end to end in a real browser.
+> Everything here is also covered by the automated suite (`npm test`, 243 tests). This guide is for seeing it work end to end in a real browser.
 
 ---
 
@@ -237,7 +237,7 @@ With **level 4** active, repeat 8.1–8.5. Each still answers, with an "AI is bu
 |---|---|---|---|
 | 9.1 | Health endpoint | Open `/api/health` | `{"status":"ok","db":"up","latencyMs":…}`; no connection strings or error details |
 | 9.2 | No tempo invented | Crew live screen on a song without a BPM | Shows "—" (used to show 128) |
-| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 232 tests passing, build succeeds |
+| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 243 tests passing, build succeeds |
 | 9.4 | Benchmark | `npm run bench`, then open `bench/results/live-run.json` | Push p50 of a few ms; setlist lookup examines 1 document |
 | 9.5 | AI eval | `npm run eval:patch -- --provider groq` (~65 Groq calls, ~15 min) | A new file in `evals/patch/results/` with 0% collisions for the new pipeline |
 
@@ -265,6 +265,11 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 | 10.14 | Song analysis | `npm run analyse:song -- "public/audio/A Sky Full of Stars.mp3" sky-full-of-stars "A Sky Full of Stars"` | ~125 BPM, 10 sections, ~22 cues; rewrites `public/shows/sky-full-of-stars.show.json` |
 | 10.15 | Phone width | DevTools device mode, 375 px | Text fits, the desk opens as a full-width panel, no horizontal scroll |
 | 10.16 | No socket on public pages | Open `/` logged out, check the console | No "Socket connection error" warnings (the socket only connects on live-show pages) |
+| 10.17 | Entrance | Open `/` and scroll slowly from the top | You start outside the venue: white beams searching the sky above it, warm light from the doors; scrolling walks you through the doorway; the sky beams go out |
+| 10.18 | Roles on the LED wall | Scroll through the four role sections | The LED wall shows "FOR THE FAN / ARTIST / ORGANIZER / CREW" (no pop-up); each has its own beam position and colour, glides in, holds while you're in the section, then glides to the next |
+| 10.19 | Playground | Scroll to the end of the show | "Run the show yourself": the rig keeps running a looping show by itself; Take the desk / Light up your song / the demo song |
+| 10.20 | Your own song | In the playground, click **Light up your song** and pick an MP3/WAV/OGG | "Reading your song…", then "Finding the tempo, beats and sections…", then it plays with a programmed show and its timeline; the network tab shows no upload |
+| 10.21 | Rig sizes | Lighting desk → Moving heads: 52 / 80 / 120 | The rig rebuilds with that many moving heads |
 
 ---
 
@@ -273,7 +278,7 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 Run from the project folder (`cd /d/Projects/stageverse`). None of these touch your real database: the tests start an in-memory MongoDB (the first run downloads a ~100 MB `mongod` binary and caches it) and mock every AI provider.
 
 ```bash
-# Everything: 232 tests, about 1-2 minutes
+# Everything: 243 tests, about 1-2 minutes
 npm test
 
 # Watch mode while editing (re-runs affected tests on save)

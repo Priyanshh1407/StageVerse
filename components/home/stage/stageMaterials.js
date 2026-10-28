@@ -15,6 +15,8 @@ export function createLedMaterial({ textTexture = null, grid = [160, 70], seed =
             uColorB: { value: new THREE.Color('#ff3df2') },
             uBrightness: { value: 1 },
             uText: { value: textTexture },
+            uTextPrev: { value: textTexture },
+            uTextMix: { value: 1 },
             uHasText: { value: textTexture ? 1 : 0 },
             uGrid: { value: new THREE.Vector2(...grid) },
             uSeed: { value: seed },
@@ -33,6 +35,8 @@ export function createLedMaterial({ textTexture = null, grid = [160, 70], seed =
             uniform vec3 uColorB;
             uniform float uBrightness;
             uniform sampler2D uText;
+            uniform sampler2D uTextPrev;
+            uniform float uTextMix;
             uniform float uHasText;
             uniform vec2 uGrid;
             uniform float uSeed;
@@ -61,8 +65,16 @@ export function createLedMaterial({ textTexture = null, grid = [160, 70], seed =
                 color += vec3(sparkle) * 0.8;
 
                 if (uHasText > 0.5) {
-                    vec4 text = texture2D(uText, uv);
-                    color = mix(color, text.rgb * 1.6, text.a);
+                    // Content masks (see createScreenContent): R = headline, G = neon glow, B = small text.
+                    // Crossfade from the previous content while the screen changes.
+                    vec3 m = mix(texture2D(uTextPrev, uv).rgb, texture2D(uText, uv).rgb, uTextMix);
+                    // Headline: the show's colours across the word, a white shine sweeping through it
+                    float s = fract(uTime * 0.12) * 1.8 - 0.4;
+                    float shine = smoothstep(0.07, 0.0, abs(uv.x - s + (uv.y - 0.5) * 0.35));
+                    vec3 headline = mix(mix(uColorA, vec3(1.0), 0.3), mix(uColorB, vec3(1.0), 0.3), smoothstep(0.15, 0.85, uv.x)) * 1.9 + vec3(shine) * 1.6;
+                    vec3 glow = mix(uColorB, uColorA, 0.35) * 1.5;
+                    color *= 1.0 - clamp(m.r + m.g * 0.4 + m.b, 0.0, 0.85);   // darken the visuals behind the text
+                    color += headline * m.r + glow * m.g * (1.0 - m.r) + vec3(1.5) * m.b;
                 }
 
                 // Dark gaps between LED pixels
@@ -110,7 +122,7 @@ export function createFloorMaterial() {
             varying vec3 vWorld;
             void main() {
                 // House lights: the whole room in warm, even light
-                vec3 house = vec3(1.0, 0.7, 0.28) * uHouse * (0.22 + 0.1 * smoothstep(40.0, 0.0, abs(vWorld.x)));
+                vec3 house = vec3(1.0, 0.7, 0.28) * uHouse * (0.09 + 0.05 * smoothstep(40.0, 0.0, abs(vWorld.x))) * step(vWorld.z, 33.4);
                 float fromStage = max(0.0, vWorld.z);                    // stage front is at z = 0
                 float spill = exp(-fromStage * 0.055) * smoothstep(30.0, 4.0, abs(vWorld.x));
                 float streak = exp(-abs(vWorld.x) * 0.35) * exp(-fromStage * 0.05) * 0.5;
@@ -147,35 +159,96 @@ export function createBackdropMaterial() {
 }
 
 /**
- * Text for the main screen: the StageVerse wordmark plus the next upcoming events.
- * Drawn once into a canvas (and again only when the events change).
+ * Content for the main LED wall, drawn once per change as masks in three channels, which the LED
+ * shader colours live: R = the headline (filled with the show's colours and a moving shine),
+ * G = its neon glow and outline, B = small text in white.
+ *   { kind: 'brand' }                    the STAGEVERSE wordmark, tagline and the next events
+ *   { kind: 'role', key, line }          "FOR THE" + the role name + its line
+ * `font` is a loaded display font family (falls back to the system font).
  */
-export function createScreenTextTexture(events = []) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 2048;
-    canvas.height = 910;
-    const ctx = canvas.getContext('2d');
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#ffffff';
+export function createScreenContent(content = { kind: 'brand' }, { events = [], font } = {}) {
+    const W = 2048;
+    const H = 910;
+    const family = font ? `${font}, system-ui, sans-serif` : 'system-ui, -apple-system, "Segoe UI", sans-serif';
+    const layer = () => {
+        const c = document.createElement('canvas');
+        c.width = W;
+        c.height = H;
+        const ctx = c.getContext('2d');
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fff';
+        ctx.strokeStyle = '#fff';
+        return { c, ctx };
+    };
+    const head = layer();
+    const glow = layer();
+    const small = layer();
+    const spacing = (ctx, px) => { if ('letterSpacing' in ctx) ctx.letterSpacing = `${px}px`; };
 
-    ctx.font = '900 220px system-ui, -apple-system, "Segoe UI", sans-serif';
-    ctx.fillText('STAGEVERSE', canvas.width / 2, 330);
+    // Headline, with its glow: a wide blurred stroke plus a crisp thin outline
+    const headline = (text, y, size) => {
+        let px = size;
+        head.ctx.font = `900 ${px}px ${family}`;
+        spacing(head.ctx, px * 0.08);
+        while (head.ctx.measureText(text).width > W * 0.9 && px > 60) { px -= 8; head.ctx.font = `900 ${px}px ${family}`; spacing(head.ctx, px * 0.08); }
+        head.ctx.fillText(text, W / 2, y);
+        glow.ctx.font = head.ctx.font;
+        spacing(glow.ctx, px * 0.08);
+        glow.ctx.filter = 'blur(18px)';
+        glow.ctx.lineWidth = px * 0.09;
+        glow.ctx.strokeText(text, W / 2, y);
+        glow.ctx.filter = 'none';
+        glow.ctx.lineWidth = Math.max(2, px * 0.012);
+        glow.ctx.strokeText(text, W / 2, y);
+        return px;
+    };
+    const line = (text, y, size, weight = 600, track = 0.2) => {
+        small.ctx.font = `${weight} ${size}px ${family}`;
+        spacing(small.ctx, size * track);
+        small.ctx.fillText(text, W / 2, y);
+    };
 
-    const upcoming = events.slice(0, 2);
-    if (upcoming.length) {
-        ctx.font = '700 64px system-ui, -apple-system, "Segoe UI", sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.85)';
-        ctx.fillText('UP NEXT', canvas.width / 2, 560);
-        ctx.font = '600 58px system-ui, -apple-system, "Segoe UI", sans-serif';
-        upcoming.forEach((e, i) => {
-            const line = [e.title, e.city, e.date].filter(Boolean).join('  ·  ');
-            ctx.fillText(line.length > 52 ? `${line.slice(0, 51)}…` : line, canvas.width / 2, 660 + i * 90);
-        });
+    if (content.kind === 'role') {
+        line('FOR THE', 230, 54, 700, 0.5);
+        headline(content.key.toUpperCase(), 410, 300);
+        // Wrap the role's line onto at most two lines
+        small.ctx.font = `500 50px ${family}`;
+        const words = (content.line || '').split(' ');
+        const rows = [''];
+        for (const w of words) {
+            const next = rows[rows.length - 1] ? `${rows[rows.length - 1]} ${w}` : w;
+            if (small.ctx.measureText(next).width > W * 0.78 && rows.length < 2) rows.push(w);
+            else rows[rows.length - 1] = next;
+        }
+        rows.forEach((r, i) => line(r, 610 + i * 72, 50, 500, 0.04));
+        small.ctx.fillRect(W / 2 - 160, 690 + rows.length * 30, 320, 6);
+    } else {
+        const px = headline('STAGEVERSE', 330, 250);
+        small.ctx.fillRect(W / 2 - px * 2.6, 470, px * 5.2, 5);
+        line('THE ENTIRE CONCERT ECOSYSTEM', 530, 46, 700, 0.35);
+        const upcoming = events.slice(0, 2);
+        if (upcoming.length) {
+            line('UP NEXT', 660, 40, 800, 0.5);
+            upcoming.forEach((e, i) => {
+                const text = [e.title, e.city, e.date].filter(Boolean).join('  ·  ');
+                line(text.length > 52 ? `${text.slice(0, 51)}…` : text, 740 + i * 70, 46, 500, 0.04);
+            });
+        }
     }
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = 4;
+    // Pack the three masks into the colour channels of one texture
+    const out = layer();
+    const img = out.ctx.createImageData(W, H);
+    const [r, g, b] = [head, glow, small].map((l) => l.ctx.getImageData(0, 0, W, H).data);
+    for (let i = 0; i < img.data.length; i += 4) {
+        img.data[i] = r[i + 3];
+        img.data[i + 1] = g[i + 3];
+        img.data[i + 2] = b[i + 3];
+        img.data[i + 3] = 255;
+    }
+    out.ctx.putImageData(img, 0, 0);
+    const texture = new THREE.CanvasTexture(out.c);
+    texture.anisotropy = 4; // linear data (masks), so no sRGB conversion
     return texture;
 }

@@ -44,7 +44,7 @@ function Director({ control, look }) {
 // Automatic step-down when the frame rate can't keep up: bloom off, then 70% beams, then lower resolution
 const MAX_STEP = 3;
 
-function Stage3D({ tier, control, look, visible, counts, events }) {
+function Stage3D({ tier, control, look, visible, counts, events, screen, font }) {
     const [step, setStep] = useState(0);
     const settings = TIER_SETTINGS[tier];
     const beams = Math.round((counts.beams ?? settings.beams) * (step >= 2 ? 0.7 : 1));
@@ -60,7 +60,7 @@ function Stage3D({ tier, control, look, visible, counts, events }) {
         >
             <PerformanceMonitor flipflops={3} onDecline={() => setStep((s) => Math.min(s + 1, MAX_STEP))} />
             <Director control={control} look={look} />
-            <StageScene beams={beams} bloom={bloom} look={look} events={events} lasers={counts.lasers} blinders={counts.blinders} />
+            <StageScene beams={beams} bloom={bloom} look={look} events={events} lasers={counts.lasers} blinders={counts.blinders} screen={screen} font={font} />
         </Canvas>
     );
 }
@@ -93,7 +93,7 @@ function Stage2D({ control, counts }) {
  * The visual layer of the show. Picks a quality tier on the client, then renders the 3D stage,
  * or for tier 0 the poster with 2D lights (or the poster alone when "reduce motion" is set).
  */
-export default function ShowStage({ control, look, visible, counts, events }) {
+export default function ShowStage({ control, look, visible, counts, events, screen, font }) {
     const tier = useQualityTier();
     const [reducedMotion] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
@@ -109,7 +109,7 @@ export default function ShowStage({ control, look, visible, counts, events }) {
     }
     return (
         <div className="absolute inset-0 animate-[fadeIn_1.2s_ease-out]">
-            <Stage3D tier={tier} control={control} look={look} visible={visible} counts={counts} events={events} />
+            <Stage3D tier={tier} control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={font} />
         </div>
     );
 }

@@ -11,6 +11,7 @@ import Lasers from './Lasers';
 import Blinders from './Blinders';
 import Haze from './Haze';
 import HouseLights, { HOUSE_COLOR } from './HouseLights';
+import Venue from './Venue';
 import { createTrussGeometry } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
@@ -68,8 +69,8 @@ function Floor({ look, blinders }) {
         u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
     });
     return (
-        <mesh ref={mesh} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 4]} material={material}>
-            <planeGeometry args={[90, 50]} />
+        <mesh ref={mesh} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 24]} material={material}>
+            <planeGeometry args={[100, 90]} />
         </mesh>
     );
 }
@@ -116,7 +117,7 @@ function CameraFlash({ look, blinders }) {
     );
 }
 
-export default function StageScene({ beams, bloom, look, events = [], lasers = 24, blinders = 8 }) {
+export default function StageScene({ beams, bloom, look, events = [], lasers = 24, blinders = 8, screen, font }) {
     const truss = useMemo(() => createTrussGeometry(), []);
     const backdrop = useMemo(() => createBackdropMaterial(), []);
 
@@ -134,7 +135,8 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 2
                 <meshLambertMaterial color="#565c69" emissive="#040507" />
             </mesh>
 
-            <LedWall look={look} events={events} />
+            <LedWall look={look} events={events} screen={screen} font={font} />
+            <Venue look={look} font={font} />
             {/* Fixture models stream in; the rest of the stage shows meanwhile */}
             <Suspense fallback={null}>
                 <Fixtures count={beams} look={look} />

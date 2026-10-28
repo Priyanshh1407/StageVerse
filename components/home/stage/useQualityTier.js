@@ -6,13 +6,17 @@ import { useEffect, useState } from 'react';
 //   0  no 3D: static poster + 2D lights (no WebGL, "reduce motion", very weak devices)
 //   1  integrated GPUs (e.g. Intel Iris Xe): fewer beams, half-resolution bloom, dpr 1
 //   2  discrete GPUs: more beams, bloom, dpr up to 1.5
+// The three rig sizes a visitor can pick on the lighting desk (52 is the minimum that still
+// looks like a full concert rig)
+export const BEAM_COUNTS = [52, 80, 120];
+
 export const TIER_SETTINGS = {
     0: { beams: 0, bloom: false, dpr: 1 },
     // Full-scene benchmark on an Iris Xe: 140 beams, and 100 + bloom at native DPR, all held 60 FPS
     // (1% low 58), so integrated GPUs get bloom too; the auto step-down turns it off first if needed
     // Moving heads are the detailed model (~16.5k vertices each), so counts stay moderate
     1: { beams: 52, bloom: true, dpr: 1 },
-    2: { beams: 72, bloom: true, dpr: [1, 1.5] },
+    2: { beams: 80, bloom: true, dpr: [1, 1.5] },
 };
 
 function hasWebGL() {

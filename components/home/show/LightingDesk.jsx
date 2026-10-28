@@ -1,5 +1,6 @@
 'use client';
 
+import { BEAM_COUNTS } from '@/components/home/stage/useQualityTier';
 import { Power, Settings2, Sun, Zap, Music, Play, Square, RotateCcw, X, Lamp, SunDim } from 'lucide-react';
 
 // The basic lighting palette (what a console's colour picker offers), plus a custom picker
@@ -113,7 +114,17 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                         </button>
                     ))}
                 </div>
-                <Slider label="Count" value={counts.beams} min={10} max={100} onChange={(v) => onCounts({ beams: v })} />
+                <div className="text-[11px] text-gray-400">
+                    Moving heads
+                    <div className="grid grid-cols-3 gap-1.5 mt-1">
+                        {BEAM_COUNTS.map((n, i) => (
+                            <button key={n} onClick={() => onCounts({ beams: n })} aria-pressed={counts.beams === n}
+                                className={`py-1.5 rounded-md text-[11px] font-bold ${counts.beams === n ? 'bg-cyan-400 text-black' : 'bg-white/10 text-gray-300'}`}>
+                                {n}<span className="block text-[9px] font-normal opacity-70">{['full rig', 'bigger', 'extreme'][i]}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <Slider label="Spread" value={desk.fan ?? 1} min={0.3} max={1.6} step={0.01} onChange={(v) => set({ fan: v })} />
                 <Slider label="Tilt" value={desk.tiltShift ?? 0} min={-0.6} max={0.8} step={0.01} onChange={(v) => set({ tiltShift: v })} />
                 <Slider label="Sweep" value={desk.sweep} min={0} max={1} step={0.01} onChange={(v) => set({ sweep: v })} />

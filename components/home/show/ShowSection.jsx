@@ -3,19 +3,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ChevronDown, Users, Calendar, Wrench, Music, Square } from 'lucide-react';
+import { Orbitron } from 'next/font/google';
+import { ChevronDown, Music, Square, Upload, Settings2, Loader2 } from 'lucide-react';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
-import { buildScrollSheet, ENCORE_CHOICES, ROLES, phaseAt, roleAt } from './scrollShow';
+import { buildIdleShow } from '@/lib/show/program';
+import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt } from './scrollShow';
 import { currentState } from './director';
 import LightingDesk from './LightingDesk';
 
 // The 3D stage is client-only and loads after the page (the headline below is plain HTML)
 const ShowStage = dynamic(() => import('./ShowStage'), { ssr: false });
 
+// Display face for the LED wall and the venue sign (drawn into canvases, so it's passed by name)
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display: 'swap' });
+
 const SONG_SHOW = '/shows/sky-full-of-stars.show.json';
-const ROLE_ICONS = { Fan: Users, Artist: Music, Organizer: Calendar, Crew: Wrench };
 const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', build: '#ff8a00', peak: '#ff3df2', outro: '#3b5bff' };
+const MAX_UPLOAD_MB = 80;
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 function Fade({ show, children, className = '' }) {
@@ -26,28 +31,64 @@ function Fade({ show, children, className = '' }) {
     );
 }
 
+/** Decode an audio file in the browser and resample it to mono 22.05 kHz for analysis. */
+async function decodeForAnalysis(file) {
+    const ctx = new AudioContext();
+    const decoded = await ctx.decodeAudioData(await file.arrayBuffer());
+    ctx.close();
+    const rate = 22050;
+    const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * rate), rate);
+    const source = offline.createBufferSource();
+    source.buffer = decoded;
+    source.connect(offline.destination);
+    source.start();
+    const rendered = await offline.startRendering();
+    return { pcm: rendered.getChannelData(0).slice(), sampleRate: rate, duration: decoded.duration };
+}
+
+/** Run the analysis and programming in a worker, so the page stays smooth meanwhile. */
+function analyseInWorker(pcm, sampleRate, title) {
+    return new Promise((resolve, reject) => {
+        const worker = new Worker(new URL('./analysisWorker.js', import.meta.url), { type: 'module' });
+        worker.onmessage = ({ data }) => {
+            worker.terminate();
+            if (data.ok) resolve(data.show);
+            else reject(new Error(data.error));
+        };
+        worker.onerror = (e) => {
+            worker.terminate();
+            reject(new Error(e.message || 'Analysis failed'));
+        };
+        worker.postMessage({ pcm, sampleRate, title }, [pcm.buffer]);
+    });
+}
+
 /**
- * "The Show": the homepage hero. A 400vh section with a sticky full-screen stage; scrolling
- * runs the cue stack (scrollShow.js). The lighting desk takes the lights over by hand, and
- * concert mode plays a song with its programmed light show.
+ * "The Show": the homepage hero. A tall section with a sticky full-screen stage; scrolling runs
+ * the cue stack (scrollShow.js): outside the venue, through the doors, the rig coming up, a look
+ * per role on the LED wall, the drop, the encore, then the playground (the lighting desk, the
+ * demo song, or the visitor's own song, analysed in their browser).
  */
 export default function ShowSection({ events = [] }) {
     const section = useRef(null);
+    const fileInput = useRef(null);
     const look = useRef(DEFAULT_LOOK);
-    const control = useRef({ mode: 'scroll', progress: 0, sheet: buildScrollSheet(), shot: 'house' });
+    const control = useRef({ mode: 'scroll', progress: 0, sheet: buildScrollSheet(), idle: prepareSongShow(buildIdleShow()), shot: 'outside' });
 
-    const [phase, setPhase] = useState('intro');
+    const [phase, setPhase] = useState('outside');
     const [role, setRole] = useState(null);
-    const [cueName, setCueName] = useState('House lights down');
+    const [screen, setScreen] = useState({ kind: 'brand' });
+    const [cueName, setCueName] = useState('');
     const [visible, setVisible] = useState(true);
     const [encore, setEncore] = useState(ENCORE_CHOICES[0]);
     const [mode, setMode] = useState('scroll');
     const [desk, setDesk] = useState(DEFAULT_LOOK);
     const [deskOpen, setDeskOpen] = useState(false);
     const [counts, setCounts] = useState({ beams: null, lasers: 24, blinders: 8 });
-    const [song, setSong] = useState({ available: false, show: null, playing: false, time: 0 });
+    // bundled: the demo song's show (only where its file exists); current: the show playing
+    const [song, setSong] = useState({ bundled: null, current: null, playing: false, time: 0, status: null, error: null });
 
-    // Scroll progress through the section drives the show (no re-render unless the overlay changes)
+    // Scroll progress through the section drives the show (no re-render unless an overlay changes)
     useEffect(() => {
         const onScroll = () => {
             const el = section.current;
@@ -58,6 +99,10 @@ export default function ShowSection({ events = [] }) {
             c.progress = progress;
             setPhase(phaseAt(progress));
             setRole(roleAt(progress)?.key ?? null);
+            setScreen((prev) => {
+                const next = screenAt(progress);
+                return prev.kind === next.kind && prev.key === next.key ? prev : next;
+            });
             if (c.mode === 'scroll') setCueName(currentState(c).name);
         };
         onScroll();
@@ -76,7 +121,7 @@ export default function ShowSection({ events = [] }) {
         return () => observer.disconnect();
     }, []);
 
-    // Concert mode is offered only where the song file exists (it's local-only: copyrighted)
+    // The demo song is offered only where its file exists (it's local-only: copyrighted)
     useEffect(() => {
         let cancelled = false;
         const c = control.current;
@@ -85,12 +130,13 @@ export default function ShowSection({ events = [] }) {
             .then(async (show) => {
                 if (!show?.audio || cancelled) return;
                 const head = await fetch(encodeURI(show.audio), { method: 'HEAD' });
-                if (head.ok && !cancelled) setSong((s) => ({ ...s, available: true, show }));
+                if (head.ok && !cancelled) setSong((s) => ({ ...s, bundled: show }));
             })
             .catch(() => {});
         return () => {
             cancelled = true;
             c.audio?.pause();
+            if (c.objectUrl) URL.revokeObjectURL(c.objectUrl);
         };
     }, []);
 
@@ -104,7 +150,7 @@ export default function ShowSection({ events = [] }) {
         const c = control.current;
         if (c.mode === 'manual') return;
         const { look: now } = currentState(c);
-        c.desk = { ...now, pulse: 0, strobe: 0, blinder: now.blinder > 0.5 ? 1 : 0 };
+        c.desk = { ...now, pulse: 0, strobe: 0, blinder: now.blinder > 0.5 ? 1 : 0, dropFx: 0, laserChase: 0 };
         c.mode = 'manual';
         setMode('manual');
         setDesk(c.desk);
@@ -157,51 +203,80 @@ export default function ShowSection({ events = [] }) {
         setSong((s) => ({ ...s, playing: false, time: 0 }));
     }, []);
 
-    const playSong = () => {
+    /** Play a programmed show with its audio (a URL, or an object URL for an uploaded file). */
+    const playShow = (show, url, objectUrl = null) => {
         const c = control.current;
-        if (!song.show) return;
-        if (!c.audio) {
-            c.song = prepareSongShow(song.show);
-            c.audio = new Audio(encodeURI(song.show.audio));
-            c.audio.addEventListener('timeupdate', () => setSong((s) => ({ ...s, time: c.audio.currentTime })));
-            c.audio.addEventListener('ended', stopSong);
-        }
-        c.audio.currentTime = 0;
-        c.audio.play().catch(() => stopSong());
+        c.audio?.pause();
+        if (c.objectUrl && c.objectUrl !== objectUrl) URL.revokeObjectURL(c.objectUrl);
+        c.objectUrl = objectUrl;
+        c.song = prepareSongShow(show);
+        c.clock = null;
+        const audio = new Audio(url);
+        audio.addEventListener('timeupdate', () => setSong((s) => ({ ...s, time: audio.currentTime })));
+        audio.addEventListener('ended', stopSong);
+        c.audio = audio;
+        audio.play().catch(() => stopSong());
         c.mode = 'song';
         setMode('song');
-        setSong((s) => ({ ...s, playing: true }));
+        setSong((s) => ({ ...s, current: show, playing: true, status: null, error: null }));
         setDeskOpen(false);
+    };
+
+    const playDemo = () => song.bundled && playShow(song.bundled, encodeURI(song.bundled.audio));
+
+    // The visitor's own song: decoded and analysed in their browser, never uploaded anywhere
+    const analyseUpload = async (file) => {
+        if (!file) return;
+        if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+            setSong((s) => ({ ...s, error: `That file is over ${MAX_UPLOAD_MB} MB.` }));
+            return;
+        }
+        const title = file.name.replace(/\.[^.]+$/, '');
+        try {
+            setSong((s) => ({ ...s, status: 'Reading your song…', error: null }));
+            const { pcm, sampleRate, duration } = await decodeForAnalysis(file);
+            if (duration > 15 * 60) throw new Error('Songs up to 15 minutes, please.');
+            setSong((s) => ({ ...s, status: 'Finding the tempo, beats and sections…' }));
+            const show = await analyseInWorker(pcm, sampleRate, title);
+            const url = URL.createObjectURL(file); // revoked when the next song replaces it
+            playShow(show, url, url);
+        } catch (error) {
+            setSong((s) => ({ ...s, status: null, error: error.message || 'Could not read that file.' }));
+        }
     };
 
     const seek = (e) => {
         const c = control.current;
         const rect = e.currentTarget.getBoundingClientRect();
-        if (c.audio && song.show) c.audio.currentTime = ((e.clientX - rect.left) / rect.width) * song.show.duration;
+        if (c.audio && song.current) c.audio.currentTime = ((e.clientX - rect.left) / rect.width) * song.current.duration;
     };
 
-    const songSection = song.show?.sections.find((s) => song.time >= s.start && song.time < s.end);
+    const now = song.current;
+    const songSection = now?.sections.find((s) => song.time >= s.start && song.time < s.end);
     const deskCounts = { ...counts, beams: counts.beams ?? 52 };
     const showOverlays = mode !== 'song';
-    const currentRole = role && { ...ROLES.find((r) => r.key === role), Icon: ROLE_ICONS[role] };
+    const songControls = { available: Boolean(song.bundled), title: song.bundled?.title, playing: song.playing, play: playDemo, stop: stopSong };
 
     return (
-        <section ref={section} className="relative h-[400vh] bg-[#010208]" aria-label="StageVerse live show">
+        <section ref={section} className="relative h-[520vh] bg-[#010208]" aria-label="StageVerse live show">
             <div className="sticky top-0 h-screen w-full overflow-hidden">
-                <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} />
+                <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />
 
                 {/* Readability: darken the top and bottom edges behind the text */}
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/50 via-transparent to-black/60" />
 
+                {/* The role on the LED wall is drawn in a canvas; this is the same text for screen readers */}
+                <p className="sr-only" aria-live="polite">{role ? `For the ${role}: ${screen.line ?? ''}` : ''}</p>
+
                 {showOverlays && (
                     <div className="absolute inset-0 pointer-events-none text-white">
-                        <Fade show={phase === 'intro'} className="flex-col items-center justify-center text-center px-4 pt-16">
-                            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-bold leading-[1.05] tracking-tight drop-shadow-2xl">
+                        <Fade show={phase === 'outside'} className="flex-col items-center justify-start text-center px-4 pt-28 sm:pt-32">
+                            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight drop-shadow-2xl">
                                 The Entire Concert<br />
                                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-400 to-fuchsia-400">Ecosystem. One Platform.</span>
                             </h1>
-                            <p className="mt-6 text-lg md:text-2xl text-cyan-100/80 font-light max-w-2xl">From discovery to production. Scroll to run the show.</p>
-                            <ChevronDown className="mt-10 w-8 h-8 text-cyan-300 animate-bounce" aria-hidden />
+                            <p className="mt-5 text-lg md:text-xl text-cyan-100/80 font-light max-w-2xl">The show is about to start. Scroll to walk in.</p>
+                            <ChevronDown className="mt-6 w-8 h-8 text-cyan-300 animate-bounce" aria-hidden />
                         </Fade>
 
                         <Fade show={phase === 'cues'} className="items-end justify-start p-6 sm:p-12 pb-24">
@@ -210,22 +285,6 @@ export default function ShowSection({ events = [] }) {
                                 <h2 className="text-3xl sm:text-5xl font-bold max-w-xl drop-shadow-xl">Every show runs on cues.</h2>
                                 <p className="mt-3 text-gray-300 max-w-md">StageVerse puts the whole production on one timeline, from the first ticket to the last blackout.</p>
                             </div>
-                        </Fade>
-
-                        <Fade show={phase === 'roles' && Boolean(currentRole)} className="items-center justify-center sm:justify-start px-4 sm:px-16">
-                            {currentRole && (
-                                <div key={currentRole.key} className="pointer-events-auto max-w-md rounded-2xl bg-black/55 backdrop-blur-md border border-white/10 p-6 sm:p-8 animate-[fadeIn_0.5s_ease-out]">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <currentRole.Icon className="w-7 h-7" style={{ color: currentRole.colors?.[0] }} />
-                                        <span className="text-xs font-mono tracking-[0.3em] text-gray-400">FOR THE</span>
-                                    </div>
-                                    <h3 className="text-4xl sm:text-5xl font-black mb-3" style={{ color: currentRole.colors?.[0] }}>{currentRole.key}</h3>
-                                    <p className="text-gray-200 mb-5">{currentRole.line}</p>
-                                    <Link href="/login" className="inline-block px-6 py-2.5 rounded-full bg-white text-black font-bold text-sm hover:bg-cyan-300 transition-colors">
-                                        Join as {currentRole.key.toLowerCase()}
-                                    </Link>
-                                </div>
-                            )}
                         </Fade>
 
                         <Fade show={phase === 'encore'} className="flex-col items-center justify-end text-center px-4 pb-28 sm:pb-32">
@@ -238,51 +297,74 @@ export default function ShowSection({ events = [] }) {
                                         style={{ background: `linear-gradient(135deg, ${c.a}, ${c.b})`, boxShadow: `0 0 24px ${c.a}88` }} />
                                 ))}
                             </div>
-                            <div className="pointer-events-auto mt-8 flex gap-3">
-                                <Link href="/login" className="px-6 py-3 rounded-full bg-cyan-400 text-black font-bold hover:bg-cyan-300">Get started</Link>
-                                <a href="#events" className="px-6 py-3 rounded-full border border-white/30 font-bold hover:border-white">Explore events</a>
+                        </Fade>
+
+                        {/* The playground: the visitor takes the lights */}
+                        <Fade show={phase === 'play'} className="flex-col items-start justify-end px-4 sm:px-12 pb-24 sm:pb-12">
+                            <div className="pointer-events-auto max-w-md rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 p-5 sm:p-6">
+                                <div className="font-mono text-cyan-300 text-xs tracking-[0.3em] mb-2">YOUR TURN</div>
+                                <h2 className="text-2xl sm:text-3xl font-black mb-2">Run the show yourself.</h2>
+                                <p className="text-sm text-gray-300 mb-4">Take the lighting desk, or drop in a song: we find its beats and sections and program a light show for it, right here in your browser. Your file never leaves your device.</p>
+                                <div className="flex flex-wrap gap-2">
+                                    <button onClick={() => setDeskOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-cyan-300">
+                                        <Settings2 className="w-4 h-4" /> Take the desk
+                                    </button>
+                                    <button onClick={() => fileInput.current?.click()} disabled={Boolean(song.status)}
+                                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold disabled:opacity-60">
+                                        {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your song
+                                    </button>
+                                    {song.bundled && (
+                                        <button onClick={playDemo} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white">
+                                            <Music className="w-4 h-4" /> {song.bundled.title}
+                                        </button>
+                                    )}
+                                </div>
+                                <input ref={fileInput} type="file" accept="audio/*" className="hidden"
+                                    onChange={(e) => { analyseUpload(e.target.files?.[0]); e.target.value = ''; }} />
+                                {song.status && <p className="mt-3 text-xs text-cyan-200" role="status">{song.status}</p>}
+                                {song.error && <p className="mt-3 text-xs text-red-300" role="alert">{song.error}</p>}
+                                <div className="mt-4 flex gap-3 text-sm">
+                                    <Link href="/login" className="font-bold text-cyan-300 hover:underline">Get started →</Link>
+                                    <a href="#events" className="text-gray-300 hover:underline">Explore events</a>
+                                </div>
                             </div>
                         </Fade>
                     </div>
                 )}
 
                 {/* Concert mode: now playing, with the programmed timeline (click to seek) */}
-                {mode !== 'scroll' && song.playing && song.show && (
+                {mode !== 'scroll' && song.playing && now && (
                     <div className="absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[36rem] bottom-20 sm:bottom-6 rounded-2xl bg-black/75 backdrop-blur-md border border-white/10 p-4 text-white">
                         <div className="flex items-center justify-between text-sm mb-2">
-                            <div>
-                                <div className="font-bold">{song.show.title}</div>
+                            <div className="min-w-0">
+                                <div className="font-bold truncate">{now.title}</div>
                                 <div className="text-[11px] text-gray-400 font-mono">
-                                    {song.show.bpm} BPM · {songSection ? songSection.kind.toUpperCase() : ''}{mode === 'manual' ? ' · desk has the lights' : ''}
+                                    {now.bpm} BPM · {songSection ? songSection.kind.toUpperCase() : ''}{mode === 'manual' ? ' · desk has the lights' : ''}
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="font-mono text-xs text-gray-300">{fmt(song.time)} / {fmt(song.show.duration)}</span>
+                                <span className="font-mono text-xs text-gray-300">{fmt(song.time)} / {fmt(now.duration)}</span>
                                 <button onClick={stopSong} aria-label="Stop concert mode" className="p-2 rounded-full bg-white/10 hover:bg-white/20"><Square className="w-3.5 h-3.5" /></button>
                             </div>
                         </div>
-                        <div onClick={seek} role="slider" aria-label="Song position" aria-valuemin={0} aria-valuemax={Math.round(song.show.duration)} aria-valuenow={Math.round(song.time)} tabIndex={0}
+                        <div onClick={seek} role="slider" aria-label="Song position" aria-valuemin={0} aria-valuemax={Math.round(now.duration)} aria-valuenow={Math.round(song.time)} tabIndex={0}
                             className="relative h-8 rounded-md overflow-hidden cursor-pointer bg-white/5">
-                            {song.show.sections.map((s) => (
+                            {now.sections.map((s) => (
                                 <div key={s.start} title={`${s.kind} ${fmt(s.start)}`} className="absolute top-0 bottom-0 border-r border-black/60"
-                                    style={{ left: `${(s.start / song.show.duration) * 100}%`, width: `${((s.end - s.start) / song.show.duration) * 100}%`, background: `${SECTION_COLORS[s.kind]}55` }} />
+                                    style={{ left: `${(s.start / now.duration) * 100}%`, width: `${((s.end - s.start) / now.duration) * 100}%`, background: `${SECTION_COLORS[s.kind]}55` }} />
                             ))}
-                            <svg className="absolute inset-0 w-full h-full" viewBox={`0 0 ${song.show.energy.length} 1`} preserveAspectRatio="none" aria-hidden>
-                                <polyline fill="none" stroke="white" strokeOpacity="0.6" strokeWidth="0.04" vectorEffect="non-scaling-stroke"
-                                    points={song.show.energy.map((e, i) => `${i},${1 - e * 0.9}`).join(' ')} />
-                            </svg>
-                            <div className="absolute top-0 bottom-0 w-0.5 bg-white" style={{ left: `${(song.time / song.show.duration) * 100}%` }} />
+                            {now.energy?.length > 1 && (
+                                <svg className="absolute inset-0 w-full h-full" viewBox={`0 0 ${now.energy.length} 1`} preserveAspectRatio="none" aria-hidden>
+                                    <polyline fill="none" stroke="white" strokeOpacity="0.6" strokeWidth="0.04" vectorEffect="non-scaling-stroke"
+                                        points={now.energy.map((e, i) => `${i},${1 - e * 0.9}`).join(' ')} />
+                                </svg>
+                            )}
+                            <div className="absolute top-0 bottom-0 w-0.5 bg-white" style={{ left: `${(song.time / now.duration) * 100}%` }} />
                         </div>
                     </div>
                 )}
 
                 <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex flex-col items-end gap-3 pointer-events-none">
-                    {song.available && !song.playing && !deskOpen && (
-                        <button onClick={playSong}
-                            className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold">
-                            <Music className="w-4 h-4" /> Play the show with sound
-                        </button>
-                    )}
                     <LightingDesk
                         open={deskOpen}
                         onOpenChange={setDeskOpen}
@@ -293,7 +375,7 @@ export default function ShowSection({ events = [] }) {
                         onCounts={changeCounts}
                         onMomentary={momentary}
                         onResume={resume}
-                        song={{ available: song.available, title: song.show?.title, playing: song.playing, play: playSong, stop: stopSong }}
+                        song={songControls}
                     />
                 </div>
             </div>

@@ -162,3 +162,22 @@ tier 1 gets bloom. The 60 Hz display caps every reading, so the remaining headro
   - Movement uses an *accumulated* phase. Computing `sin(time × speed)` made every beam leap whenever a cue changed the speed, because time has been counting since page load.
   - The scroll position is smoothed before it drives the show, since wheel notches arrive in jumps.
   - Cues ease in and out (smoothstep), and camera moves glide (1.4 s damping).
+
+## The journey (scroll)
+
+1. **Outside the venue:** a dark 10 m facade with a neon-framed doorway and a STAGEVERSE sign, warm house light spilling out. The aerial and floor fixtures search the sky above the venue in white, the feeling of waiting at the gate. Scrolling walks you through the doors (the camera glides from the plaza through the doorway); the sky beams go out behind you.
+2. **House lights, then the rig comes up** one group at a time (washes, side towers, aerials and floor).
+3. **One section per role (Fan, Artist, Organizer, Crew), shown on the LED wall** (no pop-up). Each has its own position and colour. Cues *arrive* at their scroll position and *hold*: the rig glides into the look as you approach, holds it while you read, and glides on as you scroll past.
+4. **Riser, the drop, the encore** (pick the colour).
+5. **The playground:**
+   - take the lighting desk
+   - play the demo song
+   - or **"Light up your song"**: the file is decoded and resampled in the browser (`OfflineAudioContext`), then analysed and programmed in a Web Worker (`show/analysisWorker.js`, the same code as `npm run analyse:song`). It never leaves the device.
+
+   Until the visitor takes over, the rig runs a looping 124 BPM idle show (`buildIdleShow`), so it's never still.
+
+**The LED wall** draws its content as three masks (headline, neon glow, small text) in one texture's colour channels. The shader fills the headline with the live show colours and a moving shine, and crossfades when the content changes. The face is Orbitron (`next/font`, loaded before drawing).
+
+**Programming** (`lib/show/program.js`) uses a concert vocabulary of positions (wide, tight, audience, sky, cross, vee) and movements (hold, sway, wave, chase, ballyhoo). Movement cycle lengths are in bars, so they lock to the song's tempo. A phrase is 8 bars, or 4 in peaks, and each changes the position and movement. Peaks swap colours and hit (strobe/blinder) on every phrase.
+
+**Rig sizes:** the desk offers 52 (the full-rig minimum), 80 or 120 (extreme) moving heads.

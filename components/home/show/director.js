@@ -1,4 +1,5 @@
 import { sampleCueSheet, sampleSongShow } from '@/lib/show/timeline';
+import { PLAY_FROM } from './scrollShow';
 
 // Who is running the lights right now, read every frame by the 3D director (and a few times a
 // second by the 2D fallback). `control` is a plain mutable object held in a ref:
@@ -26,5 +27,11 @@ export function currentState(control) {
     if (control.mode === 'manual' && control.desk) return { look: control.desk, shot: control.shot || 'wide', name: 'Lighting desk' };
     if (control.mode === 'song' && control.song && control.audio) return sampleSongShow(control.song, songTime(control));
     // The director smooths scroll progress (wheel notches arrive in jumps); fall back to the raw value
-    return sampleCueSheet(control.sheet, control.smoothProgress ?? control.progress);
+    const progress = control.smoothProgress ?? control.progress;
+    // In the playground the rig runs its own looping show until the visitor takes over
+    if (control.idle && progress >= PLAY_FROM) {
+        const state = sampleSongShow(control.idle, (performance.now() / 1000) % control.idle.duration);
+        return { ...state, shot: 'wide' };
+    }
+    return sampleCueSheet(control.sheet, progress);
 }
