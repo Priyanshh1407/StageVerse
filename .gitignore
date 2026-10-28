@@ -55,13 +55,16 @@ bench/results/*
 !bench/results/live-before.json
 !bench/results/live-after.json
 
-# Songs are copyrighted recordings: use them locally, never commit or deploy them.
-# The analysis/cue files derived from them (beat times, our lighting program) are fine to commit.
+# Songs are copyrighted recordings. By the owner's decision the two demo tracks are committed
+# (so the demo works after checkout); any other track stays local. The analysis/cue files
+# derived from them (beat times, our lighting program) are committed too.
 public/audio/*.mp3
 public/audio/*.wav
 public/audio/*.m4a
 public/audio/*.ogg
 public/audio/*.flac
+!public/audio/A Sky Full of Stars.mp3
+!public/audio/Yellow.mp3
 !bench/results/stage-*.json
 
 # Old /test-3d 3D prototype (replaced by the homepage show, docs/homepage-show.md). Kept on disk
