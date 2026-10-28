@@ -49,18 +49,23 @@ export async function GET(req) {
             else if (sellOutRate > 0.5) { fanPulseLabel = "Steady"; fanPulseTrend = true; }
             else { fanPulseLabel = "Cooling"; fanPulseTrend = false; }
         }
-        const nextShow = await Event.findOne({
-            artistId: user.userId
-        })
-            .sort({ date: -1 })
+        // The next show is the soonest one from today on (or the latest past one if none is coming up)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const nextShow = await Event.findOne({ artistId: user.userId, date: { $gte: today } })
+            .sort({ date: 1 })
             .populate('venue', 'name city') // Ensure we get venue details
-            .select('title date city venue ticketTiers images');
-        const upcomingQuery = { artistId: user.userId };
+            .select('title date city venue ticketTiers images')
+            ?? await Event.findOne({ artistId: user.userId })
+                .sort({ date: -1 })
+                .populate('venue', 'name city')
+                .select('title date city venue ticketTiers images');
+        const upcomingQuery = { artistId: user.userId, date: { $gte: today } };
         if (nextShow && nextShow._id) {
             upcomingQuery._id = { $ne: nextShow._id };
         }
         const upcomingStops = await Event.find(upcomingQuery)
-            .sort({ date: -1 })
+            .sort({ date: 1 })
             .populate('venue', 'name')
             .select('date city venue ticketTiers status'); // Added ticketTiers/status
         let currentShowStats = { sold: 0, capacity: 0, percentage: 0, vipPercent: 0, gaPercent: 0, soldOut: false };

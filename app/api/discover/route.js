@@ -114,7 +114,7 @@ export async function GET(req) {
                     genre: 1,
                     tags: 1,
                     price: 1,
-                    image: 1,
+                    image: { $ifNull: ['$images.hero', 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745'] },
                     venue: { $ifNull: ['$venueData', null] }
                 }
             }

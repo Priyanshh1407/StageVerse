@@ -17,6 +17,7 @@ export async function GET(req) {
         }).select('_id');
         const eventIds = events.map(e => e._id);
         const notifications = await Task.find({
+            eventId: { $in: eventIds }, // only messages about this user's shows
             status: { $ne: 'Done' },
             urgent: true,
             title: { $regex: '^Artist Message:', $options: 'i' }

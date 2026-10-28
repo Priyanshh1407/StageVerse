@@ -36,7 +36,9 @@ export async function GET(req) {
         const archivedShows = shows.filter(s => s.status === 'archived');
         const requestedShows = shows.filter(s => s.status === 'requested' || s.productionStatus === 'requested');
         let conflictCount = 0;
-        const activeEventIds = events.filter(e => e.status === 'active' || e.status === 'requested').map(e => e._id);
+        // A show is in production when its status or its productionStatus says so
+        const inProduction = (e) => ['active', 'requested'].includes(e.status) || ['active', 'requested'].includes(e.productionStatus);
+        const activeEventIds = events.filter(inProduction).map(e => e._id);
         if (activeEventIds.length > 0) {
             const patches = await Patch.find({ eventId: { $in: activeEventIds } });
 

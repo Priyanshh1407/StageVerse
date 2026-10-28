@@ -22,10 +22,10 @@ export async function GET(req) {
             userId: { $in: currentUser.following },
             status: 'Confirmed'
         })
-            .populate('userId', 'name image')
+            .populate('userId', 'name avatar')
             .populate({
                 path: 'eventId',
-                select: 'title date venue image',
+                select: 'title date venue images',
                 populate: {
                     path: 'venue',
                     model: 'Venue', // Explicitly state the model
@@ -53,7 +53,7 @@ export async function GET(req) {
                     title: ticket.eventId.title,
                     venue: ticket.eventId.venue?.name || "Unkown Venue",
                     date: new Date(ticket.eventId.date).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-                    image: ticket.eventId.image,
+                    image: ticket.eventId.images?.hero,
                     status: 'Going',
                     attendees: [],
                 };
@@ -64,7 +64,7 @@ export async function GET(req) {
                 groupedEvents[eventId].attendees.push({
                     id: friendId,
                     initials: ticket.userId.name.substring(0, 2).toUpperCase(),
-                    img: ticket.userId.image || null,
+                    img: ticket.userId.avatar || null,
                     name: ticket.userId.name
                 });
             }
@@ -73,7 +73,7 @@ export async function GET(req) {
         const result = Object.values(groupedEvents);
         return NextResponse.json({ success: true, data: result });
     } catch (error) {
-        nsole.error('Friends API Error:', error);
+        console.error('Friends API Error:', error);
         return apiError(error, '/api/discover/friends');
     }
 }

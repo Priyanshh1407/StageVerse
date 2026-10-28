@@ -42,6 +42,18 @@ describe('BUG-09: event short ids', () => {
         const created = await create('New');
         expect(created.body.data.eventId).toBeGreaterThan(1500);
     });
+
+    it('a counter behind existing ids still creates on the first attempt (used to fail until retried past them)', async () => {
+        await create('First'); // the counter exists now
+        const { default: Counter } = await import('@/models/Counter');
+        const { seq } = await Counter.findOne({ id: 'eventId' });
+        // Legacy events sitting right where the counter goes next
+        for (const id of [seq + 1, seq + 2, seq + 3]) await Event.create({ ...body(`Old ${id}`), eventId: id, organizerId: organizer._id });
+
+        const created = await create('New');
+        expect(created.status).toBe(200);
+        expect(created.body.data.eventId).toBeGreaterThan(seq + 3);
+    });
 });
 
 describe('BUG-14: production "Create show" with a new venue name', () => {

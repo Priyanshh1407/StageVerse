@@ -17,11 +17,11 @@ export async function GET(req) {
         const payload = await verifyAuth(req);
         const userId = payload.userId;
         const [user, tickets, memories] = await Promise.all([
-            User.findById(userId).populate('following', 'name image'),
+            User.findById(userId).populate('following', 'name avatar'),
             Ticket.find({ userId })
                 .populate({
                     path: 'eventId',
-                    select: 'title artist genre image venue organizerId date',
+                    select: 'title artist genre images venue organizerId artistId date',
                     populate: { path: 'venue', select: 'name city' }
                 }),
             Memory.find({ userId }).sort({ date: -1 }).limit(5)
@@ -47,11 +47,11 @@ export async function GET(req) {
                 artist: evt.artist,
                 date: evt.date,
                 venue: evt.venue?.name,
-                image: evt.image
+                image: evt.images?.hero
             };
             let songs = [];
-            if (evt.organizerId) {
-                songs = await Song.find({ artistId: evt.organizerId }).sort({ title: 1 }).lean();
+            if (evt.artistId || evt.organizerId) {
+                songs = await Song.find({ artistId: evt.artistId || evt.organizerId }).sort({ title: 1 }).lean();
             }
             const prediction = await Prediction.findOne({
                 userId: user._id,
@@ -97,7 +97,7 @@ export async function GET(req) {
                 name: name,
                 genre: evt?.genre || "Music",
                 count: artistMap[name],
-                image: evt?.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"
+                image: evt?.images?.hero || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"
             };
         });
         const topArtists = allArtists.slice(0, 3);
@@ -116,14 +116,18 @@ export async function GET(req) {
         const formattedMemories = memories.map(m => ({
             id: m._id,
             title: m.title,
+            subtitle: m.subtitle,
+            venue: m.venue,
+            location: m.location,
+            artist: m.artist,
             date: new Date(m.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-            image: m.imageUrl || m.videoSrc,
+            image: m.image || m.videoSrc,
             type: m.videoSrc ? 'video' : 'image',
-            featured: !!m.videoSrc
+            featured: m.featured || !!m.videoSrc
         }));
         const topFriends = user.following ? user.following.map(f => ({
             name: f.name,
-            avatar: f.image || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+            avatar: f.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
             sharedShows: Math.floor(Math.random() * 5) + 1,
             role: "Concert Buddy"
         })) : [];
@@ -133,7 +137,7 @@ export async function GET(req) {
                 id: `#${user._id.toString().slice(-5).toUpperCase()}`,
                 level: Math.floor(totalShows / 2) + 1,
                 memberSince: new Date(user.createdAt).getFullYear().toString(),
-                avatar: user.image || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+                avatar: user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
                 predictionScore: 1250,
                 location: user.location || "Global Citizen",
                 bio: user.bio || "Music junkie. Festival hopper.",
