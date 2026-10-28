@@ -27,6 +27,7 @@ function withFixtureAttributes(geometry, fixtures) {
     geometry.setAttribute('aColorMix', attr(fixtures.map((f) => f.colorMix), 1));
     geometry.setAttribute('aUp', attr(fixtures.flatMap((f) => f.up), 3));
     geometry.setAttribute('aXAxis', attr(fixtures.flatMap((f) => f.xAxis), 3));
+    geometry.setAttribute('aIndex', attr(fixtures.map((_, i) => i), 1));
     return geometry;
 }
 
@@ -40,6 +41,7 @@ function createGlowGeometry(fixtures) {
     g.setAttribute('aColorMix', attr(fixtures.map((f) => f.colorMix), 1));
     g.setAttribute('aUp', attr(fixtures.flatMap((f) => f.up), 3));
     g.setAttribute('aXAxis', attr(fixtures.flatMap((f) => f.xAxis), 3));
+    g.setAttribute('aIndex', attr(fixtures.map((_, i) => i), 1));
     return g;
 }
 
@@ -59,6 +61,11 @@ function driveRole(u, role, target, state, delta) {
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
     u.uConverge.value = drop > 0.5 ? converge : u.uConverge.value + (converge - u.uConverge.value) * ease;
     u.uSideways.value = role.sideways ? drop : 0;
+    // Beat-locked effects: the song's beat when one is playing, otherwise 120 BPM
+    state.clock += delta;
+    u.uBeat.value = target.beatPos ?? state.clock * 2;
+    u.uAlternate.value += ((target.alternate ?? 0) - u.uAlternate.value) * ease;
+    u.uSparkle.value += ((target.sparkle ?? 0) - u.uSparkle.value) * ease;
     u.uSpeed.value += (target.speed * role.speed - u.uSpeed.value) * ease;
     // Accumulate the movement position: a speed change alters how fast it moves from where it is
     // (computing sin(time * speed) made beams leap whenever a cue changed the speed)
@@ -114,7 +121,7 @@ function RoleGroup({ roleName, fixtures, parts, map, look }) {
         });
     }, [fixtures]);
 
-    const state = useRef({ level: 1, phase: 0, colors: { a: {}, b: {}, ta: new THREE.Color(), tb: new THREE.Color() } });
+    const state = useRef({ level: 1, phase: 0, clock: 0, colors: { a: {}, b: {}, ta: new THREE.Color(), tb: new THREE.Color() } });
     useFrame((_, delta) => {
         const mesh = group.current?.children[0];
         if (mesh) driveRole(mesh.material.uniforms, role, look.current, state.current, delta);

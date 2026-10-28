@@ -77,10 +77,14 @@ export default function Lasers({ look, count = 24 }) {
         const fan = new Float32Array(MAX_LASERS);
         const side = new Float32Array(MAX_LASERS);
         const perSide = MAX_LASERS / 2;
+        // Alternate sources so any count is balanced; within a fan, light from the centre out,
+        // so a small laserAmount gives the centre one or two beams
+        const reach = Math.ceil((perSide - 1) / 2) || 1;
         for (let i = 0; i < MAX_LASERS; i++) {
-            side[i] = i % 2 ? 1 : -1;                       // alternate sources so any count is balanced
+            side[i] = i % 2 ? 1 : -1;
             const k = Math.floor(i / 2);
-            fan[i] = perSide > 1 ? (k / (perSide - 1)) * 2 - 1 : 0;
+            const slot = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2);
+            fan[i] = slot / reach;
         }
         g.setAttribute('aFan', new THREE.InstancedBufferAttribute(fan, 1));
         g.setAttribute('aSide', new THREE.InstancedBufferAttribute(side, 1));
@@ -123,7 +127,8 @@ export default function Lasers({ look, count = 24 }) {
         apertureMaterial.color.copy(u.uColor.value).multiplyScalar(0.15 + u.uLevel.value * 2);
         // Skip the beams' draw call entirely while the lasers are off
         mesh.current.visible = u.uLevel.value > 0.01;
-        mesh.current.count = Math.min(count, MAX_LASERS);
+        const lit = Math.min(count, MAX_LASERS) * (target.laserAmount ?? 1);
+        mesh.current.count = Math.max(2, Math.round(lit / 2) * 2); // whole pairs: one per projector
     });
 
     return (

@@ -196,3 +196,117 @@ describe('programming a show', () => {
         expect(sampleSongShow(prepared, 127.9).look.master).toBeLessThan(0.1);
     });
 });
+
+describe('programming rules (concert-style)', () => {
+    // 120 BPM, 2 s bars: intro 8 bars, calm 8, groove 8, build 8, peak 24, breakdown 8, outro 8
+    const beats = Array.from({ length: 72 * 4 }, (_, i) => i * 0.5);
+    const downbeats = beats.map((_, i) => i).filter((i) => i % 4 === 0);
+    const sec = (start, bars, kind) => ({ start, end: start + bars * 2, kind, bars, energy: 0.5 });
+    // energy at 2 points/s: the peak (64-112 s) jumps at 72 s, then jumps harder at 84 s
+    const energy = Array.from({ length: 288 }, (_, i) => {
+        const t = i / 2;
+        if (t < 64 || t >= 112) return 0.3;
+        return t >= 84 ? 0.98 : t >= 72 ? 0.72 : 0.5;
+    });
+    const analysis = {
+        duration: 144, bpm: 120, beats, downbeats, energy,
+        sections: [sec(0, 8, 'intro'), sec(16, 8, 'calm'), sec(32, 8, 'groove'), sec(48, 8, 'build'), sec(64, 24, 'peak'), sec(112, 8, 'groove'), sec(128, 8, 'outro')],
+    };
+    const show = programShow(analysis, { title: 'Rules' });
+    const prepared = prepareSongShow(show);
+    const at = (t) => sampleSongShow(prepared, t).look;
+
+    it('the intro starts in blackout and the lights grow with the energy', () => {
+        expect(at(0.1).master).toBe(0);
+        expect(at(12).master).toBeGreaterThan(0.9);
+        expect(show.cues.filter((c) => c.t < 16 && c.name.startsWith('Intro')).length).toBeGreaterThan(2);
+    });
+
+    it('calm parts still move, and grooves move more than calm parts', () => {
+        expect(at(20).sweep).toBeGreaterThan(0);
+        const calm = show.cues.filter((c) => c.name.startsWith('Calm'));
+        const groove = show.cues.filter((c) => c.name.startsWith('Groove 3'));
+        const avg = (cs, k) => cs.reduce((s, c) => s + (c.look[k] ?? 0), 0) / cs.length;
+        expect(avg(groove, 'speed')).toBeGreaterThan(avg(calm, 'speed'));
+    });
+
+    it('a build opens with the lasers alone and speeds up every 2 bars', () => {
+        const build = show.cues.filter((c) => c.name.startsWith('Build')).sort((a, b) => a.t - b.t);
+        expect(build[0].look.beams).toBe(0);
+        expect(build[0].look.laser).toBe(1);
+        for (let i = 2; i < build.length; i++) expect(build[i].look.speed).toBeGreaterThan(build[i - 1].look.speed);
+    });
+
+    it('a peak opens with one or two lasers that grow, and hits strobes/blinders every 2 bars plus on energy bursts', () => {
+        expect(at(64.5).laserAmount).toBeLessThan(0.2);
+        expect(at(72.5).laserAmount).toBeGreaterThan(0.9);
+        const peakHits = show.hits.filter((h) => h.t >= 64 && h.t < 112);
+        expect(peakHits.filter((h) => h.kind === 'strobe' || h.kind === 'blinder').length).toBeGreaterThanOrEqual(8);
+        // the smaller burst gets a strobe burst (the biggest becomes the focus section)
+        expect(show.hits.some((h) => h.kind === 'strobe' && Math.abs(h.t - 72) < 1.1 && h.dur > 0.6)).toBe(true);
+    });
+
+    it('a focus section at the biggest spike: everything on, aimed at the centre, beams sparkling', () => {
+        const focus = show.cues.find((c) => c.name === 'Focus');
+        expect(focus).toBeDefined();
+        expect(Math.abs(focus.t - 84)).toBeLessThanOrEqual(2);
+        const look = at(focus.t + 1);
+        expect(look.sparkle).toBeGreaterThan(0.9);
+        expect(look.converge).toBeGreaterThan(0.8);
+        expect(look.beams + look.sides + look.floor).toBe(3);
+    });
+
+    it('after a peak: blinders alone, then washes alone, then slowing down', () => {
+        expect(show.sections.find((s) => s.start === 112).kind).toBe('breakdown');
+        expect(show.hits.some((h) => h.t === 112 && h.kind === 'blinder')).toBe(true);
+        const open = at(112.2);
+        expect(open.beams + open.sides + open.floor + open.wash).toBe(0);
+        const washes = show.cues.find((c) => c.name.startsWith('Breakdown') && c.name.includes('phrase 2'));
+        expect(washes.look.wash).toBe(1);
+        expect(washes.look.beams + washes.look.sides).toBe(0);
+    });
+
+    it('the outro fades slowly into blackout', () => {
+        expect(at(130).master).toBeGreaterThan(0.5);
+        expect(at(143.9).master).toBeLessThan(0.05);
+    });
+
+    it('uses many colours across the song', () => {
+        const colours = new Set(show.cues.map((c) => c.look?.colorA).filter(Boolean));
+        expect(colours.size).toBeGreaterThanOrEqual(8);
+    });
+
+    it('a peak straight after a peak carries on: no second drop', () => {
+        const two = programShow({ ...analysis, sections: [sec(0, 8, 'intro'), sec(16, 8, 'build'), sec(32, 8, 'peak'), sec(48, 8, 'peak'), sec(64, 40, 'outro')] });
+        expect(two.hits.filter((h) => h.kind === 'drop').map((h) => h.t)).toEqual([32]);
+        expect(two.cues.some((c) => c.name.startsWith('Riser') && c.t > 40)).toBe(false);
+    });
+
+    it('beat position and energy follow reach the rig', () => {
+        expect(at(10.25).beatPos).toBeCloseTo(20.5, 1);
+        expect(at(140).intensity).toBeLessThan(at(90).intensity);
+    });
+});
+
+describe('section labels', () => {
+    it('only calls a section a build when its energy rises into the peak', async () => {
+        const { labelSections } = await import('@/lib/show/analysis');
+        const flat = labelSections([{ energy: 0.3, rise: 0 }, { energy: 0.45, rise: 0.01 }, { energy: 0.9, rise: 0 }, { energy: 0.2, rise: 0 }]);
+        expect(flat[1].kind).not.toBe('build');
+        const rising = labelSections([{ energy: 0.3, rise: 0 }, { energy: 0.45, rise: 0.2 }, { energy: 0.9, rise: 0 }, { energy: 0.2, rise: 0 }]);
+        expect(rising[1].kind).toBe('build');
+    });
+});
+
+describe('energy climbs in steps', () => {
+    it('calm goes to groove before a build, so the energy rises', () => {
+        const beats = Array.from({ length: 48 * 4 }, (_, i) => i * 0.5);
+        const downbeats = beats.map((_, i) => i).filter((i) => i % 4 === 0);
+        const sec = (start, bars, kind) => ({ start, end: start + bars * 2, kind, bars, energy: 0.5 });
+        const show = programShow({ duration: 96, bpm: 120, beats, downbeats, energy: [],
+            sections: [sec(0, 8, 'intro'), sec(16, 8, 'calm'), sec(32, 8, 'build'), sec(48, 16, 'peak'), sec(80, 8, 'outro')] });
+        const kinds = show.sections.map((s) => s.kind);
+        const calm = kinds.indexOf('calm');
+        expect(kinds.slice(calm, calm + 3)).toEqual(['calm', 'groove', 'build']);
+    });
+});

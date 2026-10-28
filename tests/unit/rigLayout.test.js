@@ -37,7 +37,8 @@ describe('rigLayout', () => {
             expect(f.mount).toBe('hanging');
             expect(f.up).toEqual([0, -1, 0]);
             expect(Math.cos(f.pan)).toBeGreaterThan(0);       // toward the audience
-            expect(f.tilt).toBeGreaterThan(Math.PI / 2 - 0.1); // out, not down onto the stage
+            expect(f.tilt).toBeLessThan(Math.PI / 2);           // out over the audience, below the truss
+            expect(f.tilt).toBeGreaterThan(1.0);                // not straight down onto the stage
         }
         for (const f of fixtures.filter((x) => x.role === 'wash')) {
             expect(f.tilt).toBeLessThan(0.5);

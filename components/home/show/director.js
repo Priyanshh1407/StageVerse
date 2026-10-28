@@ -31,7 +31,7 @@ export function currentState(control) {
     // In the playground the rig runs its own looping show until the visitor takes over
     if (control.idle && progress >= PLAY_FROM) {
         const state = sampleSongShow(control.idle, (performance.now() / 1000) % control.idle.duration);
-        return { ...state, shot: 'wide' };
+        return { ...state, shot: 'finale' };
     }
     return sampleCueSheet(control.sheet, progress);
 }

@@ -25,14 +25,14 @@ const TOWARD_STAGE = Math.PI;
 
 export const GROUPS = [
     // Row 1: aerials hanging upside down under the highest truss, beams out over the audience
-    { name: 'topFan', role: 'aerial', mount: 'hanging', share: 0.2, layout: { y: ROWS[0].y - UNDER, z: ROWS[0].z, width: 24 }, tilt: 1.75, panSpread: 1.3 },
+    { name: 'topFan', role: 'aerial', mount: 'hanging', share: 0.2, layout: { y: ROWS[0].y - UNDER, z: ROWS[0].z, width: 24 }, tilt: 1.3, panSpread: 1.3 },
     // Clamped sideways to the inner face of each tower box's rear column, crossing in over the stage
     { name: 'sideTowers', role: 'sides', mount: 'side', share: 0.18, layout: { towers: true, x: 15.6 - UNDER, z: -10, yFrom: 2.5, yTo: 11 }, tilt: 1.72, pan: 1.15 },
     // Rows 2 and 3: washes hanging underneath, pointed down onto the stage
     { name: 'washFront', role: 'wash', mount: 'hanging', share: 0.12, layout: { y: ROWS[1].y - UNDER, z: ROWS[1].z, width: 22 }, tilt: 0.35, facing: TOWARD_STAGE, panSpread: 0.4 },
     { name: 'washMid', role: 'wash', mount: 'hanging', share: 0.12, layout: { y: ROWS[2].y - UNDER, z: ROWS[2].z, width: 22 }, tilt: 0.15, facing: TOWARD_STAGE, panSpread: 0.3 },
     // Row 4: aerials hanging under the lowest truss (above the LED wall), neighbours crossing
-    { name: 'lowFan', role: 'aerial', mount: 'hanging', share: 0.18, layout: { rows: [ROWS[3].y - UNDER], z: ROWS[3].z, width: 24 }, tilt: 1.62, cross: 0.35 },
+    { name: 'lowFan', role: 'aerial', mount: 'hanging', share: 0.18, layout: { rows: [ROWS[3].y - UNDER], z: ROWS[3].z, width: 24 }, tilt: 1.42, cross: 0.35 },
     // Standing on the front of the deck, firing up
     { name: 'floor', role: 'floor', mount: 'standing', share: 0.2, layout: { y: 0.53, z: -0.6, width: 24 }, tilt: 2.4, panSpread: 1.0 },
 ];

@@ -29,7 +29,10 @@ export function createRoleUniforms({ scale = 2.3, spread = 1, opacity = 1 } = {}
         uIntensity: { value: 1 },
         uHaze: { value: 0.5 },
         uTarget: { value: new THREE.Vector3(0, 4.5, -6.5) }, // the centre of the stage (where the drop focuses)
-        uSideways: { value: 0 },        // 1 = swing fully sideways (floor fixtures on the drop)
+        uSideways: { value: 0 },        // 1 = floor fixtures thrown out toward the audience (the drop)
+        uBeat: { value: 0 },            // beat position, for beat-locked effects
+        uAlternate: { value: 0 },       // odd/even beams swap on the beat
+        uSparkle: { value: 0 },         // random beams flick on/off and change colour
         uColorA: { value: new THREE.Color('#19d9ff') },
         uColorB: { value: new THREE.Color('#ff3df2') },
         uScale: { value: scale },       // model size (the model is authored ~0.55 m tall)
@@ -58,6 +61,10 @@ const RIG_GLSL = /* glsl */ `
     uniform float uConverge;
     uniform vec3 uTarget;
     uniform float uSideways;
+    uniform float uBeat;
+    uniform float uAlternate;
+    uniform float uSparkle;
+    attribute float aIndex;
     uniform float uScale;
     attribute vec2 aBase;
     attribute float aPhase;
@@ -76,10 +83,22 @@ const RIG_GLSL = /* glsl */ `
         float tilt = base.y + uTiltShift + sin(t * 2.0) * uSweep * 0.12;
         vec3 sweepDir = normalize(vec3(sin(tilt) * sin(pan), -cos(tilt), sin(tilt) * cos(pan)));
         vec3 dir = normalize(mix(sweepDir, normalize(uTarget - from), uConverge));
-        // Full sideways: straight out toward this fixture's own side of the stage
+        // The drop: thrown up and out over the audience, splayed to this fixture's side
         float side = from.x >= 0.0 ? 1.0 : -1.0;
-        return normalize(mix(dir, normalize(vec3(side, 1.1, 0.15)), uSideways)); // out and up: a V
+        return normalize(mix(dir, normalize(vec3(side * 0.45, 0.75, 1.0)), uSideways));
     }
+
+    // Per-fixture on/off: alternate swaps odd and even beams every beat; sparkle switches random
+    // beams off every half beat
+    float fixtureHash(float idx, float salt) { return fract(sin(idx * 12.9898 + floor(uBeat * 2.0) * 78.233 + salt) * 43758.5453); }
+    float fixtureGate() {
+        float altOn = step(0.5, fract(uBeat * 0.5 + mod(aIndex, 2.0) * 0.5));
+        float g = mix(1.0, altOn, uAlternate);
+        return g * mix(1.0, step(0.4, fixtureHash(aIndex, 1.7)), uSparkle);
+    }
+    // Sparkle also re-colours beams at random (and flashes some white)
+    float fixtureColorMix(float base) { return mix(base, step(0.5, fixtureHash(aIndex, 5.3)), uSparkle); }
+    float fixtureWhite() { return uSparkle * step(0.82, fixtureHash(aIndex, 9.1)); }
 
     // Model (Z up) <-> world, through the fixture's mounting basis (standing, hanging or sideways)
     vec3 toWorld(vec3 p) { return p.x * aXAxis + p.y * cross(aUp, aXAxis) + p.z * aUp; }
@@ -149,15 +168,17 @@ export function createPartMaterial(uniforms, part) {
             varying float vColorMix;
             varying float vFacing;
             varying float vLens;
+            varying float vGate;
 
             void main() {
                 Rig r = solveRig();
+                vGate = fixtureGate();
                 ${transform}
                 vec3 world = r.mountW + toWorld(q * uScale);
                 vNormalW = safeNormalize(toWorld(qn));
                 vViewDir = normalize(cameraPosition - world);
                 vUv = uv;
-                vColorMix = aColorMix;
+                vColorMix = fixtureColorMix(aColorMix);
                 vFacing = max(0.0, dot(r.dirW, normalize(cameraPosition - r.lensW)));
                 // The lens: the round glass on the front (+Z) of the head
                 vLens = IS_HEAD == 1 ? step(0.1, position.z) * step(length(position.xy), 0.095) : 0.0;
@@ -175,6 +196,7 @@ export function createPartMaterial(uniforms, part) {
             varying float vColorMix;
             varying float vFacing;
             varying float vLens;
+            varying float vGate;
 
             vec3 safeNormalize(vec3 v) { float l = length(v); return l > 1e-6 ? v / l : vec3(0.0, 0.0, 1.0); }
 
@@ -189,7 +211,7 @@ export function createPartMaterial(uniforms, part) {
                 vec3 body = albedo * fill * 0.55 + tint * (edge * 0.35 + under * 0.12) * level;
                 float flare = pow(clamp(vFacing, 0.0, 1.0), 10.0);
                 vec3 lens = mix(tint * 0.18 + albedo * 0.15, mix(tint, vec3(1.0), 0.6) * 1.5, flare) * level;
-                gl_FragColor = vec4(mix(body, lens, vLens), 1.0);
+                gl_FragColor = vec4(mix(body, lens * vGate, vLens), 1.0);
             }
         `,
         toneMapped: false,
@@ -209,9 +231,13 @@ export function createBeamMaterial(uniforms) {
             varying vec3 vNormalV;
             varying vec3 vViewDir;
             varying vec3 vWorld;
+            varying float vGate;
+            varying float vWhite;
 
             void main() {
                 Rig r = solveRig();
+                vGate = fixtureGate();
+                vWhite = fixtureWhite();
                 vec3 down = vec3(0.0, -1.0, 0.0);
                 vec3 local = position * vec3(uSpread, 1.0, uSpread);
                 vec3 world = r.lensW + rotateFromTo(local, down, r.dirW);
@@ -219,7 +245,7 @@ export function createBeamMaterial(uniforms) {
                 vec4 mv = viewMatrix * vec4(world, 1.0);
                 gl_Position = projectionMatrix * mv;
                 vAlong = uv.y; // 1 at the lens, 0 at the far end
-                vColorMix = aColorMix;
+                vColorMix = fixtureColorMix(aColorMix);
                 vNormalV = normalize(mat3(viewMatrix) * n);
                 vViewDir = normalize(-mv.xyz);
                 vWorld = world;
@@ -237,6 +263,8 @@ export function createBeamMaterial(uniforms) {
             varying vec3 vNormalV;
             varying vec3 vViewDir;
             varying vec3 vWorld;
+            varying float vGate;
+            varying float vWhite;
 
             float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
             float noise(vec3 p) {
@@ -258,8 +286,8 @@ export function createBeamMaterial(uniforms) {
                 float haze = mix(1.0, 0.2 + smoke * 1.6, uHaze);
                 float near = smoothstep(3.0, 16.0, length(cameraPosition - vWorld));
                 float a = core * fade * haze * uIntensity * 0.75 * uOpacity * mix(0.25, 1.0, near);
-                vec3 color = mix(mix(uColorA, uColorB, vColorMix), vec3(1.0), pow(clamp(vAlong, 0.0, 1.0), 8.0) * 0.55 * core);
-                gl_FragColor = vec4(color, a);
+                vec3 color = mix(mix(uColorA, uColorB, vColorMix), vec3(1.0), max(pow(clamp(vAlong, 0.0, 1.0), 8.0) * 0.55 * core, vWhite));
+                gl_FragColor = vec4(color, a * vGate);
             }
         `,
         transparent: true,
@@ -281,13 +309,15 @@ export function createGlowMaterial(uniforms) {
             attribute float aColorMix;
             varying float vColorMix;
             varying float vFlare;
+            varying float vGate;
             void main() {
                 Rig r = solveRig();
+                vGate = fixtureGate();
                 vFlare = pow(clamp(dot(r.dirW, normalize(cameraPosition - r.lensW)), 0.0, 1.0), 10.0);
                 vec4 mv = viewMatrix * vec4(r.lensW + r.dirW * 0.05, 1.0);
                 gl_Position = projectionMatrix * mv;
                 gl_PointSize = uSize * (0.04 + vFlare) / max(1.0, -mv.z);
-                vColorMix = aColorMix;
+                vColorMix = fixtureColorMix(aColorMix);
             }
         `,
         fragmentShader: /* glsl */ `
@@ -296,12 +326,13 @@ export function createGlowMaterial(uniforms) {
             uniform float uIntensity;
             varying float vColorMix;
             varying float vFlare;
+            varying float vGate;
             void main() {
                 float d = length(gl_PointCoord - 0.5) * 2.0;
                 float halo = pow(max(0.0, 1.0 - d), 4.0) * 0.6;
                 float hot = smoothstep(0.18, 0.0, d);
                 vec3 col = mix(mix(uColorA, uColorB, vColorMix), vec3(1.0), hot);
-                gl_FragColor = vec4(col, (halo + hot) * min(uIntensity, 1.2) * vFlare * 0.8);
+                gl_FragColor = vec4(col, (halo + hot) * min(uIntensity, 1.2) * vFlare * 0.8 * vGate);
             }
         `,
         transparent: true,

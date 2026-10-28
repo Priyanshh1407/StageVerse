@@ -181,3 +181,22 @@ tier 1 gets bloom. The 60 Hz display caps every reading, so the remaining headro
 **Programming** (`lib/show/program.js`) uses a concert vocabulary of positions (wide, tight, audience, sky, cross, vee) and movements (hold, sway, wave, chase, ballyhoo). Movement cycle lengths are in bars, so they lock to the song's tempo. A phrase is 8 bars, or 4 in peaks, and each changes the position and movement. Peaks swap colours and hit (strobe/blinder) on every phrase.
 
 **Rig sizes:** the desk offers 52 (the full-rig minimum), 80 or 120 (extreme) moving heads.
+
+## Song programming rules (latest)
+
+`lib/show/program.js`; each rule is pinned by tests in `tests/unit/show.test.js`:
+
+| Section | What it does |
+|---|---|
+| Intro | Starts in **blackout**; groups join step by step as the energy rises; brightness follows the loudness (`energyFollow`) |
+| Calm | Slow sway or drift (never frozen), often a single group lit (side towers alone, washes alone), sometimes alternating beams |
+| Groove | 4-bar phrases of waves, chases and alternating beams, colour changes, lasers in; clearly livelier than calm |
+| Build | Opens with the **lasers alone**, then every 2 bars faster, wider and brighter; a 2-bar riser tightens into the peak |
+| Peak | Drop hit, with **one or two lasers growing to the full fan**; a new colour pair every phrase; the biggest movements (ballyhoo, frenzy); strobe/blinder every 2 bars plus a strobe burst on every energy jump. A peak right after a peak carries on (no second drop) |
+| Focus | At the biggest energy burst inside the song's loudest peak: everything on, aimed at the centre, beams randomly flicking on and off and changing colour (`sparkle`) |
+| Breakdown | The section after a peak: **blinders alone**, then **washes alone**, then the movement slows phrase by phrase |
+| Outro | Fades slowly into blackout |
+
+Two further rules:
+- The energy climbs in steps: a quiet section leading into a build or peak grooves for its second half (calm, then groove, then build).
+- A section only counts as a build if its energy actually rises (last quarter louder than the first).

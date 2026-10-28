@@ -12,7 +12,6 @@ import Blinders from './Blinders';
 import Haze from './Haze';
 import HouseLights, { HOUSE_COLOR } from './HouseLights';
 import Venue from './Venue';
-import Rain from './Rain';
 import { createTrussGeometry } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
@@ -157,7 +156,6 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 2
 
             <LedWall look={look} events={events} screen={screen} font={font} />
             <Venue look={look} font={font} />
-            <Rain />
             {/* Fixture models stream in; the rest of the stage shows meanwhile */}
             <Suspense fallback={null}>
                 <Fixtures count={beams} look={look} />

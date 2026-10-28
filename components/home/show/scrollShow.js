@@ -87,9 +87,9 @@ export function buildScrollSheet(encore = ENCORE_CHOICES[0]) {
         { t: 0.805, snap: true, name: 'The drop', look: { blinder: 0 } },
         { t: 0.825, snap: true, name: 'The drop', look: { strobe: 0, dropFx: 0, laserChase: 0 } },
         // Encore in the visitor's colour
-        { t: 0.86, hold: 0.03, name: 'Encore', shot: 'wide', look: { colorA: encore.a, colorB: encore.b, laserColor: encore.a, washColor: encore.b, intensity: 1.1, fan: 1.3, tiltShift: 0.1, sweep: 0.35, speed: 0.8, phaseSpread: 0.6, laser: 0.6, converge: 0 } },
+        { t: 0.86, hold: 0.03, name: 'Encore', shot: 'finale', look: { colorA: encore.a, colorB: encore.b, laserColor: encore.a, washColor: encore.b, intensity: 1.1, fan: 1.3, tiltShift: 0.1, sweep: 0.35, speed: 0.8, phaseSpread: 0.6, laser: 0.6, converge: 0 } },
         // Playground: from here the idle show (or the visitor) runs the lights
-        { t: PLAY_FROM + 0.01, name: 'Playground', shot: 'wide', look: { intensity: 1, laser: 0.4 } },
+        { t: PLAY_FROM + 0.01, name: 'Playground', shot: 'finale', look: { intensity: 1, laser: 0.4 } },
     ];
     const withFades = cues.map((cue, i) => {
         if (i === 0) return { ...cue, fade: 0 };

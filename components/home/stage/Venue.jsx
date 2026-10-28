@@ -112,8 +112,8 @@ const GATE_LIGHTS = /* glsl */ `
     vec3 gateLight(vec3 p, vec3 n) {
         vec3 light = vec3(0.0);
         // Cool-white floods at the foot of each pillar, aimed up its face
-        light += pointLight(p, n, vec3(-${GATE.pillar.x.toFixed(1)}, 0.4, 39.0), vec3(0.75, 0.82, 1.0) * 2.2, 7.0);
-        light += pointLight(p, n, vec3(${GATE.pillar.x.toFixed(1)}, 0.4, 39.0), vec3(0.75, 0.82, 1.0) * 2.2, 7.0);
+        light += pointLight(p, n, vec3(-${GATE.pillar.x.toFixed(1)}, 0.4, 37.6), vec3(0.75, 0.82, 1.0) * 3.4, 3.6);
+        light += pointLight(p, n, vec3(${GATE.pillar.x.toFixed(1)}, 0.4, 37.6), vec3(0.75, 0.82, 1.0) * 3.4, 3.6);
         // Light pouring out of the doorway: the show's colours, warm when the house lights are up
         vec3 door = mix(mix(uColorA, uColorB, 0.5) * (0.4 + 0.6 * uLight), vec3(1.0, 0.7, 0.35), uHouse * 0.5);
         light += pointLight(p, n, vec3(0.0, 4.0, 36.0), door * 1.6, 6.0);
@@ -121,7 +121,7 @@ const GATE_LIGHTS = /* glsl */ `
         light += pointLight(p, n, vec3(-3.5, 14.9, 37.0), vec3(0.1, 0.85, 1.0) * 0.9, 4.0);
         light += pointLight(p, n, vec3(3.5, 14.9, 37.0), vec3(0.75, 0.24, 1.0) * 0.9, 4.0);
         // A little skylight so nothing is pure black
-        light += vec3(0.05, 0.07, 0.12) * (0.4 + 0.6 * max(0.0, n.y));
+        light += vec3(0.03, 0.04, 0.08) * (0.4 + 0.6 * max(0.0, n.y));
         return light;
     }
 `;
@@ -155,7 +155,7 @@ function createConcreteMaterial() {
                 float seam = smoothstep(0.985, 1.0, max(abs(cell.x - 0.5), abs(cell.y - 0.5)) * 2.0);
                 float stain = hash(vec2(floor(uv.x * 2.0), 3.0)) * smoothstep(0.0, 8.0, uv.y) * 0.25;
                 float grain = hash(floor(uv * 24.0)) * 0.08;
-                vec3 albedo = vec3(0.16, 0.17, 0.19) * (1.0 - seam * 0.6 - stain + grain);
+                vec3 albedo = vec3(0.11, 0.115, 0.13) * (1.0 - seam * 0.6 - stain + grain);
                 vec3 view = normalize(cameraPosition - vWorld);
                 float sheen = pow(clamp(1.0 - dot(n, view), 0.0, 1.0), 4.0) * 0.06; // wet sheen on edges
                 gl_FragColor = vec4(albedo * gateLight(vWorld, n) + sheen, 1.0);
@@ -271,7 +271,8 @@ export default function Venue({ look, font }) {
     });
 
     const { z, lintel, pillar } = GATE;
-    const signWidth = (pillar.x * 2 + pillar.w) * 0.84;
+    // The pillars stand proud of the lintel, so the sign fits in the gap between them
+    const signWidth = (pillar.x - pillar.w / 2) * 2 * 0.94;
     return (
         <group ref={group}>
             <mesh geometry={concrete} material={concreteMaterial} />
