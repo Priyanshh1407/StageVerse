@@ -207,3 +207,8 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* While a light show plays the navbar is hidden (see ShowSection: full screen + this class) */
+html.show-immersive header {
+  display: none;
+}

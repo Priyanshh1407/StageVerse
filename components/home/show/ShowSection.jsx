@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Orbitron } from 'next/font/google';
-import { ChevronDown, Music, Square, Upload, Settings2, Loader2 } from 'lucide-react';
+import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play } from 'lucide-react';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
@@ -46,6 +46,19 @@ async function decodeForAnalysis(file) {
     return { pcm: rendered.getChannelData(0).slice(), sampleRate: rate, duration: decoded.duration };
 }
 
+/**
+ * While a light show plays: the stage goes full screen and the navbar is hidden (the class also
+ * hides it where full screen isn't available). Leaving brings both back.
+ */
+function enterShowMode(element) {
+    document.documentElement.classList.add('show-immersive');
+    element?.requestFullscreen?.().catch(() => {});
+}
+function exitShowMode() {
+    document.documentElement.classList.remove('show-immersive');
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+}
+
 /** Run the analysis and programming in a worker, so the page stays smooth meanwhile. */
 function analyseInWorker(pcm, sampleRate, title) {
     return new Promise((resolve, reject) => {
@@ -71,6 +84,7 @@ function analyseInWorker(pcm, sampleRate, title) {
  */
 export default function ShowSection({ events = [] }) {
     const section = useRef(null);
+    const stage = useRef(null);
     const fileInput = useRef(null);
     const look = useRef(DEFAULT_LOOK);
     const control = useRef({ mode: 'scroll', progress: 0, sheet: buildScrollSheet(), idle: prepareSongShow(buildIdleShow()), shot: 'outside' });
@@ -85,8 +99,10 @@ export default function ShowSection({ events = [] }) {
     const [desk, setDesk] = useState(DEFAULT_LOOK);
     const [deskOpen, setDeskOpen] = useState(false);
     const [counts, setCounts] = useState({ beams: null, lasers: 24, blinders: 8 });
-    // bundled: the demo song's show (only where its file exists); current: the show playing
-    const [song, setSong] = useState({ bundled: null, current: null, playing: false, time: 0, status: null, error: null });
+    // bundled: the demo song's show (only where its file exists); current: the show playing;
+    // ready: an uploaded song analysed and waiting for "Start the show"
+    const [song, setSong] = useState({ bundled: null, current: null, ready: null, playing: false, time: 0, status: null, error: null });
+    const [fullscreen, setFullscreen] = useState(false);
 
     // Scroll progress through the section drives the show (no re-render unless an overlay changes)
     useEffect(() => {
@@ -111,6 +127,19 @@ export default function ShowSection({ events = [] }) {
         return () => {
             window.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', onScroll);
+        };
+    }, []);
+
+    // Leaving full screen (Esc) brings the navbar back; the music keeps playing
+    useEffect(() => {
+        const onChange = () => {
+            setFullscreen(Boolean(document.fullscreenElement));
+            if (!document.fullscreenElement) document.documentElement.classList.remove('show-immersive');
+        };
+        document.addEventListener('fullscreenchange', onChange);
+        return () => {
+            document.removeEventListener('fullscreenchange', onChange);
+            exitShowMode();
         };
     }, []);
 
@@ -201,6 +230,7 @@ export default function ShowSection({ events = [] }) {
         if (c.mode === 'song') c.mode = 'scroll';
         setMode(c.mode);
         setSong((s) => ({ ...s, playing: false, time: 0 }));
+        exitShowMode();
     }, []);
 
     /** Play a programmed show with its audio (a URL, or an object URL for an uploaded file). */
@@ -218,8 +248,9 @@ export default function ShowSection({ events = [] }) {
         audio.play().catch(() => stopSong());
         c.mode = 'song';
         setMode('song');
-        setSong((s) => ({ ...s, current: show, playing: true, status: null, error: null }));
+        setSong((s) => ({ ...s, current: show, ready: null, playing: true, status: null, error: null }));
         setDeskOpen(false);
+        enterShowMode(stage.current); // must run inside the click that started the show
     };
 
     const playDemo = () => song.bundled && playShow(song.bundled, encodeURI(song.bundled.audio));
@@ -238,8 +269,8 @@ export default function ShowSection({ events = [] }) {
             if (duration > 15 * 60) throw new Error('Songs up to 15 minutes, please.');
             setSong((s) => ({ ...s, status: 'Finding the tempo, beats and sections…' }));
             const show = await analyseInWorker(pcm, sampleRate, title);
-            const url = URL.createObjectURL(file); // revoked when the next song replaces it
-            playShow(show, url, url);
+            // Browsers only allow full screen from a click, so the visitor starts the show
+            setSong((s) => ({ ...s, status: null, ready: { show, url: URL.createObjectURL(file) } }));
         } catch (error) {
             setSong((s) => ({ ...s, status: null, error: error.message || 'Could not read that file.' }));
         }
@@ -259,8 +290,15 @@ export default function ShowSection({ events = [] }) {
 
     return (
         <section ref={section} className="relative h-[520vh] bg-[#010208]" aria-label="StageVerse live show">
-            <div className="sticky top-0 h-screen w-full overflow-hidden">
+            <div ref={stage} className="sticky top-0 h-screen w-full overflow-hidden bg-[#010208]">
                 <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />
+
+                {/* While the show runs in the browser's full screen */}
+                {fullscreen && (
+                    <div className="absolute top-4 right-4 z-30 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur border border-white/15 text-xs text-white/80 pointer-events-none">
+                        Press <kbd className="px-1.5 py-0.5 mx-0.5 rounded bg-white/15 font-mono text-[11px] text-white">Esc</kbd> to exit full screen
+                    </div>
+                )}
 
                 {/* Readability: darken the top and bottom edges behind the text */}
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/50 via-transparent to-black/60" />
@@ -325,6 +363,12 @@ export default function ShowSection({ events = [] }) {
                                 <input ref={fileInput} type="file" accept="audio/*" className="hidden"
                                     onChange={(e) => { analyseUpload(e.target.files?.[0]); e.target.value = ''; }} />
                                 {song.status && <p className="mt-3 text-xs text-cyan-200" role="status">{song.status}</p>}
+                                {song.ready && (
+                                    <button onClick={() => playShow(song.ready.show, song.ready.url, song.ready.url)}
+                                        className="mt-3 flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-cyan-300">
+                                        <Play className="w-4 h-4" /> Start the show: {song.ready.show.title}
+                                    </button>
+                                )}
                                 {song.error && <p className="mt-3 text-xs text-red-300" role="alert">{song.error}</p>}
                                 <div className="mt-4 flex gap-3 text-sm">
                                     <Link href="/login" className="font-bold text-cyan-300 hover:underline">Get started →</Link>

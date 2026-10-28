@@ -270,6 +270,7 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 | 10.19 | Playground | Scroll to the end of the show | "Run the show yourself": the rig keeps running a looping show by itself; Take the desk / Light up your song / the demo song |
 | 10.20 | Your own song | In the playground, click **Light up your song** and pick an MP3/WAV/OGG | "Reading your song…", then "Finding the tempo, beats and sections…", then it plays with a programmed show and its timeline; the network tab shows no upload |
 | 10.21 | Rig sizes | Lighting desk → Moving heads: 52 / 80 / 120 | The rig rebuilds with that many moving heads |
+| 10.22 | Full screen show | In the playground click the demo song (or Light up your song, then **Start the show**) | The browser goes full screen with no navbar; "Press Esc to exit full screen" sits in the top-right corner. Stop (or the song ending) exits full screen and brings the navbar back; Esc mid-song brings the navbar back and the music keeps playing |
 
 ---
 
