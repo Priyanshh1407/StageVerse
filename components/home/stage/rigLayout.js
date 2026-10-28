@@ -48,11 +48,14 @@ function placeGroup(group, n, groupIndex) {
         let position;
         let pan;
         let mount = MOUNTS[group.mount];
+        let colorMix = (i + groupIndex) % 2; // alternate the two colours along the row
         if (layout.towers) {
             // Alternate left/right tower, stacking upward
             const side = i % 2 === 0 ? -1 : 1;
             mount = sideMount(side);
             const level = Math.floor(i / 2);
+            // alternate colours up each tower, the same on both sides (not one colour per tower)
+            colorMix = (level + groupIndex) % 2;
             const levels = Math.max(1, Math.ceil(n / 2) - 1);
             const y = layout.yFrom + ((layout.yTo - layout.yFrom) * level) / levels;
             position = [side * layout.x, y, layout.z];
@@ -80,7 +83,7 @@ function placeGroup(group, n, groupIndex) {
             pan,
             tilt: group.tilt,
             phase: n > 1 ? i / (n - 1) : 0, // place along the row: movement waves travel along it
-            colorMix: (i + groupIndex) % 2, // alternate the two colours of the group's role
+            colorMix,
         });
     }
     return out;

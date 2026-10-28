@@ -71,7 +71,7 @@ function createLaserMaterial() {
     });
 }
 
-export default function Lasers({ look, count = 24 }) {
+export default function Lasers({ look, count = 40 }) {
     const material = useMemo(() => createLaserMaterial(), []);
     const geometry = useMemo(() => {
         const g = new THREE.BoxGeometry(0.035, 0.035, LENGTH);

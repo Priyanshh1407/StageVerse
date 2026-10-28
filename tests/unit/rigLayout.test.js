@@ -66,6 +66,18 @@ describe('rigLayout', () => {
         for (let i = 1; i < top.length; i++) expect(top[i].phase).toBeGreaterThan(top[i - 1].phase);
     });
 
+    it('side towers alternate colours up each tower, mirrored on both sides', () => {
+        const towers = rigLayout(52).filter((f) => f.group === 'sideTowers');
+        for (const side of [-1, 1]) {
+            const mixes = towers.filter((f) => Math.sign(f.position[0]) === side).sort((a, b) => a.position[1] - b.position[1]).map((f) => f.colorMix);
+            expect(new Set(mixes).size).toBe(2);
+            for (let k = 1; k < mixes.length; k++) expect(mixes[k]).not.toBe(mixes[k - 1]);
+        }
+        // the same height has the same colour on the left and the right
+        const byHeight = (side) => towers.filter((f) => Math.sign(f.position[0]) === side).sort((a, b) => a.position[1] - b.position[1]).map((f) => f.colorMix);
+        expect(byHeight(-1)).toEqual(byHeight(1).slice(0, byHeight(-1).length));
+    });
+
     it('alternates the two colours', () => {
         const mixes = rigLayout(20).map((f) => f.colorMix);
         expect(mixes).toContain(0);

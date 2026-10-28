@@ -103,7 +103,7 @@ export default function ShowSection({ events = [] }) {
     const [mode, setMode] = useState('scroll');
     const [desk, setDesk] = useState(DEFAULT_LOOK);
     const [deskOpen, setDeskOpen] = useState(false);
-    const [counts, setCounts] = useState({ beams: null, lasers: 24, blinders: 8 });
+    const [counts, setCounts] = useState({ beams: null, lasers: 40, blinders: 8 });
     // demos: the demo songs' shows (only those whose track exists); current: the show playing;
     // ready: an uploaded song analysed and waiting for "Start the show"
     const [song, setSong] = useState({ demos: [], current: null, ready: null, playing: false, time: 0, status: null, error: null });

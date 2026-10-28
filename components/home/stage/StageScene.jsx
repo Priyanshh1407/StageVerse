@@ -131,7 +131,7 @@ function CameraFlash({ look, blinders }) {
     );
 }
 
-export default function StageScene({ beams, bloom, look, events = [], lasers = 24, blinders = 8, screen, font }) {
+export default function StageScene({ beams, bloom, look, events = [], lasers = 40, blinders = 8, screen, font }) {
     const truss = useMemo(() => createTrussGeometry(), []);
     const backdrop = useMemo(() => createBackdropMaterial(), []);
 
