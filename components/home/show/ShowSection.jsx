@@ -18,6 +18,9 @@ const ShowStage = dynamic(() => import('./ShowStage'), { ssr: false });
 // Display face for the LED wall and the venue sign (drawn into canvases, so it's passed by name)
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display: 'swap' });
 
+// Shown wherever the demo songs are offered or playing (commercial recordings, see README)
+const SONG_NOTICE = 'Songs on this site are used for educational, non-commercial purposes only. All rights belong to their respective owners.';
+
 // Demo songs with programmed shows, in button order (each offered only where its track exists)
 const DEMO_SHOWS = ['/shows/sky-full-of-stars.show.json', '/shows/yellow.show.json'];
 const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', build: '#ff8a00', peak: '#ff3df2', outro: '#3b5bff' };
@@ -381,6 +384,11 @@ export default function ShowSection({ events = [] }) {
                                         </button>
                                     ))}
                                 </div>
+                                {song.demos.length > 0 && (
+                                    <p className="mt-3 text-[11px] leading-snug text-gray-400">
+                                        Demo songs: {song.demos.map((d) => d.title).join(' and ')} by Coldplay. {SONG_NOTICE}
+                                    </p>
+                                )}
                                 <input ref={fileInput} type="file" accept="audio/*" className="hidden"
                                     onChange={(e) => { analyseUpload(e.target.files?.[0]); e.target.value = ''; }} />
                                 {song.status && <p className="mt-3 text-xs text-cyan-200" role="status">{song.status}</p>}
@@ -406,6 +414,7 @@ export default function ShowSection({ events = [] }) {
                         <div className="flex items-center justify-between text-sm mb-2">
                             <div className="min-w-0">
                                 <div className="font-bold truncate">{now.title}</div>
+                                {song.demos.includes(now) && <div className="text-[10px] text-gray-500 truncate">Coldplay · educational, non-commercial use only</div>}
                                 <div className="text-[11px] text-gray-400 font-mono">
                                     {now.bpm} BPM · {songSection ? songSection.kind.toUpperCase() : ''}{mode === 'manual' ? ' · desk has the lights' : ''}
                                 </div>

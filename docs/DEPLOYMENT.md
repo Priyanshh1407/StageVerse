@@ -4,20 +4,19 @@ The live site is **https://stage-verse.vercel.app/**, deployed by Vercel from th
 `Priyanshh1407/StageVerse`. This guide covers shipping updates, the settings production needs,
 the recruiter demo logins and what to check after a deploy.
 
-> **Current state (checked 28 Oct 2026):** the live site still runs an old build. Its page title
-> is "Create Next App" and `/api/health` returns 404. Neither `main` nor `deployment` on GitHub
-> contains the work on `upg-04-homepage` yet: the security, testing and homepage phases and the
-> seed. Steps 1–4 below get it live.
+## 1. Branches
 
-## 1. Find which branch Vercel deploys
+Vercel's **production branch is `deployment`**: whatever is pushed there goes live at
+https://stage-verse.vercel.app/. `main` holds the same code and is where pull requests merge.
+Any other branch you push gets a **preview deployment** with its own URL, which Vercel posts on
+the pull request.
 
-Vercel → the StageVerse project → **Settings → Git → Production Branch**. It's `main` or
-`deployment`. Pushing to that branch deploys the live site. Pushing to any other branch creates a
-**preview deployment** with its own URL, which Vercel posts on the pull request.
+The flow for every change:
 
-Recommended: set the production branch to `main` and merge feature branches into it with a pull
-request. The CI workflow (lint, tests, build) runs on every pull request, so a broken branch
-shows up before it reaches the live site.
+1. Work on a feature branch and push it.
+2. Open a pull request into `main`. CI runs lint, tests and a build on it.
+3. Merge it on GitHub once CI is green (a merge commit, not squash).
+4. Move `deployment` up to `main` (section 4). That's the step that updates the live site.
 
 ## 2. Environment variables
 
@@ -60,20 +59,29 @@ Vercel's defaults, so leave them as they are.
 ## 4. Ship it
 
 ```bash
-git checkout upg-04-homepage
-git push                              # Vercel builds a preview of the branch
-gh pr create --base main --fill       # or open the pull request on GitHub
+# 1. push your branch and open the pull request
+git checkout <your-branch>
+git push -u origin <your-branch>
+gh pr create --base main --fill          # or "Compare & pull request" on GitHub
+
+# 2. after CI is green, merge it on GitHub (Merge pull request -> Create a merge commit)
+
+# 3. bring your machine up to date and move deployment to main: this deploys
+git checkout main
+git pull origin main
+git push origin main:deployment          # a fast-forward; refused if deployment has commits main lacks
 ```
 
-1. Wait for CI to pass on the pull request, then open the Vercel preview link and run the
-   checklist in section 6 against it.
-2. Merge the pull request. Vercel deploys `main` to https://stage-verse.vercel.app/ in a few
-   minutes (Vercel → Deployments shows its progress and build log).
-3. If the production branch is `deployment`, either switch it to `main` (section 1) or merge
-   `main` into `deployment` after this.
+If `git push` is **rejected (non-fast-forward)**, the branch on GitHub has a commit you don't
+have yet, usually the merge commit GitHub just made. Run `git pull` on that branch first, then
+push again. Never use `--force` on `main` or `deployment`.
+
+Vercel → **Deployments** shows the build. It takes a few minutes; then run the checklist in
+section 6.
 
 **Rolling back:** Vercel → Deployments → pick the last good deployment → **⋯ → Promote to
-Production** (an instant rollback; nothing is rebuilt).
+Production** (an instant rollback; nothing is rebuilt). Fix forward afterwards with a new pull
+request.
 
 ## 5. Demo data and recruiter logins
 

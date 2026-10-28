@@ -152,9 +152,13 @@ Written down on purpose: this is a portfolio project, and these are the honest e
 - **Rate limits are per process** (in-memory token buckets).
 - **Free AI tiers are tight** (Gemini: 5 requests/minute and 20/day per model). The provider chain and non-AI fallbacks keep features working, but fallback answers are simpler; heavy AI use needs a billed key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
-- **Demo songs.** *A Sky Full of Stars* and *Yellow* (Coldplay) are commercial recordings, committed only so the homepage demo works; any other track stays local (gitignored). Their programmed shows and hand-annotated structures are in `public/shows/` (`<slug>.show.json`, `<slug>.extras.json`). "Light up your song" analyses any MP3/WAV/OGG/FLAC in the visitor's browser without uploading it.
+- **Demo songs.** *A Sky Full of Stars* and *Yellow* (Coldplay) are commercial recordings, committed only so the homepage demo works and used for educational purposes only ([disclaimer](#disclaimer)); any other track stays local (gitignored). Their programmed shows and hand-annotated structures are in `public/shows/` (`<slug>.show.json`, `<slug>.extras.json`). "Light up your song" analyses any MP3/WAV/OGG/FLAC in the visitor's browser without uploading it.
 - **Sentiment analysis isn't built.** The analysis page shows labelled sample data.
 - The AI patch eval uses 30 cases I wrote, and the second prompt version was tuned on them, so its 100% intent accuracy is optimistic; a held-out case set is the next step. Gemini results are pending: the free tier's 20 requests/day per model is less than one full run.
+
+## Disclaimer
+
+This is a non-commercial portfolio project built for learning. The songs used in the homepage demo, *A Sky Full of Stars* and *Yellow* by Coldplay, are used for **educational, non-commercial purposes only**, to demonstrate the song analysis and light-show programming. All rights to the music belong to its respective owners (the artists, songwriters and labels). No ownership is claimed and nothing is sold. If you are a rights holder and want a track removed, contact me on [LinkedIn](https://www.linkedin.com/in/priyansh-waghela-3b754b282/) and it will be taken down. Fixture models and fonts are used under their own licences (see Credits).
 
 ## 🗺️ Roadmap
 
