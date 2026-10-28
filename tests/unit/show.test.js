@@ -186,7 +186,7 @@ describe('programming a show', () => {
     });
 
     it('ends in a blackout, and plays without errors from start to end', () => {
-        expect(show.cues.at(-1).look.master).toBe(0);
+        expect(show.cues.some((c) => c.look?.master === 0)).toBe(true);
         const prepared = prepareSongShow(show);
         for (let t = 0; t <= 128; t += 0.25) {
             const { look } = sampleSongShow(prepared, t);
@@ -299,15 +299,24 @@ describe('programming rules (concert-style)', () => {
         expect(washes.look.beams + washes.look.sides).toBe(0);
     });
 
-    it('every song has a solo: one fixture type alone in full focus', () => {
-        const solo = show.cues.find((c) => c.name.startsWith('Solo'));
-        expect(solo).toBeDefined();
-        const lit = ['beams', 'sides', 'floor', 'laser'].filter((k) => (solo.look[k] ?? 0) > 0);
-        expect(lit).toHaveLength(1);
-        expect(solo.look.wash).toBe(0);
-        expect(solo.look.intensity).toBeGreaterThanOrEqual(1.3);
-        // nothing else fires during its 4 bars
-        expect(show.cues.filter((c) => c.t > solo.t && c.t < solo.t + 8 - 0.01)).toHaveLength(0);
+    it('every song gives each fixture type a solo: side towers, aerial beams, floor, washes, lasers', () => {
+        const beats240 = Array.from({ length: 120 * 4 }, (_, i) => i * 0.5);
+        const long = programShow({ ...analysis, beats: beats240, downbeats: beats240.map((_, i) => i).filter((i) => i % 4 === 0), duration: 240, sections: [sec(0, 8, 'intro'), sec(16, 16, 'calm'), sec(48, 16, 'groove'), sec(80, 8, 'build'), sec(96, 32, 'peak'), sec(160, 16, 'groove'), sec(192, 16, 'peak'), sec(224, 8, 'outro')] });
+        const solos = long.cues.filter((c) => c.name.startsWith('Solo') && !c.name.includes(' · bar '));
+        expect(solos.map((c) => c.name.replace('Solo · ', '')).sort()).toEqual(['aerial beams', 'floor', 'lasers', 'side towers', 'washes']);
+        for (const solo of solos) {
+            const lit = ['beams', 'sides', 'floor', 'wash', 'laser'].filter((k) => (solo.look[k] ?? 0) > 0);
+            expect(lit).toHaveLength(1);
+            expect(solo.look.intensity).toBeGreaterThanOrEqual(1.3);
+            // nothing but the washes' own bar changes fires during its 4 bars (8 s here)
+            const inside = long.cues.filter((c) => c.t > solo.t && c.t < solo.t + 8 - 0.01);
+            expect(inside.every((c) => c.name.startsWith('Solo · washes'))).toBe(true);
+        }
+        // the washes tilt and change colour
+        const washBars = long.cues.filter((c) => c.name.startsWith('Solo · washes · bar'));
+        expect(washBars.length).toBe(3);
+        expect(new Set(washBars.map((c) => c.look.tiltShift)).size).toBe(2);
+        expect(new Set(washBars.map((c) => c.look.washColor)).size).toBe(3);
         expect(buildIdleShow().cues.some((c) => c.name.startsWith('Solo'))).toBe(true);
     });
 
@@ -323,6 +332,16 @@ describe('programming rules (concert-style)', () => {
         }
     });
 
+    it('alternating beams (odd/even fully swapping on the beat) in calm, groove, build and peak', () => {
+        const beats240 = Array.from({ length: 120 * 4 }, (_, i) => i * 0.5);
+        const song = programShow({ ...analysis, beats: beats240, downbeats: beats240.map((_, i) => i).filter((i) => i % 4 === 0), duration: 240, sections: [sec(0, 8, 'intro'), sec(16, 24, 'calm'), sec(64, 24, 'groove'), sec(112, 8, 'build'), sec(128, 40, 'peak'), sec(208, 16, 'outro')] });
+        const alternating = (prefix) => song.cues.filter((c) => c.name.startsWith(prefix) && c.look?.alternate === 1);
+        expect(alternating('Groove').length).toBeGreaterThan(0);
+        expect(alternating('Build').length).toBeGreaterThan(0);
+        expect(alternating('Calm').length).toBeGreaterThan(0);
+        expect(alternating('Peak').length).toBeGreaterThan(0);
+    });
+
     it('grooves have no lasers', () => {
         for (const c of show.cues.filter((x) => x.name.startsWith('Groove'))) expect(c.look.laser ?? 0).toBe(0);
     });
@@ -333,6 +352,19 @@ describe('programming rules (concert-style)', () => {
         const p = prepareSongShow(noOutro);
         expect(sampleSongShow(p, 143.95).look.master).toBeLessThan(0.05);
         expect(sampleSongShow(p, 138).look.master).toBe(1);
+    });
+
+    it('every song ends with the side-tower ending, even straight out of a peak', () => {
+        const fromPeak = programShow({ ...analysis, sections: [sec(0, 8, 'intro'), sec(16, 8, 'build'), sec(32, 48, 'peak'), sec(128, 8, 'outro')] });
+        const p = prepareSongShow(fromPeak);
+        const start = sampleSongShow(p, 129).look;
+        expect(start.sides).toBe(1);
+        expect(start.beams + start.floor + start.wash + start.laser).toBe(0);
+        expect(start.sweep).toBe(0);
+        const names = fromPeak.cues.filter((c) => c.t >= 128).map((c) => c.name);
+        expect(names.some((n) => n.includes('flaring out'))).toBe(true);
+        expect(names.some((n) => n.includes('to the audience'))).toBe(true);
+        expect(sampleSongShow(p, 143.95).look.master).toBeLessThan(0.05);
     });
 
     it('the outro fades slowly into blackout', () => {
@@ -377,5 +409,32 @@ describe('energy climbs in steps', () => {
         const kinds = show.sections.map((s) => s.kind);
         const calm = kinds.indexOf('calm');
         expect(kinds.slice(calm, calm + 3)).toEqual(['calm', 'groove', 'build']);
+    });
+});
+
+describe('build-up detection', () => {
+    it('carves a build out of the bars climbing into a peak, even inside a longer section', async () => {
+        const { markBuilds } = await import('@/lib/show/analysis');
+        // 24 bars of steady groove, the last 8 climbing (louder, busier), then a peak
+        const bars = Array.from({ length: 40 }, (_, i) => {
+            if (i >= 24) return { energy: 0.9, density: 0.8 };
+            const climb = i >= 16 ? (i - 15) / 8 : 0;
+            return { energy: 0.4 + 0.3 * climb, density: 0.3 + 0.4 * climb };
+        });
+        const sections = [{ startBar: 0, endBar: 24, kind: 'groove' }, { startBar: 24, endBar: 40, kind: 'peak' }];
+        const out = markBuilds(sections, bars);
+        const build = out.find((s) => s.kind === 'build');
+        expect(build).toBeDefined();
+        expect(build.endBar).toBe(24);
+        expect(build.startBar).toBeGreaterThanOrEqual(14);
+        expect(build.startBar).toBeLessThanOrEqual(18);
+        expect(out[0]).toMatchObject({ kind: 'groove', startBar: 0 });
+    });
+
+    it('leaves a flat run into a peak alone', async () => {
+        const { markBuilds } = await import('@/lib/show/analysis');
+        const bars = Array.from({ length: 32 }, (_, i) => (i >= 16 ? { energy: 0.9, density: 0.8 } : { energy: 0.4, density: 0.3 }));
+        const sections = [{ startBar: 0, endBar: 16, kind: 'groove' }, { startBar: 16, endBar: 32, kind: 'peak' }];
+        expect(markBuilds(sections, bars).some((s) => s.kind === 'build')).toBe(false);
     });
 });

@@ -48,7 +48,7 @@ function trussBar(from, to) {
 // The four horizontal rows, top to bottom, all above the LED wall (top edge y = 11.2).
 // Each spans the full width and lands on the tower boxes (directly on a column, or on a side tie).
 export const ROWS = [
-    { y: 17.4, z: -6 },     // 1: aerials hanging underneath, facing the audience
+    { y: 18.4, z: -6 },     // 1: aerials hanging underneath, facing the audience (2.6 m above row 2)
     { y: 15.8, z: -4 },     // 2: stage wash, hanging (sits on the front columns)
     { y: 14.3, z: -7.5 },   // 3: stage wash, hanging
     { y: 12.9, z: -10 },    // 4: aerials hanging underneath (sits on the rear columns)
@@ -59,11 +59,11 @@ export const TRUSS_BARS = [
     // Side towers: a box on each side, a front and a rear column tied together at the top,
     // middle and bottom (the top truss lands on the top tie). Side moving heads hang on the rear
     // columns' inner faces.
-    [[-15.6, 0, -4], [-15.6, 18, -4]],
-    [[15.6, 0, -4], [15.6, 18, -4]],
-    [[-15.6, 0, -10], [-15.6, 18, -10]],
-    [[15.6, 0, -10], [15.6, 18, -10]],
-    ...[17.4, 14.3, 8.5, 0.6].flatMap((y) => [
+    [[-15.6, 0, -4], [-15.6, 19, -4]],
+    [[15.6, 0, -4], [15.6, 19, -4]],
+    [[-15.6, 0, -10], [-15.6, 19, -10]],
+    [[15.6, 0, -10], [15.6, 19, -10]],
+    ...[18.4, 14.3, 8.5, 0.6].flatMap((y) => [
         [[-15.6, y, -4], [-15.6, y, -10]],
         [[15.6, y, -4], [15.6, y, -10]],
     ]),

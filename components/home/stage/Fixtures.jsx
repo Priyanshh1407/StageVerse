@@ -57,7 +57,9 @@ function driveRole(u, role, target, state, delta) {
     if (hexB !== b.hex) { b.hex = hexB; tb.set(hexB); }
 
     u.uTime.value += delta;
-    u.uSweep.value += (target.sweep * role.sweep - u.uSweep.value) * ease;
+    // washes barely move, except when a cue lifts them (the washes solo)
+    const sweepScale = role === ROLES.wash ? (target.washSweep ?? role.sweep) : role.sweep;
+    u.uSweep.value += (target.sweep * sweepScale - u.uSweep.value) * ease;
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
