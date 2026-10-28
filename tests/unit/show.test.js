@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_LOOK, mixHex, mixLooks } from '@/lib/show/look';
 import { resolveCueSheet, sampleCueSheet, prepareSongShow, sampleSongShow, cueIndexAt } from '@/lib/show/timeline';
 import { analyseSong, fft, estimateTempo, trackBeats, onsetEnvelope, frameFeatures } from '@/lib/show/analysis';
-import { programShow } from '@/lib/show/program';
+import { programShow, buildIdleShow } from '@/lib/show/program';
 import { SHOTS } from '@/lib/show/shots';
 
 // A synthetic track: a kick on every beat (louder on beat 1 of each bar), a hi-hat on the
@@ -267,6 +267,7 @@ describe('programming rules (concert-style)', () => {
         expect(look.floor).toBe(0);
         expect(look.wash).toBe(0);
         expect(look.focusFloor).toBe(1);
+        expect(look.laser).toBe(0);
     });
 
     it('the final breakdown: side towers alone, from crossing inside to out at the audience', () => {
@@ -287,6 +288,22 @@ describe('programming rules (concert-style)', () => {
         const washes = mid.cues.find((c) => c.name.startsWith('Breakdown') && c.name.includes('phrase 2'));
         expect(washes.look.wash).toBe(1);
         expect(washes.look.beams + washes.look.sides).toBe(0);
+    });
+
+    it('every song has a solo: one fixture type alone in full focus', () => {
+        const solo = show.cues.find((c) => c.name.startsWith('Solo'));
+        expect(solo).toBeDefined();
+        const lit = ['beams', 'sides', 'floor', 'laser'].filter((k) => (solo.look[k] ?? 0) > 0);
+        expect(lit).toHaveLength(1);
+        expect(solo.look.wash).toBe(0);
+        expect(solo.look.intensity).toBeGreaterThanOrEqual(1.3);
+        // nothing else fires during its 4 bars
+        expect(show.cues.filter((c) => c.t > solo.t && c.t < solo.t + 8 - 0.01)).toHaveLength(0);
+        expect(buildIdleShow().cues.some((c) => c.name.startsWith('Solo'))).toBe(true);
+    });
+
+    it('the ending pans: side towers sweeping as they fade', () => {
+        expect(at(116).sweep).toBeGreaterThan(0.5);
     });
 
     it('grooves have no lasers', () => {
