@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Orbitron } from 'next/font/google';
-import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play, SunMedium } from 'lucide-react';
-import { DEFAULT_LOOK } from '@/lib/show/look';
+import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play, SunMedium, Flame, Zap, Sparkles, SunDim, Lamp, Power, ArrowRight, ArrowLeft } from 'lucide-react';
+import { DEFAULT_LOOK, mixHex } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt } from './scrollShow';
@@ -119,6 +119,7 @@ function ShowExperience({ events = [], isPhone = false }) {
     const [fullscreen, setFullscreen] = useState(false);
     const [brightnessTip, setBrightnessTip] = useState(false); // shown for the first seconds of a show
     const [screenNotice, setScreenNotice] = useState(false); // phones: the playground is for bigger screens
+    const [playStep, setPlayStep] = useState('songs'); // the playground: 'songs', then 'lights'
 
     // Scroll progress through the section drives the show (no re-render unless an overlay changes)
     useEffect(() => {
@@ -232,6 +233,20 @@ function ShowExperience({ events = [], isPhone = false }) {
             c.desk = { ...c.desk, ...patch };
         }
     };
+
+    // One-tap lighting for the playground's "Run the lights" step (the same actions as the desk)
+    const manual = mode === 'manual';
+    const isOn = (key) => manual && desk[key] > 0.05;
+    const toggle = (key) => changeDesk({ [key]: isOn(key) ? 0 : 1 });
+    const QUICK = [
+        { key: 'drop', label: 'Drop', icon: Flame, hint: 'The big moment', tap: () => momentary({ converge: 1, intensity: 1.6, strobe: 1, blinder: 1, dropFx: 1, laserChase: 1 }, 'pulse') },
+        { key: 'strobe', label: 'Strobe', icon: Zap, hint: 'Hold', hold: true },
+        { key: 'laser', label: 'Lasers', icon: Sparkles, hint: 'On / off', tap: () => toggle('laser'), active: isOn('laser') },
+        { key: 'blinder', label: 'Blinders', icon: SunDim, hint: 'On / off', tap: () => toggle('blinder'), active: isOn('blinder') },
+        { key: 'house', label: 'House lights', icon: Lamp, hint: 'Light the venue', tap: () => toggle('house'), active: isOn('house') },
+        { key: 'blackout', label: 'Blackout', icon: Power, hint: 'All off', tap: () => changeDesk({ master: manual && desk.master < 0.5 ? 1 : 0 }), active: manual && desk.master < 0.5 },
+    ];
+    const pickColors = (c) => changeDesk({ colorA: c.a, colorB: c.b, washColor: mixHex(c.a, c.b, 0.5), laserColor: c.a, master: 1 });
 
     const resume = () => {
         const c = control.current;
@@ -384,45 +399,91 @@ function ShowExperience({ events = [], isPhone = false }) {
                             </div>
                         </Fade>
 
-                        {/* The playground: the visitor takes the lights */}
+                        {/* The playground, in two steps: play a song, then run the lights */}
                         <Fade show={phase === 'play'} className="flex-col items-start justify-end px-4 sm:px-12 pb-24 sm:pb-12">
-                            <div className="pointer-events-auto max-w-md rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 p-5 sm:p-6">
-                                <div className="font-mono text-cyan-300 text-xs tracking-[0.3em] mb-2">YOUR TURN</div>
-                                <h2 className="text-2xl sm:text-3xl font-black mb-2">Run the show yourself.</h2>
-                                <p className="text-sm text-gray-300 mb-4">Take the lighting desk, or drop in a song: we find its beats and sections and program a light show for it, right here in your browser. Your file never leaves your device.</p>
-                                <p className="flex items-center gap-1.5 text-xs text-yellow-200/90 mb-3">
-                                    <SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, turn your screen brightness and volume up.
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                    <button onClick={bigScreenOnly(() => setDeskOpen(true))} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-cyan-300">
-                                        <Settings2 className="w-4 h-4" /> Take the desk
-                                    </button>
-                                    <button onClick={bigScreenOnly(() => fileInput.current?.click())} disabled={Boolean(song.status)}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold disabled:opacity-60">
-                                        {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your song
-                                    </button>
-                                    {song.demos.map((show) => (
-                                        <button key={show.title} onClick={bigScreenOnly(() => playDemo(show))} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white">
-                                            <Music className="w-4 h-4" /> {show.title}
-                                        </button>
-                                    ))}
+                            <div className="pointer-events-auto w-full max-w-md rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 p-5 sm:p-6">
+                                <div className="flex items-center justify-between font-mono text-xs tracking-[0.3em] mb-2">
+                                    <span className="text-cyan-300">YOUR TURN</span>
+                                    <span className="text-gray-400">STEP {playStep === 'songs' ? 1 : 2} OF 2</span>
                                 </div>
-                                {song.demos.length > 0 && (
-                                    <p className="mt-3 text-[11px] leading-snug text-gray-400">
-                                        Demo songs: {song.demos.map((d) => d.title).join(' and ')} by Coldplay. {SONG_NOTICE}
-                                    </p>
+
+                                {playStep === 'songs' ? (
+                                    <>
+                                        <h2 className="text-2xl sm:text-3xl font-black mb-2">Play a song.</h2>
+                                        <p className="text-sm text-gray-300 mb-4">Pick a demo, or drop in your own song: we find its beats and sections and program a light show for it, right here in your browser. Your file never leaves your device.</p>
+                                        <p className="flex items-center gap-1.5 text-xs text-yellow-200/90 mb-3">
+                                            <SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, turn your screen brightness and volume up.
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {song.demos.map((show) => (
+                                                <button key={show.title} onClick={bigScreenOnly(() => playDemo(show))} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white">
+                                                    <Music className="w-4 h-4" /> {show.title}
+                                                </button>
+                                            ))}
+                                            <button onClick={bigScreenOnly(() => fileInput.current?.click())} disabled={Boolean(song.status)}
+                                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold disabled:opacity-60">
+                                                {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your song
+                                            </button>
+                                        </div>
+                                        {song.demos.length > 0 && (
+                                            <p className="mt-3 text-[11px] leading-snug text-gray-400">
+                                                Demo songs: {song.demos.map((d) => d.title).join(' and ')} by Coldplay. {SONG_NOTICE}
+                                            </p>
+                                        )}
+                                        {song.status && <p className="mt-3 text-xs text-cyan-200" role="status">{song.status}</p>}
+                                        {song.ready && (
+                                            <button onClick={() => playShow(song.ready.show, song.ready.url, song.ready.url)}
+                                                className="mt-3 flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-cyan-300">
+                                                <Play className="w-4 h-4" /> Start the show: {song.ready.show.title}
+                                            </button>
+                                        )}
+                                        {song.error && <p className="mt-3 text-xs text-red-300" role="alert">{song.error}</p>}
+                                        {/* There's more: the lights are the next step */}
+                                        <button onClick={bigScreenOnly(() => setPlayStep('lights'))}
+                                            className="mt-5 w-full flex items-center justify-between gap-2 px-5 py-3 rounded-xl bg-white text-black font-bold hover:bg-cyan-300 transition-colors">
+                                            <span className="flex items-center gap-2"><Settings2 className="w-4 h-4" /> Next: run the lights yourself</span>
+                                            <ArrowRight className="w-5 h-5" />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h2 className="text-2xl sm:text-3xl font-black mb-1">Run the lights.</h2>
+                                        <p className="text-sm text-gray-300 mb-4">Tap a button and the rig answers. Hold <b>Strobe</b> for as long as you like.</p>
+                                        <div className="grid grid-cols-3 gap-2" role="group" aria-label="Quick lighting controls">
+                                            {QUICK.map(({ key, label, icon: Icon, hint, tap, hold, active }) => (
+                                                <button key={key} aria-pressed={active ?? undefined}
+                                                    {...(hold
+                                                        ? { onPointerDown: () => momentary({ strobe: 1 }, true), onPointerUp: () => momentary({ strobe: 0 }, false), onPointerLeave: () => momentary({ strobe: 0 }, false) }
+                                                        : { onClick: tap })}
+                                                    className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-3 text-sm font-bold transition-colors select-none ${active ? 'bg-cyan-300 text-black border-cyan-300' : key === 'drop' ? 'bg-gradient-to-br from-fuchsia-500 to-orange-400 text-black border-transparent' : 'bg-white/5 border-white/15 hover:border-white/50'}`}>
+                                                    <Icon className="w-5 h-5" aria-hidden />
+                                                    {label}
+                                                    <span className={`text-[10px] font-medium ${active || key === 'drop' ? 'text-black/70' : 'text-gray-400'}`}>{hint}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div className="mt-4 text-xs text-gray-400 mb-2">Colours</div>
+                                        <div className="flex flex-wrap gap-2" role="group" aria-label="Rig colour">
+                                            {ENCORE_CHOICES.map((c) => (
+                                                <button key={c.label} onClick={() => pickColors(c)} aria-label={`Rig colour ${c.label}`} aria-pressed={manual && desk.colorA === c.a}
+                                                    className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${manual && desk.colorA === c.a ? 'border-white scale-110' : 'border-white/20'}`}
+                                                    style={{ background: `linear-gradient(135deg, ${c.a}, ${c.b})` }} />
+                                            ))}
+                                        </div>
+                                        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                                            <button onClick={() => setPlayStep('songs')} className="flex items-center gap-1 text-gray-300 hover:text-white">
+                                                <ArrowLeft className="w-4 h-4" /> Back to songs
+                                            </button>
+                                            <button onClick={() => setDeskOpen(true)} className="flex items-center gap-1 font-bold text-cyan-300 hover:underline">
+                                                <Settings2 className="w-4 h-4" /> More controls
+                                            </button>
+                                            {manual && <button onClick={resume} className="text-gray-300 hover:text-white">Hand back the lights</button>}
+                                        </div>
+                                    </>
                                 )}
                                 <input ref={fileInput} type="file" accept="audio/*" className="hidden"
                                     onChange={(e) => { analyseUpload(e.target.files?.[0]); e.target.value = ''; }} />
-                                {song.status && <p className="mt-3 text-xs text-cyan-200" role="status">{song.status}</p>}
-                                {song.ready && (
-                                    <button onClick={() => playShow(song.ready.show, song.ready.url, song.ready.url)}
-                                        className="mt-3 flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-cyan-300">
-                                        <Play className="w-4 h-4" /> Start the show: {song.ready.show.title}
-                                    </button>
-                                )}
-                                {song.error && <p className="mt-3 text-xs text-red-300" role="alert">{song.error}</p>}
-                                <div className="mt-4 flex gap-3 text-sm">
+                                <div className="mt-4 pt-4 border-t border-white/10 flex gap-3 text-sm">
                                     <Link href="/login" className="font-bold text-cyan-300 hover:underline">Get started →</Link>
                                     <a href="#events" className="text-gray-300 hover:underline">Explore events</a>
                                 </div>
