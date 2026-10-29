@@ -11,7 +11,7 @@ import { buildIdleShow } from '@/lib/show/program';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt } from './scrollShow';
 import { currentState } from './director';
 import LightingDesk from './LightingDesk';
-import MobileLock from './MobileLock';
+import BiggerScreenNotice from './BiggerScreenNotice';
 
 // The 3D stage is client-only and loads after the page (the headline below is plain HTML)
 const ShowStage = dynamic(() => import('./ShowStage'), { ssr: false });
@@ -91,7 +91,7 @@ function analyseInWorker(pcm, sampleRate, title) {
  * per role on the LED wall, the drop, the encore, then the playground (the lighting desk, the
  * demo song, or the visitor's own song, analysed in their browser).
  */
-function ShowExperience({ events = [], enable3D }) {
+function ShowExperience({ events = [], isPhone = false }) {
     const section = useRef(null);
     const stage = useRef(null);
     const fileInput = useRef(null);
@@ -113,6 +113,7 @@ function ShowExperience({ events = [], enable3D }) {
     const [song, setSong] = useState({ demos: [], current: null, ready: null, playing: false, time: 0, status: null, error: null });
     const [fullscreen, setFullscreen] = useState(false);
     const [brightnessTip, setBrightnessTip] = useState(false); // shown for the first seconds of a show
+    const [screenNotice, setScreenNotice] = useState(false); // phones: the playground is for bigger screens
 
     // Scroll progress through the section drives the show (no re-render unless an overlay changes)
     useEffect(() => {
@@ -269,6 +270,11 @@ function ShowExperience({ events = [], enable3D }) {
 
     const playDemo = (show) => playShow(show, encodeURI(show.audio));
 
+    // The playground (lighting desk, demo songs, "Light up your song") is made for bigger screens: on a
+    // phone, a tap explains that instead of starting it. The scroll show itself plays everywhere.
+    const bigScreenOnly = (action) => () => (isPhone ? setScreenNotice(true) : action());
+    const closeScreenNotice = useCallback(() => setScreenNotice(false), []);
+
     // The visitor's own song: decoded and analysed in their browser, never uploaded anywhere
     const analyseUpload = async (file) => {
         if (!file) return;
@@ -307,7 +313,10 @@ function ShowExperience({ events = [], enable3D }) {
     return (
         <section ref={section} className="relative h-[520vh] bg-[#010208]" aria-label="StageVerse live show">
             <div ref={stage} className="sticky top-0 h-screen w-full overflow-hidden bg-[#010208]">
-                {enable3D && <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />}
+                <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />
+
+                {/* Phones: tapping a playground control explains it's made for bigger screens */}
+                <BiggerScreenNotice open={screenNotice} onClose={closeScreenNotice} />
 
                 {/* Start of a show: recommend full screen brightness (a page can't set it itself) */}
                 <div aria-live="polite" className={`absolute top-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur border border-white/15 text-sm text-white pointer-events-none transition-opacity duration-700 ${brightnessTip ? 'opacity-100' : 'opacity-0'}`}>
@@ -372,15 +381,15 @@ function ShowExperience({ events = [], enable3D }) {
                                     <SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, turn your screen brightness and volume up.
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                    <button onClick={() => setDeskOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-cyan-300">
+                                    <button onClick={bigScreenOnly(() => setDeskOpen(true))} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-bold hover:bg-cyan-300">
                                         <Settings2 className="w-4 h-4" /> Take the desk
                                     </button>
-                                    <button onClick={() => fileInput.current?.click()} disabled={Boolean(song.status)}
+                                    <button onClick={bigScreenOnly(() => fileInput.current?.click())} disabled={Boolean(song.status)}
                                         className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold disabled:opacity-60">
                                         {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your song
                                     </button>
                                     {song.demos.map((show) => (
-                                        <button key={show.title} onClick={() => playDemo(show)} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white">
+                                        <button key={show.title} onClick={bigScreenOnly(() => playDemo(show))} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white">
                                             <Music className="w-4 h-4" /> {show.title}
                                         </button>
                                     ))}
@@ -445,7 +454,7 @@ function ShowExperience({ events = [], enable3D }) {
                 <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex flex-col items-end gap-3 pointer-events-none">
                     <LightingDesk
                         open={deskOpen}
-                        onOpenChange={setDeskOpen}
+                        onOpenChange={(open) => (open ? bigScreenOnly(() => setDeskOpen(true))() : setDeskOpen(false))}
                         desk={desk}
                         counts={deskCounts}
                         manual={mode === 'manual'}
@@ -461,7 +470,7 @@ function ShowExperience({ events = [], enable3D }) {
     );
 }
 
-// Phones: the 3D show is locked (it's built for bigger screens). Same rule as .show-phone-only in globals.css.
+// Phones: narrow screens, or a phone held sideways
 const PHONE_QUERY = '(max-width: 767px), (pointer: coarse) and (max-height: 500px)';
 const subscribePhone = (onChange) => {
     const mq = window.matchMedia(PHONE_QUERY);
@@ -469,21 +478,8 @@ const subscribePhone = (onChange) => {
     return () => mq.removeEventListener('change', onChange);
 };
 
-/**
- * The homepage hero. Phones get MobileLock; bigger screens get the show. Until the browser has been
- * asked (server render and hydration) both are in the HTML and CSS shows the right one, so nothing
- * flashes; then only the one that applies stays mounted, and phones never download the 3D code.
- */
+/** The homepage hero. On phones the scroll show plays as normal; the playground asks for a bigger screen. */
 export default function ShowSection(props) {
-    const isPhone = useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE_QUERY).matches, () => null);
-    return (
-        <>
-            {isPhone !== false && <MobileLock className="show-phone-only" />}
-            {isPhone !== true && (
-                <div className="show-desktop-only">
-                    <ShowExperience {...props} enable3D={isPhone === false} />
-                </div>
-            )}
-        </>
-    );
+    const isPhone = useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE_QUERY).matches, () => false);
+    return <ShowExperience {...props} isPhone={isPhone} />;
 }

@@ -208,21 +208,6 @@
   to { opacity: 1; }
 }
 
-/* Phones (narrow, or a phone held sideways) get the locked screen instead of the 3D show
-   (components/home/show/MobileLock.jsx). Decided in CSS first, so there's no flash before hydration;
-   ShowSection then mounts only the one that applies. Keep in sync with PHONE_QUERY in ShowSection. */
-.show-phone-only {
-  display: none;
-}
-@media (max-width: 767px), (pointer: coarse) and (max-height: 500px) {
-  .show-phone-only {
-    display: block;
-  }
-  .show-desktop-only {
-    display: none;
-  }
-}
-
 /* While a light show plays the navbar is hidden (see ShowSection: full screen + this class) */
 html.show-immersive header {
   display: none;
