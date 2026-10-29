@@ -144,7 +144,7 @@ export function createFloorMaterial() {
             }
             void main() {
                 // House lights: the whole room in warm, even light
-                vec3 house = vec3(1.0, 0.7, 0.28) * uHouse * (0.09 + 0.05 * smoothstep(40.0, 0.0, abs(vWorld.x))) * step(vWorld.z, 33.4);
+                vec3 house = vec3(1.0, 0.7, 0.28) * uHouse * (0.16 + 0.09 * smoothstep(40.0, 0.0, abs(vWorld.x))) * step(vWorld.z, 33.4);
                 float fromStage = max(0.0, vWorld.z);                    // stage front is at z = 0
                 float spill = exp(-fromStage * 0.055) * smoothstep(30.0, 4.0, abs(vWorld.x));
                 float streak = exp(-abs(vWorld.x) * 0.35) * exp(-fromStage * 0.05) * 0.5;

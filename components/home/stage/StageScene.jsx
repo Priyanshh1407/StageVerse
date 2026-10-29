@@ -43,7 +43,7 @@ function StageLights({ look, blinders }) {
         bounce.current.intensity = (target.master ?? 1) * Math.min(target.intensity, 1.4) * 1.4 + flash * 6;
         const house = target.house ?? 0;
         hemi.current.color.copy(cool).lerp(warm, house).lerp(white, Math.min(1, flash));
-        hemi.current.intensity = 0.5 + house * 1.2 + flash * 5; // a strobe hit lights every surface
+        hemi.current.intensity = 0.5 + house * 2.2 + flash * 5; // a strobe hit lights every surface
     });
     return (
         <>

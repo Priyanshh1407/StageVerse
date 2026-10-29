@@ -18,7 +18,7 @@ function lampPositions() {
 
 function createLampMaterial() {
     return new THREE.ShaderMaterial({
-        uniforms: { uLevel: { value: 0 }, uColor: { value: new THREE.Color(HOUSE_COLOR) }, uSize: { value: 900 } },
+        uniforms: { uLevel: { value: 0 }, uColor: { value: new THREE.Color(HOUSE_COLOR) }, uSize: { value: 1300 } },
         vertexShader: /* glsl */ `
             uniform float uSize;
             void main() {
@@ -32,8 +32,8 @@ function createLampMaterial() {
             uniform vec3 uColor;
             void main() {
                 float d = length(gl_PointCoord - 0.5) * 2.0;
-                float halo = pow(max(0.0, 1.0 - d), 3.0) * 0.45;
-                float bulb = smoothstep(0.16, 0.06, d);
+                float halo = pow(max(0.0, 1.0 - d), 2.5) * 0.85;
+                float bulb = smoothstep(0.2, 0.06, d) * 1.6;
                 vec3 col = mix(uColor, vec3(1.0, 0.95, 0.85), bulb);
                 gl_FragColor = vec4(col, (halo + bulb) * uLevel);
             }

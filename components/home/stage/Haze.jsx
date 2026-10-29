@@ -65,7 +65,7 @@ function createHazeMaterial(seed) {
                 color = mix(color, vec3(1.0, 0.68, 0.3), uHouse * 0.8);
                 // A strobe or blinder hit lights the smoke white
                 color = mix(color, vec3(1.0), min(1.0, uFlash));
-                gl_FragColor = vec4(color, smoke * smoke * mask * (uLevel + uHouse * 0.06 + uFlash * 0.5));
+                gl_FragColor = vec4(color, smoke * smoke * mask * (uLevel + uHouse * 0.11 + uFlash * 0.5));
             }
         `,
         transparent: true,
