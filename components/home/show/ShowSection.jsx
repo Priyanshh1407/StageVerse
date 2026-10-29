@@ -9,7 +9,7 @@ import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt } from './scrollShow';
-import { currentState } from './director';
+import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
 import BiggerScreenNotice from './BiggerScreenNotice';
 
@@ -26,6 +26,8 @@ const SONG_NOTICE = 'Songs on this site are used for educational, non-commercial
 const DEMO_SHOWS = ['/shows/sky-full-of-stars.show.json', '/shows/yellow.show.json'];
 const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', build: '#ff8a00', peak: '#ff3df2', outro: '#3b5bff' };
 const MAX_UPLOAD_MB = 80;
+// After a song: the house lights come up, hold, then the playground returns (ms, including the fade)
+const AFTER_SHOW_MS = HOUSE_UP_MS + 5000;
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 // A hidden overlay is inert: its buttons can't take taps or focus. pointer-events-none alone isn't enough,
@@ -241,6 +243,8 @@ function ShowExperience({ events = [], isPhone = false }) {
     // --- Concert mode --------------------------------------------------------------------
     const stopSong = useCallback(() => {
         const c = control.current;
+        clearTimeout(c.afterShow);
+        c.houseUpAt = null;
         c.audio?.pause();
         if (c.audio) c.audio.currentTime = 0;
         if (c.mode === 'song') c.mode = 'scroll';
@@ -257,9 +261,15 @@ function ShowExperience({ events = [], isPhone = false }) {
         c.objectUrl = objectUrl;
         c.song = prepareSongShow(show);
         c.clock = null;
+        clearTimeout(c.afterShow);
+        c.houseUpAt = null;
         const audio = new Audio(url);
         audio.addEventListener('timeupdate', () => setSong((s) => ({ ...s, time: audio.currentTime })));
-        audio.addEventListener('ended', stopSong);
+        // The last note: house lights up and hold for a moment, like the end of a concert, then back to the playground
+        audio.addEventListener('ended', () => {
+            c.houseUpAt = performance.now();
+            c.afterShow = setTimeout(stopSong, AFTER_SHOW_MS);
+        });
         c.audio = audio;
         audio.play().catch(() => stopSong());
         c.mode = 'song';

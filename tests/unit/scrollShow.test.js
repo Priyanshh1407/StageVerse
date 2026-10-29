@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildScrollSheet, ROLES, roleAt, screenAt, phaseAt, PLAY_FROM } from '@/components/home/show/scrollShow';
 import { sampleCueSheet, prepareSongShow } from '@/lib/show/timeline';
 import { DEFAULT_LOOK, HOUSE_COLOR, venueLit } from '@/lib/show/look';
-import { currentState } from '@/components/home/show/director';
+import { currentState, HOUSE_UP_MS } from '@/components/home/show/director';
 import { buildIdleShow } from '@/lib/show/program';
 
 describe('scroll show', () => {
@@ -107,4 +107,13 @@ describe('house lights light the venue (scroll show and lighting desk, never son
         expect(look).toMatchObject({ house: 1, beams: 1, laser: 1 });
         expect(look.strobeSteady).toBe(0);
     });
+    it('when a song ends, the house lights come up and light the venue', () => {
+        const song = prepareSongShow({ cues: [{ t: 0, fade: 0, look: { beams: 1, laser: 1 } }, { t: 9, fade: 1, look: { master: 0 } }], beats: [], downbeats: [], hits: [] });
+        const audio = { paused: true, currentTime: 10 }; // ended, in the final blackout
+        const ending = currentState({ mode: 'song', song, audio, houseUpAt: performance.now() });
+        expect(ending.look.master).toBeLessThan(0.05); // the blackout first
+        const up = currentState({ mode: 'song', song, audio, houseUpAt: performance.now() - 2 * HOUSE_UP_MS });
+        expect(up.look).toMatchObject({ master: 1, house: 1, beams: 0, laser: 0, wash: 1, washColor: HOUSE_COLOR, strobeSteady: 1 });
+    });
 });
+

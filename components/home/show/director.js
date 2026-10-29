@@ -27,6 +27,9 @@ export function songTime(control, now = performance.now()) {
 // under the house lights; from it, house lights mean the venue is lit (see venueLit)
 const INSIDE_FROM = 0.09;
 
+// After a song ends: the house lights come up over this long (ms), like the end of a concert
+export const HOUSE_UP_MS = 3000;
+
 /**
  * The look and shot on stage now. When the house lights are up in the scroll show or on the lighting
  * desk, the rig lights the venue (warm washes and strobes, beams off, nothing moving). Song shows
@@ -36,7 +39,16 @@ export function currentState(control) {
     if (control.mode === 'manual' && control.desk) {
         return { look: venueLit(control.desk, control.desk.house ?? 0), shot: control.shot || 'wide', name: 'Lighting desk' };
     }
-    if (control.mode === 'song' && control.song && control.audio) return sampleSongShow(control.song, songTime(control));
+    if (control.mode === 'song' && control.song && control.audio) {
+        const state = sampleSongShow(control.song, songTime(control));
+        // The song has ended: house lights up over the final blackout, lighting the venue
+        if (control.houseUpAt) {
+            const k = smoothstep((performance.now() - control.houseUpAt) / HOUSE_UP_MS);
+            const look = { ...state.look, master: Math.max(state.look.master ?? 1, k), house: Math.max(state.look.house ?? 0, k) };
+            return { ...state, look: venueLit(look, k), name: 'House lights' };
+        }
+        return state;
+    }
     // The director smooths scroll progress (wheel notches arrive in jumps); fall back to the raw value
     const progress = control.smoothProgress ?? control.progress;
     // In the playground the rig runs its own looping show until the visitor takes over
