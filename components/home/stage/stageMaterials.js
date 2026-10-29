@@ -252,9 +252,26 @@ export function createScreenContent(content = { kind: 'brand' }, { events = [], 
         const upcoming = events.slice(0, 2);
         if (upcoming.length) {
             line('UP NEXT', 660, 40, 800, 0.5);
+            // Title, city (left out when the title already names it) and date. The line shrinks to fit;
+            // if it still doesn't, only the title is shortened, so the city and date always show.
+            const maxWidth = W * 0.86;
+            const width = (text, size) => {
+                small.ctx.font = `500 ${size}px ${family}`;
+                spacing(small.ctx, size * 0.04);
+                return small.ctx.measureText(text).width;
+            };
             upcoming.forEach((e, i) => {
-                const text = [e.title, e.city, e.date].filter(Boolean).join('  ·  ');
-                line(text.length > 52 ? `${text.slice(0, 51)}…` : text, 740 + i * 70, 46, 500, 0.04);
+                const title = e.title || '';
+                const city = e.city && !title.toLowerCase().includes(e.city.toLowerCase()) ? e.city : '';
+                const join = (t) => [t, city, e.date].filter(Boolean).join('  ·  ');
+                let size = 46;
+                while (size > 32 && width(join(title), size) > maxWidth) size -= 2;
+                let text = join(title);
+                for (let short = title; width(text, size) > maxWidth && short.length > 8;) {
+                    short = short.slice(0, -1).trimEnd();
+                    text = join(`${short}…`);
+                }
+                line(text, 740 + i * 70, size, 500, 0.04);
             });
         }
     }
