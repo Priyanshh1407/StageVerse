@@ -113,7 +113,8 @@ export default function Strobes({ count, look }) {
     useFrame(({ clock }) => {
         if (!mesh.current) return;
         const u = mesh.current.material.uniforms;
-        u.uFlash.value = Math.min(1, roomFlash(look.current, clock.elapsedTime).strobe);
+        // Flashing (shows), or a steady warm glow lighting the venue with the house lights
+        u.uFlash.value = Math.max(Math.min(1, roomFlash(look.current, clock.elapsedTime).strobe), (look.current.strobeSteady ?? 0) * 0.3);
         u.uTint.value.set(look.current.colorA);
         u.uFlashColor.value.set(look.current.strobeColor ?? '#fff8ee');
     });

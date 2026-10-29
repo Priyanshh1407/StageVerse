@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { HOUSE_COLOR } from '@/lib/show/look';
 
-export const HOUSE_COLOR = '#ffb347'; // warm tungsten
+export { HOUSE_COLOR }; // warm tungsten (defined with the looks, so the rig can match it)
 
 // The venue's own lights: a row of warm lamps across the ceiling above the front of the stage
 // and down both side walls. On before the show and whenever a cue brings them up (look.house);
