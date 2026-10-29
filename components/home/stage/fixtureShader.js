@@ -30,6 +30,7 @@ export function createRoleUniforms({ scale = 2.3, spread = 1, opacity = 1 } = {}
         uHaze: { value: 0.5 },
         uTarget: { value: new THREE.Vector3(0, 4.5, -6.5) }, // the centre of the stage (where the drop focuses)
         uSideways: { value: 0 },        // 1 = floor fixtures thrown out toward the audience (the drop)
+        uDown: { value: 0 },            // 1 = pointing straight down (washes, with the house lights)
         uBeat: { value: 0 },            // beat position, for beat-locked effects
         uAlternate: { value: 0 },       // odd/even beams swap on the beat
         uSparkle: { value: 0 },         // random beams flick on/off and change colour
@@ -61,6 +62,7 @@ const RIG_GLSL = /* glsl */ `
     uniform float uConverge;
     uniform vec3 uTarget;
     uniform float uSideways;
+    uniform float uDown;
     uniform float uBeat;
     uniform float uAlternate;
     uniform float uSparkle;
@@ -85,7 +87,9 @@ const RIG_GLSL = /* glsl */ `
         vec3 dir = normalize(mix(sweepDir, normalize(uTarget - from), uConverge));
         // The drop: thrown up and out over the audience, splayed to this fixture's side
         float side = from.x >= 0.0 ? 1.0 : -1.0;
-        return normalize(mix(dir, normalize(vec3(side * 0.45, 0.75, 1.0)), uSideways));
+        dir = normalize(mix(dir, normalize(vec3(side * 0.45, 0.75, 1.0)), uSideways));
+        // Straight down onto the stage (washes, when the house lights light the venue)
+        return normalize(mix(dir, vec3(0.0, -1.0, 0.0), uDown));
     }
 
     // Per-fixture on/off: alternate swaps odd and even beams every beat; sparkle switches random

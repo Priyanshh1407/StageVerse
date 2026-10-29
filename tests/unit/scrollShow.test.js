@@ -117,3 +117,19 @@ describe('house lights light the venue (scroll show and lighting desk, never son
     });
 });
 
+
+describe('role sections and venue-lit washes', () => {
+    const sheet = buildScrollSheet();
+    it('while a role is on the LED wall the moving heads glow faintly and the lasers are off; the riser brings them back', () => {
+        for (const r of ROLES) {
+            const { look } = sampleCueSheet(sheet, r.at + r.hold / 2);
+            for (const [k, v] of Object.entries({ beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, laser: 0 })) expect(look[k]).toBeCloseTo(v);
+        }
+        expect(sampleCueSheet(sheet, 0.79).look).toMatchObject({ beams: 1, sides: 1, floor: 1, wash: 1 });
+    });
+
+    it('with the house lights up the washes point straight down onto the stage', () => {
+        expect(venueLit(DEFAULT_LOOK, 1).washDown).toBe(1);
+        expect(DEFAULT_LOOK.washDown).toBe(0);
+    });
+});

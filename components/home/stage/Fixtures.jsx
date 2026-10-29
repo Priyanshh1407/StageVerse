@@ -65,6 +65,7 @@ function driveRole(u, role, target, state, delta) {
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
     u.uConverge.value = drop > 0.5 ? converge : u.uConverge.value + (converge - u.uConverge.value) * ease;
     u.uSideways.value = role.sideways ? drop : 0;
+    u.uDown.value += ((role === ROLES.wash ? target.washDown ?? 0 : 0) - u.uDown.value) * ease;
     // Converging beams meet mid-air over the stage, or (focus) on the centre of the stage floor
     const ff = target.focusFloor ?? 0;
     u.uTarget.value.set(0, 4.5 - 4 * ff, -6.5 - 0.5 * ff);

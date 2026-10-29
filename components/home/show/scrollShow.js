@@ -22,16 +22,18 @@ export const ENCORE_CHOICES = [
     { label: 'Pink', a: '#ff69b4', b: '#ff3df2' },
 ];
 
-// Each role: when its look arrives, how long it holds, its colours, camera, position and line
+// Each role: when its look arrives, how long it holds, its colours, camera, position and line.
+// While a role is on the LED wall the moving heads drop to a faint glow (18%, washes 30%) and the
+// lasers are off, so the screen behind them is the focus; the riser brings the rig back.
 export const ROLES = [
     { key: 'Fan', at: 0.45, hold: 0.045, colors: ['#19d9ff', '#ff3df2'], shot: 'left', line: 'Find shows near you, vote on the setlist live and get closer to the stage.',
-        look: { fan: 1.3, tiltShift: 0.1, sweep: 0.3, speed: 0.45, phaseSpread: 1, washColor: '#3b5bff', laser: 0 } },        // wide fan, gentle wave
+        look: { fan: 1.3, tiltShift: 0.1, sweep: 0.3, speed: 0.45, phaseSpread: 1, washColor: '#3b5bff', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, laser: 0 } },        // wide fan, gentle wave
     { key: 'Artist', at: 0.54, hold: 0.045, colors: ['#ff0055', '#ffd400'], shot: 'right', line: 'Build setlists with AI insight and read the crowd in real time while you play.',
-        look: { fan: 0.5, tiltShift: -0.28, sweep: 0, speed: 0.3, phaseSpread: 0, washColor: '#ff6a00', laser: 0 } },         // tight, straight into the audience, still
+        look: { fan: 0.5, tiltShift: -0.28, sweep: 0, speed: 0.3, phaseSpread: 0, washColor: '#ff6a00', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, laser: 0 } },         // tight, straight into the audience, still
     { key: 'Organizer', at: 0.63, hold: 0.045, colors: ['#a855f7', '#ffffff'], shot: 'high', line: 'Plan the event, assemble the team and keep every department on one timeline.',
-        look: { fan: -0.85, tiltShift: 0.35, sweep: 0.16, speed: 0.3, phaseSpread: 0, washColor: '#a855f7', laser: 0 } },     // crossed and lifted, slow unison drift
+        look: { fan: -0.85, tiltShift: 0.35, sweep: 0.16, speed: 0.3, phaseSpread: 0, washColor: '#a855f7', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, laser: 0 } },     // crossed and lifted, slow unison drift
     { key: 'Crew', at: 0.72, hold: 0.03, colors: ['#39ff14', '#19d9ff'], shot: 'wide', line: 'Run production: tasks, cue calls and AI-assisted DMX patching in one place.',
-        look: { fan: 1.1, tiltShift: 0, sweep: 0.35, speed: 0.9, phaseSpread: 0.5, washColor: '#19d9ff', laser: 0.4 } },       // faster wave, lasers in
+        look: { fan: 1.1, tiltShift: 0, sweep: 0.35, speed: 0.9, phaseSpread: 0.5, washColor: '#19d9ff', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, laser: 0 } },       // faster wave
 ];
 
 // Where each overlay shows (scroll progress)
@@ -82,7 +84,7 @@ export function buildScrollSheet(encore = ENCORE_CHOICES[0]) {
         // One designed look per role
         ...ROLES.map((r) => ({ t: r.at, hold: r.hold, name: `${r.key} look`, shot: r.shot, look: { ...r.look, colorA: r.colors[0], colorB: r.colors[1], laserColor: r.colors[0] } })),
         // Riser, then the drop
-        { t: 0.785, name: 'Riser', shot: 'dolly', look: { intensity: 1.2, fan: 0.6, tiltShift: 0, converge: 0.9, sweep: 0.06, speed: 1.6, phaseSpread: 0, laser: 0.8 } },
+        { t: 0.785, name: 'Riser', shot: 'dolly', look: { beams: 1, sides: 1, floor: 1, wash: 1, intensity: 1.2, fan: 0.6, tiltShift: 0, converge: 0.9, sweep: 0.06, speed: 1.6, phaseSpread: 0, laser: 0.8 } },
         { t: 0.8, snap: true, name: 'The drop', shot: 'drop', look: { intensity: 1.4, converge: 0.15, fan: 1.2, sweep: 0.4, speed: 1.6, phaseSpread: 1, laser: 1, stars: 1, strobe: 1, blinder: 1, dropFx: 1, laserChase: 1 } },
         { t: 0.805, snap: true, name: 'The drop', look: { blinder: 0 } },
         { t: 0.825, snap: true, name: 'The drop', look: { strobe: 0, dropFx: 0, laserChase: 0 } },
