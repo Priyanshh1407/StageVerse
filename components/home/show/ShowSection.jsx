@@ -28,9 +28,12 @@ const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', b
 const MAX_UPLOAD_MB = 80;
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
+// A hidden overlay is inert: its buttons can't take taps or focus. pointer-events-none alone isn't enough,
+// because a child with pointer-events-auto (the playground card, the encore swatches) still catches taps,
+// and on a phone those invisible cards cover the overlay that is showing.
 function Fade({ show, children, className = '' }) {
     return (
-        <div aria-hidden={!show} className={`absolute inset-0 flex transition-opacity duration-500 ${show ? 'opacity-100' : 'opacity-0 pointer-events-none'} ${className}`}>
+        <div aria-hidden={!show} inert={!show} className={`absolute inset-0 flex transition-opacity duration-500 ${show ? 'opacity-100' : 'opacity-0 pointer-events-none'} ${className}`}>
             {children}
         </div>
     );
