@@ -20,7 +20,11 @@ export default function Home() {
         const json = await res.json();
 
         if (json.success) {
-          const realEvents = json.events.map(e => ({
+          // Only shows that haven't happened yet (the list is sorted by date, soonest first)
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const upcoming = json.events.filter(e => e.date && new Date(e.date) >= today);
+          const realEvents = upcoming.map(e => ({
             id: e._id,
             name: e.title,
             genre: e.genre || 'Music',
@@ -37,7 +41,9 @@ export default function Home() {
             badge: e.status === 'Selling Fast' ? 'Hot' : null // For LocalEvents
           }));
 
-          setScreenEvents(json.events.slice(0, 2).map(e => ({
+          // The LED wall shows two shows: featured ones first, then the soonest
+          const onScreen = [...upcoming.filter(e => e.featured), ...upcoming.filter(e => !e.featured)];
+          setScreenEvents(onScreen.slice(0, 2).map(e => ({
             title: e.title,
             city: e.city,
             date: e.date ? new Date(e.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '',

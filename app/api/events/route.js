@@ -24,7 +24,7 @@ export async function GET(req) {
     const events = await Event.find({
       status: { $in: ['Published', 'Scheduled', 'Live'] }
     })
-      .select('eventId title artist date time city venue images genre vibe status ticketTiers') // Optimize
+      .select('eventId title artist date time city venue images genre vibe status ticketTiers featured') // Optimize
       .populate('venue', 'name city')
       .sort({ date: 1 });
 

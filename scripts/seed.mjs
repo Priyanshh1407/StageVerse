@@ -175,6 +175,8 @@ const VENUES = {
     palace: { name: 'Palace Grounds', city: 'Bengaluru', address: 'Jayamahal Main Road, Vasanth Nagar', capacity: '30000', type: 'Outdoor Grounds', image: img(CONCERT[7]) },
     balayogi: { name: 'GMC Balayogi Athletic Stadium', city: 'Hyderabad', address: 'Gachibowli', capacity: '30000', type: 'Stadium', image: img(CONCERT[9]) },
     mahalaxmi: { name: 'Mahalaxmi Lawns', city: 'Pune', address: 'Karve Nagar', capacity: '12000', type: 'Outdoor Lawns', image: img(CONCERT[3]) },
+    racecourse: { name: 'Mahalaxmi Race Course', city: 'Mumbai', address: 'Keshavrao Khadye Marg, Mahalaxmi', capacity: '35000', type: 'Racecourse Grounds', image: img(CONCERT[0]) },
+    nsic: { name: 'NSIC Exhibition Grounds', city: 'New Delhi', address: 'Okhla Industrial Estate, Phase III', capacity: '20000', type: 'Exhibition Grounds', image: img(CONCERT[8]) },
 };
 const venues = {};
 for (const [key, v] of Object.entries(VENUES)) {
@@ -605,6 +607,63 @@ await seedTeam({
     offset: 200, shift: 2, tour: 'Afterglow Tour', nightTitles: ['Afterglow Tour: Mumbai Homecoming', 'Afterglow Tour: Mumbai Homecoming, Night 2'],
     ticketPrefix: 'RECRUITER-FAN-TICKET-', friends: crowd.slice(5, 10),
 });
+
+// ---------------------------------------------------------------- featured festivals
+// The two shows on the homepage stage's LED wall (featured: true puts them first there), run by the
+// recruiters' organizer. Dates stay a few weeks ahead of whenever the seed runs.
+// Tier capacities and sold counts (the same split as the tour shows)
+const festivalTiers = (capacity, soldShare, prices) => [['General Admission', 0.7, prices.ga], ['Fan Pit', 0.2, prices.pit], ['VIP', 0.1, prices.vip]]
+    .map(([name, share, price]) => ({ name, price, capacity: Math.round(capacity * share), sold: Math.round(capacity * share * soldShare), status: 'Active' }));
+const featuredOrganizer = await User.findOne({ email: 'recruiter.organizer@stageverse.demo' });
+const FESTIVALS = [
+    {
+        eventId: 9401, title: 'Sunburn Festival 2026: Mumbai', venue: 'racecourse', days: 30, time: '4:00 PM', doorsOpen: '2:00 PM',
+        artist: 'Sunburn', genre: 'EDM', vibe: 'Festival', image: CONCERT[3], capacity: 30000, sold: 0.72,
+        prices: { ga: 60, pit: 110, vip: 220 },
+        lineup: [
+            { name: 'Midnight Ferns', role: 'Main Stage', image: img(CONCERT[10], 400) },
+            { name: 'DJ Saanvi', role: 'Sunset Set', image: img(CONCERT[0], 400) },
+            { name: 'Neon Skyline (Live)', role: 'Closing Set', image: img(CONCERT[2], 400) },
+        ],
+        description: "Asia's biggest dance music festival comes to Mumbai: two stages, a full arena light show, lasers and fireworks at Mahalaxmi Race Course. Gates open at 2 PM; the main stage runs until 10 PM. 18+ only, valid photo ID required.",
+    },
+    {
+        eventId: 9402, title: 'India Sneaker Festival 2026: New Delhi', venue: 'nsic', days: 37, time: '12:00 PM', doorsOpen: '11:00 AM',
+        artist: 'India Sneaker Festival', genre: 'Festival', vibe: 'Street culture', image: CONCERT[8], capacity: 18000, sold: 0.58,
+        prices: { ga: 25, pit: 45, vip: 90 },
+        lineup: [
+            { name: 'Live hip-hop showcase', role: 'Main Stage', image: img(CONCERT[1], 400) },
+            { name: 'Sneaker drops and resale', role: 'Marketplace', image: img(CONCERT[11], 400) },
+        ],
+        description: 'Sneakers, streetwear and live hip-hop under one roof at the NSIC Exhibition Grounds, Okhla: limited drops, customisation workshops, a resale market and performances all day. All ages; under-16s with an adult.',
+    },
+];
+for (const f of FESTIVALS) {
+    const v = venues[f.venue];
+    const event = await Event.findOneAndUpdate(
+        { eventId: f.eventId },
+        {
+            eventId: f.eventId, title: f.title, description: f.description, date: day(f.days, 16, 0), time: f.time, doorsOpen: f.doorsOpen,
+            venue: v._id, city: v.city, artist: f.artist, lineup: f.lineup, genre: f.genre, vibe: f.vibe,
+            images: { hero: img(f.image), venue: v.image || img(f.image, 800) },
+            ticketTiers: festivalTiers(f.capacity, f.sold, f.prices), status: 'Published', featured: true,
+            organizerId: featuredOrganizer._id,
+        },
+        { upsert: true, returnDocument: 'after' },
+    );
+    // A handful of recent ticket sales, so the organizer's reports include them
+    await Ticket.deleteMany({ eventId: event._id });
+    const sales = Array.from({ length: 18 }, (_, i) => {
+        const tierName = i % 6 === 0 ? 'VIP' : i % 3 === 0 ? 'Fan Pit' : 'General Admission';
+        const tier = event.ticketTiers.find((t) => t.name === tierName);
+        const bought = ago(between(2, 30 * 24));
+        const doc = new Ticket({ userId: crowd[i % crowd.length]._id, eventId: event._id, price: tier.price, seat: tierName === 'VIP' ? 'VIP Deck' : tierName, type: tierName, qrCode: `SV-${f.eventId}-${String(i + 1).padStart(5, '0')}`, status: 'Confirmed', bgImage: img(f.image) }).toObject();
+        return { ...doc, createdAt: bought, updatedAt: bought };
+    });
+    await Ticket.collection.insertMany(sales);
+    console.log(`Featured: ${f.eventId} ${f.title} (${shortDate(event.date)})`);
+}
+await Counter.updateOne({ id: 'eventId' }, { $max: { seq: Math.max(...FESTIVALS.map((f) => f.eventId)) } }, { upsert: true });
 
 console.log(`Done. Testing logins: organizer|artist|production|fan @stageverse.demo, "${PASSWORD}" (accounts that already existed keep their own password).`);
 console.log(`Recruiter logins: recruiter.organizer|artist|crew|fan @stageverse.demo, "${RECRUITER_PASSWORD}".`);
