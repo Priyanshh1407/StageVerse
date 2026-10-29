@@ -248,6 +248,19 @@ Two further rules:
   file never leaves the device). An analysed upload shows a "Start the show" button.
 - **Rig**: lasers default to 40; side towers alternate colours up each tower, mirrored left and right.
 
+## Scroll stops and section dots
+
+The scroll has 10 places it can rest, where each section's look holds (`STOPS` in `show/scrollShow.js`): the gate,
+house lights, the rig comes up, Fan, Artist, Organizer, Crew, the drop, the encore and your turn (the playground).
+Each is a CSS scroll-snap target inside the show section, and the page uses `scroll-snap-type: y proximity`: when
+the visitor stops scrolling near a stop the page settles on it, so its animation finishes and holds; a quick scroll
+passes straight through. Small dots on the right edge show the current section (`stopAt`), name it on hover, and
+jump to any section when clicked.
+
+While a role (Fan, Artist, Organizer, Crew) is on the LED wall, the moving heads drop to a faint glow (18%, washes
+30%) and the lasers are off, so the screen is the focus; the riser brings the rig back for the drop. With the house
+lights up, the washes point straight down onto the stage (`washDown`).
+
 ## The playground: two steps
 
 After the encore, the playground card is in two steps, so it's clear the experience continues:

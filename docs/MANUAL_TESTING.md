@@ -4,7 +4,7 @@ A click-by-click checklist for every upgrade made during the audit (see [`FIX_LO
 
 Some protections can only be checked by trying something the UI never lets you do (another user's data, voting twice). For those there's a snippet to paste into the browser's DevTools console (F12 → Console) **while on the app's page**, so it runs with that browser's login.
 
-> Everything here is also covered by the automated suite (`npm test`, 285 tests). This guide is for seeing it work end to end in a real browser.
+> Everything here is also covered by the automated suite (`npm test`, 289 tests). This guide is for seeing it work end to end in a real browser.
 
 ---
 
@@ -246,7 +246,7 @@ With **level 4** active, repeat 8.1–8.5. Each still answers, with an "AI is bu
 |---|---|---|---|
 | 9.1 | Health endpoint | Open `/api/health` | `{"status":"ok","db":"up","latencyMs":…}`; no connection strings or error details |
 | 9.2 | No tempo invented | Crew live screen on a song without a BPM | Shows "—" (used to show 128) |
-| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 285 tests passing, build succeeds |
+| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 289 tests passing, build succeeds |
 | 9.4 | Benchmark | `npm run bench`, then open `bench/results/live-run.json` | Push p50 of a few ms; setlist lookup examines 1 document |
 | 9.5 | AI eval | `npm run eval:patch -- --provider groq` (~65 Groq calls, ~15 min) | A new file in `evals/patch/results/` with 0% collisions for the new pipeline |
 
@@ -287,6 +287,8 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 | 10.27 | House lights after a song | Play a demo song and jump to its last seconds on the timeline | Fade to black, then the house lights come up over ~3 s with the venue lit, then the playground returns after ~5 s |
 | 10.28 | Phones | Open the homepage on a phone and scroll | The whole scroll show plays; encore colours change the lights; any playground control shows "Best enjoyed on a bigger screen" |
 | 10.29 | LED wall up next | Scroll to the house-lights moment and read the LED wall | "Sunburn Festival 2026: Mumbai · <date>" and "India Sneaker Festival 2026: New Delhi · <date>": city once, date visible |
+| 10.30 | Scroll stops and dots | Scroll slowly and stop between sections; then click the dots on the right edge | The page settles on the nearest of the 10 sections and its look holds; the current section's dot is lit; clicking a dot jumps there; a quick scroll still passes straight through |
+| 10.31 | Role sections and house-light washes | Stop on Fan, Artist, Organizer and Crew; then on House lights | The moving heads are a faint glow and the LED wall leads; with the house lights up the washes point straight down onto the stage |
 
 ---
 
@@ -295,7 +297,7 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 Run from the project folder (`cd /d/Projects/stageverse`). None of these touch your real database: the tests start an in-memory MongoDB (the first run downloads a ~100 MB `mongod` binary and caches it) and mock every AI provider.
 
 ```bash
-# Everything: 285 tests, about 1-2 minutes
+# Everything: 289 tests, about 1-2 minutes
 npm test
 
 # Watch mode while editing (re-runs affected tests on save)
