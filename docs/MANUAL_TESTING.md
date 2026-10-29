@@ -287,7 +287,7 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 | 10.27 | House lights after a song | Play a demo song and jump to its last seconds on the timeline | Fade to black, then the house lights come up over ~3 s with the venue lit, then the playground returns after ~5 s |
 | 10.28 | Phones | Open the homepage on a phone and scroll | The whole scroll show plays; encore colours change the lights; any playground control shows "Best enjoyed on a bigger screen" |
 | 10.29 | LED wall up next | Scroll to the house-lights moment and read the LED wall | "Sunburn Festival 2026: Mumbai · <date>" and "India Sneaker Festival 2026: New Delhi · <date>": city once, date visible |
-| 10.30 | Scroll stops and dots | Scroll slowly and stop between sections; then click the dots on the right edge | The page settles on the nearest of the 10 sections and its look holds; the current section's dot is lit; clicking a dot jumps there; a quick scroll still passes straight through |
+| 10.30 | Scroll stops and dots | Scroll slowly and stop between sections; then click the dots on the right edge | The page settles on the nearest of the 9 sections (the drop plays on the way, it isn't a stop) and its look holds; each transition plays out over a couple of seconds; the current section's dot is lit; clicking a dot jumps there; a quick scroll still passes straight through |
 | 10.31 | Role sections and house-light washes | Stop on Fan, Artist, Organizer and Crew; then on House lights | The moving heads are a faint glow and the LED wall leads; with the house lights up the washes point straight down onto the stage |
 
 ---

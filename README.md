@@ -39,7 +39,7 @@ Live shows change fast; the artist's console, the crew's cue screens and fans' p
 * **The show clock** is stored with the show (seconds banked plus when the current run started), so a screen that opens late or presses refresh is on the right second ([`docs/live-sync.md`](docs/live-sync.md)).
 
 ### 3. The homepage: a 3D concert you can run
-A scroll-driven 3D concert (venue gate, full lighting rig, LED wall) that runs at 60 FPS on integrated graphics. Visitors can play a song (a demo, or their own, analysed in the browser for tempo, beats, sections and energy and programmed into a light show the way a lighting designer would), then run the lights themselves with one-tap controls or the full lighting desk. The scroll settles gently on each of its 10 sections, with small dots to jump between them. House lights light the venue in warm work light, as at the end of a real concert. On phones the scroll show plays and the playground asks for a bigger screen ([`docs/homepage-show.md`](docs/homepage-show.md)).
+A scroll-driven 3D concert (venue gate, full lighting rig, LED wall) that runs at 60 FPS on integrated graphics. Visitors can play a song (a demo, or their own, analysed in the browser for tempo, beats, sections and energy and programmed into a light show the way a lighting designer would), then run the lights themselves with one-tap controls or the full lighting desk. The scroll settles gently on each of its 9 sections, with small dots to jump between them, and every transition is paced to play out visibly. House lights light the venue in warm work light, as at the end of a real concert. On phones the scroll show plays and the playground asks for a bigger screen ([`docs/homepage-show.md`](docs/homepage-show.md)).
 
 ## What each role can do
 
