@@ -239,3 +239,37 @@ Interview version: "I built a 30-case eval with prompt-injection cases and compa
 Interview version: "The homepage is a 3D concert that holds 60 FPS on integrated graphics because the light is faked: one instanced mesh of additive cones moved in a vertex shader instead of ~89 real lights. Concert mode analyses a song offline with my own DSP (spectral-flux onsets, autocorrelation tempo, dynamic-programming beat tracking) and programs the lights from it; a synthetic click-track test caught the tracker locking onto hi-hats, and the fix was weighting the bass band."
 - **The homepage stage vanished on scroll.** The sticky stage scrolled away with the page, leaving a black screen for the rest of the 400vh section. Cause: the page wrapper's `overflow-x: hidden`. Hiding overflow on one axis computes the other to `auto`, which makes the wrapper a scroll container, and `position: sticky` sticks to the nearest scroll container. Fix: `overflow-x: clip`, which clips without creating a scroll container. Caught by screenshotting the page at several scroll positions.
 - **"It looks like a cartoon game"** (developer feedback). The causes were concrete: every lens drew a full-colour disc regardless of where it pointed, housings had a coloured band, beams were flat saturated cones, and there was no air. Fixes: lens flare computed from each fixture's aim relative to the camera (the same aiming code as the beam), dark housings, white-hot beam cores that saturate with distance, two-scale haze grain, drifting haze layers, coloured bounce light on the steel from below, floor spill, bloom on integrated GPUs (benchmarked first) and a slight handheld sway.
+
+---
+
+## Release: demo data, live clock, fan pages (2026-10-28/29)
+
+### BUG-17 — New events only saved on the third try (commit be1521a)
+Symptom: creating an event failed twice with a server error, then worked.
+Investigation: read-only check of the database: the event-id counter was at 10, while older events already used ids 11–15 (and 201–210, 999, 1029–1031 further up).
+Root cause: `nextEventId()` (BUG-09's atomic counter) only seeded itself from the highest id when the counter document didn't exist. This counter existed but was behind, so every create got an id that was already taken and failed on the unique index; each failure still consumed a number, so retries walked past the taken ids.
+Fix: if the next id already exists, `$max` the counter to the highest existing id, then increment. The seed also moves the counter past its fixed demo ids, so a user's event can never get an id a re-seed would overwrite.
+Verification: test with legacy events right where the counter goes next; it fails without the fix.
+Interview version: "The id counter was behind ids older data already used, so every save hit a duplicate key, and each failure used up a number. I confirmed it against the database read-only, made the counter jump past existing ids, and wrote a test that fails without the fix."
+
+### BUG-18 — Crew timer reset when coming back to a show; refresh did nothing (commit ea80e1d)
+Root cause: the refresh button next to ONLINE called an `onResync` prop that `LiveHeader` never passed down, so it only reconnected the socket; and the show clock existed only in each screen's memory.
+Fix: `Setlist.clock = { elapsed, liveSince }` maintained by `lib/showClock.js` (`advanceClock`, `elapsedAt`), following the artist's own timer when sent. `GET /api/production/live` returns `elapsedSeconds`; every `show:update` carries `time`; refresh reloads the show ("Re-synced: back on track"); the artist console restores status and time on open.
+Verification: unit tests for run / pause / resume / artist time / standby; an end-to-end run (start → pause at 5 s → resume) read Live 5 s → Paused 5 s → Live 8 s from the crew's view.
+Trade-off: no per-second writes; the price is that the clock is only as accurate as the artist's timer when it's sent.
+
+### BUG-19 — Seeded data was invisible on several dashboards (commit be1521a)
+Found by seeding realistic data for every role: event images were read from `image` (the schema has `images.hero`), memory photos from `imageUrl` (stored as `image`), the fan's prediction songs were looked up under the event's organizer instead of its artist, the artist's "next show" was the furthest date, and the production dashboard ignored shows active via `productionStatus` (no tasks, no patch conflicts). Also a typo (`nsole.error`) in the friends route's error handler.
+
+### SEC-10 — Crew notifications leaked other shows' messages (commit be1521a)
+`/api/notifications` computed the user's event ids and then didn't use them, so every crew member saw every show's "Artist Message" tasks. Now filtered to the user's own events.
+
+### SEC-11 — Seed script could print the database connection string (commit f529739)
+`new URL()` on a multi-host MongoDB connection string throws, and Node's error message printed the whole string, password included, to the terminal. The host name for log messages is now taken by plain string splitting. The exposed password must be rotated (see `docs/DEPLOYMENT.md`, section 3).
+
+### Features in this release
+- Seed: a seven-show tour per team with tickets, setlists, crew, patches, polls, predictions, memories and notifications; public recruiter logins with their own copy (commit f529739).
+- Memories open full size in a lightbox; `/social` Friends page with follow / unfollow (`POST /api/social` only edits your own list; 5 tests) (commit 6e830d6).
+- Educational-use disclaimer for the two demo songs on the site and README; deployment guide for Vercel (commits 4148c87, a1cf1ec).
+
+`npm test`: **279 passing** · lint: **0 errors** · build: passes.

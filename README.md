@@ -36,6 +36,7 @@ Manually assigning DMX addresses across many multi-channel moving heads invites 
 Live shows change fast; the artist's console, the crew's cue screens and fans' phones must stay in lockstep.
 * **The tech:** Socket.IO rooms per show, authenticated at the handshake with the session cookie.
 * **The logic:** the server is the source of truth: clients request changes over HTTP, the server writes to MongoDB and *then* broadcasts to the show's room (p50 ≈ 3 ms push latency to 10 screens).
+* **The show clock** is stored with the show (seconds banked plus when the current run started), so a screen that opens late or presses refresh is on the right second ([`docs/live-sync.md`](docs/live-sync.md)).
 
 ### 3. The homepage: a 3D concert you can run
 A scroll-driven 3D concert (venue gate, full lighting rig, LED wall) that runs at 60 FPS on integrated graphics. Visitors can take a lighting desk, or drop in a song: it's analysed in the browser (tempo, beats, sections, energy) and programmed into a light show the way a lighting designer would ([`docs/homepage-show.md`](docs/homepage-show.md)).
@@ -44,7 +45,7 @@ A scroll-driven 3D concert (venue gate, full lighting rig, LED wall) that runs a
 
 | Role | Highlights |
 |---|---|
-| **Fan** | Discover events, predict the setlist (scored after the show), vote in the live encore poll, memory vault |
+| **Fan** | Passport dashboard, discover events, predict the setlist (scored after the show), vote in the live encore poll, memory vault (photos open full size), friends (who's going to your shows, follow fans) |
 | **Artist** | Setlist builder, encore polls, live-show console (start/pause/last-song alert), tech rider with LD assignment, day sheet, guest list |
 | **Organizer** | Create and manage events, AI-written event descriptions, reports and analytics |
 | **Production crew** | Live cue screen synced to the artist, DMX patch studio with an AI patch assistant, logistics board, tasks |
@@ -178,10 +179,11 @@ components/     UI components by area (components/home/show and components/home/
 lib/            auth, authorization, errors, validation schemas, realtime, socket server, DMX allocator, LLM client, show engine (lib/show)
 models/         Mongoose schemas
 pages/api/socket/io.js   Socket.IO bootstrap (needs the Node server)
-public/shows/   programmed light shows for the demo songs
+public/shows/   programmed light shows and hand-annotated structure for the demo songs
+scripts/        seed (demo data and recruiter logins), song analysis and bar-by-bar tools
 tests/          Vitest suites (unit, security, characterization)
 bench/ evals/   performance benchmark and LLM evaluation harness
-docs/           design notes
+docs/           design notes, manual test guide, deployment guide
 ```
 
 ## Credits

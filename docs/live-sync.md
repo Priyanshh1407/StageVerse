@@ -54,7 +54,7 @@ Defined and validated in [`lib/liveProtocol.js`](../lib/liveProtocol.js).
 | `show:join` / `show:leave` | client → server | any logged-in user | `eventId` (ack: `{ ok, role }`) |
 | `show:update` | client → room | artist or crew of that show | `{ eventId, status?, time? }` (timer sync) |
 | `poll:reveal` | client → room | artist or crew of that show | `{ eventId, winner }` |
-| `show:update`, `show:warning` | server → room | `PUT /api/production/live` after saving | `{ eventId, status, warning }` |
+| `show:update`, `show:warning` | server → room | `PUT /api/production/live` after saving | `{ eventId, status, warning, time }` (`time` = the show clock in seconds) |
 | `poll:start`, `poll:update`, `poll:end` | server → room | `/api/fan/poll` after saving | `{ eventId, pollId, question, isActive, winner, options[] }` |
 
 Anything else a client emits (for example the old `poll:vote`) is ignored. Malformed payloads get `error:invalid`; events from the wrong role get `error:forbidden`.
@@ -78,9 +78,19 @@ Anything else a client emits (for example the old `poll:vote`) is ignored. Malfo
 
 The endpoint latency barely changed: at this data size a collection scan is cheap and per-request auth and lookup work dominates. The index keeps the lookup constant as setlists grow.
 
+**The show clock lives on the server.** The setlist stores `clock: { elapsed, liveSince }`: the seconds banked
+before the current run, and when the current run started ([`lib/showClock.js`](../lib/showClock.js)). While Live,
+the time is `elapsed + (now − liveSince)`; Paused banks the time and clears `liveSince`; Standby resets it. When the
+artist's console sends its own timer (`PUT /api/production/live { status, time }`), the clock follows it. Nothing is
+written every second, yet any screen can compute the exact time: `GET /api/production/live` returns
+`elapsedSeconds`, and every `show:update` carries `time`. The crew screen sets its timer from both, on open, on
+reconnect, on the 20 s reconcile and when the **refresh button** next to ONLINE is pressed (it reloads the show
+and says "Re-synced: back on track"). The artist's console also restores status and time when reopened. Before
+this, leaving a show and coming back reset the timer to 0:00.
+
 ## Known limitations (and what I'd do at scale)
 
 - **Single instance.** Rooms live in one Node process. With more than one server, I'd add the Socket.IO Redis adapter so a broadcast on instance A reaches sockets on instance B.
-- **Needs a long-running server.** The Socket.IO server attaches to Next's HTTP server (`pages/api/socket/io.js`), which doesn't work on serverless hosts. Deploy on an always-on Node host, or run the socket server as its own service.
+- **Needs a long-running server.** The Socket.IO server attaches to Next's HTTP server (`pages/api/socket/io.js`), which doesn't work on serverless hosts. The live site runs on Vercel, so its pushes don't reach other screens: screens converge through the 20 s reconcile, reconnect refetches and the refresh button, and the stored clock keeps the timer exact after each sync. For instant sync, deploy on an always-on Node host (Render, Railway, Fly.io), or run the socket server as its own service. See [`DEPLOYMENT.md`](DEPLOYMENT.md).
 - **Vote tally vs. vote records.** The `Vote` insert and the tally `$inc` are separate writes. A crash between them undercounts by one, and the tally can be rebuilt from the `Vote` collection. I chose this over a transaction to keep vote latency low during a burst.
 - **Any logged-in user can join as audience.** Ticket-gated rooms would come with the ticketing work (currently parked).

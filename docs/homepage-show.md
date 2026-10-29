@@ -26,13 +26,13 @@ light instead of computing it:
   tilt, so every head visibly points along its own beam. The beam starts at the lens.
 - **Every light has one job**, like a real rig (`stage/rigLayout.js`, `stage/Fixtures.jsx`), each with its
   own level in the look and its own movement character:
-  - **aerial beams**: standing on the top truss and hanging from the mid trusses; movement and the drop
+  - **aerial beams**: hanging under truss rows 1 and 4, facing the audience; movement and the drop
   - **side towers**: crossing in over the stage
   - **floor**: up-lights on the deck
   - **wash**: wide, soft, nearly still, colouring the stage (the deck takes their colour)
   - **strobes**: the real strobe model (eventdesignws, CC BY 4.0) in the gaps between moving heads; they only fire on strobe cues and hits
   - **blinders**: audience hits
-  - **lasers**: a fan sheet from the deck, scanning up over the audience
+  - **lasers**: a fan sheet from two projectors on the deck, scanning up over the audience (40 beams by default)
   - **house lights**: warm lamps on the ceiling and walls. On before the show; a cue can bring them up (`house` in the look)
 - **Truss** (`stage/trussGeometry.js`): every bar merged into one geometry (one draw call).
 
@@ -48,8 +48,8 @@ light instead of computing it:
 - **Quality tiers** (`stage/useQualityTier.js`): `detect-gpu` (its benchmark data is self-hosted in
   `public/gpu-benchmarks`, so there is no third-party request) picks a tier, and `?tier=0|1|2` forces one.
   drei's `PerformanceMonitor` steps down live: first bloom off, then 70% beams, then lower resolution.
-  - Tier 2: 72 moving heads + bloom
-  - Tier 1: 52 moving heads, half-resolution bloom
+  - Tier 2 (discrete GPUs): 80 moving heads, bloom, DPR up to 1.5
+  - Tier 1 (integrated GPUs, e.g. Iris Xe): 52 moving heads, half-resolution bloom, DPR 1
   - Tier 0: no WebGL, or "reduce motion": the poster plus the 2D lights, or the poster alone
 - **Nothing renders off-screen**: the canvas `frameloop` is `never` while the section is scrolled
   away (IntersectionObserver).
@@ -76,7 +76,7 @@ mutating shader uniforms, so React never re-renders for animation.
 ## Programming a song
 
 ```bash
-# put the song in public/audio/ (gitignored: recordings are copyrighted and never committed)
+# put the song in public/audio/ (gitignored, except the two demo songs; see "Demo songs" below)
 npm run analyse:song -- "public/audio/A Sky Full of Stars.mp3" sky-full-of-stars "A Sky Full of Stars"
 ```
 
@@ -85,7 +85,8 @@ This writes `public/shows/sky-full-of-stars.show.json`, which contains timings a
 **Analysis** (`lib/show/analysis.js`, self-written: no essentia.js, which is AGPL; only `audio-decode`
 (MIT) to decode the MP3):
 
-1. Downmix and decimate to ~24 kHz; 1024-point FFT frames every 256 samples (~94 frames/s).
+1. Downmix and decimate to 22,050 Hz (by an integer factor: 44.1 kHz → 22,050 Hz); 1024-point FFT frames
+   (46 ms, Hann window) every 256 samples (11.6 ms, ~86 frames/s).
 2. **Onsets**: spectral flux on log magnitudes, minus a local average. The bass band gets equal
    weight. Summed over linear FFT bins, flux is dominated by treble, and in testing that pulled the beat
    onto the hi-hats (the off-beat).
@@ -104,11 +105,33 @@ grooves first and only builds over its last 8 bars. A 2-bar riser tightens the b
 each peak opens with a drop hit (strobe + blinders) in a new colour pair. Inside sections, the camera
 cuts and the colours swap on 8-bar phrases.
 
-Result for *A Sky Full of Stars* (4:27): **125.1 BPM** (the published tempo is 125), 559 beats, 140 bars,
-10 sections, 22 cues and 9 hits, analysed in ~12 s on the dev laptop. Drops land at 0:46, 1:17 and 2:49.
+Result for *A Sky Full of Stars* (4:28): **125.1 BPM** (the published tempo is 125), 559 beats, analysed in
+~12 s on the dev laptop. *Yellow* (4:27): **86.8 BPM** (published about 87), 387 beats. With their
+hand-annotated structure (below), the programmed shows have 14 sections, 62 cues and 21 hits (A Sky Full of
+Stars) and 13 sections, 54 cues and 31 hits (Yellow).
 
-Concert mode only appears where the song file exists: the page sends a HEAD request for it first. A deployed
-site without the file simply doesn't offer it. A public demo needs a royalty-free track.
+Concert mode only appears where the song file exists: for each demo show the page sends a HEAD request
+for its track first, and offers a button only for the tracks that are there.
+
+### Demo songs
+
+*A Sky Full of Stars* and *Yellow* (Coldplay) are the only tracks committed (`.gitignore` excludes
+`public/audio/*` except these two), so the live site can play them. They're commercial recordings used for
+educational, non-commercial purposes only: the playground, the now-playing bar during a demo song, the site
+footer and the README all say so, with a takedown contact. Any other song stays local.
+
+### Hand-annotated structure for the demo songs
+
+Automatic sections are good but not perfect on real recordings (a quiet bridge can look like a breakdown;
+a chorus repeated after a peak can be mislabelled). For the two demo songs, the structure was annotated by
+ear with `npm run song:bars -- <file>` (bar-by-bar loudness, drum density, brightness and bass) and stored
+in `public/shows/<slug>.extras.json` as `sections: [{ fromBar, kind }]`, using the analysis's own bar
+lines so cues still land on beats. `npm run analyse:song` reads the extras file automatically. Uploaded
+songs always use the automatic analysis.
+
+Yellow's extras also carry its colour story (Yellow only, never uploaded songs): every lit fixture turns
+yellow at the drops and on the lyric, strong yellow from 1:27, yellow strobes at 1:50, 1:52 and 1:54, mostly
+shades of yellow from 1:54, and only yellows from 3:15 to the end (`tintAtDrops`, `tints`, `paletteSpans`).
 
 ## Tests
 
@@ -136,9 +159,9 @@ tier 1 gets bloom. The 60 Hz display caps every reading, so the remaining headro
 ## Rig layout and effects (latest)
 
 - **Four truss rows, stacked above the LED wall** (`trussGeometry.js` `ROWS`), landing on two **tower boxes** (front and rear column per side, tied at the top, middle and bottom):
-  - row 1: aerial heads standing on top
+  - row 1: aerial heads hanging underneath, facing the audience
   - rows 2–3: washes hanging underneath, aimed down onto the stage
-  - row 4: aerial heads standing on top, so nothing hangs in front of the screen
+  - row 4: aerial heads hanging underneath, above the top edge of the LED wall (nothing hangs in front of the screen)
 
   The screens sit behind the truss.
 - **Side moving heads** are clamped sideways to the rear tower columns (the mount is a full basis: standing, hanging or sideways).
@@ -215,3 +238,12 @@ Two further rules:
   - Songs without an outro get a 5-second one, chosen the same way.
 - **Solos:** every song gives each fixture type (side towers, aerial beams, floor, washes, lasers) 4 bars alone at full.
 - **Build-ups** are found bar by bar (rising loudness plus drum density before a peak).
+
+## Show mode (latest)
+
+- **Full screen** while a song plays: the browser goes full screen with the site's navbar hidden, a "Press Esc
+  to exit full screen" hint in the corner, rendering 30% brighter, and a screen wake lock. A web page can't set
+  the device's screen brightness, so the playground recommends turning brightness and volume up.
+- **Demo buttons** for both demo songs, and "Light up your song" for any file (analysed in a Web Worker; the
+  file never leaves the device). An analysed upload shows a "Start the show" button.
+- **Rig**: lasers default to 40; side towers alternate colours up each tower, mirrored left and right.
