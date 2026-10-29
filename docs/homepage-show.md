@@ -247,3 +247,47 @@ Two further rules:
 - **Demo buttons** for both demo songs, and "Light up your song" for any file (analysed in a Web Worker; the
   file never leaves the device). An analysed upload shows a "Start the show" button.
 - **Rig**: lasers default to 40; side towers alternate colours up each tower, mirrored left and right.
+
+## The playground: two steps
+
+After the encore, the playground card is in two steps, so it's clear the experience continues:
+
+1. **Play a song**: the demo songs and "Light up your song", ending with a large **Next: run the lights
+   yourself →** button.
+2. **Run the lights**: six one-tap buttons (Drop, Strobe while held, Lasers, Blinders, House lights,
+   Blackout) and a row of colours, using the same actions as the lighting desk. **More controls** opens the
+   full desk, **Hand back the lights** returns them to the show, and **Back to songs** goes back to step 1.
+
+The floating **Lighting desk** button stays available throughout the scroll.
+
+## House lights light the venue
+
+Like a real venue before or after a show, when the house lights are up the rig lights the room instead of
+performing: stage washes full in the house colour (warm tungsten `#ffb347`), strobes glowing steadily in it as
+work lights, and every moving head, beam and laser off, with nothing moving (`venueLit()` in
+`lib/show/look.js`, applied by `currentState()` in `show/director.js`). It blends with the house-light level.
+
+- **Scroll show and lighting desk:** whenever the house lights are up (the walk in from the gate, or the
+  desk's House lights). Outside the gate, the white sky beams keep running under the house lights.
+- **Song shows:** never during the song; its own programming runs unchanged. **When a song ends**, after the
+  final fade to black, the house lights come up over 3 s, the venue is lit, and after 5 s the playground
+  returns. Stopping the song, or starting another, cancels it.
+- The house lamps are bright, hot points with a warm halo, and the room, floor and haze take their warmth.
+
+## Phones
+
+The scroll show plays on phones as normal (gate, stage, roles, drop, encore). The playground controls (the
+lighting desk, the demo songs, "Light up your song", "Next: run the lights") open a "Best enjoyed on a bigger
+screen" message instead, with a copy-link button. Phones are screens under 768 px wide, or a touch screen
+held sideways (under 500 px tall).
+
+Hidden overlays are `inert`, so an invisible card never catches taps meant for the one on screen (on
+phones the playground card used to cover the encore colours).
+
+## LED wall: up next
+
+The brand screen lists two upcoming shows: featured events first (`Event.featured`), then the soonest.
+The homepage only lists upcoming events. Each line is title, city (left out when the title already names
+it) and date; the line shrinks to fit, and if it still doesn't fit only the title is shortened, so the city
+and date always show. The seed features Sunburn Festival 2026 (Mumbai) and India Sneaker Festival 2026
+(New Delhi).

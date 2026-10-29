@@ -39,7 +39,7 @@ Live shows change fast; the artist's console, the crew's cue screens and fans' p
 * **The show clock** is stored with the show (seconds banked plus when the current run started), so a screen that opens late or presses refresh is on the right second ([`docs/live-sync.md`](docs/live-sync.md)).
 
 ### 3. The homepage: a 3D concert you can run
-A scroll-driven 3D concert (venue gate, full lighting rig, LED wall) that runs at 60 FPS on integrated graphics. Visitors can take a lighting desk, or drop in a song: it's analysed in the browser (tempo, beats, sections, energy) and programmed into a light show the way a lighting designer would ([`docs/homepage-show.md`](docs/homepage-show.md)).
+A scroll-driven 3D concert (venue gate, full lighting rig, LED wall) that runs at 60 FPS on integrated graphics. Visitors can play a song (a demo, or their own, analysed in the browser for tempo, beats, sections and energy and programmed into a light show the way a lighting designer would), then run the lights themselves with one-tap controls or the full lighting desk. House lights light the venue in warm work light, as at the end of a real concert. On phones the scroll show plays and the playground asks for a bigger screen ([`docs/homepage-show.md`](docs/homepage-show.md)).
 
 ## What each role can do
 
@@ -125,7 +125,7 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 
 ## Testing and quality
 
-- **279 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, and the homepage show: song analysis (against a synthetic click track), the cue engine and every lighting-programming rule.
+- **285 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, and the homepage show: song analysis (against a synthetic click track), the cue engine and every lighting-programming rule.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, tests with coverage, a production build and a dependency audit on every push.
 - **Manual test guide:** [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md) walks through every upgraded feature in the browser (including how to force each AI fallback level) and lists the automated test commands.
 - The engineering history (each bug, how it was found, the fix and the trade-off) is in [`FIX_LOG.md`](FIX_LOG.md). The audit that started it is in [`PROJECT_AUDIT_REPORT.md`](PROJECT_AUDIT_REPORT.md).

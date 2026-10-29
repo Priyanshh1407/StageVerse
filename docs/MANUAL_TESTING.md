@@ -4,7 +4,7 @@ A click-by-click checklist for every upgrade made during the audit (see [`FIX_LO
 
 Some protections can only be checked by trying something the UI never lets you do (another user's data, voting twice). For those there's a snippet to paste into the browser's DevTools console (F12 → Console) **while on the app's page**, so it runs with that browser's login.
 
-> Everything here is also covered by the automated suite (`npm test`, 279 tests). This guide is for seeing it work end to end in a real browser.
+> Everything here is also covered by the automated suite (`npm test`, 285 tests). This guide is for seeing it work end to end in a real browser.
 
 ---
 
@@ -246,7 +246,7 @@ With **level 4** active, repeat 8.1–8.5. Each still answers, with an "AI is bu
 |---|---|---|---|
 | 9.1 | Health endpoint | Open `/api/health` | `{"status":"ok","db":"up","latencyMs":…}`; no connection strings or error details |
 | 9.2 | No tempo invented | Crew live screen on a song without a BPM | Shows "—" (used to show 128) |
-| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 279 tests passing, build succeeds |
+| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 285 tests passing, build succeeds |
 | 9.4 | Benchmark | `npm run bench`, then open `bench/results/live-run.json` | Push p50 of a few ms; setlist lookup examines 1 document |
 | 9.5 | AI eval | `npm run eval:patch -- --provider groq` (~65 Groq calls, ~15 min) | A new file in `evals/patch/results/` with 0% collisions for the new pipeline |
 
@@ -282,6 +282,11 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 | 10.22 | Full screen show | In the playground click the demo song (or Light up your song, then **Start the show**) | The browser goes full screen with no navbar; "Press Esc to exit full screen" sits in the top-right corner. Stop (or the song ending) exits full screen and brings the navbar back; Esc mid-song brings the navbar back and the music keeps playing |
 | 10.23 | Yellow | In the playground click **Yellow** | Yellow flash with blinders as the band kicks in (0:13); strong yellow from 1:27; yellow strobes at 1:50, 1:52, 1:54; mostly shades of yellow until 3:15, then only yellows to the end. Uploaded songs never turn yellow |
 | 10.24 | Solos and focus | Play A Sky Full of Stars; jump to 0:54, 1:25, 1:54, 2:17, 3:12, then 3:33 | One fixture type alone at each solo (side towers, aerial beams, floor, washes tilting and changing colour, lasers); at 3:33 the focus section (one colour, beams converging on the stage floor, flickering) |
+| 10.25 | Playground in two steps | Scroll to the end of the show | Step 1 "Play a song" ends with **Next: run the lights yourself →**; step 2 has Drop, Strobe (hold), Lasers, Blinders, House lights, Blackout and colours; **More controls** opens the desk; **Back to songs** returns |
+| 10.26 | House lights light the venue | Step 2 → **House lights** (or the desk's House lights) | Stage washes go full warm amber, strobes glow steadily in it, beams and lasers off, nothing moves; turn them off and the rig comes back |
+| 10.27 | House lights after a song | Play a demo song and jump to its last seconds on the timeline | Fade to black, then the house lights come up over ~3 s with the venue lit, then the playground returns after ~5 s |
+| 10.28 | Phones | Open the homepage on a phone and scroll | The whole scroll show plays; encore colours change the lights; any playground control shows "Best enjoyed on a bigger screen" |
+| 10.29 | LED wall up next | Scroll to the house-lights moment and read the LED wall | "Sunburn Festival 2026: Mumbai · <date>" and "India Sneaker Festival 2026: New Delhi · <date>": city once, date visible |
 
 ---
 
@@ -290,7 +295,7 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 Run from the project folder (`cd /d/Projects/stageverse`). None of these touch your real database: the tests start an in-memory MongoDB (the first run downloads a ~100 MB `mongod` binary and caches it) and mock every AI provider.
 
 ```bash
-# Everything: 279 tests, about 1-2 minutes
+# Everything: 285 tests, about 1-2 minutes
 npm test
 
 # Watch mode while editing (re-runs affected tests on save)

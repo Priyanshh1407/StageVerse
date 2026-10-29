@@ -273,3 +273,22 @@ Found by seeding realistic data for every role: event images were read from `ima
 - Educational-use disclaimer for the two demo songs on the site and README; deployment guide for Vercel (commits 4148c87, a1cf1ec).
 
 `npm test`: **279 passing** · lint: **0 errors** · build: passes.
+
+## Homepage polish (2026-10-29)
+
+### BUG-20 — Encore colours couldn't be picked on phones (commit 4633834)
+Symptom: on a phone, tapping an encore colour did nothing.
+Investigation: reproduced in headless Edge with phone emulation (390 px, touch) through the DevTools protocol: `document.elementFromPoint` at the Gold button returned a paragraph of the playground card, not the button.
+Root cause: the playground card is invisible until the encore is over, and its parent overlay had `pointer-events: none`, but the card itself set `pointer-events: auto`. On a phone it spans the full width and covered the encore colours (on a laptop it sits bottom-left, away from them).
+Fix: hidden overlays are `inert` (no taps, no focus). Verified with the same emulated tap: Gold selected, the rig turned gold.
+Interview version: "Tapping a colour on a phone did nothing. Instead of guessing, I emulated a phone and asked the browser which element was actually under the tap: an invisible card from the next section, because a child had re-enabled pointer events. Making hidden sections inert fixed it for every overlay at once."
+
+### BUG-21 — LED wall listed past shows; 'Up next' doubled the city and hid the date (commits d146fa8, cd2ca47)
+The wall showed the first two events of a list that included past shows (2022's Chromatica Ball). The homepage now lists only upcoming events, featured ones first (`Event.featured`). The line was "title · city · date", cut at 52 characters; titles that already name the city read "… Mumbai · Mumbai" and lost the date. The city is now dropped when the title contains it, and the line shrinks to fit, shortening only the title.
+
+### Features
+- House lights light the venue in the scroll show and on the desk (warm washes and steady strobes, beams off), and come up when a song ends; songs are otherwise unchanged (commits ebed041, b07ac89; 6 tests). Brighter house lamps (156bf45).
+- Phones get the full scroll show; playground controls ask for a bigger screen (fdad55f).
+- The playground in two steps: songs, then one-tap lighting controls, with a clear "Next" button.
+
+`npm test`: **285 passing** · lint: **0 errors** · build: passes.
