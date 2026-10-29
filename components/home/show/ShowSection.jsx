@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Orbitron } from 'next/font/google';
@@ -11,6 +11,7 @@ import { buildIdleShow } from '@/lib/show/program';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt } from './scrollShow';
 import { currentState } from './director';
 import LightingDesk from './LightingDesk';
+import MobileLock from './MobileLock';
 
 // The 3D stage is client-only and loads after the page (the headline below is plain HTML)
 const ShowStage = dynamic(() => import('./ShowStage'), { ssr: false });
@@ -90,7 +91,7 @@ function analyseInWorker(pcm, sampleRate, title) {
  * per role on the LED wall, the drop, the encore, then the playground (the lighting desk, the
  * demo song, or the visitor's own song, analysed in their browser).
  */
-export default function ShowSection({ events = [] }) {
+function ShowExperience({ events = [], enable3D }) {
     const section = useRef(null);
     const stage = useRef(null);
     const fileInput = useRef(null);
@@ -306,7 +307,7 @@ export default function ShowSection({ events = [] }) {
     return (
         <section ref={section} className="relative h-[520vh] bg-[#010208]" aria-label="StageVerse live show">
             <div ref={stage} className="sticky top-0 h-screen w-full overflow-hidden bg-[#010208]">
-                <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />
+                {enable3D && <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />}
 
                 {/* Start of a show: recommend full screen brightness (a page can't set it itself) */}
                 <div aria-live="polite" className={`absolute top-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur border border-white/15 text-sm text-white pointer-events-none transition-opacity duration-700 ${brightnessTip ? 'opacity-100' : 'opacity-0'}`}>
@@ -457,5 +458,32 @@ export default function ShowSection({ events = [] }) {
                 </div>
             </div>
         </section>
+    );
+}
+
+// Phones: the 3D show is locked (it's built for bigger screens). Same rule as .show-phone-only in globals.css.
+const PHONE_QUERY = '(max-width: 767px), (pointer: coarse) and (max-height: 500px)';
+const subscribePhone = (onChange) => {
+    const mq = window.matchMedia(PHONE_QUERY);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+};
+
+/**
+ * The homepage hero. Phones get MobileLock; bigger screens get the show. Until the browser has been
+ * asked (server render and hydration) both are in the HTML and CSS shows the right one, so nothing
+ * flashes; then only the one that applies stays mounted, and phones never download the 3D code.
+ */
+export default function ShowSection(props) {
+    const isPhone = useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE_QUERY).matches, () => null);
+    return (
+        <>
+            {isPhone !== false && <MobileLock className="show-phone-only" />}
+            {isPhone !== true && (
+                <div className="show-desktop-only">
+                    <ShowExperience {...props} enable3D={isPhone === false} />
+                </div>
+            )}
+        </>
     );
 }
