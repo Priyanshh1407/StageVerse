@@ -8,7 +8,7 @@ import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play, SunMedium
 import { DEFAULT_LOOK, mixHex } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
-import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt } from './scrollShow';
+import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
 import BiggerScreenNotice from './BiggerScreenNotice';
@@ -120,6 +120,7 @@ function ShowExperience({ events = [], isPhone = false }) {
     const [brightnessTip, setBrightnessTip] = useState(false); // shown for the first seconds of a show
     const [screenNotice, setScreenNotice] = useState(false); // phones: the playground is for bigger screens
     const [playStep, setPlayStep] = useState('songs'); // the playground: 'songs', then 'lights'
+    const [stopKey, setStopKey] = useState(STOPS[0].key); // the section dot that's lit
 
     // Scroll progress through the section drives the show (no re-render unless an overlay changes)
     useEffect(() => {
@@ -131,6 +132,7 @@ function ShowExperience({ events = [], isPhone = false }) {
             const c = control.current;
             c.progress = progress;
             setPhase(phaseAt(progress));
+            setStopKey(stopAt(progress).key);
             setRole(roleAt(progress)?.key ?? null);
             setScreen((prev) => {
                 const next = screenAt(progress);
@@ -191,6 +193,14 @@ function ShowExperience({ events = [], isPhone = false }) {
     const pickEncore = (choice) => {
         setEncore(choice);
         control.current.sheet = buildScrollSheet(choice);
+    };
+
+    /** Scroll smoothly to one of the show's sections. */
+    const goToStop = (stop) => {
+        const el = section.current;
+        if (!el) return;
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: top + stop.at * (el.offsetHeight - window.innerHeight), behavior: 'smooth' });
     };
 
     // --- Lighting desk -------------------------------------------------------------------
@@ -340,6 +350,11 @@ function ShowExperience({ events = [], isPhone = false }) {
 
     return (
         <section ref={section} className="relative h-[520vh] bg-[#010208]" aria-label="StageVerse live show">
+            {/* Where the scroll can rest: the page settles gently on these (html has scroll-snap-type: y proximity).
+                The stage scrolls 420vh (the 520vh section minus one screen), so a stop at progress p sits p × 420vh down. */}
+            {STOPS.map((s) => (
+                <div key={s.key} aria-hidden className="absolute left-0 h-px w-px" style={{ top: `${s.at * 420}vh`, scrollSnapAlign: 'start' }} />
+            ))}
             <div ref={stage} className="sticky top-0 h-screen w-full overflow-hidden bg-[#010208]">
                 <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />
 
@@ -357,6 +372,22 @@ function ShowExperience({ events = [], isPhone = false }) {
                     <div className="absolute top-4 right-4 z-30 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur border border-white/15 text-xs text-white/80 pointer-events-none">
                         Press <kbd className="px-1.5 py-0.5 mx-0.5 rounded bg-white/15 font-mono text-[11px] text-white">Esc</kbd> to exit full screen
                     </div>
+                )}
+
+                {/* Section dots (small): where you are, and a jump to any section */}
+                {showOverlays && (
+                    <nav aria-label="Show sections" className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end gap-2">
+                        {STOPS.map((s) => {
+                            const active = stopKey === s.key;
+                            return (
+                                <button key={s.key} onClick={() => goToStop(s)} aria-label={`Go to: ${s.label}`} aria-current={active ? 'step' : undefined}
+                                    className="group flex items-center gap-1.5 p-0.5">
+                                    <span className="hidden sm:block text-[10px] font-medium text-white/80 bg-black/50 backdrop-blur px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">{s.label}</span>
+                                    <span className={`block rounded-full transition-all ${active ? 'w-2 h-2 bg-cyan-300 shadow-[0_0_6px_rgba(103,232,249,0.9)]' : 'w-1.5 h-1.5 bg-white/40 group-hover:bg-white/80'}`} />
+                                </button>
+                            );
+                        })}
+                    </nav>
                 )}
 
                 {/* Readability: darken the top and bottom edges behind the text */}

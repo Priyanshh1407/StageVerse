@@ -208,6 +208,12 @@
   to { opacity: 1; }
 }
 
+/* The homepage show's sections are snap points (ShowSection): proximity snapping only settles when
+   the visitor stops near one, so scrolling straight through, and every other page, are unaffected */
+html {
+  scroll-snap-type: y proximity;
+}
+
 /* While a light show plays the navbar is hidden (see ShowSection: full screen + this class) */
 html.show-immersive header {
   display: none;

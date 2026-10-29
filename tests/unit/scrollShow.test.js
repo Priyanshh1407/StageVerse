@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildScrollSheet, ROLES, roleAt, screenAt, phaseAt, PLAY_FROM } from '@/components/home/show/scrollShow';
+import { buildScrollSheet, ROLES, roleAt, screenAt, phaseAt, PLAY_FROM, STOPS, stopAt } from '@/components/home/show/scrollShow';
 import { sampleCueSheet, prepareSongShow } from '@/lib/show/timeline';
 import { DEFAULT_LOOK, HOUSE_COLOR, venueLit } from '@/lib/show/look';
 import { currentState, HOUSE_UP_MS } from '@/components/home/show/director';
@@ -131,5 +131,22 @@ describe('role sections and venue-lit washes', () => {
     it('with the house lights up the washes point straight down onto the stage', () => {
         expect(venueLit(DEFAULT_LOOK, 1).washDown).toBe(1);
         expect(DEFAULT_LOOK.washDown).toBe(0);
+    });
+});
+
+describe('scroll stops (gentle stopping and section dots)', () => {
+    it('ten stops in order, each where its section holds', () => {
+        expect(STOPS.map((s) => s.label)).toEqual(['The gate', 'House lights', 'The rig comes up', 'Fan', 'Artist', 'Organizer', 'Crew', 'The drop', 'Encore', 'Your turn']);
+        for (let i = 1; i < STOPS.length; i++) expect(STOPS[i].at).toBeGreaterThan(STOPS[i - 1].at);
+        for (const r of ROLES) expect(roleAt(STOPS.find((s) => s.label === r.key).at)?.key).toBe(r.key); // on the LED wall
+        expect(phaseAt(STOPS.find((s) => s.key === 'encore').at)).toBe('encore');
+        expect(phaseAt(STOPS.find((s) => s.key === 'play').at)).toBe('play');
+    });
+
+    it('stopAt lights the dot of the section you are at or just passed', () => {
+        expect(stopAt(0).key).toBe('gate');
+        expect(stopAt(0.5625).key).toBe('artist');
+        expect(stopAt(0.6).key).toBe('artist');
+        expect(stopAt(1).key).toBe('play');
     });
 });
