@@ -26,6 +26,14 @@ const SONG_NOTICE = 'Songs on this site are used for educational, non-commercial
 const DEMO_SHOWS = ['/shows/sky-full-of-stars.show.json', '/shows/yellow.show.json'];
 const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', build: '#ff8a00', peak: '#ff3df2', outro: '#3b5bff' };
 const MAX_UPLOAD_MB = 80;
+// The show section's height (vh): the stage scrolls this minus one screen. Taller = more scroll per section
+const SHOW_VH = 800;
+// The drop: the stretch between the Crew and Encore stops where the scroll never rests
+const JOURNEY = (() => {
+    const back = STOPS.find((s) => s.key === 'crew');
+    const next = STOPS.find((s) => s.key === 'encore');
+    return { from: back.at + 0.02, to: next.at - 0.015, back, next };
+})();
 // After a song: the house lights come up, hold, then the playground returns (ms, including the fade)
 const AFTER_SHOW_MS = HOUSE_UP_MS + 5000;
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -139,6 +147,22 @@ function ShowExperience({ events = [], isPhone = false }) {
                 return prev.kind === next.kind && prev.key === next.key ? prev : next;
             });
             if (c.mode === 'scroll') setCueName(currentState(c).name);
+
+            // The drop plays on the way from Crew to the encore, so the scroll never rests in it: if the
+            // visitor stops there, carry on to the next section in the direction they were scrolling
+            clearTimeout(c.settleTimer);
+            const y = window.scrollY;
+            const direction = Math.sign(y - (c.settleFromY ?? y));
+            c.settleTimer = setTimeout(() => {
+                c.settleFromY = window.scrollY;
+                if (c.mode !== 'scroll' || !direction) return;
+                const p = c.progress;
+                if (!(p > JOURNEY.from && p < JOURNEY.to)) return;
+                const el = section.current;
+                const top = el.getBoundingClientRect().top + window.scrollY;
+                const stop = direction > 0 ? JOURNEY.next : JOURNEY.back;
+                window.scrollTo({ top: top + stop.at * (el.offsetHeight - window.innerHeight), behavior: 'smooth' });
+            }, 200);
         };
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
@@ -349,11 +373,11 @@ function ShowExperience({ events = [], isPhone = false }) {
     const songControls = { available: Boolean(firstDemo), title: firstDemo?.title, playing: song.playing, play: () => firstDemo && playDemo(firstDemo), stop: stopSong };
 
     return (
-        <section ref={section} className="relative h-[520vh] bg-[#010208]" aria-label="StageVerse live show">
+        <section ref={section} className="relative bg-[#010208]" style={{ height: `${SHOW_VH}vh` }} aria-label="StageVerse live show">
             {/* Where the scroll can rest: the page settles gently on these (html has scroll-snap-type: y proximity).
-                The stage scrolls 420vh (the 520vh section minus one screen), so a stop at progress p sits p × 420vh down. */}
+                The stage scrolls SHOW_VH − 100 vh (the section minus one screen), so a stop at progress p sits that far × p down. */}
             {STOPS.map((s) => (
-                <div key={s.key} aria-hidden className="absolute left-0 h-px w-px" style={{ top: `${s.at * 420}vh`, scrollSnapAlign: 'start' }} />
+                <div key={s.key} aria-hidden className="absolute left-0 h-px w-px" style={{ top: `${s.at * (SHOW_VH - 100)}vh`, scrollSnapAlign: 'start' }} />
             ))}
             <div ref={stage} className="sticky top-0 h-screen w-full overflow-hidden bg-[#010208]">
                 <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />

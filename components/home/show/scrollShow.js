@@ -102,15 +102,15 @@ export function buildScrollSheet(encore = ENCORE_CHOICES[0]) {
     return resolveCueSheet(withFades);
 }
 
-// The 10 places the scroll can rest (scroll progress), where each section's look holds. The page
+// The 9 places the scroll can rest (scroll progress), where each section's look holds. The page
 // settles gently on the nearest one when the visitor stops scrolling near it (a quick scroll passes
-// straight through), and the section dots jump to them.
+// straight through), and the section dots jump to them. The drop isn't a stop: it plays on the way
+// from the Crew section to the encore.
 export const STOPS = [
     { key: 'gate', label: 'The gate', at: 0 },
     { key: 'house', label: 'House lights', at: 0.16 },
     { key: 'rig', label: 'The rig comes up', at: 0.375 },
     ...ROLES.map((r) => ({ key: r.key.toLowerCase(), label: r.key, at: Math.round((r.at + r.hold / 2) * 10000) / 10000 })),
-    { key: 'drop', label: 'The drop', at: 0.815 },
     { key: 'encore', label: 'Encore', at: 0.875 },
     { key: 'play', label: 'Your turn', at: 0.96 },
 ];

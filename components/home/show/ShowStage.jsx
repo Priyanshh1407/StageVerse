@@ -14,9 +14,10 @@ import hero from '@/public/images/hero.jpg';
 
 /** One frame of the show: put the current look on the rig and fly the camera toward its shot. */
 function directFrame(control, look, camera, aim, delta) {
-    // Glide toward the scroll position instead of jumping a wheel notch at a time
+    // Glide toward the scroll position instead of jumping a wheel notch at a time; slow enough (time
+    // constant ~0.8 s) that every transition between sections plays out visibly, even after a quick scroll
     const raw = control.progress;
-    control.smoothProgress = control.smoothProgress === undefined ? raw : control.smoothProgress + (raw - control.smoothProgress) * (1 - Math.exp(-delta * 2.5));
+    control.smoothProgress = control.smoothProgress === undefined ? raw : control.smoothProgress + (raw - control.smoothProgress) * (1 - Math.exp(-delta * 1.25));
     const state = currentState(control);
     // In full screen the show runs ~30% brighter (a page can't raise the screen's own brightness)
     look.current = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;
@@ -38,8 +39,8 @@ function directFrame(control, look, camera, aim, delta) {
     aim.look[0] = shot.target[0];
     aim.look[1] = shot.target[1] + lift * 0.4;
     aim.look[2] = shot.target[2];
-    easing.damp3(camera.position, aim.pos, 1.4, delta);
-    easing.damp3(aim.target, aim.look, 1.4, delta);
+    easing.damp3(camera.position, aim.pos, 1.8, delta);
+    easing.damp3(aim.target, aim.look, 1.8, delta);
     camera.lookAt(aim.target);
 }
 
