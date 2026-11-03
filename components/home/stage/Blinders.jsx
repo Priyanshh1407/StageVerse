@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { roomFlash } from './flash';
+import { ROWS } from './trussGeometry';
 
 const MAX_BLINDERS = 20;
 
@@ -40,7 +41,7 @@ function createBlinderMaterial() {
 function layoutBlinders(geometry, count) {
     const n = Math.min(count, MAX_BLINDERS);
     const pos = geometry.attributes.position;
-    for (let i = 0; i < n; i++) pos.setXYZ(i, n > 1 ? -11 + (22 * i) / (n - 1) : 0, 15.8 - 0.55, -3.7);
+    for (let i = 0; i < n; i++) pos.setXYZ(i, n > 1 ? -11 + (22 * i) / (n - 1) : 0, ROWS[0].y - 0.55, ROWS[0].z + 0.3);
     pos.needsUpdate = true;
     geometry.setDrawRange(0, n);
 }

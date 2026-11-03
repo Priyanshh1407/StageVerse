@@ -52,4 +52,10 @@ describe('truss geometry', () => {
         for (let i = 1; i < zs.length; i++) expect(zs[i] - zs[i - 1]).toBeGreaterThanOrEqual(2.5);
         expect(SCREEN_Z).toBeLessThan(TOWER_REAR_Z);
     });
+
+    it('steps the rows down like a ladder from the front to the back', () => {
+        const byDepth = [...ROWS].sort((a, b) => b.z - a.z); // front first
+        for (let i = 1; i < byDepth.length; i++) expect(byDepth[i].y).toBeLessThan(byDepth[i - 1].y);
+        expect(byDepth[byDepth.length - 1].y).toBeGreaterThan(11.6); // still above the LED wall and its frame
+    });
 });

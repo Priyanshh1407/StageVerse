@@ -54,25 +54,28 @@ export const SCREEN_Z = -17.2;           // the main LED wall
 export const DECK_DEPTH = 18;            // the stage deck runs from its front edge (z = 0) back to z = -18
 
 // Every bar in the rig: [from, to]
-// The four horizontal rows, top to bottom, all above the LED wall (top edge y = 11.2).
-// Each spans the full width and lands on the tower boxes (directly on a column, or on a side tie).
+// The four horizontal rows step down like a ladder from the front to the back, as on a real
+// concert roof: the top truss highest at the front, each row further back 1.5 m lower, the lowest
+// just above the LED wall (top edge y = 11.2). Seen from the audience every row shows, one below
+// the other. Each spans the full width and lands on the towers (on a column, or on a tie).
+const STEP = 1.5;
 export const ROWS = [
-    { y: 18.4, z: TOWER_MID_Z },    // 1: aerials hanging underneath, facing the audience (sits on the middle columns)
-    { y: 15.8, z: TOWER_FRONT_Z },  // 2: stage wash, hanging (sits on the front columns)
-    { y: 14.3, z: -11.5 },          // 3: stage wash, hanging
-    { y: 12.9, z: TOWER_REAR_Z },   // 4: aerials hanging underneath (sits on the rear columns)
+    { y: 18.4, z: TOWER_FRONT_Z },              // 1: aerials hanging underneath, facing the audience (front columns)
+    { y: 18.4 - STEP, z: TOWER_MID_Z },         // 2: stage wash, hanging (middle columns)
+    { y: 18.4 - 2 * STEP, z: -11.5 },           // 3: stage wash, hanging (on a tie)
+    { y: 18.4 - 3 * STEP, z: TOWER_REAR_Z },    // 4: aerials hanging underneath (rear columns)
 ];
 
 export const TRUSS_BARS = [
     ...ROWS.map(({ y, z }) => [[-15.6, y, z], [15.6, y, z]]),
     // Side towers: on each side three columns (front, middle, rear) tied together at the top,
-    // middle and bottom; the ties run through the middle column, so it's one structure. The top
-    // truss sits on the middle columns. Side moving heads hang on the rear columns' inner faces.
+    // middle and bottom; the ties run through the middle column, so it's one structure. Row 3
+    // rests on its own tie. Side moving heads hang on the rear columns' inner faces.
     ...[TOWER_FRONT_Z, TOWER_MID_Z, TOWER_REAR_Z].flatMap((z) => [
         [[-15.6, 0, z], [-15.6, 19, z]],
         [[15.6, 0, z], [15.6, 19, z]],
     ]),
-    ...[18.4, 14.3, 8.5, 0.6].flatMap((y) => [
+    ...[18.4, ROWS[2].y, 8.5, 0.6].flatMap((y) => [
         [[-15.6, y, TOWER_FRONT_Z], [-15.6, y, TOWER_REAR_Z]],
         [[15.6, y, TOWER_FRONT_Z], [15.6, y, TOWER_REAR_Z]],
     ]),
