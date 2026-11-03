@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { createTrussGeometry, TRUSS_BARS, CENTRE_Z, SCREEN_Z, TOWER_FRONT_Z, TOWER_REAR_Z, ROWS } from '@/components/home/stage/trussGeometry';
+import { createTrussGeometry, TRUSS_BARS, SCREEN_Z, TOWER_FRONT_Z, TOWER_MID_Z, TOWER_REAR_Z, ROWS } from '@/components/home/stage/trussGeometry';
 
 describe('truss geometry', () => {
     it('merges the whole rig into one geometry', () => {
@@ -34,13 +34,16 @@ describe('truss geometry', () => {
         for (const [a, b] of TRUSS_BARS) expect(a).not.toEqual(b);
     });
 
-    it('has a centre tower from the deck to the top, in front of the LED wall and tied into the rig', () => {
-        const centre = TRUSS_BARS.find(([a, b]) => a[0] === 0 && b[0] === 0 && a[2] === CENTRE_Z && b[2] === CENTRE_Z && b[1] - a[1] > 15);
-        expect(centre).toBeTruthy();
-        expect(CENTRE_Z).toBeGreaterThan(SCREEN_Z);           // in front of the wall
-        // tied to the lowest row and to the top row
-        expect(TRUSS_BARS.some(([a, b]) => a[0] === 0 && a[2] === CENTRE_Z && b[2] === ROWS[3].z)).toBe(true);
-        expect(TRUSS_BARS.some(([a, b]) => a[0] === 0 && a[2] === CENTRE_Z && b[2] === ROWS[0].z)).toBe(true);
+    it('gives each side tower three columns: front, middle and rear', () => {
+        for (const x of [-15.6, 15.6]) {
+            for (const z of [TOWER_FRONT_Z, TOWER_MID_Z, TOWER_REAR_Z]) {
+                expect(TRUSS_BARS.some(([from, to]) => from[0] === x && to[0] === x && from[2] === z && to[2] === z && to[1] - from[1] > 15)).toBe(true);
+            }
+        }
+        expect(TOWER_MID_Z).toBeLessThan(TOWER_FRONT_Z);
+        expect(TOWER_MID_Z).toBeGreaterThan(TOWER_REAR_Z);
+        // nothing stands in the middle of the stage, in front of the LED wall
+        expect(TRUSS_BARS.some(([from, to]) => from[0] === 0 && to[0] === 0 && to[1] - from[1] > 5)).toBe(false);
     });
 
     it('gives the stage depth: rows spread between the front and rear columns, the wall behind', () => {

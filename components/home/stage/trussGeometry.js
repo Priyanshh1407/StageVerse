@@ -46,30 +46,29 @@ function trussBar(from, to) {
 
 // Stage depth: the tower boxes run from the front columns back to the rear columns, with the LED
 // wall further back still, so the rows of fixtures have room between them
+// Each side tower has three columns: front, middle and rear, the middle one splitting the depth in two.
 export const TOWER_FRONT_Z = -4;
+export const TOWER_MID_Z = -9;
 export const TOWER_REAR_Z = -14;
 export const SCREEN_Z = -17.2;           // the main LED wall
 export const DECK_DEPTH = 18;            // the stage deck runs from its front edge (z = 0) back to z = -18
-// The centre tower stands just in front of the LED wall, which is split around it
-export const CENTRE_Z = SCREEN_Z + 0.6;
-export const CENTRE_GAP = 1.1;           // the gap in the LED wall for the centre tower (m)
 
 // Every bar in the rig: [from, to]
 // The four horizontal rows, top to bottom, all above the LED wall (top edge y = 11.2).
 // Each spans the full width and lands on the tower boxes (directly on a column, or on a side tie).
 export const ROWS = [
-    { y: 18.4, z: -8 },             // 1: aerials hanging underneath, facing the audience (2.6 m above row 2)
+    { y: 18.4, z: TOWER_MID_Z },    // 1: aerials hanging underneath, facing the audience (sits on the middle columns)
     { y: 15.8, z: TOWER_FRONT_Z },  // 2: stage wash, hanging (sits on the front columns)
-    { y: 14.3, z: -10.5 },          // 3: stage wash, hanging
+    { y: 14.3, z: -11.5 },          // 3: stage wash, hanging
     { y: 12.9, z: TOWER_REAR_Z },   // 4: aerials hanging underneath (sits on the rear columns)
 ];
 
 export const TRUSS_BARS = [
     ...ROWS.map(({ y, z }) => [[-15.6, y, z], [15.6, y, z]]),
-    // Side towers: a box on each side, a front and a rear column tied together at the top,
-    // middle and bottom (the top truss lands on the top tie). Side moving heads hang on the rear
-    // columns' inner faces.
-    ...[TOWER_FRONT_Z, TOWER_REAR_Z].flatMap((z) => [
+    // Side towers: on each side three columns (front, middle, rear) tied together at the top,
+    // middle and bottom; the ties run through the middle column, so it's one structure. The top
+    // truss sits on the middle columns. Side moving heads hang on the rear columns' inner faces.
+    ...[TOWER_FRONT_Z, TOWER_MID_Z, TOWER_REAR_Z].flatMap((z) => [
         [[-15.6, 0, z], [-15.6, 19, z]],
         [[15.6, 0, z], [15.6, 19, z]],
     ]),
@@ -77,18 +76,8 @@ export const TRUSS_BARS = [
         [[-15.6, y, TOWER_FRONT_Z], [-15.6, y, TOWER_REAR_Z]],
         [[15.6, y, TOWER_FRONT_Z], [15.6, y, TOWER_REAR_Z]],
     ]),
-    // Frame over the main LED wall (it crosses the centre tower)
+    // Frame around the main LED wall
     [[-10.5, 11.55, SCREEN_Z - 0.1], [10.5, 11.55, SCREEN_Z - 0.1]],
-    // Centre tower: the same truss as the towers, rising from the deck in the gap between the LED
-    // wall's halves to the towers' height, and tied into the rig the way the side towers are: across
-    // to the lowest row, forward along the top to the top row, and an upstage top bar running to both
-    // side towers (which reach back to meet it)
-    [[0, 0.5, CENTRE_Z], [0, 19, CENTRE_Z]],
-    [[0, 12.9, CENTRE_Z], [0, 12.9, TOWER_REAR_Z]],
-    [[0, 18.4, CENTRE_Z], [0, 18.4, -8]],
-    [[-15.6, 18.4, CENTRE_Z], [15.6, 18.4, CENTRE_Z]],
-    [[-15.6, 18.4, TOWER_REAR_Z], [-15.6, 18.4, CENTRE_Z]],
-    [[15.6, 18.4, TOWER_REAR_Z], [15.6, 18.4, CENTRE_Z]],
 ];
 
 export function createTrussGeometry(bars = TRUSS_BARS) {
