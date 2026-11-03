@@ -6,11 +6,17 @@ import * as THREE from 'three';
 import { createLedMaterial, createScreenContent } from './stageMaterials';
 import { SCREEN_Z } from './trussGeometry';
 
-// Main wall plus two angled side screens, behind the truss
+// Main wall plus two angled side screens, behind the truss. The wall fills the frame the structure
+// gives it: from the stage floor (deck top, y = 0.5) up to just under the lowest truss row (y = 12.6),
+// and 26 m wide; the side screens fill the rest of the width, up to the towers. LED pixels stay the
+// same size as before (about 11 cm), so the grids grow with the screens.
+const WALL = { width: 26, bottom: 0.42, top: 12.6 }; // the bottom sits just into the deck, so no seam shows
+const WALL_H = WALL.top - WALL.bottom;
+const WALL_Y = (WALL.top + WALL.bottom) / 2;
 const SCREENS = [
-    { key: 'main', position: [0, 6.3, SCREEN_Z], rotation: [0, 0, 0], size: [20, 9.8], grid: [180, 88], text: true, seed: 0 },
-    { key: 'left', position: [-12.3, 6.2, SCREEN_Z + 1.7], rotation: [0, 0.38, 0], size: [5.6, 9.4], grid: [52, 88], text: false, seed: 3 },
-    { key: 'right', position: [12.3, 6.2, SCREEN_Z + 1.7], rotation: [0, -0.38, 0], size: [5.6, 9.4], grid: [52, 88], text: false, seed: 7 },
+    { key: 'main', position: [0, WALL_Y, SCREEN_Z], rotation: [0, 0, 0], size: [WALL.width, WALL_H], grid: [234, 109], text: true, seed: 0 },
+    { key: 'left', position: [-14.25, WALL_Y, SCREEN_Z + 0.5], rotation: [0, 0.3, 0], size: [2.3, WALL_H], grid: [21, 105], text: false, seed: 3 },
+    { key: 'right', position: [14.25, WALL_Y, SCREEN_Z + 0.5], rotation: [0, -0.3, 0], size: [2.3, WALL_H], grid: [21, 105], text: false, seed: 7 },
 ];
 
 // A 1x1 blank texture so the main screen's samplers are valid before the first content is drawn

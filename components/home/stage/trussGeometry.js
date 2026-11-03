@@ -56,7 +56,7 @@ export const DECK_DEPTH = 18;            // the stage deck runs from its front e
 // Every bar in the rig: [from, to]
 // The four horizontal rows step down like a ladder from the front to the back, as on a real
 // concert roof: the top truss highest at the front, each row further back 1.5 m lower, the lowest
-// just above the LED wall (top edge y = 11.2). Seen from the audience every row shows, one below
+// just above the LED wall (top edge y = 12.6). Seen from the audience every row shows, one below
 // the other. Each spans the full width and lands on the towers (on a column, or on a tie).
 const STEP = 1.5;
 export const ROWS = [
@@ -79,8 +79,6 @@ export const TRUSS_BARS = [
         [[-15.6, y, TOWER_FRONT_Z], [-15.6, y, TOWER_REAR_Z]],
         [[15.6, y, TOWER_FRONT_Z], [15.6, y, TOWER_REAR_Z]],
     ]),
-    // Frame around the main LED wall
-    [[-10.5, 11.55, SCREEN_Z - 0.1], [10.5, 11.55, SCREEN_Z - 0.1]],
 ];
 
 export function createTrussGeometry(bars = TRUSS_BARS) {
