@@ -95,12 +95,26 @@ function bakeStrobe(scene) {
     const merged = mergeGeometries(parts);
     parts.forEach((p) => p.dispose());
 
-    // Face the flash panel toward +Z, whatever way the model was authored
-    const normals = merged.attributes.normal;
+    // Turn the flash panel to face the audience (+Z), however the model was authored (this one has it
+    // facing down). The panel's thinnest dimension is the way it faces, and it sits on that side of
+    // the housing, so that side is the direction to turn toward +Z.
+    const pos = merged.attributes.position;
     const flash = merged.attributes.aFlash;
-    let facing = 0;
-    for (let i = 0; i < flash.count; i++) if (flash.getX(i) > 0.5) facing += normals.getZ(i);
-    if (facing < 0) merged.rotateY(Math.PI);
+    const all = new THREE.Box3();
+    const panel = new THREE.Box3();
+    const v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+        all.expandByPoint(v);
+        if (flash.getX(i) > 0.5) panel.expandByPoint(v);
+    }
+    if (!panel.isEmpty()) {
+        const size = panel.getSize(new THREE.Vector3()).toArray();
+        const axis = size.indexOf(Math.min(...size));
+        const side = panel.getCenter(new THREE.Vector3()).getComponent(axis) - all.getCenter(new THREE.Vector3()).getComponent(axis);
+        const facing = new THREE.Vector3().setComponent(axis, side < 0 ? -1 : 1);
+        merged.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(facing, new THREE.Vector3(0, 0, 1)));
+    }
 
     merged.computeBoundingBox();
     const box = merged.boundingBox;
