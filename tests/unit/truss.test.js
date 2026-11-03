@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { createTrussGeometry, TRUSS_BARS } from '@/components/home/stage/trussGeometry';
+import { createTrussGeometry, TRUSS_BARS, CENTRE_Z, SCREEN_Z, TOWER_FRONT_Z, TOWER_REAR_Z, ROWS } from '@/components/home/stage/trussGeometry';
 
 describe('truss geometry', () => {
     it('merges the whole rig into one geometry', () => {
@@ -32,5 +32,21 @@ describe('truss geometry', () => {
 
     it('every bar has distinct end points', () => {
         for (const [a, b] of TRUSS_BARS) expect(a).not.toEqual(b);
+    });
+
+    it('has a centre tower from the deck to the top, in front of the LED wall and tied into the rig', () => {
+        const centre = TRUSS_BARS.find(([a, b]) => a[0] === 0 && b[0] === 0 && a[2] === CENTRE_Z && b[2] === CENTRE_Z && b[1] - a[1] > 15);
+        expect(centre).toBeTruthy();
+        expect(CENTRE_Z).toBeGreaterThan(SCREEN_Z);           // in front of the wall
+        // tied to the lowest row and to the top row
+        expect(TRUSS_BARS.some(([a, b]) => a[0] === 0 && a[2] === CENTRE_Z && b[2] === ROWS[3].z)).toBe(true);
+        expect(TRUSS_BARS.some(([a, b]) => a[0] === 0 && a[2] === CENTRE_Z && b[2] === ROWS[0].z)).toBe(true);
+    });
+
+    it('gives the stage depth: rows spread between the front and rear columns, the wall behind', () => {
+        expect(TOWER_REAR_Z - TOWER_FRONT_Z).toBeLessThanOrEqual(-10);
+        const zs = ROWS.map((r) => r.z).sort((a, b) => a - b);
+        for (let i = 1; i < zs.length; i++) expect(zs[i] - zs[i - 1]).toBeGreaterThanOrEqual(2.5);
+        expect(SCREEN_Z).toBeLessThan(TOWER_REAR_Z);
     });
 });

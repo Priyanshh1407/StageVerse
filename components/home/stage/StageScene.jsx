@@ -12,7 +12,7 @@ import Blinders from './Blinders';
 import Haze from './Haze';
 import HouseLights, { HOUSE_COLOR } from './HouseLights';
 import Venue from './Venue';
-import { createTrussGeometry } from './trussGeometry';
+import { createTrussGeometry, DECK_DEPTH, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
 
@@ -100,8 +100,8 @@ function Deck({ look }) {
         mesh.current.material.emissive.copy(color.current.set(target.washColor ?? '#3b5bff')).multiplyScalar(0.12 * level);
     });
     return (
-        <mesh ref={mesh} position={[0, 0.25, -7]}>
-            <boxGeometry args={[30, 0.5, 14]} />
+        <mesh ref={mesh} position={[0, 0.25, -DECK_DEPTH / 2]}>
+            <boxGeometry args={[30, 0.5, DECK_DEPTH]} />
             <meshLambertMaterial color="#14161d" />
         </mesh>
     );
@@ -145,7 +145,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             </mesh>
             <StageLights look={look} blinders={blinders} />
 
-            <mesh position={[0, 12, -16]} material={backdrop}>
+            <mesh position={[0, 12, SCREEN_Z - 2.8]} material={backdrop}>
                 <planeGeometry args={[80, 34]} />
             </mesh>
             <Floor look={look} blinders={blinders} />

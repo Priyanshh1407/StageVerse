@@ -208,27 +208,59 @@ export function createScreenContent(content = { kind: 'brand' }, { events = [], 
     const small = layer();
     const spacing = (ctx, px) => { if ('letterSpacing' in ctx) ctx.letterSpacing = `${px}px`; };
 
+    // The wall is split in two around the centre truss tower, so nothing is drawn across the middle:
+    // each line breaks at the word (or, for one word, the letter) nearest its centre, the first part
+    // ending just left of the tower and the rest starting just right of it, like content laid out
+    // on a real split screen
+    const PAD = 38; // px of clear space on each side of the tower
+    const split = (ctx, text) => {
+        const words = text.split(' ');
+        const parts = words.length > 1 ? words : [...text];
+        const join = words.length > 1 ? ' ' : '';
+        let best = null;
+        for (let i = 1; i < parts.length; i++) {
+            const left = parts.slice(0, i).join(join);
+            const right = parts.slice(i).join(join);
+            const diff = Math.abs(ctx.measureText(left).width - ctx.measureText(right).width);
+            if (!best || diff < best.diff) best = { left, right, diff };
+        }
+        return best ? [best.left, best.right] : [text, ''];
+    };
+    const drawSplit = (ctx, text, y, draw) => {
+        const [left, right] = split(ctx, text);
+        ctx.textAlign = 'right';
+        draw(left, W / 2 - PAD, y);
+        ctx.textAlign = 'left';
+        if (right) draw(right, W / 2 + PAD, y);
+        ctx.textAlign = 'center';
+    };
+    // A rule under a title, in two pieces either side of the tower
+    const rule = (width, y, h) => {
+        small.ctx.fillRect(W / 2 - width / 2, y, width / 2 - PAD, h);
+        small.ctx.fillRect(W / 2 + PAD, y, width / 2 - PAD, h);
+    };
+
     // Headline, with its glow: a wide blurred stroke plus a crisp thin outline
     const headline = (text, y, size) => {
         let px = size;
         head.ctx.font = `900 ${px}px ${family}`;
         spacing(head.ctx, px * 0.08);
-        while (head.ctx.measureText(text).width > W * 0.9 && px > 60) { px -= 8; head.ctx.font = `900 ${px}px ${family}`; spacing(head.ctx, px * 0.08); }
-        head.ctx.fillText(text, W / 2, y);
+        while (head.ctx.measureText(text).width > W * 0.9 - 2 * PAD && px > 60) { px -= 8; head.ctx.font = `900 ${px}px ${family}`; spacing(head.ctx, px * 0.08); }
+        drawSplit(head.ctx, text, y, (t, x, yy) => head.ctx.fillText(t, x, yy));
         glow.ctx.font = head.ctx.font;
         spacing(glow.ctx, px * 0.08);
         glow.ctx.filter = 'blur(18px)';
         glow.ctx.lineWidth = px * 0.09;
-        glow.ctx.strokeText(text, W / 2, y);
+        drawSplit(glow.ctx, text, y, (t, x, yy) => glow.ctx.strokeText(t, x, yy));
         glow.ctx.filter = 'none';
         glow.ctx.lineWidth = Math.max(2, px * 0.012);
-        glow.ctx.strokeText(text, W / 2, y);
+        drawSplit(glow.ctx, text, y, (t, x, yy) => glow.ctx.strokeText(t, x, yy));
         return px;
     };
     const line = (text, y, size, weight = 600, track = 0.2) => {
         small.ctx.font = `${weight} ${size}px ${family}`;
         spacing(small.ctx, size * track);
-        small.ctx.fillText(text, W / 2, y);
+        drawSplit(small.ctx, text, y, (t, x, yy) => small.ctx.fillText(t, x, yy));
     };
 
     if (content.kind === 'role') {
@@ -244,10 +276,10 @@ export function createScreenContent(content = { kind: 'brand' }, { events = [], 
             else rows[rows.length - 1] = next;
         }
         rows.forEach((r, i) => line(r, 610 + i * 72, 50, 500, 0.04));
-        small.ctx.fillRect(W / 2 - 160, 690 + rows.length * 30, 320, 6);
+        rule(320 + 2 * PAD, 690 + rows.length * 30, 6);
     } else {
         const px = headline('STAGEVERSE', 330, 250);
-        small.ctx.fillRect(W / 2 - px * 2.6, 470, px * 5.2, 5);
+        rule(px * 5.2, 470, 5);
         line('THE ENTIRE CONCERT ECOSYSTEM', 530, 46, 700, 0.35);
         const upcoming = events.slice(0, 2);
         if (upcoming.length) {

@@ -1,4 +1,4 @@
-import { ROWS } from './trussGeometry';
+import { ROWS, TOWER_REAR_Z } from './trussGeometry';
 
 // Where every moving head is mounted, which job it does, and where it points at rest, as plain
 // data. Like a real rig, each group has one purpose (see ROLES): aerial beams fan up from the top
@@ -29,7 +29,7 @@ export const GROUPS = [
     // Clamped sideways to the inner face of each tower box's rear column, crossing over the stage:
     // the left tower's beams go to the right and the right tower's to the left (look.sidesAim
     // swings them further across, or back out toward the audience)
-    { name: 'sideTowers', role: 'sides', mount: 'side', share: 0.18, layout: { towers: true, x: 15.6 - UNDER, z: -10, yFrom: 2.5, yTo: 11 }, tilt: 1.72, pan: 0.85 },
+    { name: 'sideTowers', role: 'sides', mount: 'side', share: 0.18, layout: { towers: true, x: 15.6 - UNDER, z: TOWER_REAR_Z, yFrom: 2.5, yTo: 11 }, tilt: 1.72, pan: 0.85 },
     // Rows 2 and 3: washes hanging underneath, pointed down onto the stage
     { name: 'washFront', role: 'wash', mount: 'hanging', share: 0.12, layout: { y: ROWS[1].y - UNDER, z: ROWS[1].z, width: 22 }, tilt: 0.35, facing: TOWARD_STAGE, panSpread: 0.4 },
     { name: 'washMid', role: 'wash', mount: 'hanging', share: 0.12, layout: { y: ROWS[2].y - UNDER, z: ROWS[2].z, width: 22 }, tilt: 0.15, facing: TOWARD_STAGE, panSpread: 0.3 },

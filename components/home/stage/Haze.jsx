@@ -10,8 +10,8 @@ import { roomFlash } from './flash';
 // makes a rig look like light in air instead of coloured shapes. 3 draw calls, additive.
 const LAYERS = [
     // Bottom edges sit on the floor: a plane poking below it gets cut off in a hard line
-    { z: -11, y: 11, w: 46, h: 22, seed: 1.3, strength: 1 },
-    { z: -5, y: 9, w: 52, h: 18, seed: 4.7, strength: 0.8 },
+    { z: -14, y: 11, w: 46, h: 22, seed: 1.3, strength: 1 },
+    { z: -7, y: 9, w: 52, h: 18, seed: 4.7, strength: 0.8 },
     { z: 3, y: 7, w: 60, h: 14, seed: 9.1, strength: 0.55 },
 ];
 
