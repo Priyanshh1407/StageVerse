@@ -14,11 +14,15 @@ import { laserLayout } from './rigLayout';
 // look.laserSeq they come on one by one, left to right; look.laserCount 1 picks a new number of beams
 // per projector on every beat. One instanced draw call for every beam; each beam's angle is computed
 // in the vertex shader. The housings, apertures and rods are three more instanced draw calls.
-const PER = 12;                    // most beams one projector throws
+const PER = 20;                    // most beams one projector throws
 const LENGTH = 48;
 const HOUSING = [0.75, 0.42, 0.62];
-// The beam counts the random mode chooses between (capped by the projector's maximum)
-const COUNTS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
+// The most beams on stage at once, across every projector: with all of them on, a full rig of
+// ~100 beams felt overwhelming, so the fans share this (all 8 on: ~8 each; one group of 4: ~12 each)
+const TOTAL_CAP = 64;
+// The random mode picks between these shares of the full fan, so a projector always throws a
+// properly filled sheet (never just two or three beams)
+const SHARES = [0.5, 0.6, 0.7, 0.8, 0.9, 1];
 
 function createLaserMaterial(sources) {
     return new THREE.ShaderMaterial({
@@ -62,11 +66,13 @@ function createLaserMaterial(sources) {
                 // Fan spread over the audience, each projector leaning in toward the middle of the room
                 // (the tower ones more), +0.1 turns the whole show slightly to the audience's right
                 float yaw = 0.1 + aFan * 0.38 * uSpread - aLean * mix(0.18, 0.4, aTower) + sin(t * 0.35 + aSrc) * 0.06;
-                // The sheet scans up and down: low enough to sweep the crowd, and the tower projectors,
-                // being high up, travel much further
-                float centre = mix(0.28, 0.12, aTower) + uTilt;
-                float travel = mix(0.3, 0.55, aTower);
+                // The sheet scans up and down. The tower projectors, being high up, travel much further and
+                // can sweep down into the crowd; the floor ones stay above it (tilt moves them only a
+                // little, and never below just over horizontal)
+                float centre = mix(0.34, 0.12, aTower) + uTilt * mix(0.35, 1.0, aTower);
+                float travel = mix(0.2, 0.55, aTower);
                 float pitch = centre + sin(t * 0.7 + aSrc * 1.3) * travel;
+                pitch = mix(max(pitch, 0.12), pitch, aTower);
                 vec3 p = position;
                 // pitch (around X) then yaw (around Y); beams start along +Z toward the audience
                 p = vec3(p.x, p.y * cos(pitch) + p.z * sin(pitch), -p.y * sin(pitch) + p.z * cos(pitch));
@@ -186,7 +192,10 @@ export default function Lasers({ look, count = 40, fixtures = 64 }) {
         }
 
         // Beams per projector: follow laserAmount, or a random count picked on every beat
-        const most = Math.max(1, Math.min(PER, Math.round(count / n)));
+        // Each projector's full fan: the desk count (40 by default) gives ~12 beams each, so with eight
+        // projectors the sheets fill the room
+        const active = Math.max(1, st.on.filter(Boolean).length);
+        const most = Math.max(2, Math.min(PER, Math.round(count * 0.3), Math.floor(TOTAL_CAP / active)));
         if ((target.laserCount ?? 0) > 0.5) {
             const pulse = target.pulse ?? 0;
             st.sinceBeat += delta;
@@ -195,7 +204,7 @@ export default function Lasers({ look, count = 40, fixtures = 64 }) {
             st.lastPulse = pulse;
             if (beat) {
                 st.sinceBeat = 0;
-                const options = COUNTS.filter((c) => c <= most && c !== st.beams);
+                const options = [...new Set(SHARES.map((f) => Math.max(2, Math.round(most * f))))].filter((c) => c !== st.beams);
                 if (options.length) st.beams = options[Math.floor(Math.random() * options.length)];
             }
         } else {
@@ -209,7 +218,8 @@ export default function Lasers({ look, count = 40, fixtures = 64 }) {
         u.uSpread.value += ((target.laserSpread ?? 1) - u.uSpread.value) * ease;
         u.uTilt.value += ((target.laserTilt ?? 0) - u.uTilt.value) * ease;
         u.uColor.value.lerp(st.color, ease);
-        const wanted = laser * (1 + (target.pulse ?? 0) * 0.5);
+        // a little dimmer when every projector is firing, so the full rig never turns harsh
+        const wanted = laser * (1 + (target.pulse ?? 0) * 0.5) * (active > 4 ? 0.85 : 1);
         u.uLevel.value += (wanted - u.uLevel.value) * ease;
         // Each aperture glows in the laser colour while its projector fires
         const glow = apertureColor.current;
