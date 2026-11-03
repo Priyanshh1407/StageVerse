@@ -139,7 +139,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
             <Section icon={Zap} title="Lasers" right={<Toggle on={desk.laser > 0.05} onClick={() => set({ laser: desk.laser > 0.05 ? 0 : 1 })} />}>
                 <Slider label="Count" value={counts.lasers} min={2} max={60} onChange={(v) => onCounts({ lasers: v })} />
                 <div className="grid grid-cols-2 gap-1.5">
-                    {[['laserFloor', 'Floor lasers'], ['laserTower', 'Tower lasers'], ['laserSeq', 'One by one'], ['laserCount', 'Random beams']].map(([key, label]) => {
+                    {[['laserFloor', 'Floor lasers'], ['laserTower', 'Tower lasers'], ['laserSeq', 'One by one'], ['laserCount', 'Breathing beams']].map(([key, label]) => {
                         const on = (desk[key] ?? (key === 'laserCount' ? 0 : 1)) > 0.5;
                         return (
                             <button key={key} onClick={() => set({ [key]: on ? 0 : 1 })} aria-pressed={on}
@@ -149,7 +149,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                         );
                     })}
                 </div>
-                <Slider label="Laser tilt (down into the crowd ↔ up)" value={desk.laserTilt ?? 0} min={-0.45} max={0.4} step={0.01} onChange={(v) => set({ laserTilt: v })} />
+                <Slider label="Laser height (low ↔ high)" value={desk.laserTilt ?? 0} min={-0.3} max={0.4} step={0.01} onChange={(v) => set({ laserTilt: v })} />
                 <Swatches label="Laser colour" value={desk.laserColor} onChange={(c) => set({ laserColor: c, laser: Math.max(desk.laser, 1) })} />
             </Section>
 

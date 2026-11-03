@@ -17,12 +17,16 @@ import { laserLayout } from './rigLayout';
 const PER = 20;                    // most beams one projector throws
 const LENGTH = 48;
 const HOUSING = [0.75, 0.42, 0.62];
+// The lowest any laser sheet points: 0.14 rad above horizontal, so they never sweep down into the crowd
+const LASER_MIN_PITCH = 0.14;
 // The most beams on stage at once, across every projector: with all of them on, a full rig of
 // ~100 beams felt overwhelming, so the fans share this (all 8 on: ~8 each; one group of 4: ~12 each)
 const TOTAL_CAP = 64;
-// The random mode picks between these shares of the full fan, so a projector always throws a
-// properly filled sheet (never just two or three beams)
-const SHARES = [0.5, 0.6, 0.7, 0.8, 0.9, 1];
+// Beam-count mode: the fans breathe. The count steps one beam at a time toward a target (twice a
+// beat), and each target sits on the other side of the fan from the last: down to a few beams,
+// back up to (nearly) the full fan, down again...
+const LOW = [0.15, 0.3];   // share of the full fan for a 'down' target (12 beams: 2-4)
+const HIGH = [0.75, 1];    // ...and for an 'up' target (12 beams: 9-12)
 
 function createLaserMaterial(sources) {
     return new THREE.ShaderMaterial({
@@ -64,15 +68,14 @@ function createLaserMaterial(sources) {
                 vOn = on;
                 float t = uPhase; // accumulated in JS, so speed changes never make the fan leap
                 // Fan spread over the audience, each projector leaning in toward the middle of the room
-                // (the tower ones more), +0.1 turns the whole show slightly to the audience's right
-                float yaw = 0.1 + aFan * 0.38 * uSpread - aLean * mix(0.18, 0.4, aTower) + sin(t * 0.35 + aSrc) * 0.06;
-                // The sheet scans up and down. The tower projectors, being high up, travel much further and
-                // can sweep down into the crowd; the floor ones stay above it (tilt moves them only a
-                // little, and never below just over horizontal)
-                float centre = mix(0.34, 0.12, aTower) + uTilt * mix(0.35, 1.0, aTower);
-                float travel = mix(0.2, 0.55, aTower);
-                float pitch = centre + sin(t * 0.7 + aSrc * 1.3) * travel;
-                pitch = mix(max(pitch, 0.12), pitch, aTower);
+                // (the tower ones more), +0.1 turns the whole show slightly to the audience's right.
+                // The main movement is side to side: each sheet sweeps left and right across the room
+                float yaw = 0.1 + aFan * 0.38 * uSpread - aLean * mix(0.18, 0.4, aTower) + sin(t * 0.5 + aSrc * 0.9) * 0.32;
+                // Up and down is only a gentle drift, and no sheet ever points lower than 0.14 rad above
+                // horizontal (tilt can lift them, never take them below that)
+                float centre = mix(0.3, 0.26, aTower) + uTilt * 0.5;
+                float travel = mix(0.07, 0.1, aTower);
+                float pitch = max(centre + sin(t * 0.45 + aSrc * 1.3) * travel, ${LASER_MIN_PITCH.toFixed(2)});
                 vec3 p = position;
                 // pitch (around X) then yaw (around Y); beams start along +Z toward the audience
                 p = vec3(p.x, p.y * cos(pitch) + p.z * sin(pitch), -p.y * sin(pitch) + p.z * cos(pitch));
@@ -160,7 +163,7 @@ export default function Lasers({ look, count = 40, fixtures = 64 }) {
     }, [projectors, towers]);
 
     // Live state: each projector's on/off (with the one-by-one queue), and the beam count
-    const state = useRef({ on: new Array(n).fill(false), at: new Array(n).fill(null), level: new Array(n).fill(0), beams: PER, lastPulse: 0, sinceBeat: 0, hex: null, color: new THREE.Color() });
+    const state = useRef({ on: new Array(n).fill(false), at: new Array(n).fill(null), level: new Array(n).fill(0), beams: PER, goal: PER, lastPulse: 0, sinceBeat: 0, beatLength: 0.5, sinceStep: 0, hex: null, color: new THREE.Color() });
     const apertureColor = useRef(new THREE.Color());
 
     useFrame(({ clock }, delta) => {
@@ -191,7 +194,7 @@ export default function Lasers({ look, count = 40, fixtures = 64 }) {
             u.uOn.value[s] = st.level[s];
         }
 
-        // Beams per projector: follow laserAmount, or a random count picked on every beat
+        // Beams per projector: follow laserAmount, or breathe in and out one beam at a time
         // Each projector's full fan: the desk count (40 by default) gives ~12 beams each, so with eight
         // projectors the sheets fill the room
         const active = Math.max(1, st.on.filter(Boolean).length);
@@ -199,13 +202,24 @@ export default function Lasers({ look, count = 40, fixtures = 64 }) {
         if ((target.laserCount ?? 0) > 0.5) {
             const pulse = target.pulse ?? 0;
             st.sinceBeat += delta;
-            // a beat is the pulse jumping up; without one (the desk) change every half second
-            const beat = pulse > 0.6 && st.lastPulse < 0.4 ? true : st.sinceBeat > 0.5 && pulse === 0;
-            st.lastPulse = pulse;
-            if (beat) {
+            st.sinceStep += delta;
+            // Learn the beat length from the pulse (a beat is the pulse jumping up); the desk has no
+            // pulse, so it keeps the default half second
+            if (pulse > 0.6 && st.lastPulse < 0.4) {
+                if (st.sinceBeat > 0.2 && st.sinceBeat < 2) st.beatLength = st.sinceBeat;
                 st.sinceBeat = 0;
-                const options = [...new Set(SHARES.map((f) => Math.max(2, Math.round(most * f))))].filter((c) => c !== st.beams);
-                if (options.length) st.beams = options[Math.floor(Math.random() * options.length)];
+            }
+            st.lastPulse = pulse;
+            // One beam per step, two steps a beat
+            if (st.sinceStep >= st.beatLength / 2) {
+                st.sinceStep = 0;
+                st.beams = Math.min(st.beams, most);
+                if (st.beams === st.goal || st.goal > most) {
+                    // arrived: the next goal is on the other side of the fan
+                    const [a, b] = st.beams > most / 2 ? LOW : HIGH;
+                    st.goal = Math.max(2, Math.min(most, Math.round(most * (a + Math.random() * (b - a)))));
+                }
+                st.beams += Math.sign(st.goal - st.beams);
             }
         } else {
             st.beams = Math.max(1, Math.round(most * (target.laserAmount ?? 1)));

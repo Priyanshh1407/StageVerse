@@ -503,7 +503,7 @@ describe('lasers and random strobes in the show', () => {
         const groups = [0, 1, 2].map((k) => laserLook('peak', k)).map((l) => `${l.laserFloor}${l.laserTower}`);
         expect(new Set(groups)).toEqual(new Set(['11', '10', '01']));
         expect(laserLook('peak', 0).laserCount).toBe(1);
-        expect(laserLook('peak', 1).laserTilt).toBeLessThan(0);      // down into the crowd
+        expect(laserLook('peak', 1).laserTilt).not.toBe(laserLook('peak', 0).laserTilt); // lower, then higher
         expect(laserLook('calm', 0)).toMatchObject({ laserFloor: 1, laserTower: 1, laserCount: 0, laserSeq: 1 });
     });
 
