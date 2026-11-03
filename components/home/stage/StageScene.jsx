@@ -9,7 +9,6 @@ import Strobes from './Strobes';
 import LedWall from './LedWall';
 import PixelBars from './PixelBars';
 import Lasers from './Lasers';
-import Blinders from './Blinders';
 import Haze from './Haze';
 import HouseLights, { HOUSE_COLOR } from './HouseLights';
 import Venue from './Venue';
@@ -19,12 +18,12 @@ import { roomFlash } from './flash';
 
 /**
  * Everything on stage, for use inside a <Canvas>: backdrop, floor, deck, truss, the moving heads
- * (grouped by job: aerial, sides, floor, wash), strobes, LED screens, lasers, blinders, haze and
+ * (grouped by job: aerial, sides, floor, wash), strobes (also the blinders), LED screens, lasers, haze and
  * house lights. The camera and controls belong to whoever renders this (the lab uses orbit
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 + pixel bars 1 = 32, plus lasers, blinders and house lights (1 each, skipped while off) and bloom.
+ * + haze 3 + pixel bars 1 + strobe glow 1 = 33, plus lasers and house lights (1 each, skipped while off) and bloom.
  */
 
 /**
@@ -161,10 +160,9 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             {/* Fixture models stream in; the rest of the stage shows meanwhile */}
             <Suspense fallback={null}>
                 <Fixtures count={beams} look={look} />
-                <Strobes count={beams} look={look} />
+                <Strobes count={beams} look={look} blinders={blinders} />
             </Suspense>
             <Lasers look={look} count={lasers} />
-            <Blinders look={look} count={blinders} />
             <HouseLights look={look} />
             <Haze look={look} blinders={blinders} />
             <CameraFlash look={look} blinders={blinders} />

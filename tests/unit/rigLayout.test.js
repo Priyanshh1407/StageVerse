@@ -108,6 +108,6 @@ describe('strobeLayout', () => {
         });
         expect(strobes.some((s) => s[1] === ROWS[3].y - STROBE_DROP)).toBe(true);
         for (const s of strobes) expect(ROWS.every((r) => !(Math.abs(s[2] - r.z) < 0.5 && s[1] > r.y - 0.5))).toBe(true);
-        expect(strobes.some((s) => s[1] < 1.5)).toBe(true); // a row standing on the deck
+        expect(strobes.some((s) => s[1] < 1.5)).toBe(false); // none on the deck: only the trusses
     });
 });
