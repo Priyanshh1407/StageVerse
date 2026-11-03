@@ -5,10 +5,10 @@ import { ROWS } from '@/components/home/stage/trussGeometry';
 describe('rigLayout', () => {
     it('fills the wash rows (trusses 2 and 3) about as fully as the aerial rows', () => {
         const count = (n, group) => rigLayout(n).filter((f) => f.group === group).length;
-        for (const n of [64, 96]) {
+        for (const n of [52, 96]) {
             for (const wash of ['washFront', 'washMid']) expect(count(n, wash)).toBeGreaterThanOrEqual(count(n, 'lowFan') - 1);
         }
-        expect(count(64, 'washFront')).toBeGreaterThanOrEqual(10);
+        expect(count(52, 'washFront')).toBeGreaterThanOrEqual(8);
         expect(GROUPS.reduce((sum, g) => sum + g.share, 0)).toBeCloseTo(1);
     });
 

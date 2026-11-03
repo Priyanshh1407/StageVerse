@@ -51,15 +51,18 @@ function Director({ control, look }) {
     return null;
 }
 
-// Automatic step-down when the frame rate can't keep up: bloom off, then 70% beams, then lower resolution
+// Automatic step-down when the frame rate can't keep up: bloom off, then a little lower resolution,
+// then lower again. The number of fixtures never changes while the show runs (it's set once, from
+// the quality tier or the lighting desk): fixtures vanishing and the rig re-spacing mid-show shows.
 const MAX_STEP = 3;
+const STEP_DPR = { 2: 0.85, 3: 0.75 };
 
 function Stage3D({ tier, control, look, visible, counts, events, screen, font }) {
     const [step, setStep] = useState(0);
     const settings = TIER_SETTINGS[tier];
-    const beams = Math.round((counts.beams ?? settings.beams) * (step >= 2 ? 0.7 : 1));
+    const beams = counts.beams ?? settings.beams;
     const bloom = settings.bloom && step < 1;
-    const dpr = step >= 3 ? 0.75 : settings.dpr;
+    const dpr = STEP_DPR[step] ?? settings.dpr;
 
     return (
         <Canvas
