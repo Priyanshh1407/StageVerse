@@ -162,7 +162,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                 <Fixtures count={beams} look={look} />
                 <Strobes count={beams} look={look} blinders={blinders} />
             </Suspense>
-            <Lasers look={look} count={lasers} />
+            <Lasers look={look} count={lasers} fixtures={beams} />
             <HouseLights look={look} />
             <Haze look={look} blinders={blinders} />
             <CameraFlash look={look} blinders={blinders} />

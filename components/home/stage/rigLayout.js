@@ -1,4 +1,4 @@
-import { ROWS, TOWER_REAR_Z } from './trussGeometry';
+import { ROWS, TOWER_FRONT_Z, TOWER_MID_Z, TOWER_REAR_Z } from './trussGeometry';
 
 // Where every moving head is mounted, which job it does, and where it points at rest, as plain
 // data. Like a real rig, each group has one purpose (see ROLES): aerial beams fan up from the top
@@ -104,16 +104,46 @@ export function rigLayout(count) {
 
 /**
  * Strobe positions, in the gaps between moving heads (like a real rig alternating beams and
- * strobes): hanging under the top and lowest truss rows. Positions are the strobe's centre
- * (it's ~0.7 m tall). None on the deck: the truss strobes are the source of strobe and blinder light.
+ * strobes): hanging under the top and lowest truss rows, plus a few standing vertically on the
+ * inner face of each side tower's middle column. Each is [x, y, z, rotation about Z] at the strobe's
+ * centre (it's ~0.7 m tall; 0 = horizontal, PI/2 = vertical). None on the deck: the truss strobes
+ * are the source of strobe and blinder light.
  */
 export const STROBE_DROP = 0.225 + 0.36 + 0.03; // truss half-section + half the strobe + a gap
+// Tower strobes: standing on end against the inner face of the middle column, a few heights up
+const TOWER_STROBE_HEIGHTS = [4.2, 7.8, 11.4];
+const TOWER_STROBE_X = 15.6 - 0.225 - 0.45;
 export function strobeLayout(count) {
     const fixtures = rigLayout(count);
     const between = (xs) => xs.slice(1).map((x, i) => (x + xs[i]) / 2);
     const xsOf = (group, y) => fixtures.filter((f) => f.group === group && (y === undefined || f.position[1] === y))
         .map((f) => f.position[0]).sort((a, b) => a - b);
-    const top = between(xsOf('topFan')).map((x) => [x, ROWS[0].y - STROBE_DROP, ROWS[0].z]);
-    const low = between(xsOf('lowFan')).map((x) => [x, ROWS[3].y - STROBE_DROP, ROWS[3].z]);
-    return [...top, ...low];
+    const top = between(xsOf('topFan')).map((x) => [x, ROWS[0].y - STROBE_DROP, ROWS[0].z, 0]);
+    const low = between(xsOf('lowFan')).map((x) => [x, ROWS[3].y - STROBE_DROP, ROWS[3].z, 0]);
+    const towers = [-1, 1].flatMap((side) => TOWER_STROBE_HEIGHTS.map((y) => [side * TOWER_STROBE_X, y, TOWER_MID_Z, Math.PI / 2]));
+    return [...top, ...low, ...towers];
+}
+
+// Laser projectors: aperture height on the deck (deck top 0.5), and the tower ones clamped to the
+// inner face of the front columns (column face, a 12 cm rod, then half the 0.75 m housing)
+const LASER_DECK_Y = 0.8;
+const LASER_TOWER_X = 15.6 - 0.225 - 0.12 - 0.375;
+const LASER_TOWER_HEIGHTS = [5.5, 9.5];
+
+/** The projectors: aperture position, whether it's on a tower, and its order left to right. */
+export function laserLayout(fixtureCount) {
+    // Floor: the gaps between the floor moving heads nearest x = -9, -3, 3, 9
+    const xs = rigLayout(fixtureCount).filter((f) => f.group === 'floor').map((f) => f.position[0]).sort((a, b) => a - b);
+    const gaps = xs.slice(1).map((x, i) => (x + xs[i]) / 2);
+    const floorXs = [];
+    for (const want of [-9, -3, 3, 9]) {
+        const free = gaps.filter((g) => !floorXs.includes(g));
+        floorXs.push(free.length ? free.reduce((best, g) => (Math.abs(g - want) < Math.abs(best - want) ? g : best)) : want);
+    }
+    // A projector (0.75 m wide) needs ~0.7 m from the heads either side; when the row is packed too
+    // tightly for that (the desk's biggest rigs), the lasers stand a little ahead of the row instead
+    const roomy = gaps.length && (xs[1] - xs[0]) / 2 >= 0.7;
+    const floor = floorXs.map((x) => ({ pos: [x, LASER_DECK_Y, roomy ? -0.38 : 0.35], tower: 0 }));
+    const towers = [-1, 1].flatMap((side) => LASER_TOWER_HEIGHTS.map((y) => ({ pos: [side * LASER_TOWER_X, y, TOWER_FRONT_Z + 0.1], tower: 1, side })));
+    return [...floor, ...towers].sort((a, b) => a.pos[0] - b.pos[0] || a.pos[1] - b.pos[1]);
 }

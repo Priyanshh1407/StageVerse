@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_LOOK, mixHex, mixLooks } from '@/lib/show/look';
 import { resolveCueSheet, sampleCueSheet, prepareSongShow, sampleSongShow, cueIndexAt } from '@/lib/show/timeline';
 import { analyseSong, fft, estimateTempo, trackBeats, onsetEnvelope, frameFeatures } from '@/lib/show/analysis';
-import { programShow, buildIdleShow, pixelLook } from '@/lib/show/program';
+import { programShow, buildIdleShow, pixelLook, laserLook } from '@/lib/show/program';
 import { SHOTS } from '@/lib/show/shots';
 
 // A synthetic track: a kick on every beat (louder on beat 1 of each bar), a hi-hat on the
@@ -310,15 +310,19 @@ describe('programming rules (concert-style)', () => {
         expect(pixelLook('groove', 0, { beams: 1, wash: 1 }).pixelColor).toBe(0.5); // groove: both colours
     });
 
-    it('every song gives each fixture type a solo: side towers, aerial beams, floor, washes, lasers', () => {
+    it('every song gives each fixture type a solo: side towers, aerial beams, floor, washes, lasers, strobes, LED bars', () => {
         const beats240 = Array.from({ length: 120 * 4 }, (_, i) => i * 0.5);
         const long = programShow({ ...analysis, beats: beats240, downbeats: beats240.map((_, i) => i).filter((i) => i % 4 === 0), duration: 240, sections: [sec(0, 8, 'intro'), sec(16, 16, 'calm'), sec(48, 16, 'groove'), sec(80, 8, 'build'), sec(96, 32, 'peak'), sec(160, 16, 'groove'), sec(192, 16, 'peak'), sec(224, 8, 'outro')] });
         const solos = long.cues.filter((c) => c.name.startsWith('Solo') && !c.name.includes(' · bar '));
-        expect(solos.map((c) => c.name.replace('Solo · ', '')).sort()).toEqual(['aerial beams', 'floor', 'lasers', 'side towers', 'washes']);
+        expect(solos.map((c) => c.name.replace('Solo · ', '')).sort()).toEqual(['LED bars', 'aerial beams', 'floor', 'lasers', 'side towers', 'strobes', 'washes']);
         for (const solo of solos) {
             const lit = ['beams', 'sides', 'floor', 'wash', 'laser'].filter((k) => (solo.look[k] ?? 0) > 0);
-            expect(lit).toHaveLength(1);
-            expect(solo.look.pixel).toBe(0); // the LED bars stay out of a solo
+            // one fixture type alone: a group of moving heads or the lasers, or the strobes / LED bars by themselves
+            const own = solo.name.endsWith('strobes') ? solo.look.strobeRandom > 0 : solo.name.endsWith('LED bars') ? solo.look.pixel > 0 : lit.length === 1;
+            expect(own).toBe(true);
+            if (!solo.name.endsWith('LED bars')) expect(solo.look.pixel).toBe(0); // the LED bars stay out of other solos
+            if (!solo.name.endsWith('strobes')) expect(solo.look.strobeRandom ?? 0).toBe(0);
+            if (solo.name.endsWith('strobes') || solo.name.endsWith('LED bars')) expect(lit).toHaveLength(0);
             expect(solo.look.intensity).toBeGreaterThanOrEqual(1.3);
             // nothing but the washes' own bar changes fires during its 4 bars (8 s here)
             const inside = long.cues.filter((c) => c.t > solo.t && c.t < solo.t + 8 - 0.01);
@@ -491,5 +495,31 @@ describe('build-up detection', () => {
         const bars = Array.from({ length: 32 }, (_, i) => (i >= 16 ? { energy: 0.9, density: 0.8 } : { energy: 0.4, density: 0.3 }));
         const sections = [{ startBar: 0, endBar: 16, kind: 'groove' }, { startBar: 16, endBar: 32, kind: 'peak' }];
         expect(markBuilds(sections, bars).some((s) => s.kind === 'build')).toBe(false);
+    });
+});
+
+describe('lasers and random strobes in the show', () => {
+    it('peaks rotate the laser groups (all, floor only, towers only) and count beams on the beat', () => {
+        const groups = [0, 1, 2].map((k) => laserLook('peak', k)).map((l) => `${l.laserFloor}${l.laserTower}`);
+        expect(new Set(groups)).toEqual(new Set(['11', '10', '01']));
+        expect(laserLook('peak', 0).laserCount).toBe(1);
+        expect(laserLook('peak', 1).laserTilt).toBeLessThan(0);      // down into the crowd
+        expect(laserLook('calm', 0)).toMatchObject({ laserFloor: 1, laserTower: 1, laserCount: 0, laserSeq: 1 });
+    });
+
+    it('random coloured strobes play in calm and groove parts and ramp up through a build', () => {
+        const beats240 = Array.from({ length: 120 * 4 }, (_, i) => i * 0.5);
+        const sec = (start, bars, kind) => ({ start, end: start + bars * 2, kind, bars, energy: 0.5 });
+        const show = programShow({
+            duration: 240, bpm: 120, beats: beats240, downbeats: beats240.map((_, i) => i).filter((i) => i % 4 === 0), energy: Array(480).fill(0.5),
+            sections: [sec(0, 8, 'intro'), sec(16, 16, 'calm'), sec(48, 16, 'groove'), sec(80, 8, 'build'), sec(96, 32, 'peak'), sec(160, 16, 'groove'), sec(192, 16, 'peak'), sec(224, 8, 'outro')],
+        }, { title: 'Random strobes' });
+        const at = (name) => show.cues.find((c) => c.name.startsWith(name) && !c.name.startsWith('Solo'));
+        expect(at('Calm').look.strobeRandom).toBeGreaterThan(0);
+        expect(at('Groove').look.strobeRandom).toBeGreaterThan(at('Calm').look.strobeRandom);
+        const build = show.cues.filter((c) => c.name.startsWith('Build') && c.look.strobeRandom > 0).map((c) => c.look.strobeRandom);
+        expect(build.length).toBeGreaterThan(1);
+        expect(build.at(-1)).toBeGreaterThan(build[0]);                  // denser toward the drop
+        expect(show.cues.find((c) => c.name.startsWith('Peak')).look.strobeRandom ?? 0).toBe(0); // peaks keep the white hits
     });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rigLayout, strobeLayout, GROUPS, STROBE_DROP } from '@/components/home/stage/rigLayout';
+import { rigLayout, strobeLayout, laserLayout, GROUPS, STROBE_DROP } from '@/components/home/stage/rigLayout';
 import { ROWS } from '@/components/home/stage/trussGeometry';
 
 describe('rigLayout', () => {
@@ -109,5 +109,33 @@ describe('strobeLayout', () => {
         expect(strobes.some((s) => s[1] === ROWS[3].y - STROBE_DROP)).toBe(true);
         for (const s of strobes) expect(ROWS.every((r) => !(Math.abs(s[2] - r.z) < 0.5 && s[1] > r.y - 0.5))).toBe(true);
         expect(strobes.some((s) => s[1] < 1.5)).toBe(false); // none on the deck: only the trusses
+    });
+});
+
+describe('laserLayout and tower strobes', () => {
+    it('puts 4 lasers on the floor in gaps between the floor moving heads, and 2 on each tower', () => {
+        for (const n of [64, 96, 140]) {
+            const lasers = laserLayout(n);
+            const floor = lasers.filter((l) => !l.tower);
+            const towers = lasers.filter((l) => l.tower);
+            expect(floor).toHaveLength(4);
+            expect(towers).toHaveLength(4);
+            const heads = rigLayout(n).filter((f) => f.group === 'floor').map((f) => f.position[0]);
+            // never on top of a floor moving head (housing 0.75 m wide, head ~0.6 m)
+            // never on top of a floor moving head (housing 0.75 m wide, head ~0.6 m): in a gap, or a little ahead of the row
+            for (const l of floor) expect(Math.min(...heads.map((x) => Math.abs(x - l.pos[0]))) > 0.6 || l.pos[2] > 0).toBe(true);
+            expect(new Set(floor.map((l) => l.pos[0])).size).toBe(4);
+            // the tower lasers hang on the front columns, clear of the side moving heads on the rear ones
+            const sideHeads = rigLayout(n).filter((f) => f.group === 'sideTowers');
+            for (const l of towers) expect(Math.min(...sideHeads.map((f) => Math.abs(f.position[2] - l.pos[2])))).toBeGreaterThan(5);
+            expect(towers.filter((l) => l.pos[0] < 0)).toHaveLength(2);
+        }
+    });
+
+    it('stands a few strobes vertically on each tower', () => {
+        const vertical = strobeLayout(64).filter((s) => s[3]);
+        expect(vertical).toHaveLength(6);
+        for (const s of vertical) expect(Math.abs(s[0])).toBeGreaterThan(14);
+        expect(vertical.filter((s) => s[0] < 0)).toHaveLength(3);
     });
 });

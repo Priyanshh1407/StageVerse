@@ -3,63 +3,84 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { laserLayout } from './rigLayout';
 
-const MAX_LASERS = 60;
+// Laser projectors, each throwing a flat fan of beams out over the audience that scans up and down,
+// like a real laser sheet:
+//   - 4 on the front of the deck, in the gaps between the floor moving heads
+//   - 2 on each side tower, clamped on a short rod to the inner face of the front column (the side
+//     moving heads hang on the rear columns, so they never overlap)
+// Groups (look.laserFloor / laserTower) switch the floor and tower projectors on separately; with
+// look.laserSeq they come on one by one, left to right; look.laserCount 1 picks a new number of beams
+// per projector on every beat. One instanced draw call for every beam; each beam's angle is computed
+// in the vertex shader. The housings, apertures and rods are three more instanced draw calls.
+const PER = 12;                    // most beams one projector throws
 const LENGTH = 48;
+const HOUSING = [0.75, 0.42, 0.62];
+// The beam counts the random mode chooses between (capped by the projector's maximum)
+const COUNTS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
 
-// Two laser projectors on the front of the deck. Each throws a flat fan of beams out over the
-// audience, angled up above head height; the whole fan scans up and down together, like a real
-// laser sheet. One instanced draw call; every beam's angle is computed in the vertex shader.
-// Each source is the aperture on the front of a projector standing on the deck (deck top y = 0.5)
-const SOURCES = [[-6, 0.8, -0.38], [6, 0.8, -0.38]];
-const PROJECTOR = { size: [0.75, 0.42, 0.62], center: (s) => [s[0], 0.5 + 0.21, s[2] - 0.31] };
-
-function createLaserMaterial() {
+function createLaserMaterial(sources) {
     return new THREE.ShaderMaterial({
         uniforms: {
             uTime: { value: 0 },
             uColor: { value: new THREE.Color('#39ff14') },
             uLevel: { value: 0 },
-            uSpeed: { value: 1 },
+            uOn: { value: new Array(sources).fill(0) },   // each projector's level (groups, one-by-one)
+            uBeams: { value: PER },                       // beams lit per projector
             uPhase: { value: 0 },
             uChase: { value: 0 },
             uSpread: { value: 1 },
+            uTilt: { value: 0 },
         },
         vertexShader: /* glsl */ `
             attribute float aFan;    // -1..1 position in the fan
-            attribute float aSide;   // -1 left source, 1 right source
+            attribute float aRank;   // 0, 1, 2...: the order beams light from the centre out
+            attribute float aSrc;    // which projector
+            attribute float aTower;  // 1 on a side tower
+            attribute float aLean;   // -1..1: where the projector is across the stage
             uniform float uTime;
-            uniform float uSpeed;
+            uniform float uOn[${'${SOURCES}'}];
+            uniform float uBeams;
             uniform float uPhase;
             uniform float uChase;
             uniform float uSpread;
+            uniform float uTilt;
             varying float vAlong;
             varying float vOn;
             void main() {
                 vAlong = position.z / ${LENGTH.toFixed(1)};
+                float on = 0.0;
+                for (int i = 0; i < ${'${SOURCES}'}; i++) if (float(i) == aSrc) on = uOn[i];
+                // Only the first uBeams beams of each fan (from the centre out)
+                on *= step(aRank, uBeams - 0.5);
                 // Chase: a window of beams runs across each fan, the rest switch off
-                float slot = aFan * 0.5 + 0.5 + (aSide > 0.0 ? 0.5 : 0.0);
-                float on = step(fract(uTime * 1.8 - slot), 0.3);
-                vOn = mix(1.0, on, uChase);
+                float slot = aFan * 0.5 + 0.5 + aSrc * 0.37;
+                on *= mix(1.0, step(fract(uTime * 1.8 - slot), 0.3), uChase);
+                vOn = on;
                 float t = uPhase; // accumulated in JS, so speed changes never make the fan leap
-                // Fan spread over the audience, each source leaning in toward the centre of the room
-                // (+0.1 turns the whole show slightly to the audience's right)
-                float yaw = 0.1 + aFan * 0.38 * uSpread - aSide * 0.18 + sin(t * 0.35 + aSide) * 0.06;
-                // The whole sheet rises well above head height and scans slowly up and down
-                float pitch = 0.42 + sin(t * 0.7 + aSide * 1.3) * 0.14;
+                // Fan spread over the audience, each projector leaning in toward the middle of the room
+                // (the tower ones more), +0.1 turns the whole show slightly to the audience's right
+                float yaw = 0.1 + aFan * 0.38 * uSpread - aLean * mix(0.18, 0.4, aTower) + sin(t * 0.35 + aSrc) * 0.06;
+                // The sheet scans up and down: low enough to sweep the crowd, and the tower projectors,
+                // being high up, travel much further
+                float centre = mix(0.28, 0.12, aTower) + uTilt;
+                float travel = mix(0.3, 0.55, aTower);
+                float pitch = centre + sin(t * 0.7 + aSrc * 1.3) * travel;
                 vec3 p = position;
                 // pitch (around X) then yaw (around Y); beams start along +Z toward the audience
                 p = vec3(p.x, p.y * cos(pitch) + p.z * sin(pitch), -p.y * sin(pitch) + p.z * cos(pitch));
                 p = vec3(p.x * cos(yaw) + p.z * sin(yaw), p.y, -p.x * sin(yaw) + p.z * cos(yaw));
                 gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(p, 1.0);
             }
-        `,
+        `.replaceAll('${SOURCES}', String(sources)),
         fragmentShader: /* glsl */ `
             uniform vec3 uColor;
             uniform float uLevel;
             varying float vAlong;
             varying float vOn;
             void main() {
+                if (vOn < 0.01) discard;
                 float fade = (1.0 - vAlong) * smoothstep(0.0, 0.02, vAlong);
                 gl_FragColor = vec4(uColor * 1.6, fade * uLevel * vOn);
             }
@@ -71,84 +92,142 @@ function createLaserMaterial() {
     });
 }
 
-export default function Lasers({ look, count = 40 }) {
-    const material = useMemo(() => createLaserMaterial(), []);
+export default function Lasers({ look, count = 40, fixtures = 64 }) {
+    const projectors = useMemo(() => laserLayout(fixtures), [fixtures]);
+    const n = projectors.length;
+    const material = useMemo(() => createLaserMaterial(n), [n]);
     const geometry = useMemo(() => {
         const g = new THREE.BoxGeometry(0.035, 0.035, LENGTH);
         g.translate(0, 0, LENGTH / 2);
-        const fan = new Float32Array(MAX_LASERS);
-        const side = new Float32Array(MAX_LASERS);
-        const perSide = MAX_LASERS / 2;
-        // Alternate sources so any count is balanced; within a fan, light from the centre out,
-        // so a small laserAmount gives the centre one or two beams
-        const reach = Math.ceil((perSide - 1) / 2) || 1;
-        for (let i = 0; i < MAX_LASERS; i++) {
-            side[i] = i % 2 ? 1 : -1;
-            const k = Math.floor(i / 2);
-            const slot = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2);
-            fan[i] = slot / reach;
+        const total = n * PER;
+        const attr = { aFan: new Float32Array(total), aRank: new Float32Array(total), aSrc: new Float32Array(total), aTower: new Float32Array(total), aLean: new Float32Array(total) };
+        // Within a fan, beams light from the centre out, so a few beams sit in the middle
+        const reach = Math.ceil((PER - 1) / 2) || 1;
+        for (let s = 0; s < n; s++) {
+            for (let k = 0; k < PER; k++) {
+                const i = s * PER + k;
+                const slot = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2);
+                attr.aFan[i] = slot / reach;
+                attr.aRank[i] = k;
+                attr.aSrc[i] = s;
+                attr.aTower[i] = projectors[s].tower;
+                attr.aLean[i] = Math.max(-1, Math.min(1, projectors[s].pos[0] / 12));
+            }
         }
-        g.setAttribute('aFan', new THREE.InstancedBufferAttribute(fan, 1));
-        g.setAttribute('aSide', new THREE.InstancedBufferAttribute(side, 1));
+        for (const [name, values] of Object.entries(attr)) g.setAttribute(name, new THREE.InstancedBufferAttribute(values, 1));
         return g;
-    }, []);
+    }, [n, projectors]);
     useEffect(() => () => {
         geometry.dispose();
         material.dispose();
     }, [geometry, material]);
 
-    const mesh = useRef();
-    // One material for both apertures, so both glow in the laser colour
-    const apertureMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: '#39ff14', toneMapped: false }), []);
-    useEffect(() => () => apertureMaterial.dispose(), [apertureMaterial]);
-    const color = useRef({ hex: null, target: new THREE.Color() });
+    // The projectors themselves: housings, glowing apertures, and the rods clamping the tower ones on
+    const parts = useMemo(() => {
+        const housing = new THREE.BoxGeometry(...HOUSING);
+        const aperture = new THREE.CircleGeometry(0.07, 20);
+        const rod = new THREE.CylinderGeometry(0.035, 0.035, 0.42, 8).rotateZ(Math.PI / 2);
+        const housingMat = new THREE.MeshLambertMaterial({ color: '#1c1f27' });
+        const apertureMat = new THREE.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
+        const rodMat = new THREE.MeshLambertMaterial({ color: '#565c69' });
+        return { housing, aperture, rod, housingMat, apertureMat, rodMat };
+    }, []);
+    useEffect(() => () => Object.values(parts).forEach((p) => p.dispose()), [parts]);
 
+    const mesh = useRef();
+    const housings = useRef();
+    const apertures = useRef();
+    const rods = useRef();
+    const towers = projectors.filter((p) => p.tower);
     useEffect(() => {
         const m = new THREE.Matrix4();
-        for (let i = 0; i < MAX_LASERS; i++) mesh.current.setMatrixAt(i, m.makeTranslation(...SOURCES[i % 2]));
-        mesh.current.instanceMatrix.needsUpdate = true;
-    }, []);
+        projectors.forEach((p, s) => {
+            for (let k = 0; k < PER; k++) mesh.current.setMatrixAt(s * PER + k, m.makeTranslation(...p.pos));
+            // the housing sits behind its aperture (and on the deck for the floor ones)
+            housings.current.setMatrixAt(s, m.makeTranslation(p.pos[0], p.tower ? p.pos[1] : 0.5 + HOUSING[1] / 2, p.pos[2] - HOUSING[2] / 2));
+            apertures.current.setMatrixAt(s, m.makeTranslation(p.pos[0], p.pos[1], p.pos[2] + 0.005));
+            apertures.current.setColorAt(s, new THREE.Color(0, 0, 0));
+        });
+        // each tower projector hangs off the column on a rod
+        towers.forEach((p, i) => rods.current.setMatrixAt(i, m.makeTranslation(p.pos[0] + p.side * (HOUSING[0] / 2 + 0.2), p.pos[1], p.pos[2] - HOUSING[2] / 2)));
+        for (const r of [mesh, housings, apertures, rods]) r.current.instanceMatrix.needsUpdate = true;
+    }, [projectors, towers]);
 
-    useFrame((_, delta) => {
+    // Live state: each projector's on/off (with the one-by-one queue), and the beam count
+    const state = useRef({ on: new Array(n).fill(false), at: new Array(n).fill(null), level: new Array(n).fill(0), beams: PER, lastPulse: 0, sinceBeat: 0, hex: null, color: new THREE.Color() });
+    const apertureColor = useRef(new THREE.Color());
+
+    useFrame(({ clock }, delta) => {
         if (!mesh.current) return;
         const target = look.current;
+        const st = state.current;
         const u = mesh.current.material.uniforms;
+        const now = clock.elapsedTime;
         const ease = 1 - Math.exp(-Math.min(delta, 0.1) * 5);
-        if (target.laserColor !== color.current.hex) {
-            color.current.hex = target.laserColor;
-            color.current.target.set(target.laserColor);
+        if (target.laserColor !== st.hex) { st.hex = target.laserColor; st.color.set(target.laserColor); }
+        const master = target.master ?? 1;
+        const laser = (target.laser ?? 0) * master;
+
+        // Which projectors should be on; new ones join one by one, left to right
+        const step = (target.laserSeq ?? 1) > 0.5 ? 0.14 : 0;
+        let queued = 0;
+        projectors.forEach((p, s) => {
+            const want = laser > 0.02 && (p.tower ? target.laserTower ?? 1 : target.laserFloor ?? 1) > 0.5;
+            if (!want) { st.on[s] = false; st.at[s] = null; return; }
+            if (st.on[s]) return;
+            if (st.at[s] === null) st.at[s] = now + (queued++) * step;
+            if (now >= st.at[s]) st.on[s] = true;
+        });
+        // a quick ramp so each projector snaps on (and off) like the real thing
+        const snap = 1 - Math.exp(-Math.min(delta, 0.1) * 25);
+        for (let s = 0; s < n; s++) {
+            st.level[s] += ((st.on[s] ? 1 : 0) - st.level[s]) * snap;
+            u.uOn.value[s] = st.level[s];
         }
-        u.uTime.value += delta;
-        u.uSpeed.value += (0.4 + (target.speed ?? 1) * 0.5 - u.uSpeed.value) * ease;
-        u.uPhase.value += delta * u.uSpeed.value;
+
+        // Beams per projector: follow laserAmount, or a random count picked on every beat
+        const most = Math.max(1, Math.min(PER, Math.round(count / n)));
+        if ((target.laserCount ?? 0) > 0.5) {
+            const pulse = target.pulse ?? 0;
+            st.sinceBeat += delta;
+            // a beat is the pulse jumping up; without one (the desk) change every half second
+            const beat = pulse > 0.6 && st.lastPulse < 0.4 ? true : st.sinceBeat > 0.5 && pulse === 0;
+            st.lastPulse = pulse;
+            if (beat) {
+                st.sinceBeat = 0;
+                const options = COUNTS.filter((c) => c <= most && c !== st.beams);
+                if (options.length) st.beams = options[Math.floor(Math.random() * options.length)];
+            }
+        } else {
+            st.beams = Math.max(1, Math.round(most * (target.laserAmount ?? 1)));
+        }
+        u.uBeams.value = Math.min(st.beams, most);
+
+        u.uTime.value = now;
+        u.uPhase.value += delta * (0.4 + (target.speed ?? 1) * 0.5);
         u.uChase.value = target.laserChase ?? 0;
         u.uSpread.value += ((target.laserSpread ?? 1) - u.uSpread.value) * ease;
-        u.uColor.value.lerp(color.current.target, ease);
-        const wanted = (target.laser ?? 0) * (target.master ?? 1) * (1 + (target.pulse ?? 0) * 0.5);
+        u.uTilt.value += ((target.laserTilt ?? 0) - u.uTilt.value) * ease;
+        u.uColor.value.lerp(st.color, ease);
+        const wanted = laser * (1 + (target.pulse ?? 0) * 0.5);
         u.uLevel.value += (wanted - u.uLevel.value) * ease;
-        // The projector's aperture glows in the laser colour while it fires
-        apertureMaterial.color.copy(u.uColor.value).multiplyScalar(0.15 + u.uLevel.value * 2);
-        // Skip the beams' draw call entirely while the lasers are off
-        mesh.current.visible = u.uLevel.value > 0.01;
-        const lit = Math.min(count, MAX_LASERS) * (target.laserAmount ?? 1);
-        mesh.current.count = Math.max(2, Math.round(lit / 2) * 2); // whole pairs: one per projector
+        // Each aperture glows in the laser colour while its projector fires
+        const glow = apertureColor.current;
+        projectors.forEach((_, s) => {
+            glow.copy(u.uColor.value).multiplyScalar(0.15 + st.level[s] * u.uLevel.value * 2);
+            apertures.current.setColorAt(s, glow);
+        });
+        if (apertures.current.instanceColor) apertures.current.instanceColor.needsUpdate = true;
+        // Skip the beams' draw call entirely while every projector is off
+        mesh.current.visible = u.uLevel.value > 0.01 && st.level.some((l) => l > 0.01);
     });
 
     return (
         <group>
-            <instancedMesh ref={mesh} args={[geometry, material, MAX_LASERS]} frustumCulled={false} />
-            {/* The projectors themselves: a housing with a glowing aperture where the beams leave */}
-            {SOURCES.map((src) => (
-                <group key={src[0]}>
-                    <mesh position={PROJECTOR.center(src)}>
-                        <boxGeometry args={PROJECTOR.size} />
-                        <meshLambertMaterial color="#1c1f27" />
-                    </mesh>
-                    <mesh position={[src[0], src[1], src[2] + 0.005]} material={apertureMaterial}>
-                        <circleGeometry args={[0.07, 20]} />
-                    </mesh>
-                </group>
-            ))}
+            <instancedMesh ref={mesh} args={[geometry, material, n * PER]} frustumCulled={false} />
+            <instancedMesh ref={housings} args={[parts.housing, parts.housingMat, n]} frustumCulled={false} />
+            <instancedMesh ref={apertures} args={[parts.aperture, parts.apertureMat, n]} frustumCulled={false} />
+            <instancedMesh ref={rods} args={[parts.rod, parts.rodMat, towers.length]} frustumCulled={false} />
         </group>
     );
 }

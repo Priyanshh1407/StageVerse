@@ -36,6 +36,32 @@ function faceOf(geometry) {
     return { w: max[0] - min[0], h: max[1] - min[1], cx: (min[0] + max[0]) / 2, cy: (min[1] + max[1]) / 2, z: max[2] };
 }
 
+// Random strobes (look.strobeRandom): every change (strobeRandomRate per second) a random share of
+// the panels lights up as a coloured box in one of the show's two colours. Same maths in the panel
+// and its glow, keyed by each strobe's seed, so a panel and its glow always agree.
+const RANDOM_GLSL = /* glsl */ `
+    uniform float uTime;
+    uniform float uRand;
+    uniform float uRandRate;
+    uniform vec3 uColorA;
+    uniform vec3 uColorB;
+    float randomLit(float seed) {
+        float slot = floor(uTime * uRandRate);
+        return step(fract(sin(seed * 91.7 + slot * 12.9898) * 43758.5453), uRand);
+    }
+    vec3 randomColor(float seed) {
+        float slot = floor(uTime * uRandRate);
+        return fract(sin(seed * 17.3 + slot * 4.1414) * 24634.6345) < 0.5 ? uColorA : uColorB;
+    }
+`;
+const randomUniforms = () => ({
+    uTime: { value: 0 },
+    uRand: { value: 0 },
+    uRandRate: { value: 2 },
+    uColorA: { value: new THREE.Color('#19d9ff') },
+    uColorB: { value: new THREE.Color('#ff3df2') },
+});
+
 function createGlowMaterial(face) {
     return new THREE.ShaderMaterial({
         uniforms: {
@@ -43,11 +69,15 @@ function createGlowMaterial(face) {
             uColor: { value: new THREE.Color('#ffeedd') },
             uHalf: { value: new THREE.Vector2(face.w / 2, face.h / 2) },
             uQuad: { value: new THREE.Vector2(face.w / 2 + GLOW_SPREAD, face.h / 2 + GLOW_SPREAD) },
+            ...randomUniforms(),
         },
         vertexShader: /* glsl */ `
+            attribute float aSeed;
             varying vec2 vUv;
+            varying float vSeed;
             void main() {
                 vUv = uv;
+                vSeed = aSeed;
                 gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(position, 1.0);
             }
         `,
@@ -57,12 +87,17 @@ function createGlowMaterial(face) {
             uniform vec2 uHalf;
             uniform vec2 uQuad;
             varying vec2 vUv;
+            varying float vSeed;
+            ${RANDOM_GLSL}
             void main() {
                 vec2 p = (vUv - 0.5) * 2.0 * uQuad;                 // metres from the panel's centre
                 float d = length(max(abs(p) - uHalf, 0.0));          // 0 on the face, distance outside it
                 float face = 1.0 - smoothstep(0.0, 0.04, d);         // the whole face, evenly lit
                 float flood = exp(-d * 3.2) * (1.0 - smoothstep(0.63, 0.9, d));
-                gl_FragColor = vec4(uColor, (face * 1.2 + flood * 0.7) * uLevel);
+                // White flash (blinders, strobes), or a softer coloured glow from a random strobe
+                float rnd = randomLit(vSeed) * 0.28 * (1.0 - min(uLevel, 1.0));
+                vec3 color = uLevel + rnd > 0.0 ? (uColor * uLevel + randomColor(vSeed) * rnd) / (uLevel + rnd) : uColor;
+                gl_FragColor = vec4(color, (face * 1.2 + flood * 0.7) * (uLevel + rnd));
             }
         `,
         transparent: true,
@@ -128,16 +163,19 @@ function bakeStrobe(scene) {
 
 function createStrobeMaterial() {
     return new THREE.ShaderMaterial({
-        uniforms: { uFlash: { value: 0 }, uTint: { value: new THREE.Color('#19d9ff') }, uFlashColor: { value: new THREE.Color('#fff8ee') } },
+        uniforms: { uFlash: { value: 0 }, uTint: { value: new THREE.Color('#19d9ff') }, uFlashColor: { value: new THREE.Color('#fff8ee') }, ...randomUniforms() },
         vertexShader: /* glsl */ `
             attribute float aFlash;
+            attribute float aSeed;
             varying vec3 vColor;
             varying float vFlashFace;
             varying vec3 vNormalW;
+            varying float vSeed;
             void main() {
                 vColor = color;
                 vFlashFace = aFlash;
-                vNormalW = mat3(modelMatrix) * normal;
+                vSeed = aSeed;
+                vNormalW = mat3(modelMatrix) * mat3(instanceMatrix) * normal;
                 gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(position, 1.0);
             }
         `,
@@ -148,6 +186,8 @@ function createStrobeMaterial() {
             varying vec3 vColor;
             varying float vFlashFace;
             varying vec3 vNormalW;
+            varying float vSeed;
+            ${RANDOM_GLSL}
             void main() {
                 float l = length(vNormalW);
                 vec3 n = l > 1e-6 ? vNormalW / l : vec3(0.0, 0.0, 1.0); // the model has some zero normals
@@ -157,6 +197,8 @@ function createStrobeMaterial() {
                 vec3 body = (max(vColor, vec3(0.09)) * fill + uTint * (max(0.0, -n.y) * 0.1 + edge * 0.08));
                 // Off: grey frosted panel catching a little rig colour. Firing: blinding white.
                 vec3 face = mix(vec3(0.16) + uTint * 0.08, uFlashColor * 7.0, uFlash);
+                // A random strobe: a coloured box, far softer than the white flash
+                face += randomColor(vSeed) * 2.2 * randomLit(vSeed) * (1.0 - uFlash);
                 gl_FragColor = vec4(mix(body, face, vFlashFace), 1.0);
             }
         `,
@@ -188,23 +230,35 @@ export default function Strobes({ count, look, blinders = 8 }) {
         glowMaterial.dispose();
         glowGeometry.dispose();
     }, [geometry, material, glowMaterial, glowGeometry]);
+    // A random seed per strobe (for the random coloured strobes), on the panel and its glow
+    useMemo(() => {
+        const seeds = new Float32Array(positions.map((_, i) => (i * 0.6180339 + 0.137) % 1));
+        geometry.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seeds, 1));
+        glowGeometry.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seeds.slice(), 1));
+    }, [positions, geometry, glowGeometry]);
+    // Truss strobes hang under the tube (lifted to the model's real height); tower strobes stand on end
+    const placement = useMemo(() => positions.map(([x, y, z, rot = 0]) => {
+        const m = new THREE.Matrix4().makeRotationZ(rot);
+        m.setPosition(x, rot ? y : y + lift, z);
+        return m;
+    }), [positions, lift]);
     const glow = useRef();
     // each panel's light sits just in front of its face
     useLayoutEffect(() => {
         if (!glow.current) return;
-        const m = new THREE.Matrix4();
-        positions.forEach(([x, y, z], i) => glow.current.setMatrixAt(i, m.makeTranslation(x + face.cx, y + lift + face.cy, z + face.z + 0.02)));
+        const offset = new THREE.Matrix4().makeTranslation(face.cx, face.cy, face.z + 0.02);
+        placement.forEach((m, i) => glow.current.setMatrixAt(i, m.clone().multiply(offset)));
         glow.current.instanceMatrix.needsUpdate = true;
-    }, [positions, face, lift]);
+    }, [placement, face]);
     const flashColor = useRef(new THREE.Color());
     const strobeColor = useRef(new THREE.Color());
 
     const mesh = useRef();
     useLayoutEffect(() => {
-        const m = new THREE.Matrix4();
-        positions.forEach(([x, y, z], i) => mesh.current.setMatrixAt(i, m.makeTranslation(x, y + lift, z)));
+        placement.forEach((m, i) => mesh.current.setMatrixAt(i, m));
         mesh.current.instanceMatrix.needsUpdate = true;
-    }, [positions, lift]);
+    }, [placement]);
+    const colors = useRef({ a: new THREE.Color(), b: new THREE.Color() });
 
     useFrame(({ clock }) => {
         if (!mesh.current) return;
@@ -221,12 +275,23 @@ export default function Strobes({ count, look, blinders = 8 }) {
         const share = blinder + strobe > 0 ? blinder / (blinder + strobe) : 0;
         flashColor.current.copy(strobeColor.current).lerp(BLINDER_WHITE, share);
         u.uFlashColor.value.copy(flashColor.current);
+        // Random coloured strobes: share lit, how often they change, in the show's two colours
+        const rand = (target.strobeRandom ?? 0) * (target.master ?? 1);
+        colors.current.a.set(target.colorA);
+        colors.current.b.set(target.colorB);
+        for (const uu of [u, glow.current?.material.uniforms].filter(Boolean)) {
+            uu.uTime.value = clock.elapsedTime;
+            uu.uRand.value = rand;
+            uu.uRandRate.value = target.strobeRandomRate ?? 2;
+            uu.uColorA.value.copy(colors.current.a);
+            uu.uColorB.value.copy(colors.current.b);
+        }
         // The flood of light round each panel
         if (glow.current) {
             const level = Math.max(Math.min(f.blinder, 1.5), f.strobe) * (GLOW_TOTAL / Math.max(8, positions.length));
             glow.current.material.uniforms.uLevel.value = level;
             glow.current.material.uniforms.uColor.value.copy(flashColor.current);
-            glow.current.visible = level > 0.01;
+            glow.current.visible = level > 0.01 || rand > 0.01;
         }
     });
 
