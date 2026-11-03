@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_LOOK, mixHex, mixLooks } from '@/lib/show/look';
 import { resolveCueSheet, sampleCueSheet, prepareSongShow, sampleSongShow, cueIndexAt } from '@/lib/show/timeline';
 import { analyseSong, fft, estimateTempo, trackBeats, onsetEnvelope, frameFeatures } from '@/lib/show/analysis';
-import { programShow, buildIdleShow } from '@/lib/show/program';
+import { programShow, buildIdleShow, pixelLook } from '@/lib/show/program';
 import { SHOTS } from '@/lib/show/shots';
 
 // A synthetic track: a kick on every beat (louder on beat 1 of each bar), a hi-hat on the
@@ -299,6 +299,17 @@ describe('programming rules (concert-style)', () => {
         expect(washes.look.beams + washes.look.sides).toBe(0);
     });
 
+    it('LED bars: off when one group plays alone, otherwise patterned by section', () => {
+        expect(pixelLook('calm', 0, { wash: 1 }).pixel).toBe(0);                    // washes alone
+        expect(pixelLook('peak', 0, { beams: 1, sides: 1 }).pixel).toBe(1);
+        expect(pixelLook('calm', 0, { wash: 1, sides: 1 }).pixel).toBeLessThan(0.6); // calm: dim
+        const peakPatterns = new Set([0, 1, 2, 3].map((k) => JSON.stringify(pixelLook('peak', k, { beams: 1, wash: 1 }))));
+        expect(peakPatterns.size).toBe(4);                                          // patterns rotate
+        const one = pixelLook('calm', 0, { wash: 1, sides: 1 });
+        expect([0, 1]).toContain(one.pixelColor);                                   // calm: a single colour
+        expect(pixelLook('groove', 0, { beams: 1, wash: 1 }).pixelColor).toBe(0.5); // groove: both colours
+    });
+
     it('every song gives each fixture type a solo: side towers, aerial beams, floor, washes, lasers', () => {
         const beats240 = Array.from({ length: 120 * 4 }, (_, i) => i * 0.5);
         const long = programShow({ ...analysis, beats: beats240, downbeats: beats240.map((_, i) => i).filter((i) => i % 4 === 0), duration: 240, sections: [sec(0, 8, 'intro'), sec(16, 16, 'calm'), sec(48, 16, 'groove'), sec(80, 8, 'build'), sec(96, 32, 'peak'), sec(160, 16, 'groove'), sec(192, 16, 'peak'), sec(224, 8, 'outro')] });
@@ -307,6 +318,7 @@ describe('programming rules (concert-style)', () => {
         for (const solo of solos) {
             const lit = ['beams', 'sides', 'floor', 'wash', 'laser'].filter((k) => (solo.look[k] ?? 0) > 0);
             expect(lit).toHaveLength(1);
+            expect(solo.look.pixel).toBe(0); // the LED bars stay out of a solo
             expect(solo.look.intensity).toBeGreaterThanOrEqual(1.3);
             // nothing but the washes' own bar changes fires during its 4 bars (8 s here)
             const inside = long.cues.filter((c) => c.t > solo.t && c.t < solo.t + 8 - 0.01);

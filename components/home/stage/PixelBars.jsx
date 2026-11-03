@@ -27,6 +27,11 @@ function createBarMaterial() {
             uLevel: { value: 0 },
             uSpeed: { value: 1 },
             uPulse: { value: 0 },
+            // Patterns (see look.js): colour 0 = A, 1 = B, 0.5 = both; chase; sparkle; alternate trusses
+            uColorMode: { value: 0.5 },
+            uChase: { value: 1 },
+            uSparkle: { value: 0 },
+            uAlt: { value: 0 },
         },
         vertexShader: /* glsl */ `
             attribute float aPhase;
@@ -45,6 +50,10 @@ function createBarMaterial() {
             uniform float uLevel;
             uniform float uSpeed;
             uniform float uPulse;
+            uniform float uColorMode;
+            uniform float uChase;
+            uniform float uSparkle;
+            uniform float uAlt;
             varying float vX;
             varying float vPhase;
             void main() {
@@ -54,10 +63,18 @@ function createBarMaterial() {
                 // A soft chase running along the bar (each bar offset, so they don't move in lockstep)
                 // and the two show colours in long bands drifting the other way
                 float t = uTime * (0.6 + 0.6 * uSpeed);
+                float row = floor(vPhase / 2.0);                 // which truss (two bars each)
                 float chase = 0.5 + 0.5 * sin(px * 22.0 - t * 2.4 + vPhase * 1.7);
                 float band = smoothstep(0.35, 0.65, 0.5 + 0.5 * sin(px * 7.0 + t * 0.8 + vPhase));
-                vec3 color = mix(uColorA, uColorB, band);
-                float brightness = uLevel * (0.25 + 0.75 * chase * chase) * (1.0 + uPulse * 0.6);
+                // Colour: one colour (A or B), both in drifting bands, or trusses alternating
+                float both = 1.0 - abs(uColorMode * 2.0 - 1.0);
+                vec3 color = mix(mix(uColorA, uColorB, uColorMode), mix(uColorA, uColorB, band), both);
+                color = mix(color, mix(uColorA, uColorB, mod(row, 2.0)), uAlt);
+                // Brightness: steady, or a chase; sparkle flashes random pixels a few times a second
+                float brightness = mix(1.0, 0.25 + 0.75 * chase * chase, uChase);
+                float flash = step(0.78, fract(sin(dot(vec2(px * 157.0 + row * 31.0, floor(uTime * 6.0)), vec2(12.9898, 78.233))) * 43758.5453));
+                brightness = mix(brightness, brightness * 0.15 + flash * 1.4, uSparkle);
+                brightness *= uLevel * (1.0 + uPulse * 0.6);
                 vec3 body = vec3(0.025, 0.027, 0.035);           // the bar's housing when it's dark
                 gl_FragColor = vec4(body + color * brightness * lit * 1.8, 1.0);
             }
@@ -102,6 +119,11 @@ export default function PixelBars({ look }) {
         u.uLevel.value += (level - u.uLevel.value) * ease;
         u.uSpeed.value = target.speed ?? 1;
         u.uPulse.value = target.pulse ?? 0;
+        // Patterns glide from one to the next with the cue's fade
+        u.uColorMode.value += ((target.pixelColor ?? 0.5) - u.uColorMode.value) * ease;
+        u.uChase.value += ((target.pixelChase ?? 1) - u.uChase.value) * ease;
+        u.uSparkle.value += ((target.pixelSparkle ?? 0) - u.uSparkle.value) * ease;
+        u.uAlt.value += ((target.pixelAlt ?? 0) - u.uAlt.value) * ease;
     });
 
     return <instancedMesh ref={mesh} args={[geometry, material, BARS.length]} frustumCulled={false} />;
