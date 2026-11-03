@@ -7,6 +7,7 @@ import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
 import Fixtures from './Fixtures';
 import Strobes from './Strobes';
 import LedWall from './LedWall';
+import PixelBars from './PixelBars';
 import Lasers from './Lasers';
 import Blinders from './Blinders';
 import Haze from './Haze';
@@ -23,7 +24,7 @@ import { roomFlash } from './flash';
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 = 31, plus lasers, blinders and house lights (1 each, skipped while off) and bloom.
+ * + haze 3 + pixel bars 1 = 32, plus lasers, blinders and house lights (1 each, skipped while off) and bloom.
  */
 
 /**
@@ -155,6 +156,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             </mesh>
 
             <LedWall look={look} events={events} screen={screen} font={font} />
+            <PixelBars look={look} />
             <Venue look={look} font={font} />
             {/* Fixture models stream in; the rest of the stage shows meanwhile */}
             <Suspense fallback={null}>

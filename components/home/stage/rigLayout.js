@@ -25,18 +25,18 @@ const TOWARD_STAGE = Math.PI;
 
 export const GROUPS = [
     // Row 1: aerials hanging upside down under the highest truss, beams out over the audience
-    { name: 'topFan', role: 'aerial', mount: 'hanging', share: 0.2, layout: { y: ROWS[0].y - UNDER, z: ROWS[0].z, width: 28 }, tilt: 1.3, panSpread: 1.3 },
+    { name: 'topFan', role: 'aerial', mount: 'hanging', share: 0.18, layout: { y: ROWS[0].y - UNDER, z: ROWS[0].z, width: 28 }, tilt: 1.3, panSpread: 1.3 },
     // Clamped sideways to the inner face of each tower box's rear column, crossing over the stage:
     // the left tower's beams go to the right and the right tower's to the left (look.sidesAim
     // swings them further across, or back out toward the audience)
-    { name: 'sideTowers', role: 'sides', mount: 'side', share: 0.18, layout: { towers: true, x: 15.6 - UNDER, z: TOWER_REAR_Z, yFrom: 2.5, yTo: 11 }, tilt: 1.72, pan: 0.85 },
+    { name: 'sideTowers', role: 'sides', mount: 'side', share: 0.16, layout: { towers: true, x: 15.6 - UNDER, z: TOWER_REAR_Z, yFrom: 2.5, yTo: 11 }, tilt: 1.72, pan: 0.85 },
     // Rows 2 and 3: washes hanging underneath, pointed down onto the stage
-    { name: 'washFront', role: 'wash', mount: 'hanging', share: 0.12, layout: { y: ROWS[1].y - UNDER, z: ROWS[1].z, width: 22 }, tilt: 0.35, facing: TOWARD_STAGE, panSpread: 0.4 },
-    { name: 'washMid', role: 'wash', mount: 'hanging', share: 0.12, layout: { y: ROWS[2].y - UNDER, z: ROWS[2].z, width: 22 }, tilt: 0.15, facing: TOWARD_STAGE, panSpread: 0.3 },
+    { name: 'washFront', role: 'wash', mount: 'hanging', share: 0.16, layout: { y: ROWS[1].y - UNDER, z: ROWS[1].z, width: 22 }, tilt: 0.35, facing: TOWARD_STAGE, panSpread: 0.4 },
+    { name: 'washMid', role: 'wash', mount: 'hanging', share: 0.16, layout: { y: ROWS[2].y - UNDER, z: ROWS[2].z, width: 22 }, tilt: 0.15, facing: TOWARD_STAGE, panSpread: 0.3 },
     // Row 4: aerials hanging under the lowest truss (above the LED wall), neighbours crossing
-    { name: 'lowFan', role: 'aerial', mount: 'hanging', share: 0.18, layout: { rows: [ROWS[3].y - UNDER], z: ROWS[3].z, width: 28 }, tilt: 1.42, cross: 0.35 },
+    { name: 'lowFan', role: 'aerial', mount: 'hanging', share: 0.16, layout: { rows: [ROWS[3].y - UNDER], z: ROWS[3].z, width: 28 }, tilt: 1.42, cross: 0.35 },
     // Standing on the front of the deck, firing up
-    { name: 'floor', role: 'floor', mount: 'standing', share: 0.2, layout: { y: 0.53, z: -0.6, width: 24 }, tilt: 2.4, panSpread: 1.0 },
+    { name: 'floor', role: 'floor', mount: 'standing', share: 0.18, layout: { y: 0.53, z: -0.6, width: 24 }, tilt: 2.4, panSpread: 1.0 },
 ];
 
 const spread = (i, n, width) => (n === 1 ? 0 : -width / 2 + (width * i) / (n - 1));
@@ -95,6 +95,10 @@ export function rigLayout(count) {
     const sizes = GROUPS.map((g) => Math.max(1, Math.floor(total * g.share)));
     // Give any rounding remainder to the groups in order, so sizes always sum to `total`
     for (let i = 0; sizes.reduce((a, b) => a + b, 0) < total; i = (i + 1) % GROUPS.length) sizes[i]++;
+    // The side towers are mirrored left and right, so they take an even number (the spare one goes to the floor row)
+    const sides = GROUPS.findIndex((g) => g.name === 'sideTowers');
+    const floor = GROUPS.findIndex((g) => g.name === 'floor');
+    if (sizes[sides] % 2 && sizes[sides] > 1) { sizes[sides]--; sizes[floor]++; }
     return GROUPS.flatMap((g, gi) => placeGroup(g, sizes[gi], gi));
 }
 

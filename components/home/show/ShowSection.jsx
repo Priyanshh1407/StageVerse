@@ -12,6 +12,7 @@ import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, sto
 import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
 import BiggerScreenNotice from './BiggerScreenNotice';
+import { BEAM_COUNTS } from '@/components/home/stage/useQualityTier';
 
 // The 3D stage is client-only and loads after the page (the headline below is plain HTML)
 const ShowStage = dynamic(() => import('./ShowStage'), { ssr: false });
@@ -236,7 +237,7 @@ function ShowExperience({ events = [], isPhone = false }) {
         c.mode = 'manual';
         setMode('manual');
         setDesk(c.desk);
-        setCounts((n) => ({ ...n, beams: n.beams ?? 52 }));
+        setCounts((n) => ({ ...n, beams: n.beams ?? BEAM_COUNTS[0] }));
     };
 
     const changeDesk = (patch) => {
@@ -366,7 +367,7 @@ function ShowExperience({ events = [], isPhone = false }) {
 
     const now = song.current;
     const songSection = now?.sections.find((s) => song.time >= s.start && song.time < s.end);
-    const deskCounts = { ...counts, beams: counts.beams ?? 52 };
+    const deskCounts = { ...counts, beams: counts.beams ?? BEAM_COUNTS[0] };
     const showOverlays = mode !== 'song';
     // The lighting desk offers the first demo song
     const firstDemo = song.demos[0];

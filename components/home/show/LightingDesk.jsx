@@ -105,9 +105,9 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 <Slider label="Intensity" value={desk.intensity} min={0} max={2} step={0.05} onChange={(v) => set({ intensity: v })} />
             </Section>
 
-            <Section icon={Sun} title="Moving heads">
+            <Section icon={Sun} title="Fixtures">
                 <div className="grid grid-cols-2 gap-1.5">
-                    {[['beams', 'Aerial beams'], ['sides', 'Side towers'], ['floor', 'Floor'], ['wash', 'Stage wash']].map(([key, label]) => (
+                    {[['beams', 'Aerial beams'], ['sides', 'Side towers'], ['floor', 'Floor'], ['wash', 'Stage wash'], ['pixel', 'LED bars']].map(([key, label]) => (
                         <button key={key} onClick={() => set({ [key]: desk[key] > 0.05 ? 0 : 1 })} aria-pressed={desk[key] > 0.05}
                             className={`py-1.5 rounded-md text-[11px] font-bold ${desk[key] > 0.05 ? 'bg-cyan-400 text-black' : 'bg-white/10 text-gray-400'}`}>
                             {label}

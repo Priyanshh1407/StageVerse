@@ -3,6 +3,16 @@ import { rigLayout, strobeLayout, GROUPS, STROBE_DROP } from '@/components/home/
 import { ROWS } from '@/components/home/stage/trussGeometry';
 
 describe('rigLayout', () => {
+    it('fills the wash rows (trusses 2 and 3) about as fully as the aerial rows', () => {
+        const count = (n, group) => rigLayout(n).filter((f) => f.group === group).length;
+        for (const n of [64, 96]) {
+            for (const wash of ['washFront', 'washMid']) expect(count(n, wash)).toBeGreaterThanOrEqual(count(n, 'lowFan') - 1);
+        }
+        expect(count(64, 'washFront')).toBeGreaterThanOrEqual(10);
+        expect(GROUPS.reduce((sum, g) => sum + g.share, 0)).toBeCloseTo(1);
+    });
+
+
     it.each([6, 28, 52, 72, 140])('places exactly %i fixtures, every group represented', (count) => {
         const fixtures = rigLayout(count);
         expect(fixtures).toHaveLength(count);
