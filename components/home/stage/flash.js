@@ -5,6 +5,10 @@
 const RATE = 12.5; // strobe flashes per second
 const DUTY = 0.3;  // fraction of each cycle the flash is on
 const REFERENCE_BLINDERS = 8;
+// Overall brightness of strobe and blinder hits (1 was the original; toned down after feedback that
+// they were too bright). Everything that flashes reads it from here: the strobe faces, the blinders,
+// the room (steel, floor, haze) and the camera's white-out.
+const FLASH_BRIGHTNESS = 0.75;
 
 /** Is a strobe flash on at time t (seconds, the R3F clock)? */
 export const strobeGate = (t) => ((t * RATE) % 1 < DUTY ? 1 : 0);
@@ -15,7 +19,7 @@ export const strobeGate = (t) => ((t * RATE) % 1 < DUTY ? 1 : 0);
  */
 export function roomFlash(look, t, blinderCount = REFERENCE_BLINDERS) {
     const master = look.master ?? 1;
-    const strobe = (look.strobe ?? 0) * strobeGate(t) * master;
-    const blinder = (look.blinder ?? 0) * master * Math.min(2.5, blinderCount / REFERENCE_BLINDERS);
+    const strobe = (look.strobe ?? 0) * strobeGate(t) * master * FLASH_BRIGHTNESS;
+    const blinder = (look.blinder ?? 0) * master * Math.min(2.5, blinderCount / REFERENCE_BLINDERS) * FLASH_BRIGHTNESS;
     return { strobe, blinder, total: Math.min(2.2, strobe + blinder * 0.8) };
 }

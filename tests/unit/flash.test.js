@@ -25,4 +25,9 @@ describe('room flash (strobes and blinders light the whole room)', () => {
         expect(many).toBeGreaterThan(reference * 2);
         expect(roomFlash(look, 0, 1000).total).toBeLessThanOrEqual(2.2);
     });
+
+    it('strobe and blinder hits are toned down to 75% of full brightness', () => {
+        expect(roomFlash({ strobe: 1 }, 0).strobe).toBeCloseTo(0.75); // t = 0: the strobe is in its on phase
+        expect(roomFlash({ blinder: 1 }, 0).blinder).toBeCloseTo(0.75); // 8 blinders, the reference count
+    });
 });
