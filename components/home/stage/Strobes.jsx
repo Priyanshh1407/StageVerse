@@ -12,32 +12,57 @@ export const STROBE_URL = '/fixtures/strobe.glb';
 const FLASH_MATERIALS = new Set(['laser_rojo', 'L201']); // the front panel and the lamp tube
 const WIDTH = 1.5; // metres across, like a large LED strobe (scaled up to read from the audience)
 const BLINDER_WHITE = new THREE.Color('#ffeedd'); // blinder hits: warm white (strobe hits use look.strobeColor)
-// The glow round each firing strobe: a big soft flood of light, so the room flash reads as coming
-// from the boxes. Its total brightness matches the old separate blinder lamps (8 of them at 1.8x),
-// shared across however many strobes there are.
-const GLOW_SIZE = 1500;
+// The light of each firing strobe, shaped like its panel: the whole rectangular face lit evenly,
+// with a soft flood fading out from its edges, so the room flash reads as coming from the boxes.
+// Its total brightness matches the old separate blinder lamps (8 of them at 1.8x), shared across
+// however many strobes there are.
 const GLOW_TOTAL = 8 * 1.8;
+const GLOW_SPREAD = 0.9; // metres the flood reaches beyond the panel's edges
 
-function createGlowMaterial() {
+/** The panel's lit face (where aFlash = 1): its size and centre, in the baked model's units. */
+function faceOf(geometry) {
+    const pos = geometry.attributes.position;
+    const flash = geometry.attributes.aFlash;
+    const min = [Infinity, Infinity];
+    const max = [-Infinity, -Infinity, -Infinity];
+    for (let i = 0; i < pos.count; i++) {
+        if (flash.getX(i) < 0.5) continue;
+        min[0] = Math.min(min[0], pos.getX(i)); max[0] = Math.max(max[0], pos.getX(i));
+        min[1] = Math.min(min[1], pos.getY(i)); max[1] = Math.max(max[1], pos.getY(i));
+        max[2] = Math.max(max[2], pos.getZ(i));
+    }
+    const box = geometry.boundingBox;
+    if (!Number.isFinite(min[0])) return { w: WIDTH * 0.9, h: WIDTH * 0.4, cx: 0, cy: 0, z: box.max.z };
+    return { w: max[0] - min[0], h: max[1] - min[1], cx: (min[0] + max[0]) / 2, cy: (min[1] + max[1]) / 2, z: max[2] };
+}
+
+function createGlowMaterial(face) {
     return new THREE.ShaderMaterial({
-        uniforms: { uLevel: { value: 0 }, uSize: { value: GLOW_SIZE }, uColor: { value: new THREE.Color('#ffeedd') } },
+        uniforms: {
+            uLevel: { value: 0 },
+            uColor: { value: new THREE.Color('#ffeedd') },
+            uHalf: { value: new THREE.Vector2(face.w / 2, face.h / 2) },
+            uQuad: { value: new THREE.Vector2(face.w / 2 + GLOW_SPREAD, face.h / 2 + GLOW_SPREAD) },
+        },
         vertexShader: /* glsl */ `
-            uniform float uSize;
+            varying vec2 vUv;
             void main() {
-                vec4 mv = modelViewMatrix * vec4(position, 1.0);
-                gl_PointSize = uSize / -mv.z;
-                gl_Position = projectionMatrix * mv;
+                vUv = uv;
+                gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(position, 1.0);
             }
         `,
         fragmentShader: /* glsl */ `
             uniform float uLevel;
             uniform vec3 uColor;
+            uniform vec2 uHalf;
+            uniform vec2 uQuad;
+            varying vec2 vUv;
             void main() {
-                float d = length(gl_PointCoord - 0.5) * 2.0;
-                // a wide soft flood with a hot centre over the panel
-                float glow = pow(max(0.0, 1.0 - d), 2.6);
-                float hot = smoothstep(0.22, 0.0, d);
-                gl_FragColor = vec4(uColor, (glow * 0.8 + hot) * uLevel);
+                vec2 p = (vUv - 0.5) * 2.0 * uQuad;                 // metres from the panel's centre
+                float d = length(max(abs(p) - uHalf, 0.0));          // 0 on the face, distance outside it
+                float face = 1.0 - smoothstep(0.0, 0.04, d);         // the whole face, evenly lit
+                float flood = exp(-d * 3.2) * (1.0 - smoothstep(0.63, 0.9, d));
+                gl_FragColor = vec4(uColor, (face * 1.2 + flood * 0.7) * uLevel);
             }
         `,
         transparent: true,
@@ -80,8 +105,10 @@ function bakeStrobe(scene) {
     merged.computeBoundingBox();
     const box = merged.boundingBox;
     const scale = WIDTH / (box.max.x - box.min.x);
-    merged.translate(-(box.min.x + box.max.x) / 2, -(box.min.y + box.max.y) / 2, -box.max.z);
+    // Centred on its own middle in every direction, so it hangs centred on the truss tube
+    merged.translate(-(box.min.x + box.max.x) / 2, -(box.min.y + box.max.y) / 2, -(box.min.z + box.max.z) / 2);
     merged.scale(scale, scale, scale);
+    merged.computeBoundingBox();
     return merged;
 }
 
@@ -135,29 +162,35 @@ export default function Strobes({ count, look, blinders = 8 }) {
     const geometry = useMemo(() => bakeStrobe(scene), [scene]);
     const material = useMemo(() => createStrobeMaterial(), []);
     const positions = useMemo(() => strobeLayout(count), [count]);
-    const glowMaterial = useMemo(() => createGlowMaterial(), []);
-    const glowGeometry = useMemo(() => {
-        // each glow sits just in front of its panel
-        const g = new THREE.BufferGeometry();
-        g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions.flatMap(([x, y, z]) => [x, y, z + 0.2])), 3));
-        return g;
-    }, [positions]);
+    const face = useMemo(() => faceOf(geometry), [geometry]);
+    // Hang each strobe right under its truss tube: the layout assumes a 0.72 m tall strobe; use the
+    // model's real height so its top sits the same small gap under the tube
+    const lift = useMemo(() => 0.36 - (geometry.boundingBox.max.y - geometry.boundingBox.min.y) / 2, [geometry]);
+    const glowMaterial = useMemo(() => createGlowMaterial(face), [face]);
+    const glowGeometry = useMemo(() => new THREE.PlaneGeometry(face.w + 2 * GLOW_SPREAD, face.h + 2 * GLOW_SPREAD), [face]);
     useLayoutEffect(() => () => {
         geometry.dispose();
         material.dispose();
         glowMaterial.dispose();
-    }, [geometry, material, glowMaterial]);
-    useLayoutEffect(() => () => glowGeometry.dispose(), [glowGeometry]);
+        glowGeometry.dispose();
+    }, [geometry, material, glowMaterial, glowGeometry]);
     const glow = useRef();
+    // each panel's light sits just in front of its face
+    useLayoutEffect(() => {
+        if (!glow.current) return;
+        const m = new THREE.Matrix4();
+        positions.forEach(([x, y, z], i) => glow.current.setMatrixAt(i, m.makeTranslation(x + face.cx, y + lift + face.cy, z + face.z + 0.02)));
+        glow.current.instanceMatrix.needsUpdate = true;
+    }, [positions, face, lift]);
     const flashColor = useRef(new THREE.Color());
     const strobeColor = useRef(new THREE.Color());
 
     const mesh = useRef();
     useLayoutEffect(() => {
         const m = new THREE.Matrix4();
-        positions.forEach((p, i) => mesh.current.setMatrixAt(i, m.makeTranslation(...p)));
+        positions.forEach(([x, y, z], i) => mesh.current.setMatrixAt(i, m.makeTranslation(x, y + lift, z)));
         mesh.current.instanceMatrix.needsUpdate = true;
-    }, [positions]);
+    }, [positions, lift]);
 
     useFrame(({ clock }) => {
         if (!mesh.current) return;
@@ -186,7 +219,7 @@ export default function Strobes({ count, look, blinders = 8 }) {
     return (
         <>
             <instancedMesh key={positions.length} ref={mesh} args={[geometry, material, positions.length]} frustumCulled={false} />
-            <points ref={glow} geometry={glowGeometry} material={glowMaterial} frustumCulled={false} renderOrder={6} />
+            <instancedMesh key={`glow-${positions.length}`} ref={glow} args={[glowGeometry, glowMaterial, positions.length]} frustumCulled={false} renderOrder={6} />
         </>
     );
 }
