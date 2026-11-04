@@ -1,7 +1,7 @@
 'use client';
 
-import { Suspense, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
 import Fixtures from './Fixtures';
@@ -27,8 +27,8 @@ import { roomFlash } from './flash';
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 3
- * = 42, plus lasers and house lights (1 each, skipped while off) and bloom.
+ * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 (these four a moment after the first frames)
+ * = 41, plus lasers and house lights (1 each, skipped while off) and bloom.
  */
 
 /**
@@ -83,7 +83,14 @@ function Floor({ look, blinders }) {
         const u = mesh.current.material.uniforms;
         u.uColorA.value.set(target.colorA);
         u.uColorB.value.set(target.colorB);
-        u.uLight.value = (target.master ?? 1) * Math.min(target.intensity, 1.4) * (1 + (target.pulse ?? 0) * 0.4);
+        // Light only reaches the audience floor from the aerial moving heads, and only when they point
+        // down toward the crowd: lifted into the sky (tiltShift > 0.4) or converging over the stage,
+        // they don't. Floor fixtures, lasers, towers and washes never light it.
+        const master = (target.master ?? 1) * Math.min(target.intensity, 1.4);
+        const down = Math.min(1, Math.max(0, (0.4 - (target.tiltShift ?? 0)) / 0.6)) * (1 - Math.min(1, target.converge ?? 0));
+        const wanted = master * (target.beams ?? 0) * down * (1 + (target.pulse ?? 0) * 0.4);
+        u.uLight.value += (wanted - u.uLight.value) * Math.min(1, delta * 4);
+        u.uWall.value = master * 0.25;
         u.uHouse.value += ((target.house ?? 0) - u.uHouse.value) * Math.min(1, delta * 1.5);
         u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
         u.uTime.value = clock.elapsedTime;
@@ -137,7 +144,59 @@ function CameraFlash({ look, blinders }) {
     );
 }
 
+/**
+ * The stage dressing (skirt, crowd barrier, PA, low fog) comes in a moment after the rig's first
+ * frames, when the browser is idle: the stage shows sooner, and building and compiling these
+ * doesn't add to the freeze while the page starts.
+ */
+function useAfterFirstFrames(ms = 1200) {
+    const [ready, setReady] = useState(false);
+    useEffect(() => {
+        let idle;
+        const timer = setTimeout(() => {
+            if ('requestIdleCallback' in window) idle = window.requestIdleCallback(() => setReady(true), { timeout: 1500 });
+            else setReady(true);
+        }, ms);
+        return () => {
+            clearTimeout(timer);
+            if (idle) window.cancelIdleCallback(idle);
+        };
+    }, [ms]);
+    return ready;
+}
+
+/**
+ * Shows its children only once their shaders are compiled. The GPU driver compiles in parallel
+ * (KHR_parallel_shader_compile) while the group stays hidden, instead of the page freezing at the
+ * first frame that draws them (over a second on integrated graphics). The lights stay outside, so
+ * the lit materials compile for the lights the stage really has.
+ */
+function Warm({ children }) {
+    const group = useRef();
+    const { gl, camera, scene } = useThree();
+    const [ready, setReady] = useState(false);
+    useEffect(() => {
+        let alive = true;
+        const done = () => { if (alive) setReady(true); };
+        if (group.current) {
+            // Shaders differ when drawn into an offscreen buffer (bloom renders the stage into one:
+            // no tone mapping, linear colour) and straight to the screen (bloom off after a quality
+            // step-down). Compile both, so neither compiles on the spot later.
+            const offscreen = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+            const previous = gl.getRenderTarget();
+            gl.setRenderTarget(offscreen);
+            const intoBuffer = gl.compileAsync(group.current, camera, scene);
+            gl.setRenderTarget(previous);
+            const toScreen = gl.compileAsync(group.current, camera, scene);
+            Promise.all([intoBuffer, toScreen]).then(done, done).finally(() => offscreen.dispose());
+        }
+        return () => { alive = false; };
+    }, [gl, camera, scene]);
+    return <group ref={group} visible={ready}>{children}</group>;
+}
+
 export default function StageScene({ beams, bloom, look, events = [], lasers = 40, blinders = 8, screen, font }) {
+    const dressed = useAfterFirstFrames();
     const truss = useMemo(() => createTrussGeometry(), []);
     const backdrop = useMemo(() => createBackdropMaterial(), []);
 
@@ -151,30 +210,37 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             </mesh>
             <StageLights look={look} blinders={blinders} />
 
-            <mesh position={[0, 12, SCREEN_Z - 2.8]} material={backdrop}>
-                <planeGeometry args={[80, 34]} />
-            </mesh>
-            <Floor look={look} blinders={blinders} />
-            <Deck look={look} />
-            <StageSkirt look={look} blinders={blinders} />
-            <CrowdBarrier />
-            <PaSystem />
-            <mesh geometry={truss}>
-                <meshLambertMaterial color="#565c69" emissive="#040507" />
-            </mesh>
-
-            <LedWall look={look} events={events} screen={screen} font={font} />
-            <PixelBars look={look} />
-            <Venue look={look} font={font} />
+            <Warm>
+                <mesh position={[0, 12, SCREEN_Z - 2.8]} material={backdrop}>
+                    <planeGeometry args={[80, 34]} />
+                </mesh>
+                <Floor look={look} blinders={blinders} />
+                <Deck look={look} />
+                <mesh geometry={truss}>
+                    <meshLambertMaterial color="#565c69" emissive="#040507" />
+                </mesh>
+                <LedWall look={look} events={events} screen={screen} font={font} />
+                <PixelBars look={look} />
+                <Venue look={look} font={font} />
+                <Lasers look={look} count={lasers} fixtures={beams} />
+                <HouseLights look={look} />
+                <Haze look={look} blinders={blinders} />
+            </Warm>
             {/* Fixture models stream in; the rest of the stage shows meanwhile */}
             <Suspense fallback={null}>
-                <Fixtures count={beams} look={look} />
-                <Strobes count={beams} look={look} blinders={blinders} />
+                <Warm>
+                    <Fixtures count={beams} look={look} />
+                    <Strobes count={beams} look={look} blinders={blinders} />
+                </Warm>
             </Suspense>
-            <Lasers look={look} count={lasers} fixtures={beams} />
-            <HouseLights look={look} />
-            <Haze look={look} blinders={blinders} />
-            <LowFog look={look} blinders={blinders} />
+            {dressed && (
+                <Warm>
+                    <StageSkirt look={look} blinders={blinders} />
+                    <CrowdBarrier />
+                    <PaSystem />
+                    <LowFog look={look} blinders={blinders} />
+                </Warm>
+            )}
             <CameraFlash look={look} blinders={blinders} />
 
             {bloom && (

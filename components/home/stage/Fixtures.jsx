@@ -84,7 +84,10 @@ function driveRole(u, role, target, state, delta) {
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
     const fan = role.ownAim ? 1 + (target.sidesAim ?? 0) : target.fan ?? 1;
     u.uFan.value += (fan - u.uFan.value) * ease;
-    u.uTiltShift.value += ((target.tiltShift ?? 0) - u.uTiltShift.value) * ease;
+    // the side towers rest a little above level, aimed across at the audience: they take a look's
+    // tilt only downward (a "sky" position lifting them into the sky looked wrong)
+    const shift = role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0)) : target.tiltShift ?? 0;
+    u.uTiltShift.value += (shift - u.uTiltShift.value) * ease;
     u.uPhaseSpread.value += ((target.phaseSpread ?? 0.25) - u.uPhaseSpread.value) * ease;
     u.uHaze.value += (target.haze - u.uHaze.value) * ease;
     u.uColorA.value.lerp(ta, ease);

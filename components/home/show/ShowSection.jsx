@@ -136,11 +136,39 @@ function ShowExperience({ events = [], isPhone = false }) {
     const [fullscreen, setFullscreen] = useState(false);
     const [brightnessTip, setBrightnessTip] = useState(false); // shown for the first seconds of a show
     const [screenNotice, setScreenNotice] = useState(false); // phones: the playground is for bigger screens
-    const [playStep, setPlayStep] = useState('songs'); // the playground: 'songs', then 'lights'
+    const [playStep, setPlayStep] = useState('genre'); // the playground: 'genre', then 'songs', then 'lights'
     const [stopKey, setStopKey] = useState(STOPS[0].key); // the section dot that's lit
 
     // Scroll progress through the section drives the show (no re-render unless an overlay changes)
     useEffect(() => {
+        const c0 = control.current;
+        // A paced scroll to `toY` over `ms` (ease in and out). Snapping is paused meanwhile, and the
+        // visitor's wheel, touch or keys take over at once.
+        const glide = (toY, ms) => {
+            const c = control.current;
+            const html = document.documentElement;
+            const fromY = window.scrollY;
+            const t0 = performance.now();
+            c.gliding = true;
+            html.style.scrollSnapType = 'none';
+            const stop = () => {
+                c.gliding = false;
+                cancelAnimationFrame(c.glideFrame);
+                html.style.scrollSnapType = '';
+                for (const e of ['wheel', 'touchstart', 'keydown', 'pointerdown']) window.removeEventListener(e, stop);
+                c.settleFromY = window.scrollY;
+            };
+            for (const e of ['wheel', 'touchstart', 'keydown', 'pointerdown']) window.addEventListener(e, stop, { passive: true });
+            const step = (now) => {
+                const k = Math.min(1, (now - t0) / ms);
+                const eased = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
+                window.scrollTo({ top: fromY + (toY - fromY) * eased, behavior: 'instant' });
+                if (k < 1) c.glideFrame = requestAnimationFrame(step);
+                else stop();
+            };
+            c.glideFrame = requestAnimationFrame(step);
+            c.stopGlide = stop;
+        };
         const onScroll = () => {
             const el = section.current;
             if (!el) return;
@@ -155,22 +183,32 @@ function ShowExperience({ events = [], isPhone = false }) {
                 const next = screenAt(progress);
                 return prev.kind === next.kind && prev.key === next.key ? prev : next;
             });
-            if (c.mode === 'scroll') setCueName(currentState(c).name);
+            // the cue at the real scroll position (the director's smoothed one trails it, so the label showed the section before)
+            if (c.mode === 'scroll' && c.sheet) {
+                // the last cue at least halfway through its fade: the look you're actually seeing
+                let name = c.sheet.cues[0]?.name ?? '';
+                for (const q of c.sheet.cues) if (q.t + q.fade / 2 <= progress) name = q.name;
+                setCueName(name);
+            }
 
             // The drop plays on the way from Crew to the encore, so the scroll never rests in it: if the
-            // visitor stops there, carry on to the next section in the direction they were scrolling
+            // visitor stops there, carry on to the next section in the direction they were scrolling.
+            // Down, the page glides there itself at a set pace (the riser, the drop and the encore
+            // colours each get their moment; the browser's smooth scroll crushed them into half a second)
+            if (c.gliding) return;
             clearTimeout(c.settleTimer);
             const y = window.scrollY;
             const direction = Math.sign(y - (c.settleFromY ?? y));
             c.settleTimer = setTimeout(() => {
                 c.settleFromY = window.scrollY;
-                if (c.mode !== 'scroll' || !direction) return;
+                if (c.mode !== 'scroll' || !direction || c.gliding) return;
                 const p = c.progress;
                 if (!(p > JOURNEY.from && p < JOURNEY.to)) return;
                 const el = section.current;
                 const top = el.getBoundingClientRect().top + window.scrollY;
                 const stop = direction > 0 ? JOURNEY.next : JOURNEY.back;
-                window.scrollTo({ top: top + stop.at * (el.offsetHeight - window.innerHeight), behavior: 'smooth' });
+                const share = Math.abs(stop.at - p) / (JOURNEY.next.at - JOURNEY.back.at);
+                glide(top + stop.at * (el.offsetHeight - window.innerHeight), direction > 0 ? Math.max(1200, 4200 * share) : Math.max(700, 1800 * share));
             }, 200);
         };
         onScroll();
@@ -179,6 +217,8 @@ function ShowExperience({ events = [], isPhone = false }) {
         return () => {
             window.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', onScroll);
+            clearTimeout(c0.settleTimer);
+            if (c0.gliding) c0.stopGlide?.();
         };
     }, []);
 
@@ -353,6 +393,8 @@ function ShowExperience({ events = [], isPhone = false }) {
     // The playground (lighting desk, demo songs, "Light up your song") is made for bigger screens: on a
     // phone, a tap explains that instead of starting it. The scroll show itself plays everywhere.
     const bigScreenOnly = (action) => () => (isPhone ? setScreenNotice(true) : action());
+    const bigScreenOnly2 = (action) => (arg) => (isPhone ? setScreenNotice(true) : action(arg));
+    const genreDemos = song.demos.filter((d) => d.genre === genre);
     const closeScreenNotice = useCallback(() => setScreenNotice(false), []);
 
     // The visitor's own song: decoded and analysed in their browser, never uploaded anywhere
@@ -472,53 +514,50 @@ function ShowExperience({ events = [], isPhone = false }) {
                             </div>
                         </Fade>
 
-                        {/* The playground, in two steps: play a song, then run the lights */}
+                        {/* The playground, in three steps: pick a genre, play one of its songs (or your own), run the lights */}
                         <Fade show={phase === 'play'} className="flex-col items-start justify-end px-4 sm:px-12 pb-24 sm:pb-12">
-                            <div className="pointer-events-auto w-full max-w-md rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 p-5 sm:p-6">
+                            <div className="pointer-events-auto w-full max-w-md rounded-2xl bg-black/80 border border-white/10 p-5 sm:p-6">
                                 <div className="flex items-center justify-between font-mono text-xs tracking-[0.3em] mb-2">
                                     <span className="text-cyan-300">YOUR TURN</span>
-                                    <span className="text-gray-400">STEP {playStep === 'songs' ? 1 : 2} OF 2</span>
+                                    <span className="text-gray-400">STEP {playStep === 'genre' ? 1 : playStep === 'songs' ? 2 : 3} OF 3</span>
                                 </div>
 
-                                {playStep === 'songs' ? (
+                                {playStep === 'genre' ? (
                                     <>
-                                        <h2 className="text-2xl sm:text-3xl font-black mb-2">Play a song.</h2>
-                                        <p className="text-sm text-gray-300 mb-4">Pick a demo, or drop in your own song: we find its beats and sections and program a light show for it, right here in your browser. Your file never leaves your device.</p>
+                                        <h2 className="text-2xl sm:text-3xl font-black mb-1">Play a song.</h2>
+                                        <p className="text-sm text-gray-300 mb-4">Pick a genre first: each one is analysed and lit its own way.</p>
+                                        <GenrePicker value={genre} counts={Object.fromEntries(GENRE_KEYS.map((g) => [g, song.demos.filter((d) => d.genre === g).length]))}
+                                            onChange={bigScreenOnly2((g) => { setGenre(g); setPlayStep('songs'); })} />
+                                        <button onClick={bigScreenOnly(() => setPlayStep('lights'))}
+                                            className="mt-4 flex items-center gap-1 text-sm text-gray-300 hover:text-white">
+                                            <Settings2 className="w-4 h-4" /> Skip to running the lights <ArrowRight className="w-4 h-4" />
+                                        </button>
+                                    </>
+                                ) : playStep === 'songs' ? (
+                                    <>
+                                        <button onClick={() => setPlayStep('genre')} className="mb-2 flex items-center gap-1 text-xs text-gray-400 hover:text-white">
+                                            <ArrowLeft className="w-3.5 h-3.5" /> All genres
+                                        </button>
+                                        <h2 className="text-2xl sm:text-3xl font-black mb-1">{GENRES[genre].label}</h2>
                                         <p className="flex items-center gap-1.5 text-xs text-yellow-200/90 mb-3">
                                             <SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, turn your screen brightness and volume up.
                                         </p>
-                                        {/* Demo songs, grouped by genre (each genre is lit its own way) */}
-                                        {song.demos.length > 0 && (
-                                            <div className="space-y-2 mb-4">
-                                                {GENRE_KEYS.filter((g) => song.demos.some((d) => d.genre === g)).map((g) => (
-                                                    <div key={g} className="flex items-start gap-2">
-                                                        <span className="w-20 shrink-0 pt-2 font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400">{GENRES[g].label}</span>
-                                                        {/* the songs wrap within their own column, so a third song lines up under the first */}
-                                                        <div className="flex flex-wrap gap-2 min-w-0">
-                                                            {song.demos.filter((d) => d.genre === g).map((demo) => (
-                                                                <button key={demo.slug} onClick={bigScreenOnly(() => playDemo(demo))} title={demo.artist ? `${demo.title} by ${demo.artist}` : demo.title}
-                                                                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/30 text-sm font-bold hover:border-white">
-                                                                    <Music className="w-4 h-4" /> {demo.title}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
+                                        {genreDemos.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                {genreDemos.map((demo) => (
+                                                    <button key={demo.slug} onClick={bigScreenOnly(() => playDemo(demo))} title={demo.artist ? `${demo.title} by ${demo.artist}` : demo.title}
+                                                        className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white text-left">
+                                                        <Music className="w-4 h-4 shrink-0" />
+                                                        <span>{demo.title}{demo.artist && <span className="block text-[10px] font-medium text-gray-400">{demo.artist}</span>}</span>
+                                                    </button>
                                                 ))}
                                             </div>
                                         )}
-                                        <GenrePicker value={genre} onChange={setGenre} disabled={Boolean(song.status)} />
-                                        <div className="flex flex-wrap gap-2">
-                                            <button onClick={bigScreenOnly(() => fileInput.current?.click())} disabled={Boolean(song.status)}
-                                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold disabled:opacity-60">
-                                                {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your song
-                                            </button>
-                                        </div>
-                                        {song.demos.length > 0 && (
-                                            <p className="mt-3 text-[11px] leading-snug text-gray-400">
-                                                {/* each song's full credit is on its button and in the now-playing bar */}
-                                                Demo songs by {[...new Set(song.demos.map((d) => d.artist?.split(/ feat\. | \(/)[0]).filter(Boolean))].join(', ')}. {SONG_NOTICE}
-                                            </p>
-                                        )}
+                                        <button onClick={bigScreenOnly(() => fileInput.current?.click())} disabled={Boolean(song.status)}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold disabled:opacity-60">
+                                            {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your own {GENRES[genre].label} song
+                                        </button>
+                                        <p className="mt-2 text-[11px] text-gray-400">We find its beats and sections and program a show for it in your browser. Your file never leaves your device.</p>
                                         {song.status && <p className="mt-3 text-xs text-cyan-200" role="status">{song.status}</p>}
                                         {song.ready && (
                                             <button onClick={() => playShow(song.ready.show, song.ready.url, song.ready.url)}
@@ -527,9 +566,10 @@ function ShowExperience({ events = [], isPhone = false }) {
                                             </button>
                                         )}
                                         {song.error && <p className="mt-3 text-xs text-red-300" role="alert">{song.error}</p>}
+                                        {genreDemos.length > 0 && <p className="mt-3 text-[10px] leading-snug text-gray-500">{SONG_NOTICE}</p>}
                                         {/* There's more: the lights are the next step */}
                                         <button onClick={bigScreenOnly(() => setPlayStep('lights'))}
-                                            className="mt-5 w-full flex items-center justify-between gap-2 px-5 py-3 rounded-xl bg-white text-black font-bold hover:bg-cyan-300 transition-colors">
+                                            className="mt-4 w-full flex items-center justify-between gap-2 px-5 py-3 rounded-xl bg-white text-black font-bold hover:bg-cyan-300 transition-colors">
                                             <span className="flex items-center gap-2"><Settings2 className="w-4 h-4" /> Next: run the lights yourself</span>
                                             <ArrowRight className="w-5 h-5" />
                                         </button>

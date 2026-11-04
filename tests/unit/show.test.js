@@ -310,19 +310,19 @@ describe('programming rules (concert-style)', () => {
         expect(pixelLook('groove', 0, { beams: 1, wash: 1 }).pixelColor).toBe(0.5); // groove: both colours
     });
 
-    it('every song gives each fixture type a solo: side towers, aerial beams, floor, washes, floor and tower lasers, strobes, LED bars', () => {
+    it('every song gives each fixture type a solo: side towers, aerial beams, floor, washes, floor and tower lasers, strobes', () => {
         const beats240 = Array.from({ length: 120 * 4 }, (_, i) => i * 0.5);
         const long = programShow({ ...analysis, beats: beats240, downbeats: beats240.map((_, i) => i).filter((i) => i % 4 === 0), duration: 240, sections: [sec(0, 8, 'intro'), sec(16, 16, 'calm'), sec(48, 16, 'groove'), sec(80, 8, 'build'), sec(96, 32, 'peak'), sec(160, 16, 'groove'), sec(192, 16, 'peak'), sec(224, 8, 'outro')] });
         const solos = long.cues.filter((c) => c.name.startsWith('Solo') && !c.name.includes(' · bar '));
-        expect(solos.map((c) => c.name.replace('Solo · ', '')).sort()).toEqual(['LED bars', 'aerial beams', 'floor', 'floor lasers', 'side towers', 'strobes', 'tower lasers', 'washes']);
+        expect(solos.map((c) => c.name.replace('Solo · ', '')).sort()).toEqual(['aerial beams', 'floor', 'floor lasers', 'side towers', 'strobes', 'tower lasers', 'washes']);
         for (const solo of solos) {
             const lit = ['beams', 'sides', 'floor', 'wash', 'laser'].filter((k) => (solo.look[k] ?? 0) > 0);
-            // one fixture type alone: a group of moving heads or the lasers, or the strobes / LED bars by themselves
-            const own = solo.name.endsWith('strobes') ? solo.look.strobeRandom > 0 : solo.name.endsWith('LED bars') ? solo.look.pixel > 0 : lit.length === 1;
+            // one fixture type alone: a group of moving heads or the lasers, or the strobes by themselves
+            const own = solo.name.endsWith('strobes') ? solo.look.strobeRandom > 0 : lit.length === 1;
             expect(own).toBe(true);
-            if (!solo.name.endsWith('LED bars')) expect(solo.look.pixel).toBe(0); // the LED bars stay out of other solos
+            expect(solo.look.pixel).toBe(0); // the LED bars stay out of the solos
             if (!solo.name.endsWith('strobes')) expect(solo.look.strobeRandom ?? 0).toBe(0);
-            if (solo.name.endsWith('strobes') || solo.name.endsWith('LED bars')) expect(lit).toHaveLength(0);
+            if (solo.name.endsWith('strobes')) expect(lit).toHaveLength(0);
             expect(solo.look.intensity).toBeGreaterThanOrEqual(1.3);
             // nothing but the washes' own bar changes fires during its 4 bars (8 s here)
             const inside = long.cues.filter((c) => c.t > solo.t && c.t < solo.t + 8 - 0.01);

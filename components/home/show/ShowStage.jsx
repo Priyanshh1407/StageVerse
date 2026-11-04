@@ -14,10 +14,12 @@ import hero from '@/public/images/hero.jpg';
 
 /** One frame of the show: put the current look on the rig and fly the camera toward its shot. */
 function directFrame(control, look, camera, aim, delta) {
-    // Glide toward the scroll position instead of jumping a wheel notch at a time; slow enough (time
-    // constant ~0.8 s) that every transition between sections plays out visibly, even after a quick scroll
+    // Glide toward the scroll position instead of jumping a wheel notch at a time: a critically damped
+    // spring (~1 s), so a cue change eases in and eases out, at a pace you can watch even after a quick
+    // scroll. The step is capped at 1/30 s, so a stalled frame can't turn into a jump.
     const raw = control.progress;
-    control.smoothProgress = control.smoothProgress === undefined ? raw : control.smoothProgress + (raw - control.smoothProgress) * (1 - Math.exp(-delta * 1.25));
+    if (control.smoothProgress === undefined) control.smoothProgress = raw;
+    else easing.damp(control, 'smoothProgress', raw, 0.55, Math.min(delta, 1 / 30));
     const state = currentState(control);
     // In full screen the show runs ~30% brighter (a page can't raise the screen's own brightness)
     look.current = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;
@@ -70,6 +72,10 @@ function Stage3D({ tier, control, look, visible, counts, events, screen, font })
             dpr={dpr}
             camera={{ position: SHOTS.house.pos, fov: 55, near: 0.5, far: 200 }}
             gl={{ antialias: !bloom, powerPreference: 'high-performance' }} // MSAA only without bloom (the composer does SMAA)
+            // In production, don't check each shader for errors as it's built: the check makes the main
+            // thread wait for every compile (over a second of frozen page on integrated graphics), while
+            // without it the compiles overlap with everything else. Development keeps the check.
+            onCreated={({ gl }) => { gl.debug.checkShaderErrors = process.env.NODE_ENV !== 'production'; }}
         >
             <PerformanceMonitor flipflops={3} onDecline={() => setStep((s) => Math.min(s + 1, MAX_STEP))} />
             <Director control={control} look={look} />

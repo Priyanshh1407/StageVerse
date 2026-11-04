@@ -104,7 +104,8 @@ export function createFloorMaterial() {
         uniforms: {
             uColorA: { value: new THREE.Color('#19d9ff') },
             uColorB: { value: new THREE.Color('#ff3df2') },
-            uLight: { value: 0.5 },
+            uLight: { value: 0 },    // the aerial beams reaching the audience floor (0 = none: the floor stays dark)
+            uWall: { value: 0 },     // the LED wall's faint reflection
             uHouse: { value: 0 },
             uFlash: { value: 0 },
             uTime: { value: 0 },
@@ -121,6 +122,7 @@ export function createFloorMaterial() {
             uniform vec3 uColorA;
             uniform vec3 uColorB;
             uniform float uLight;
+            uniform float uWall;
             uniform float uHouse;
             uniform float uFlash;
             uniform float uTime;
@@ -144,16 +146,16 @@ export function createFloorMaterial() {
                 // The deck's LED edge, a thin line right at the stage front
                 float tE = (0.0 - w.z) / r.z;
                 vec3 e = w + r * tE;
-                c += tint * softRect(e.xy, vec2(-15.0, DECK_TOP - 0.06), vec2(15.0, DECK_TOP + 0.02), 0.05 + blur * 0.15) * 0.35;
+                c += tint * softRect(e.xy, vec2(-15.0, DECK_TOP - 0.06), vec2(15.0, DECK_TOP + 0.02), 0.05 + blur * 0.15) * 0.35 * uLight;
                 // The rig: lit trusses and beam bases, a broad glow
                 float tR = (-9.0 - w.z) / r.z;
                 vec3 g = w + r * tR;
-                c += tint * softRect(g.xy, vec2(-15.0, DECK_TOP), vec2(15.0, 18.0), 2.5 + blur) * 0.08;
+                c += tint * softRect(g.xy, vec2(-15.0, DECK_TOP), vec2(15.0, 18.0), 2.5 + blur) * 0.08 * uLight;
                 // The LED wall, hidden below the deck top
                 float tW = (-17.2 - w.z) / r.z;
                 vec3 s = w + r * tW;
                 float wall = softRect(s.xy, vec2(-13.0, DECK_TOP), vec2(13.0, 13.0), 0.6 + blur);
-                c += mix(tint, vec3(1.0), 0.25) * wall * 0.3;
+                c += mix(tint, vec3(1.0), 0.25) * wall * 0.3 * uWall;
                 float fresnel = 0.25 + 0.75 * pow(1.0 - abs(v.y), 4.0);
                 return c * fresnel * smoothstep(80.0, 20.0, dist);
             }
@@ -161,9 +163,9 @@ export function createFloorMaterial() {
             // slowly side to side, alternating the two colours
             vec3 pools(vec3 w) {
                 vec3 c = vec3(0.0);
-                for (int i = 0; i < 6; i++) {
+                for (int i = 0; i < 4; i++) {
                     float fi = float(i);
-                    float x = (fi - 2.5) * 5.2 + sin(uTime * 0.35 + fi * 1.7) * 1.4;
+                    float x = (fi - 1.5) * 7.0 + sin(uTime * 0.35 + fi * 1.7) * 1.4;
                     float z = 3.5 + mod(fi, 2.0) * 3.0 + sin(uTime * 0.27 + fi) * 0.8;
                     vec2 d = (w.xz - vec2(x, z)) / vec2(1.3, 2.0);
                     float pool = exp(-dot(d, d) * 1.6);
@@ -201,7 +203,7 @@ export function createFloorMaterial() {
                 float inside = step(vWorld.z, 33.4);
                 // A faint bounce right at the stage edge, so the stage still sits on the floor
                 float spill = exp(-fromStage * 0.18) * smoothstep(20.0, 8.0, abs(vWorld.x)) * 0.35;
-                vec3 lit = (tint * spill * 0.22 + reflection(vWorld, tint) + pools(vWorld) * 0.1) * uLight * inside;
+                vec3 lit = ((tint * spill * 0.22 + pools(vWorld) * 0.1) * uLight + reflection(vWorld, tint)) * inside;
                 vec3 base = vec3(0.004, 0.0045, 0.008);
                 // Inside the venue the floor nearest the camera fades to black, keeping the eye on the stage
                 float near = smoothstep(3.0, 14.0, length(vWorld.xz - cameraPosition.xz));
@@ -333,17 +335,21 @@ export function createScreenContent(content = { kind: 'brand' }, { events = [], 
         }
     }
 
-    // Pack the three masks into the colour channels of one texture
+    // Pack the three masks into the colour channels of one texture, on the canvas itself: each layer
+    // is recoloured to its channel (keeping its alpha), then added onto black. Reading the pixels
+    // back and packing them in a 7-million-step loop froze the page for up to a second, at load
+    // and at every change of the LED wall while scrolling.
     const out = layer();
-    const img = out.ctx.createImageData(W, H);
-    const [r, g, b] = [head, glow, small].map((l) => l.ctx.getImageData(0, 0, W, H).data);
-    for (let i = 0; i < img.data.length; i += 4) {
-        img.data[i] = r[i + 3];
-        img.data[i + 1] = g[i + 3];
-        img.data[i + 2] = b[i + 3];
-        img.data[i + 3] = 255;
+    out.ctx.fillStyle = '#000';
+    out.ctx.fillRect(0, 0, W, H);
+    out.ctx.globalCompositeOperation = 'lighter';
+    for (const [l, channel] of [[head, '#ff0000'], [glow, '#00ff00'], [small, '#0000ff']]) {
+        l.ctx.filter = 'none';
+        l.ctx.globalCompositeOperation = 'source-in';
+        l.ctx.fillStyle = channel;
+        l.ctx.fillRect(0, 0, W, H);
+        out.ctx.drawImage(l.c, 0, 0);
     }
-    out.ctx.putImageData(img, 0, 0);
     const texture = new THREE.CanvasTexture(out.c);
     texture.anisotropy = 4; // linear data (masks), so no sRGB conversion
     return texture;
