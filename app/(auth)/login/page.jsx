@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Chrome, AlertTriangle, ArrowLeft } from 'lucide-react';
+import Logo from '@/components/brand/Logo';
 const ROLE_PATHS = {
   fan: '/dashboard',
   organizer: '/manage/dashboard',
@@ -95,13 +96,7 @@ const LoginPage = () => {
         <div className="relative z-20 flex flex-col items-center w-full">
 
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.6)]">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
-                <path fillRule="evenodd" d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436h.001c-3.701 2.88-8.2 5.264-13.256 5.264a.75.75 0 01-.75-.75c0-5.056 2.384-9.555 6.084-12.436z" clipRule="evenodd" />
-                <path d="M4.5 16.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zM16.5 4.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" />
-              </svg>
-            </div>
-            <span className="text-3xl font-bold text-white tracking-widest drop-shadow-md">StageVerse</span>
+            <Logo size="lg" />
           </div>
 
           <div className="h-8 mb-2 w-full flex justify-center">

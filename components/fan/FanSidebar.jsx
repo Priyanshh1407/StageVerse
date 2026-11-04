@@ -3,9 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import Logo from '@/components/brand/Logo';
 import {
   Compass, Ticket, Users, Settings,
-  LogOut, Sparkles, Image as ImageIcon, X, Bell
+  LogOut, Image as ImageIcon, X, Bell
 } from 'lucide-react';
 
 const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
@@ -57,11 +58,8 @@ const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
         { }
         <div className="flex items-center justify-between px-2 mb-8 mt-2">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-500">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg leading-tight text-slate-900 dark:text-white">StageVerse</h1>
+            <div className="flex flex-col gap-1">
+              <Logo size="sm" theme="auto" />
               <p className="text-xs text-slate-500 font-medium">Fan Portal</p>
             </div>
           </div>

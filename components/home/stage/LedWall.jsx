@@ -42,7 +42,7 @@ function showContent(material, texture, slots) {
  * The LED screens. Colours and brightness follow the show's look; the main wall shows the
  * StageVerse wordmark or the current role (`screen`), in the `font` display face.
  */
-export default function LedWall({ look, events = [], screen = { kind: 'brand' }, font }) {
+export default function LedWall({ look, events = [], screen = { kind: 'brand' }, font, logoFonts }) {
     const materials = useMemo(
         () => SCREENS.map((s) => createLedMaterial({ textTexture: s.text ? blankTexture() : null, grid: s.grid, seed: s.seed })),
         [],
@@ -50,14 +50,15 @@ export default function LedWall({ look, events = [], screen = { kind: 'brand' },
     useEffect(() => () => materials.forEach((m) => m.dispose()), [materials]);
     const slots = useRef({ current: null, prev: null });
 
-    // Redraw the content when it changes (once the display font has loaded)
-    const key = JSON.stringify({ screen, events, font });
+    // Redraw the content when it changes (once the display font and the logo's faces have loaded)
+    const key = JSON.stringify({ screen, events, font, logoFonts });
     useEffect(() => {
         let cancelled = false;
         const draw = () => {
-            if (!cancelled) showContent(materials[0], createScreenContent(screen, { events, font }), slots.current);
+            if (!cancelled) showContent(materials[0], createScreenContent(screen, { events, font, logoFonts }), slots.current);
         };
-        if (font && document.fonts?.load) document.fonts.load(`900 100px ${font}`).then(draw, draw);
+        const faces = [font && `900 100px ${font}`, logoFonts?.tag && `400 100px ${logoFonts.tag}`, logoFonts?.script && `400 100px ${logoFonts.script}`].filter(Boolean);
+        if (faces.length && document.fonts?.load) Promise.all(faces.map((f) => document.fonts.load(f))).then(draw, draw);
         else draw();
         return () => { cancelled = true; };
     }, [key]); // eslint-disable-line react-hooks/exhaustive-deps

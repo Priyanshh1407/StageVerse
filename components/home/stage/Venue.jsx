@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -229,6 +229,58 @@ function createSignTexture(font) {
     return texture;
 }
 
+/**
+ * The gate sign with the logo, in neon: "Stage" in the tag face as a cyan tube, "Verse" in the
+ * script as a warm sunset tube, side by side.
+ */
+function createLogoSignTexture({ tag, script }) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2048;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    const parts = [
+        { text: 'Stage', color: '#3fe6ff', font: (px) => `400 ${px}px ${tag}, cursive`, size: 300, rot: -0.07, dy: -10 },
+        { text: 'Verse', color: '#ff8a3d', font: (px) => `400 ${px}px ${script}, cursive`, size: 340, rot: -0.1, dy: 18 },
+    ];
+    const widths = parts.map((p) => { ctx.font = p.font(p.size); return ctx.measureText(p.text).width; });
+    const gap = 40;
+    const scale = Math.min(1, (canvas.width * 0.9) / (widths[0] + widths[1] + gap));
+    let x = (canvas.width - (widths[0] + widths[1] + gap) * scale) / 2;
+    parts.forEach((p, i) => {
+        const w = widths[i] * scale;
+        ctx.save();
+        ctx.translate(x + w / 2, canvas.height / 2 + p.dy);
+        ctx.rotate(p.rot);
+        ctx.font = p.font(Math.floor(p.size * scale));
+        ctx.textAlign = 'center';
+        // offset outline (the sign's depth), then glow, then the tube, then its hot core
+        ctx.strokeStyle = p.color;
+        ctx.globalAlpha = 0.45;
+        ctx.lineWidth = 5;
+        ctx.strokeText(p.text, 10, 14);
+        ctx.globalAlpha = 1;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 48;
+        ctx.lineWidth = 12;
+        ctx.strokeText(p.text, 0, 0);
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 6;
+        ctx.strokeText(p.text, 0, 0);
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.strokeText(p.text, 0, 0);
+        ctx.restore();
+        x += w + gap * scale;
+    });
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 4;
+    return texture;
+}
+
 /** Follow the show: the doorway's light takes the rig's colours; house light warms it. */
 function lightGate(materials, target) {
     for (const m of materials) {
@@ -247,12 +299,21 @@ function signMaterialFor(texture) {
     return m;
 }
 
-export default function Venue({ look, font }) {
+export default function Venue({ look, font, logoFonts }) {
     const concrete = useMemo(() => createConcrete(), []);
     const frames = useMemo(() => createFrames(), []);
     const concreteMaterial = useMemo(() => createConcreteMaterial(), []);
     const steelMaterial = useMemo(() => createSteelMaterial(), []);
-    const sign = useMemo(() => createSignTexture(font), [font]);
+    // the sign is drawn once the logo's faces have loaded (a canvas can't wait for a font itself)
+    const [facesReady, setFacesReady] = useState(false);
+    useEffect(() => {
+        if (!logoFonts || !document.fonts?.load) return undefined;
+        let alive = true;
+        const done = () => { if (alive) setFacesReady(true); };
+        Promise.all([document.fonts.load(`400 100px ${logoFonts.tag}`), document.fonts.load(`400 100px ${logoFonts.script}`)]).then(done, done);
+        return () => { alive = false; };
+    }, [logoFonts]);
+    const sign = useMemo(() => (logoFonts && facesReady ? createLogoSignTexture(logoFonts) : createSignTexture(font)), [font, logoFonts, facesReady]);
     const signMaterial = useMemo(() => signMaterialFor(sign), [sign]);
     useEffect(() => () => {
         concrete.dispose();

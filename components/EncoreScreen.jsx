@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { AudioWaveform, X } from 'lucide-react'; 
+import { X } from 'lucide-react'; 
+import Logo from '@/components/brand/Logo';
 
 export default function EncoreScreen({ winnerName, onClose }) {
   const [visible, setVisible] = useState(false);
@@ -70,10 +71,9 @@ export default function EncoreScreen({ winnerName, onClose }) {
       {}
       <div className={`absolute bottom-6 right-6 sm:bottom-10 sm:right-10 z-20 opacity-30 select-none transition-opacity duration-1000 ${visible ? 'opacity-30' : 'opacity-0'}`}>
         <div className="flex items-center gap-3">
-          <AudioWaveform className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-          <div className="flex flex-col">
-            <span className="text-white font-black tracking-widest text-lg sm:text-xl leading-none">STAGEVERSE</span>
-            <span className="text-white/60 text-[10px] tracking-[0.2em] uppercase leading-none mt-1 text-right">Live OS</span>
+          <div className="flex flex-col items-end">
+            <Logo size="lg" />
+            <span className="text-white/60 text-[10px] tracking-[0.2em] uppercase leading-none mt-1">Live OS</span>
           </div>
         </div>
       </div>

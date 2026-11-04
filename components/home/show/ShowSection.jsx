@@ -11,6 +11,7 @@ import { buildIdleShow } from '@/lib/show/program';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
+import { logoTag, logoScript } from '@/components/brand/Logo';
 import GenrePicker from './GenrePicker';
 import { DEFAULT_GENRE, GENRE_KEYS, GENRES } from '@/lib/show/genres';
 import BiggerScreenNotice from './BiggerScreenNotice';
@@ -21,6 +22,8 @@ const ShowStage = dynamic(() => import('./ShowStage'), { ssr: false });
 
 // Display face for the LED wall and the venue sign (drawn into canvases, so it's passed by name)
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display: 'swap' });
+// The logo's two faces, for the LED wall and the gate sign (drawn into canvases, so passed by name)
+const LOGO_FONTS = { tag: logoTag.style.fontFamily, script: logoScript.style.fontFamily };
 
 // Shown wherever the demo songs are offered or playing (commercial recordings, see README)
 const SONG_NOTICE = 'Songs on this site are used for educational, non-commercial purposes only. All rights belong to their respective owners.';
@@ -478,7 +481,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                 <div key={s.key} aria-hidden className="absolute left-0 h-px w-px" style={{ top: `${s.at * (SHOW_VH - 100)}vh`, scrollSnapAlign: 'start' }} />
             ))}
             <div ref={stage} className="sticky top-0 h-screen w-full overflow-hidden bg-[#010208]">
-                <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} />
+                <ShowStage control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} />
 
                 {/* Phones: tapping a playground control explains it's made for bigger screens */}
                 <BiggerScreenNotice open={screenNotice} onClose={closeScreenNotice} />

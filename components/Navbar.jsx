@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Star, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Logo from '@/components/brand/Logo';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -77,10 +78,7 @@ export default function Navbar() {
           
           {}
           <Link href="/" className="flex items-center gap-2 cursor-pointer group" onClick={() => setIsOpen(false)}>
-            <Star className="w-8 h-8 text-[#00d4ff] group-hover:text-white transition-colors" />
-            <span className="text-xl font-bold tracking-widest text-white uppercase group-hover:text-[#00d4ff] transition-colors">
-              StageVerse
-            </span>
+            <Logo size="md" className="transition-transform group-hover:scale-105" />
           </Link>
 
           {}

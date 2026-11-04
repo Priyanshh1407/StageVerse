@@ -218,3 +218,18 @@ html {
 html.show-immersive header {
   display: none;
 }
+
+/* The StageVerse logo's "Verse": a sunset gradient in the script (components/brand/Logo.jsx).
+   On a light page ("auto" theme, no .dark) the gradient runs deeper so it reads on white. */
+.sv-logo-verse {
+  background-image: linear-gradient(180deg, #ffe066 0%, #ffb000 30%, #ff6a00 55%, #ff3d7a 78%, #a855f7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sv-logo-auto .sv-logo-verse {
+  background-image: linear-gradient(180deg, #ff9500 0%, #ff6a00 35%, #ff2d6f 70%, #9b3df0 100%);
+}
+.dark .sv-logo-auto .sv-logo-verse {
+  background-image: linear-gradient(180deg, #ffe066 0%, #ffb000 30%, #ff6a00 55%, #ff3d7a 78%, #a855f7 100%);
+}

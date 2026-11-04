@@ -80,7 +80,7 @@ function Director({ control, look }) {
 const MAX_STEP = 3;
 const STEP_DPR = { 2: 0.85, 3: 0.75 };
 
-function Stage3D({ tier, control, look, visible, counts, events, screen, font }) {
+function Stage3D({ tier, control, look, visible, counts, events, screen, font, logoFonts }) {
     const [step, setStep] = useState(0);
     const settings = TIER_SETTINGS[tier];
     const beams = counts.beams ?? settings.beams;
@@ -100,7 +100,7 @@ function Stage3D({ tier, control, look, visible, counts, events, screen, font })
         >
             <PerformanceMonitor flipflops={3} onDecline={() => setStep((s) => Math.min(s + 1, MAX_STEP))} />
             <Director control={control} look={look} />
-            <StageScene beams={beams} bloom={bloom} look={look} events={events} lasers={counts.lasers} blinders={counts.blinders} screen={screen} font={font} />
+            <StageScene beams={beams} bloom={bloom} look={look} events={events} lasers={counts.lasers} blinders={counts.blinders} screen={screen} font={font} logoFonts={logoFonts} />
         </Canvas>
     );
 }
@@ -133,7 +133,7 @@ function Stage2D({ control, counts }) {
  * The visual layer of the show. Picks a quality tier on the client, then renders the 3D stage,
  * or for tier 0 the poster with 2D lights (or the poster alone when "reduce motion" is set).
  */
-export default function ShowStage({ control, look, visible, counts, events, screen, font }) {
+export default function ShowStage({ control, look, visible, counts, events, screen, font, logoFonts }) {
     const tier = useQualityTier();
     const [reducedMotion] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
@@ -149,7 +149,7 @@ export default function ShowStage({ control, look, visible, counts, events, scre
     }
     return (
         <div className="absolute inset-0 animate-[fadeIn_1.2s_ease-out]">
-            <Stage3D tier={tier} control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={font} />
+            <Stage3D tier={tier} control={control} look={look} visible={visible} counts={counts} events={events} screen={screen} font={font} logoFonts={logoFonts} />
         </div>
     );
 }

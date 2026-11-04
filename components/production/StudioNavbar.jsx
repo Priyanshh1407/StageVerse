@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import GlobalSearchModal from './GlobalSearchModal';
+import Logo from '@/components/brand/Logo';
 
 export default function StudioNavbar({ projectId }) {
   const pathname = usePathname();
@@ -193,9 +194,7 @@ export default function StudioNavbar({ projectId }) {
 
           {}
           <Link href="/prod-dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <div className="w-8 h-8 rounded bg-gradient-to-br from-[#00d4ff] to-blue-600 flex items-center justify-center shadow-[0_0_10px_rgba(0,212,255,0.3)]">
-              <span className="font-bold text-black text-xl">#</span>
-            </div>
+            <Logo size="sm" />
             {}
           </Link>
 

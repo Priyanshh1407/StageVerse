@@ -1,6 +1,7 @@
 'use client';
 import Link from "next/link";
-import { Twitter, Facebook, Instagram, Youtube, Sparkles, BarChart3 } from "lucide-react";
+import { Twitter, Facebook, Instagram, Youtube, BarChart3 } from "lucide-react";
+import Logo from '@/components/brand/Logo';
 
 const MainFooter = ({ isLoggedIn = false }) => {
   
@@ -61,10 +62,7 @@ const MainFooter = ({ isLoggedIn = false }) => {
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           
           <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold text-white tracking-widest uppercase">
-              Stageverse
-            </span>
+            <Logo size="md" />
           </div>
 
           <nav className="flex flex-wrap justify-center gap-8">

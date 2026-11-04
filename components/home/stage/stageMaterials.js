@@ -247,7 +247,7 @@ export function createBackdropMaterial() {
  *   { kind: 'role', key, line }          "FOR THE" + the role name + its line
  * `font` is a loaded display font family (falls back to the system font).
  */
-export function createScreenContent(content = { kind: 'brand' }, { events = [], font } = {}) {
+export function createScreenContent(content = { kind: 'brand' }, { events = [], font, logoFonts } = {}) {
     const W = 2048;
     const H = 910;
     const family = font ? `${font}, system-ui, sans-serif` : 'system-ui, -apple-system, "Segoe UI", sans-serif';
@@ -305,9 +305,55 @@ export function createScreenContent(content = { kind: 'brand' }, { events = [], 
         rows.forEach((r, i) => line(r, 610 + i * 72, 50, 500, 0.04));
         small.ctx.fillRect(W / 2 - 160, 690 + rows.length * 30, 320, 6);
     } else {
-        const px = headline('STAGEVERSE', 330, 250);
-        small.ctx.fillRect(W / 2 - px * 2.6, 470, px * 5.2, 5);
-        line('THE ENTIRE CONCERT ECOSYSTEM', 530, 46, 700, 0.35);
+        let ruleY = 470;
+        let ruleW = 650;
+        if (logoFonts?.tag && logoFonts?.script) {
+            // The logo: "Stage" as a white tag (the white text layer), "Verse" in the script sweeping
+            // under it (the headline layer, in the show's colours), the tag cut away around "Verse"
+            // so they overlap cleanly, and both glowing
+            const tagFont = (px) => `400 ${px}px ${logoFonts.tag}, cursive`;
+            const scriptFont = (px) => `400 ${px}px ${logoFonts.script}, cursive`;
+            let s = 230;
+            let v = 280;
+            const width = () => {
+                small.ctx.font = tagFont(s);
+                const a = small.ctx.measureText('Stage').width;
+                head.ctx.font = scriptFont(v);
+                return Math.max(a, head.ctx.measureText('Verse').width);
+            };
+            while (width() > W * 0.6 && s > 120) { s -= 10; v -= 12; }
+            const stageAt = { x: W / 2, y: 230, rot: (-4 * Math.PI) / 180 };
+            const verseAt = { x: W / 2 + s * 0.12, y: 240 + s * 0.74, rot: (-6 * Math.PI) / 180 };
+            const put = (ctx, text, f, at, mode = 'fill') => {
+                ctx.save();
+                ctx.translate(at.x, at.y);
+                ctx.rotate(at.rot);
+                ctx.font = f;
+                if (mode === 'fill') ctx.fillText(text, 0, 0);
+                else ctx.strokeText(text, 0, 0);
+                ctx.restore();
+            };
+            spacing(small.ctx, 0);
+            put(small.ctx, 'Stage', tagFont(s), stageAt);
+            small.ctx.globalCompositeOperation = 'destination-out';
+            small.ctx.lineWidth = v * 0.07;
+            put(small.ctx, 'Verse', scriptFont(v), verseAt);
+            put(small.ctx, 'Verse', scriptFont(v), verseAt, 'stroke');
+            small.ctx.globalCompositeOperation = 'source-over';
+            put(head.ctx, 'Verse', scriptFont(v), verseAt);
+            glow.ctx.filter = 'blur(18px)';
+            glow.ctx.lineWidth = s * 0.08;
+            put(glow.ctx, 'Stage', tagFont(s), stageAt, 'stroke');
+            put(glow.ctx, 'Verse', scriptFont(v), verseAt, 'stroke');
+            glow.ctx.filter = 'none';
+            ruleY = Math.round(verseAt.y + v * 0.42);
+            ruleW = s * 2.4;
+        } else {
+            const px = headline('STAGEVERSE', 330, 250);
+            ruleW = px * 5.2;
+        }
+        small.ctx.fillRect(W / 2 - ruleW / 2, ruleY, ruleW, 5);
+        line('THE ENTIRE CONCERT ECOSYSTEM', ruleY + 60, 46, 700, 0.35);
         const upcoming = events.slice(0, 2);
         if (upcoming.length) {
             line('UP NEXT', 660, 40, 800, 0.5);

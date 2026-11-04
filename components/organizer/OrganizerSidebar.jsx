@@ -8,6 +8,7 @@ import {
   FileText, Settings, LogOut, BarChart3, X
 } from 'lucide-react';
 import { Button } from '../ui/button';
+import Logo from '@/components/brand/Logo';
 
 const OrganizerSidebar = ({ isOpen, onClose }) => {
   const pathname = usePathname();
@@ -55,11 +56,8 @@ const OrganizerSidebar = ({ isOpen, onClose }) => {
         { }
         <div className="flex items-center justify-between px-2 mb-8 mt-2">
           <Link href="/" className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-              <BarChart3 className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg leading-tight text-slate-900 dark:text-white">StageVerse</h1>
+            <div className="flex flex-col gap-1">
+              <Logo size="sm" theme="auto" />
               <p className="text-xs text-slate-500 font-medium">Organizer Portal</p>
             </div>
           </Link>

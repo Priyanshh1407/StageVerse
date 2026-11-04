@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // Import Router
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Building, Wrench, Chrome, AlertTriangle, Music, Settings, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Building, Wrench, Chrome, AlertTriangle, Music, ArrowLeft } from 'lucide-react';
+import Logo from '@/components/brand/Logo';
 
 const SignupPage = () => {
   const router = useRouter(); // Initialize Router
@@ -50,8 +51,7 @@ const SignupPage = () => {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+        body: JSON.stringify(payload) });
 
       const data = await res.json();
 
@@ -108,10 +108,7 @@ const SignupPage = () => {
         <motion.div layout className="relative z-20 flex flex-col items-center w-full max-w-lg h-full justify-center">
 
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.6)]">
-              <Settings className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white tracking-widest drop-shadow-md">StageVerse</span>
+            <Logo size="lg" />
           </div>
 
           <div className="w-full flex justify-center min-h-[20px] mb-2">

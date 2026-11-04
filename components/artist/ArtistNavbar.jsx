@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Bell, LogOut, Menu, X } from 'lucide-react';
+import Logo from '@/components/brand/Logo';
 
 export default function ArtistNavbar() {
   const router = useRouter();
@@ -75,7 +76,7 @@ export default function ArtistNavbar() {
         <div className="flex items-center gap-6">
           {}
           <div className="flex items-center gap-3 pr-6 lg:border-r lg:border-slate-200 lg:dark:border-slate-700">
-            <div className="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 shadow-lg ring-2 ring-[#0d93f2]/20" style={{ backgroundImage: 'url("https://github.com/shadcn.png")' }}></div>
+            <Logo size="sm" theme="auto" />
             <div className="hidden md:flex flex-col">
               <h1 className="text-slate-900 dark:text-white text-base font-bold leading-tight">Artist Hub</h1>
               <p className="text-slate-500 dark:text-slate-400 text-xs font-normal">Tour Management</p>

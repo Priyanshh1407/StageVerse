@@ -178,24 +178,45 @@ function Warm({ children }) {
     useEffect(() => {
         let alive = true;
         const done = () => { if (alive) setReady(true); };
+        let timer;
         if (group.current) {
             // Shaders differ when drawn into an offscreen buffer (bloom renders the stage into one:
             // no tone mapping, linear colour) and straight to the screen (bloom off after a quality
-            // step-down). Compile both, so neither compiles on the spot later.
+            // step-down). Start both compiles (they run in parallel, off the main thread), then poll
+            // until they're linked. (three's compileAsync crashed when a material was replaced while
+            // compiling, e.g. the LED wall redrawn once its fonts load, and then never resolved.)
             const offscreen = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
             const previous = gl.getRenderTarget();
-            gl.setRenderTarget(offscreen);
-            const intoBuffer = gl.compileAsync(group.current, camera, scene);
-            gl.setRenderTarget(previous);
-            const toScreen = gl.compileAsync(group.current, camera, scene);
-            Promise.all([intoBuffer, toScreen]).then(done, done).finally(() => offscreen.dispose());
+            const materials = new Set();
+            try {
+                gl.setRenderTarget(offscreen);
+                gl.compile(group.current, camera, scene).forEach((m) => materials.add(m));
+                gl.setRenderTarget(previous);
+                gl.compile(group.current, camera, scene).forEach((m) => materials.add(m));
+            } catch {
+                gl.setRenderTarget(previous);
+            }
+            offscreen.dispose();
+            const started = performance.now();
+            const poll = () => {
+                if (!alive) return;
+                let ready = true;
+                for (const m of materials) {
+                    const program = gl.properties.get(m)?.currentProgram;
+                    if (program && !program.isReady()) { ready = false; break; }
+                }
+                // shown at the latest after 4 s, whatever the driver says
+                if (ready || performance.now() - started > 4000) done();
+                else timer = setTimeout(poll, 30);
+            };
+            poll();
         }
-        return () => { alive = false; };
+        return () => { alive = false; clearTimeout(timer); };
     }, [gl, camera, scene]);
     return <group ref={group} visible={ready}>{children}</group>;
 }
 
-export default function StageScene({ beams, bloom, look, events = [], lasers = 40, blinders = 8, screen, font }) {
+export default function StageScene({ beams, bloom, look, events = [], lasers = 40, blinders = 8, screen, font, logoFonts }) {
     const dressed = useAfterFirstFrames();
     const truss = useMemo(() => createTrussGeometry(), []);
     const backdrop = useMemo(() => createBackdropMaterial(), []);
@@ -219,9 +240,9 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                 <mesh geometry={truss}>
                     <meshLambertMaterial color="#565c69" emissive="#040507" />
                 </mesh>
-                <LedWall look={look} events={events} screen={screen} font={font} />
+                <LedWall look={look} events={events} screen={screen} font={font} logoFonts={logoFonts} />
                 <PixelBars look={look} />
-                <Venue look={look} font={font} />
+                <Venue look={look} font={font} logoFonts={logoFonts} />
                 <Lasers look={look} count={lasers} fixtures={beams} />
                 <HouseLights look={look} />
                 <Haze look={look} blinders={blinders} />
