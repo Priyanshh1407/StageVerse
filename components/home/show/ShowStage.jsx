@@ -41,6 +41,27 @@ function directFrame(control, look, camera, aim, delta) {
     aim.look[0] = shot.target[0];
     aim.look[1] = shot.target[1] + lift * 0.4;
     aim.look[2] = shot.target[2];
+    // From the rig coming up (the 3rd section) to the encore (the second to last), the camera
+    // stands 5 m further back along its view, so the top truss isn't cut by the navbar; it eases
+    // in before the rig section and back out after the encore (the gate, the house lights and the
+    // playground keep their framing)
+    if (control.mode === 'scroll') {
+        const p = control.smoothProgress ?? control.progress ?? 0;
+        const ramp = (x) => { const k = Math.min(1, Math.max(0, x)); return k * k * (3 - 2 * k); };
+        const k = ramp((p - 0.33) / 0.04) * (1 - ramp((p - 0.885) / 0.035));
+        const back = 5 * k;
+        // and looks a little higher, so the whole rig sits below the navbar (there's floor to spare)
+        aim.look[1] += 1.8 * k;
+        if (back > 0) {
+            const dx = aim.pos[0] - aim.look[0];
+            const dy = aim.pos[1] - aim.look[1];
+            const dz = aim.pos[2] - aim.look[2];
+            const len = Math.hypot(dx, dy, dz) || 1;
+            aim.pos[0] += (dx / len) * back;
+            aim.pos[1] += (dy / len) * back;
+            aim.pos[2] += (dz / len) * back;
+        }
+    }
     easing.damp3(camera.position, aim.pos, 1.8, delta);
     easing.damp3(aim.target, aim.look, 1.8, delta);
     camera.lookAt(aim.target);

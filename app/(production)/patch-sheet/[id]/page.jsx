@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, use } from 'react';
-import { Loader2, Table2, Calculator, Save, RefreshCw, Pencil, X } from 'lucide-react';
+import { Loader2, Table2, Calculator, Save, RefreshCw, Pencil, X, Download } from 'lucide-react';
+import { toGrandMA3Xml, grandMA3FileName } from '@/lib/patch/grandma3';
 import StudioNavbar from '@/components/production/StudioNavbar';
 import PatchingSidebar from '@/components/production/patcher/PatchingSidebar';
 import PatchMainArea from '@/components/production/patcher/PatchMainArea';
@@ -66,6 +67,25 @@ export default function PatchSheetPage(props) {
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, [showId]);
+
+  // The patch as a grandMA3 XML file (import it into a show that has these fixture types)
+  const handleExportGrandMA3 = () => {
+    if (!patches.length) {
+      toast.error('The patch is empty: nothing to export.');
+      return;
+    }
+    const { xml, exported, skipped } = toGrandMA3Xml(patches, { name: activeShow?.name, version: activeShow?.version });
+    const url = URL.createObjectURL(new Blob([xml], { type: 'application/xml' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = grandMA3FileName(activeShow?.name);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (skipped.length) toast.warning(`Exported ${exported} fixtures for grandMA3. ${skipped.length} left out (address clashes or invalid addresses): see the note at the top of the file.`);
+    else toast.success(`Exported ${exported} fixtures for grandMA3.`);
+  };
 
   const handleSavePatch = async () => {
     setIsSaving(true);
@@ -226,7 +246,17 @@ export default function PatchSheetPage(props) {
             </div>
 
             {}
-            <div className="grid grid-cols-2 md:flex items-center gap-3">
+            <div className="grid grid-cols-3 md:flex items-center gap-3">
+              <button
+                onClick={handleExportGrandMA3}
+                disabled={isLoading || !patches.length}
+                title="Download the patch as a grandMA3 XML file"
+                className="flex items-center justify-center gap-2 px-3 py-2 bg-[#1a1a1a] hover:bg-[#2c3e50] border border-[#2c3e50] rounded-lg text-xs font-bold text-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="w-3.5 h-3.5" />
+                grandMA3
+              </button>
+
               <button
                 onClick={fetchPatch}
                 disabled={isLoading}

@@ -166,7 +166,7 @@ This is a non-commercial portfolio project built for learning. The songs used in
 - [x] Collision-free DMX allocation with overlap checks, and an AI patch assistant on top of it.
 - [x] Real-time show sync over Socket.IO with server-authoritative state.
 - [x] 3D homepage concert with song analysis and automatic light-show programming.
-- [ ] GrandMA3 patch export: serialize the patch to the console's `.xml` import format so it loads in grandMA3 onPC.
+- [x] GrandMA3 patch export: the patch sheet downloads the patch as grandMA3 XML (`lib/patch/grandma3.js`; lines with clashes or bad addresses are left out and listed in the file). Not yet test-imported on grandMA3 onPC.
 - [ ] Art-Net / sACN packet simulator to visualize DMX data transmission in the browser (universes mapped to UDP packets).
 - [ ] RDM (Remote Device Management) telemetry, to simulate automated fixture monitoring.
 - [ ] Ticketing (parked; see above).
