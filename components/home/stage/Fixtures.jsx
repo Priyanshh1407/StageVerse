@@ -64,7 +64,7 @@ function driveRole(u, role, target, state, delta) {
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
-    u.uConverge.value = drop > 0.5 ? converge : u.uConverge.value + (converge - u.uConverge.value) * ease;
+    u.uConverge.value += (converge - u.uConverge.value) * (drop > 0.5 ? Math.min(1, delta * 9) : ease);
     u.uSideways.value = role.sideways ? drop : 0;
     u.uDown.value += ((role === ROLES.wash ? target.washDown ?? 0 : 0) - u.uDown.value) * ease;
     // Converging beams meet mid-air over the stage, or (focus) on the centre of the stage floor
@@ -88,6 +88,8 @@ function driveRole(u, role, target, state, delta) {
     // tilt only downward (a "sky" position lifting them into the sky looked wrong)
     const shift = role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0)) : target.tiltShift ?? 0;
     u.uTiltShift.value += (shift - u.uTiltShift.value) * ease;
+    const tiltWave = role.ownAim ? 0 : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
+    u.uTiltWave.value += (tiltWave - u.uTiltWave.value) * ease;
     u.uPhaseSpread.value += ((target.phaseSpread ?? 0.25) - u.uPhaseSpread.value) * ease;
     u.uHaze.value += (target.haze - u.uHaze.value) * ease;
     u.uColorA.value.lerp(ta, ease);
@@ -97,7 +99,7 @@ function driveRole(u, role, target, state, delta) {
     state.level += (wanted - state.level) * ease;
     const strobe = role === ROLES.wash ? 0 : target.strobe ?? 0; // strobing is the strobes' job; beams flicker with them
     const flash = (u.uTime.value * 12.5) % 1 < 0.3 ? 1.6 : 0.15;
-    u.uIntensity.value = state.level * (1 + (target.pulse ?? 0) * 0.7) * (1 + (flash - 1) * strobe * 0.5);
+    u.uIntensity.value = state.level * (1 + (target.pulse ?? 0) * 0.7) * (1 + (flash - 1) * strobe * 0.12);
 }
 
 function RoleGroup({ roleName, fixtures, parts, map, look }) {

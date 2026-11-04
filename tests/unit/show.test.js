@@ -268,9 +268,11 @@ describe('programming rules (concert-style)', () => {
         expect(look.wash).toBe(0);
         expect(look.focusFloor).toBe(1);
         expect(look.laser).toBe(0);
-        // one colour for the whole rig, changing smoothly (over a bar) every 2 bars
+        // one colour for the whole rig, alternating with two-colour phrases (every other beam in each
+        // colour, all on the centre), changing smoothly (over a bar) every 2 bars
         const phrases = show.cues.filter((c) => c.name.startsWith('Focus'));
-        for (const c of phrases) expect(c.look.colorA).toBe(c.look.colorB);
+        phrases.forEach((c, k) => (k % 2 ? expect(c.look.colorA).not.toBe(c.look.colorB) : expect(c.look.colorA).toBe(c.look.colorB)));
+        expect(phrases.some((c) => c.name.endsWith('two colours'))).toBe(true);
         expect(new Set(phrases.map((c) => c.look.colorA)).size).toBeGreaterThan(1);
         for (const c of phrases.slice(1)) expect(c.fade).toBeGreaterThanOrEqual(1.9);
     });

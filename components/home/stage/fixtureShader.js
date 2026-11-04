@@ -23,6 +23,7 @@ export function createRoleUniforms({ scale = 2.3, spread = 1, opacity = 1 } = {}
         uSpeed: { value: 0.6 },
         uFan: { value: 1 },
         uTiltShift: { value: 0 },
+        uTiltWave: { value: 0 },       // up-and-down swing of the wave (radians)
         uPhaseSpread: { value: 0.25 },
         uSweep: { value: 0.3 },
         uConverge: { value: 0 },
@@ -58,6 +59,7 @@ const RIG_GLSL = /* glsl */ `
     uniform float uSweep;
     uniform float uFan;
     uniform float uTiltShift;
+    uniform float uTiltWave;
     uniform float uPhaseSpread;
     uniform float uConverge;
     uniform vec3 uTarget;
@@ -79,10 +81,12 @@ const RIG_GLSL = /* glsl */ `
     // Where the beam should point (world space). The position comes from the cue (fan width,
     // tilt); movement is one coordinated effect: a pan sweep shared by the whole row, offset along
     // the row by phaseSpread (0 = unison, 1 = a wave). "phase" is the fixture's place in its row.
+    // uTiltWave adds an up-and-down swing on the same cycle, a quarter turn behind the pan, so a
+    // row with a phase spread rolls like a wave (each beam traces a smooth loop, no reversals).
     vec3 aimDirection(vec3 from, vec2 base, float phase) {
         float t = uPhase + phase * uPhaseSpread * 6.2832;
         float pan = base.x * uFan + sin(t) * uSweep;
-        float tilt = base.y + uTiltShift + sin(t * 2.0) * uSweep * 0.12;
+        float tilt = base.y + uTiltShift + sin(t * 2.0) * uSweep * 0.12 + cos(t) * uTiltWave;
         vec3 sweepDir = normalize(vec3(sin(tilt) * sin(pan), -cos(tilt), sin(tilt) * cos(pan)));
         vec3 dir = normalize(mix(sweepDir, normalize(uTarget - from), uConverge));
         // The drop: thrown up and out over the audience, splayed to this fixture's side
@@ -93,12 +97,17 @@ const RIG_GLSL = /* glsl */ `
     }
 
     // Per-fixture on/off: alternate swaps odd and even beams every beat; sparkle switches random
-    // beams off every half beat (on/off only)
-    float fixtureHash(float idx, float salt) { return fract(sin(idx * 12.9898 + floor(uBeat * 2.0) * 78.233 + salt) * 43758.5453); }
+    // beams off every half beat. Both crossfade over a moment instead of snapping (hard switching
+    // across the whole rig read as choppy at full energy)
+    float fixtureHash(float idx, float slot, float salt) { return fract(sin(idx * 12.9898 + slot * 78.233 + salt) * 43758.5453); }
     float fixtureGate() {
-        float altOn = step(0.5, fract(uBeat * 0.5 + mod(aIndex, 2.0) * 0.5));
+        float f = fract(uBeat * 0.5 + mod(aIndex, 2.0) * 0.5);
+        float altOn = smoothstep(0.42, 0.5, f) * (1.0 - smoothstep(0.92, 1.0, f));
         float g = mix(1.0, altOn, uAlternate);
-        return g * mix(1.0, step(0.4, fixtureHash(aIndex, 1.7)), uSparkle);
+        float slot = floor(uBeat * 2.0);
+        float k = smoothstep(0.75, 1.0, fract(uBeat * 2.0));
+        float sparkleOn = mix(step(0.4, fixtureHash(aIndex, slot, 1.7)), step(0.4, fixtureHash(aIndex, slot + 1.0, 1.7)), k);
+        return g * mix(1.0, sparkleOn, uSparkle);
     }
     // Colour isn't randomised (focus keeps one colour; colour changes fade smoothly, all together)
     float fixtureColorMix(float base) { return base; }

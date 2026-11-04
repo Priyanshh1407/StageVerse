@@ -218,3 +218,47 @@ describe('programming hand-marked songs', () => {
         for (let i = 1; i < bursts.length; i++) expect(bursts[i] - bursts[i - 1]).toBeGreaterThanOrEqual(16 - 0.01);
     });
 });
+
+describe('drops and focus (items 6 and 12)', () => {
+    // 96 bars at 120 BPM (2 s a bar)
+    const beats = Array.from({ length: 96 * 4 }, (_, i) => i * 0.5);
+    const base = { bpm: 120, duration: 192, beats, downbeats: beats.map((_, i) => i).filter((i) => i % 4 === 0), energy: [], sections: [] };
+    const sec = (start, end, kind) => ({ start, end, kind });
+
+    it('rotates three drop styles: the laser spool, the slam after a beat of blackout, the burst out of one point', () => {
+        const sections = [sec(0, 16, 'intro'), sec(16, 40, 'build'), sec(40, 64, 'peak'), sec(64, 80, 'groove'), sec(80, 96, 'build'), sec(96, 120, 'peak'),
+            sec(120, 136, 'groove'), sec(136, 152, 'build'), sec(152, 176, 'peak'), sec(176, 192, 'outro')];
+        const show = programShow({ ...base, sections }, { title: 'drops' });
+        expect(show.hits.some((h) => h.kind === 'drop' && h.t === 40)).toBe(true);
+        const pause = show.cues.find((c) => c.name.endsWith('the pause'));
+        expect(pause.t).toBeCloseTo(95.5);
+        expect(pause.look.master).toBe(0);
+        expect(show.cues.find((c) => c.name.endsWith('slam')).t).toBe(96);
+        const pinch = show.cues.find((c) => c.name.endsWith('pinch'));
+        expect(pinch.t).toBe(152);
+        expect(pinch.look.converge).toBe(1);
+        expect(show.cues.find((c) => c.name.endsWith('burst out')).look.converge).toBe(0);
+    });
+
+    it('gathers the beams on centre stage, pulsing, where the singing is strongest outside the peaks', () => {
+        const sections = [sec(0, 16, 'intro'), sec(16, 80, 'groove'), sec(80, 120, 'peak'), sec(120, 176, 'groove'), sec(176, 192, 'outro')];
+        // singing strongest from 40 to 48 s
+        const vocals = Array.from({ length: 384 }, (_, i) => (i >= 80 && i < 96 ? 0.9 : 0.15));
+        const show = programShow({ ...base, sections, vocals }, { title: 'vocal' });
+        const focus = show.cues.filter((c) => c.name === 'Vocal focus');
+        expect(focus.length).toBeGreaterThan(0);
+        expect(focus[0].t).toBeGreaterThanOrEqual(38);
+        expect(focus[0].t).toBeLessThanOrEqual(42);
+        expect(focus[0].look.converge).toBeGreaterThan(0.8);
+        expect(focus[0].look.pulseAmount).toBe(1);
+        // and the solos keep clear of it
+        const solos = show.cues.filter((c) => c.name.startsWith('Solo · ') && !c.name.includes(' · bar '));
+        for (const s of solos) expect(Math.abs(s.t - focus[0].t)).toBeGreaterThanOrEqual(8 - 0.01);
+    });
+
+    it('waves the beams up and down as well as side to side', () => {
+        const sections = [sec(0, 8, 'intro'), sec(8, 184, 'groove'), sec(184, 192, 'outro')];
+        const show = programShow({ ...base, sections }, { title: 'wave' });
+        expect(show.cues.some((c) => c.look?.tiltWave > 0.2 && c.look.phaseSpread === 1)).toBe(true);
+    });
+});

@@ -311,12 +311,40 @@ function ShowExperience({ events = [], isPhone = false }) {
         }
     };
 
+    // The drop, from the desk or the playground, three ways real shows land one (each ~2.6 s, then
+    // back to exactly what the desk had; a new drop cancels one still running):
+    //   spool  everything dark but the lasers, which open up from the centre, then the rig slams in
+    //   slam   half a second of total blackout, then everything at full, fanned over the crowd
+    //   burst  every beam pinched onto the centre, then exploding out wide
+    const fireDrop = (style = 'slam') => {
+        takeOver();
+        const c = control.current;
+        (c.dropTimers || []).forEach(clearTimeout);
+        const saved = c.dropSaved && c.dropTimers?.length ? c.dropSaved : { ...c.desk };
+        c.dropSaved = saved;
+        const at = (ms, patch) => setTimeout(() => { c.desk = { ...c.desk, ...patch }; }, ms);
+        const full = { master: 1, beams: 1, sides: 1, floor: 1, wash: 1, pixel: 1, laser: 1, laserSeq: 0, laserAmount: 1, laserSpread: 1.8, intensity: 1.6 };
+        if (style === 'spool') {
+            c.desk = { ...c.desk, beams: 0, sides: 0, floor: 0, wash: 0, pixel: 0, laser: 1, laserSeq: 0, laserAmount: 0.08, laserSpread: 1.8, strobe: 0, blinder: 0 };
+            c.dropTimers = [at(150, { laserAmount: 1 }), at(1500, { ...full, ...{ fan: 1.4, converge: 0 }, blinder: 1, strobe: 1 }), at(1850, { blinder: 0 }), at(2300, { strobe: 0 })];
+        } else if (style === 'burst') {
+            c.desk = { ...c.desk, ...full, converge: 1, focusFloor: 0, sweep: 0.05, strobe: 1, blinder: 0 };
+            c.dropTimers = [at(450, { converge: 0, fan: 1.8, tiltShift: -0.05, sweep: 0.5, blinder: 1 }), at(800, { blinder: 0 }), at(1400, { strobe: 0 })];
+        } else {
+            c.desk = { ...c.desk, master: 0, strobe: 0, blinder: 0 };
+            c.dropTimers = [at(500, { ...full, fan: 1.5, tiltShift: -0.1, converge: 0, blinder: 1, strobe: 1 }), at(850, { blinder: 0 }), at(1700, { strobe: 0 })];
+        }
+        c.dropTimers.push(setTimeout(() => { c.desk = { ...saved }; c.dropTimers = []; c.dropSaved = null; }, 2600));
+    };
+    const nextDrop = useRef(0);
+
     // One-tap lighting for the playground's "Run the lights" step (the same actions as the desk)
     const manual = mode === 'manual';
     const isOn = (key) => manual && desk[key] > 0.05;
     const toggle = (key) => changeDesk({ [key]: isOn(key) ? 0 : 1 });
     const QUICK = [
-        { key: 'drop', label: 'Drop', icon: Flame, hint: 'The big moment', tap: () => momentary({ converge: 1, intensity: 1.6, strobe: 1, blinder: 1, dropFx: 1, laserChase: 1 }, 'pulse') },
+        // each tap lands the drop a different way: slam, burst, laser spool
+        { key: 'drop', label: 'Drop', icon: Flame, hint: 'The big moment', tap: () => fireDrop(['slam', 'burst', 'spool'][nextDrop.current++ % 3]) },
         { key: 'strobe', label: 'Strobe', icon: Zap, hint: 'Hold', hold: true },
         { key: 'laser', label: 'Lasers', icon: Sparkles, hint: 'On / off', tap: () => toggle('laser'), active: isOn('laser') },
         { key: 'blinder', label: 'Blinders', icon: SunDim, hint: 'On / off', tap: () => toggle('blinder'), active: isOn('blinder') },
@@ -656,6 +684,7 @@ function ShowExperience({ events = [], isPhone = false }) {
 
                 <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex flex-col items-end gap-3 pointer-events-none">
                     <LightingDesk
+                        onDrop={fireDrop}
                         open={deskOpen}
                         onOpenChange={(open) => (open ? bigScreenOnly(() => setDeskOpen(true))() : setDeskOpen(false))}
                         desk={desk}

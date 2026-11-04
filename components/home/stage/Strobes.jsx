@@ -11,7 +11,7 @@ import { roomFlash } from './flash';
 export const STROBE_URL = '/fixtures/strobe.glb';
 const FLASH_MATERIALS = new Set(['laser_rojo', 'L201']); // the front panel and the lamp tube
 const WIDTH = 1.5; // metres across, like a large LED strobe (scaled up to read from the audience)
-const BLINDER_WHITE = new THREE.Color('#ffeedd'); // blinder hits: warm white (strobe hits use look.strobeColor)
+const BLINDER_WHITE = new THREE.Color('#ffe2a6'); // blinder hits: warm, slightly yellowish white, like tungsten blinders (strobe hits use look.strobeColor)
 // The light of each firing strobe, shaped like its panel: the whole rectangular face lit evenly,
 // with a soft flood fading out from its edges, so the room flash reads as coming from the boxes.
 // Its total brightness matches the old separate blinder lamps (8 of them at 1.8x), shared across
