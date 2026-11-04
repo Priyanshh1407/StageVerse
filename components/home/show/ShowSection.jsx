@@ -271,6 +271,16 @@ function ShowExperience({ events = [], isPhone = false }) {
     };
 
     // --- Lighting desk -------------------------------------------------------------------
+    // While the show runs, the open desk mirrors it (switches, faders and encoders show what's on
+    // stage now), like a console following a playback; touching any control takes over from there
+    useEffect(() => {
+        if (!deskOpen || mode === 'manual') return undefined;
+        const tick = () => setDesk(currentState(control.current).look);
+        tick();
+        const id = setInterval(tick, 300);
+        return () => clearInterval(id);
+    }, [deskOpen, mode]);
+
     const takeOver = () => {
         const c = control.current;
         if (c.mode === 'manual') return;

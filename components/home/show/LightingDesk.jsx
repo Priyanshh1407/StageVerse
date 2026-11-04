@@ -22,7 +22,8 @@ const COLORS = [
     { value: '#ffffff', label: 'White' },
 ];
 
-// The fader bank: one channel strip per fixture group (level 0..max, shown as DMX 0-255)
+// One channel per fixture type: an on/off switch and a flash (bump) button. `on` is the level the
+// switch sets (the random strobes light a share of the strobes)
 const CHANNELS = [
     { key: 'beams', label: 'Aerials' },
     { key: 'sides', label: 'Towers' },
@@ -30,8 +31,7 @@ const CHANNELS = [
     { key: 'wash', label: 'Wash' },
     { key: 'pixel', label: 'LED bars' },
     { key: 'laser', label: 'Lasers' },
-    { key: 'strobeRandom', label: 'Strobes', flash: 0.6 },
-    { key: 'haze', label: 'Haze' },
+    { key: 'strobeRandom', label: 'Strobes', on: 0.3, flash: 0.6 },
 ];
 const dmx = (v, max = 1) => Math.round(Math.max(0, Math.min(1, (v ?? 0) / max)) * 255);
 
@@ -53,6 +53,21 @@ const Fader = ({ label, value, max = 1, onChange, onFlash, onRelease, accent = '
 );
 
 /** A horizontal parameter control (a console's encoder), with its value. */
+/** A fixture channel: its on/off switch and, below it, a flash (bump) button. */
+const Channel = ({ label, on, onToggle, onFlash, onRelease }) => (
+    <div className="flex flex-col gap-1 min-w-0">
+        <button onClick={onToggle} aria-pressed={on} aria-label={`${label} ${on ? 'on' : 'off'}`}
+            className={`rounded py-2 text-[10px] font-black tracking-wider transition-colors ${on ? 'bg-cyan-400 text-black shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-white/10 text-gray-400 hover:bg-white/15'}`}>
+            {on ? 'ON' : 'OFF'}
+        </button>
+        <button onPointerDown={onFlash} onPointerUp={onRelease} onPointerLeave={onRelease} aria-label={`Flash ${label}`}
+            className="rounded py-1 bg-white/10 hover:bg-white/20 active:bg-yellow-300 active:text-black text-[9px] font-black tracking-wider select-none touch-none">
+            FLASH
+        </button>
+        <span className="text-[9px] uppercase tracking-wider text-gray-400 text-center leading-tight truncate">{label}</span>
+    </div>
+);
+
 const Encoder = ({ label, hint, value, min, max, step = 0.01, onChange }) => (
     <label className="block text-[10px] text-gray-400">
         <span className="flex justify-between gap-2"><span>{label}{hint && <span className="text-gray-500"> · {hint}</span>}</span><span className="font-mono text-cyan-300">{Number(value ?? 0).toFixed(step < 1 ? 2 : 0)}</span></span>
@@ -95,8 +110,8 @@ const Key = ({ on, onClick, children, danger }) => (
 );
 
 /**
- * The lighting desk, laid out like a DMX console (item 8): a fader bank with a grand master and a
- * channel strip per fixture group (DMX 0-255, a flash button under each), then the programmer
+ * The lighting desk, laid out like a DMX console (item 8): a grand master fader (DMX 0-255) with
+ * blackout, an on/off switch and a flash button per fixture type, then the programmer
  * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops).
  * Touching any control takes the lights over (manual mode) until "Resume show". `desk` is the
  * look being shown, `counts` the fixture counts.
@@ -116,9 +131,9 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
     const release = (key) => () => onMomentary({ [key]: desk[key] ?? 0 }, false);
 
     return (
-        <div className="pointer-events-auto w-[calc(100vw-2rem)] sm:w-[36rem] max-h-[78vh] overflow-y-auto rounded-xl bg-[#07090d]/95 border border-white/15 p-3 text-white shadow-2xl">
-            {/* Console header */}
-            <div className="flex items-center justify-between gap-3 mb-2.5">
+        <div className="pointer-events-auto w-[calc(100vw-2rem)] sm:w-[36rem] max-h-[78vh] overflow-y-auto overscroll-contain rounded-xl bg-[#07090d]/95 border border-white/15 px-3 pb-3 text-white shadow-2xl">
+            {/* Console header, pinned: Resume is always in reach */}
+            <div className="sticky top-0 z-10 -mx-3 px-3 pt-3 pb-2.5 mb-0.5 bg-[#07090d] flex items-center justify-between gap-3">
                 <div>
                     <div className="font-mono text-xs font-black tracking-[0.3em] text-cyan-300">STAGEVERSE CONSOLE</div>
                     <div className="font-mono text-[10px] text-gray-500">DMX UNIVERSE 1 · {manual ? 'DESK LIVE' : 'SHOW RUNNING · touch any control to take over'}</div>
@@ -133,20 +148,25 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 </div>
             </div>
 
-            {/* Fader bank */}
-            <Panel title="FADERS">
-                <div className="flex gap-1 overflow-x-auto pb-1">
-                    <div className="flex flex-col items-center gap-1.5 pr-2 mr-1 border-r border-white/10">
+            {/* Master and the fixture channels */}
+            <Panel title="FIXTURES">
+                <div className="flex gap-3">
+                    <div className="flex flex-col items-center gap-1.5 pr-3 border-r border-white/10">
                         <Fader label="Grand master" value={desk.intensity} max={2} accent="red" onChange={(v) => set({ intensity: v })} />
                         <button onClick={() => set({ master: desk.master > 0.5 ? 0 : 1 })} aria-pressed={desk.master < 0.5}
                             className={`w-12 py-1 rounded text-[9px] font-black ${desk.master < 0.5 ? 'bg-red-500 text-white' : 'bg-white/10 text-gray-300'}`}>
                             {desk.master < 0.5 ? 'BO ON' : 'BLACKOUT'}
                         </button>
                     </div>
-                    {CHANNELS.map((ch) => (
-                        <Fader key={ch.key} label={ch.label} value={desk[ch.key]} onChange={(v) => set({ [ch.key]: v })}
-                            onFlash={flash(ch.key, ch.flash ?? 1)} onRelease={release(ch.key)} />
-                    ))}
+                    <div className="grid grid-cols-4 gap-x-2 gap-y-3 flex-1 content-start">
+                        {CHANNELS.map((ch) => {
+                            const on = (desk[ch.key] ?? 0) > 0.02;
+                            return (
+                                <Channel key={ch.key} label={ch.label} on={on} onToggle={() => set({ [ch.key]: on ? 0 : ch.on ?? 1 })}
+                                    onFlash={flash(ch.key, ch.flash ?? 1)} onRelease={release(ch.key)} />
+                            );
+                        })}
+                    </div>
                 </div>
             </Panel>
 
@@ -163,6 +183,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                         <Encoder label="Speed" value={desk.speed} min={0} max={3} step={0.05} onChange={(v) => set({ speed: v })} />
                         <Encoder label="Wave" hint="0 = unison" value={desk.phaseSpread ?? 0.25} min={0} max={1} onChange={(v) => set({ phaseSpread: v })} />
                         <Encoder label="Wave height" hint="up and down" value={desk.tiltWave ?? 0} min={0} max={0.5} onChange={(v) => set({ tiltWave: v })} />
+                        <Encoder label="Haze" value={desk.haze} min={0} max={1} onChange={(v) => set({ haze: v })} />
                     </div>
                 </Panel>
             </div>
