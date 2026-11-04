@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { laserLayout } from './rigLayout';
+import { DECK_HEIGHT } from './trussGeometry';
 
 // Laser projectors, each throwing a flat fan of beams out over the audience that scans up and down,
 // like a real laser sheet:
@@ -153,7 +154,7 @@ export default function Lasers({ look, count = 40, fixtures = 64 }) {
         projectors.forEach((p, s) => {
             for (let k = 0; k < PER; k++) mesh.current.setMatrixAt(s * PER + k, m.makeTranslation(...p.pos));
             // the housing sits behind its aperture (and on the deck for the floor ones)
-            housings.current.setMatrixAt(s, m.makeTranslation(p.pos[0], p.tower ? p.pos[1] : 0.5 + HOUSING[1] / 2, p.pos[2] - HOUSING[2] / 2));
+            housings.current.setMatrixAt(s, m.makeTranslation(p.pos[0], p.tower ? p.pos[1] : DECK_HEIGHT + HOUSING[1] / 2, p.pos[2] - HOUSING[2] / 2));
             apertures.current.setMatrixAt(s, m.makeTranslation(p.pos[0], p.pos[1], p.pos[2] + 0.005));
             apertures.current.setColorAt(s, new THREE.Color(0, 0, 0));
         });

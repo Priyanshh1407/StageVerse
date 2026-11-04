@@ -4,15 +4,13 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { DECK_DEPTH } from './trussGeometry';
+import { DECK_DEPTH, DECK_HEIGHT } from './trussGeometry';
 import { roomFlash } from './flash';
-import { dressing } from './dressing';
 
 // Item 3, option 1: the deck's front and sides dressed in black pleated stage skirt (instead of bare,
 // lit-up board), with a thin LED strip along the top front edge in the show's two colours.
 // Two draw calls; the pleats and the strip's colour drift are computed in the shaders.
 const DECK_WIDTH = 30;
-const DECK_HEIGHT = 0.5;
 const HALF_W = DECK_WIDTH / 2;
 
 function createSkirtGeometry() {
@@ -100,9 +98,6 @@ export default function StageSkirt({ look, blinders }) {
 
     useFrame(({ clock }) => {
         if (!skirtMesh.current || !stripMesh.current) return;
-        // Desk try-out switch: off shows the bare deck as before
-        skirtMesh.current.visible = stripMesh.current.visible = dressing.skirt;
-        if (!dressing.skirt) return;
         const target = look.current;
         const t = clock.elapsedTime;
         const light = (target.master ?? 1) * Math.min(target.intensity, 1.4);

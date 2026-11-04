@@ -4,13 +4,13 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { createLedMaterial, createScreenContent } from './stageMaterials';
-import { SCREEN_Z } from './trussGeometry';
+import { DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 
 // Main wall plus two angled side screens, behind the truss. The wall fills the frame the structure
-// gives it: from the stage floor (deck top, y = 0.5) up to just under the lowest truss row (y = 12.6),
+// gives it: from the stage floor (deck top) up to just under the lowest truss row (y = 13),
 // and 26 m wide; the side screens fill the rest of the width, up to the towers. LED pixels stay the
 // same size as before (about 11 cm), so the grids grow with the screens.
-const WALL = { width: 26, bottom: 0.42, top: 12.6 }; // the bottom sits just into the deck, so no seam shows
+const WALL = { width: 26, bottom: DECK_HEIGHT - 0.08, top: 13 }; // the bottom sits just into the deck, so no seam shows
 const WALL_H = WALL.top - WALL.bottom;
 const WALL_Y = (WALL.top + WALL.bottom) / 2;
 const SCREENS = [

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { DECK_HEIGHT } from './trussGeometry';
 
 // Materials for the parts of the stage that aren't fixtures: the LED screens and the backdrop.
 
@@ -107,8 +108,6 @@ export function createFloorMaterial() {
             uHouse: { value: 0 },
             uFlash: { value: 0 },
             uTime: { value: 0 },
-            uGlossy: { value: 1 },   // 0 = the old matte floor with the colour smear (desk try-out switch)
-            uFade: { value: 1 },     // 1 = the floor nearest the camera fades to black (item 3, option 6)
         },
         vertexShader: /* glsl */ `
             varying vec3 vWorld;
@@ -125,10 +124,9 @@ export function createFloorMaterial() {
             uniform float uHouse;
             uniform float uFlash;
             uniform float uTime;
-            uniform float uGlossy;
-            uniform float uFade;
             varying vec3 vWorld;
 
+            const float DECK_TOP = ${DECK_HEIGHT.toFixed(2)};
             // A soft-edged rectangle test: 1 inside, fading out over blur metres
             float softRect(vec2 p, vec2 lo, vec2 hi, float blur) {
                 vec2 a = smoothstep(lo - blur, lo + blur, p) * (1.0 - smoothstep(hi - blur, hi + blur, p));
@@ -146,15 +144,15 @@ export function createFloorMaterial() {
                 // The deck's LED edge, a thin line right at the stage front
                 float tE = (0.0 - w.z) / r.z;
                 vec3 e = w + r * tE;
-                c += tint * softRect(e.xy, vec2(-15.0, 0.44), vec2(15.0, 0.52), 0.05 + blur * 0.15) * 0.35;
+                c += tint * softRect(e.xy, vec2(-15.0, DECK_TOP - 0.06), vec2(15.0, DECK_TOP + 0.02), 0.05 + blur * 0.15) * 0.35;
                 // The rig: lit trusses and beam bases, a broad glow
                 float tR = (-9.0 - w.z) / r.z;
                 vec3 g = w + r * tR;
-                c += tint * softRect(g.xy, vec2(-15.0, 0.5), vec2(15.0, 18.0), 2.5 + blur) * 0.08;
+                c += tint * softRect(g.xy, vec2(-15.0, DECK_TOP), vec2(15.0, 18.0), 2.5 + blur) * 0.08;
                 // The LED wall, hidden below the deck top
                 float tW = (-17.2 - w.z) / r.z;
                 vec3 s = w + r * tW;
-                float wall = softRect(s.xy, vec2(-13.0, 0.5), vec2(13.0, 12.6), 0.6 + blur);
+                float wall = softRect(s.xy, vec2(-13.0, DECK_TOP), vec2(13.0, 13.0), 0.6 + blur);
                 c += mix(tint, vec3(1.0), 0.25) * wall * 0.3;
                 float fresnel = 0.25 + 0.75 * pow(1.0 - abs(v.y), 4.0);
                 return c * fresnel * smoothstep(80.0, 20.0, dist);
@@ -200,24 +198,14 @@ export function createFloorMaterial() {
                 vec3 house = vec3(1.0, 0.7, 0.28) * uHouse * (0.16 + 0.09 * smoothstep(40.0, 0.0, abs(vWorld.x))) * step(vWorld.z, 33.4);
                 float fromStage = max(0.0, vWorld.z);                    // stage front is at z = 0
                 vec3 tint = mix(uColorA, uColorB, smoothstep(-14.0, 14.0, vWorld.x));
-                vec3 lit;
-                vec3 base;
-                if (uGlossy > 0.5) {
-                    float inside = step(vWorld.z, 33.4);
-                    // A faint bounce right at the stage edge, so the stage still sits on the floor
-                    float spill = exp(-fromStage * 0.18) * smoothstep(20.0, 8.0, abs(vWorld.x)) * 0.35;
-                    lit = (tint * spill * 0.22 + reflection(vWorld, tint) + pools(vWorld) * 0.1) * uLight * inside;
-                    base = vec3(0.004, 0.0045, 0.008);
-                } else {
-                    // The old matte floor: a broad smear of colour spilling off the stage
-                    float spill = exp(-fromStage * 0.055) * smoothstep(30.0, 4.0, abs(vWorld.x));
-                    float streak = exp(-abs(vWorld.x) * 0.35) * exp(-fromStage * 0.05) * 0.5;
-                    lit = tint * (spill + streak) * 0.22 * uLight;
-                    base = vec3(0.008, 0.009, 0.016);
-                }
+                float inside = step(vWorld.z, 33.4);
+                // A faint bounce right at the stage edge, so the stage still sits on the floor
+                float spill = exp(-fromStage * 0.18) * smoothstep(20.0, 8.0, abs(vWorld.x)) * 0.35;
+                vec3 lit = (tint * spill * 0.22 + reflection(vWorld, tint) + pools(vWorld) * 0.1) * uLight * inside;
+                vec3 base = vec3(0.004, 0.0045, 0.008);
                 // Inside the venue the floor nearest the camera fades to black, keeping the eye on the stage
                 float near = smoothstep(3.0, 14.0, length(vWorld.xz - cameraPosition.xz));
-                float fade = mix(1.0, near, uFade * step(vWorld.z, 33.4));
+                float fade = mix(1.0, near, step(vWorld.z, 33.4));
                 gl_FragColor = vec4((base + lit + house + vec3(0.55) * uFlash) * fade + wetRoad(vWorld), 1.0);
             }
         `,

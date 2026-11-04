@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { roomFlash } from './flash';
-import { dressing } from './dressing';
+import { DECK_HEIGHT } from './trussGeometry';
 
 // Item 3, option 4: low fog lying across the stage and the floor in front of it, catching the
 // show's colours. Three flat layers just above the floor and the deck with slowly drifting noise,
@@ -12,7 +12,7 @@ import { dressing } from './dressing';
 const LAYERS = [
     { y: 0.12, z: 7, depth: 18, seed: 2.1, strength: 1 },     // the floor in front of the stage
     { y: 0.32, z: 7, depth: 18, seed: 5.3, strength: 0.7 },
-    { y: 0.62, z: -8, depth: 18, seed: 8.7, strength: 0.8 },  // on the stage deck
+    { y: DECK_HEIGHT + 0.12, z: -8, depth: 18, seed: 8.7, strength: 0.8 },  // on the stage deck
 ];
 const WIDTH = 46;
 
@@ -74,8 +74,6 @@ export default function LowFog({ look, blinders }) {
     const group = useRef();
     useFrame(({ clock }) => {
         if (!group.current) return;
-        group.current.visible = dressing.fog;
-        if (!dressing.fog) return;
         const target = look.current;
         const t = clock.elapsedTime;
         const level = (target.master ?? 1) * Math.min(target.intensity, 1.4) * (0.6 + 0.4 * (target.haze ?? 0.5));

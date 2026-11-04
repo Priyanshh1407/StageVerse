@@ -1,16 +1,14 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useMemo } from 'react';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three';
-import { dressing } from './dressing';
+import { BARRIER_Z } from './PaSystem';
 
-// Item 3, option 3: the steel crowd barrier along the front of the stage with an empty photo pit
-// behind it. 1 m high, sections 1 m wide: a solid kick plate at the bottom and open vertical slats
-// above (so the stage edge still shows through from the audience), a round top rail, and the
-// foot plate reaching toward the audience. Merged into one geometry: one draw call.
-const PIT = 3;            // photo pit depth: the barrier stands 3 m in front of the stage
+// The steel crowd barrier in front of the stage, past the line of subwoofers, with the empty photo
+// pit between them. 1 m high, sections 1 m wide: a solid kick plate at the bottom and open vertical
+// slats above, a round top rail, and the foot plate reaching toward the audience. Merged into one
+// geometry: one draw call.
 const HEIGHT = 1.0;
 const SECTIONS = 32;      // 32 m wide, a little wider than the 30 m deck
 const SECTION = 1;
@@ -25,15 +23,15 @@ function createBarrierGeometry() {
     for (let i = 0; i < SECTIONS; i++) {
         const x = (i - (SECTIONS - 1) / 2) * SECTION;
         const w = SECTION - 0.03;                                         // a small gap between sections
-        box(w, 0.38, 0.04, x, 0.21, PIT);                                 // kick plate
-        box(w, 0.04, 0.05, x, 0.42, PIT);                                 // mid rail
-        for (let s = 0; s < 6; s++) box(0.025, HEIGHT - 0.44, 0.025, x - w / 2 + 0.08 + s * (w - 0.16) / 5, 0.42 + (HEIGHT - 0.44) / 2, PIT); // slats
-        box(0.05, HEIGHT, 0.06, x - w / 2 + 0.025, HEIGHT / 2, PIT);      // section posts
-        box(0.05, HEIGHT, 0.06, x + w / 2 - 0.025, HEIGHT / 2, PIT);
-        box(w, 0.02, 0.8, x, 0.01, PIT + 0.42);                           // foot plate on the audience side
-        box(0.04, 0.04, 0.95, x, 0.42, PIT + 0.38, -0.5);                 // brace down to the foot plate
+        box(w, 0.38, 0.04, x, 0.21, BARRIER_Z);                           // kick plate
+        box(w, 0.04, 0.05, x, 0.42, BARRIER_Z);                           // mid rail
+        for (let s = 0; s < 6; s++) box(0.025, HEIGHT - 0.44, 0.025, x - w / 2 + 0.08 + s * (w - 0.16) / 5, 0.42 + (HEIGHT - 0.44) / 2, BARRIER_Z); // slats
+        box(0.05, HEIGHT, 0.06, x - w / 2 + 0.025, HEIGHT / 2, BARRIER_Z); // section posts
+        box(0.05, HEIGHT, 0.06, x + w / 2 - 0.025, HEIGHT / 2, BARRIER_Z);
+        box(w, 0.02, 0.8, x, 0.01, BARRIER_Z + 0.42);                     // foot plate on the audience side
+        box(0.04, 0.04, 0.95, x, 0.42, BARRIER_Z + 0.38, -0.5);           // brace down to the foot plate
     }
-    const rail = new THREE.CylinderGeometry(0.04, 0.04, SECTIONS * SECTION, 10).rotateZ(Math.PI / 2).translate(0, HEIGHT, PIT);
+    const rail = new THREE.CylinderGeometry(0.04, 0.04, SECTIONS * SECTION, 10).rotateZ(Math.PI / 2).translate(0, HEIGHT, BARRIER_Z);
     parts.push(rail);
     // Strip uvs so every part merges with the same attributes
     for (const g of parts) g.deleteAttribute('uv');
@@ -42,12 +40,8 @@ function createBarrierGeometry() {
 
 export default function CrowdBarrier() {
     const geometry = useMemo(() => createBarrierGeometry(), []);
-    const mesh = useRef();
-    useFrame(() => {
-        if (mesh.current) mesh.current.visible = dressing.barrier;
-    });
     return (
-        <mesh ref={mesh} geometry={geometry}>
+        <mesh geometry={geometry}>
             <meshLambertMaterial color="#7d838f" emissive="#06070a" />
         </mesh>
     );

@@ -51,6 +51,7 @@ export const TOWER_FRONT_Z = -4;
 export const TOWER_MID_Z = -9;
 export const TOWER_REAR_Z = -14;
 export const SCREEN_Z = -17.2;           // the main LED wall
+export const DECK_HEIGHT = 1.8;          // a raised festival stage: the subs and the crowd barrier stand on the ground in front of it
 export const DECK_DEPTH = 18;            // the stage deck runs from its front edge (z = 0) back to z = -18
 
 // Every bar in the rig: [from, to]

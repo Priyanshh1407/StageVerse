@@ -6,6 +6,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { createBeamGeometry, createBeamMaterial, createGlowMaterial, createPartMaterial, createRoleUniforms } from './fixtureShader';
 import { rigLayout } from './rigLayout';
+import { DECK_HEIGHT } from './trussGeometry';
 
 export const MOVING_HEAD_URL = '/fixtures/moving-head.glb';
 
@@ -68,7 +69,7 @@ function driveRole(u, role, target, state, delta) {
     u.uDown.value += ((role === ROLES.wash ? target.washDown ?? 0 : 0) - u.uDown.value) * ease;
     // Converging beams meet mid-air over the stage, or (focus) on the centre of the stage floor
     const ff = target.focusFloor ?? 0;
-    u.uTarget.value.set(0, 4.5 - 4 * ff, -6.5 - 0.5 * ff);
+    u.uTarget.value.set(0, DECK_HEIGHT + 4 - 4 * ff, -6.5 - 0.5 * ff);
     // Beat-locked effects: the song's beat when one is playing, otherwise 120 BPM
     state.clock += delta;
     u.uBeat.value = target.beatPos ?? state.clock * 2;

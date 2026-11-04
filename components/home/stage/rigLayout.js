@@ -1,4 +1,4 @@
-import { ROWS, TOWER_FRONT_Z, TOWER_MID_Z, TOWER_REAR_Z } from './trussGeometry';
+import { DECK_HEIGHT, ROWS, TOWER_FRONT_Z, TOWER_MID_Z, TOWER_REAR_Z } from './trussGeometry';
 
 // Where every moving head is mounted, which job it does, and where it points at rest, as plain
 // data. Like a real rig, each group has one purpose (see ROLES): aerial beams fan up from the top
@@ -36,7 +36,7 @@ export const GROUPS = [
     // Row 4: aerials hanging under the lowest truss (above the LED wall), neighbours crossing
     { name: 'lowFan', role: 'aerial', mount: 'hanging', share: 0.16, layout: { rows: [ROWS[3].y - UNDER], z: ROWS[3].z, width: 28 }, tilt: 1.42, cross: 0.35 },
     // Standing on the front of the deck, firing up
-    { name: 'floor', role: 'floor', mount: 'standing', share: 0.18, layout: { y: 0.53, z: -0.6, width: 24 }, tilt: 2.4, panSpread: 1.0 },
+    { name: 'floor', role: 'floor', mount: 'standing', share: 0.18, layout: { y: DECK_HEIGHT + 0.03, z: -0.6, width: 24 }, tilt: 2.4, panSpread: 1.0 },
 ];
 
 const spread = (i, n, width) => (n === 1 ? 0 : -width / 2 + (width * i) / (n - 1));
@@ -124,9 +124,9 @@ export function strobeLayout(count) {
     return [...top, ...low, ...towers];
 }
 
-// Laser projectors: aperture height on the deck (deck top 0.5), and the tower ones clamped to the
+// Laser projectors: aperture height on the deck (0.3 m above the deck top), and the tower ones clamped to the
 // inner face of the front columns (column face, a 12 cm rod, then half the 0.75 m housing)
-const LASER_DECK_Y = 0.8;
+const LASER_DECK_Y = DECK_HEIGHT + 0.3;
 const LASER_TOWER_X = 15.6 - 0.225 - 0.12 - 0.375;
 const LASER_TOWER_HEIGHTS = [5.5, 9.5];
 

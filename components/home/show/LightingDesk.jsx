@@ -1,9 +1,7 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
-import { dressing as initialDressing, getDressing, setDressing, subscribeDressing } from '@/components/home/stage/dressing';
 import { BEAM_COUNTS } from '@/components/home/stage/useQualityTier';
-import { Power, Settings2, Sun, Zap, Music, Play, Square, RotateCcw, X, Lamp, SunDim, FlaskConical } from 'lucide-react';
+import { Power, Settings2, Sun, Zap, Music, Play, Square, RotateCcw, X, Lamp, SunDim } from 'lucide-react';
 
 // The basic lighting palette (what a console's colour picker offers), plus a custom picker
 const COLORS = [
@@ -74,13 +72,7 @@ const Section = ({ icon: Icon, title, right, children }) => (
  * The lighting desk. Touching any control takes the lights over (manual mode) until
  * "Resume show". `desk` is the look being shown, `counts` the fixture counts.
  */
-// Stage try-outs (item 3): switch parts of the stage on and off to compare. They don't take over
-// the show, so they can be flipped mid-song.
-const TRY_OUTS = [['skirt', 'Stage skirt + LED edge'], ['glossy', 'Glossy floor'], ['barrier', 'Crowd barrier'], ['fog', 'Low fog'], ['fade', 'Floor fades to dark']];
-const serverDressing = { ...initialDressing };
-
 export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, song }) {
-    const dressing = useSyncExternalStore(subscribeDressing, getDressing, () => serverDressing);
     if (!open) {
         return (
             <button onClick={() => onOpenChange(true)}
@@ -108,16 +100,6 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     <RotateCcw className="w-3.5 h-3.5" /> Resume show
                 </button>
             )}
-
-            <Section icon={FlaskConical} title="Stage try-outs">
-                <p className="text-[11px] text-gray-400">Compare the stage with and without each one. Doesn&apos;t interrupt the show.</p>
-                {TRY_OUTS.map(([key, label]) => (
-                    <div key={key} className="flex items-center justify-between text-xs">
-                        <span>{label}</span>
-                        <Toggle on={dressing[key]} onClick={() => setDressing({ [key]: !dressing[key] })} />
-                    </div>
-                ))}
-            </Section>
 
             <Section icon={Power} title="Master" right={<Toggle on={desk.master > 0.5} danger label={desk.master > 0.5 ? 'SYSTEM ON' : 'BLACKOUT'} onClick={() => set({ master: desk.master > 0.5 ? 0 : 1 })} />}>
                 <Slider label="Intensity" value={desk.intensity} min={0} max={2} step={0.05} onChange={(v) => set({ intensity: v })} />

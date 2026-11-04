@@ -16,8 +16,7 @@ import StageSkirt from './StageSkirt';
 import CrowdBarrier from './CrowdBarrier';
 import LowFog from './LowFog';
 import PaSystem from './PaSystem';
-import { dressing } from './dressing';
-import { createTrussGeometry, DECK_DEPTH, SCREEN_Z } from './trussGeometry';
+import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
 
@@ -28,8 +27,8 @@ import { roomFlash } from './flash';
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 + pixel bars 1 + strobe glow 1 + PA 2 + stage try-outs (skirt 2, barrier 1, low fog 3; hidden when switched off)
- * = 41, plus lasers and house lights (1 each, skipped while off) and bloom.
+ * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 3
+ * = 42, plus lasers and house lights (1 each, skipped while off) and bloom.
  */
 
 /**
@@ -74,7 +73,7 @@ const SKY_FRAGMENT = /* glsl */ `
     }
 `;
 
-/** Arena floor: glossy black reflecting the stage (or the old colour smear), warm when the house lights are up. */
+/** Arena floor: glossy black reflecting the stage, fading to dark near the camera, warm when the house lights are up. */
 function Floor({ look, blinders }) {
     const material = useMemo(() => createFloorMaterial(), []);
     const mesh = useRef();
@@ -88,8 +87,6 @@ function Floor({ look, blinders }) {
         u.uHouse.value += ((target.house ?? 0) - u.uHouse.value) * Math.min(1, delta * 1.5);
         u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
         u.uTime.value = clock.elapsedTime;
-        u.uGlossy.value = dressing.glossy ? 1 : 0;
-        u.uFade.value = dressing.fade ? 1 : 0;
     });
     return (
         <mesh ref={mesh} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 24]} material={material}>
@@ -109,8 +106,8 @@ function Deck({ look }) {
         mesh.current.material.emissive.copy(color.current.set(target.washColor ?? '#3b5bff')).multiplyScalar(0.12 * level);
     });
     return (
-        <mesh ref={mesh} position={[0, 0.25, -DECK_DEPTH / 2]}>
-            <boxGeometry args={[30, 0.5, DECK_DEPTH]} />
+        <mesh ref={mesh} position={[0, DECK_HEIGHT / 2, -DECK_DEPTH / 2]}>
+            <boxGeometry args={[30, DECK_HEIGHT, DECK_DEPTH]} />
             <meshLambertMaterial color="#14161d" />
         </mesh>
     );
