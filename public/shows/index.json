@@ -1,5 +1,5 @@
 {
-  "maxPerGenre": 2,
+  "maxPerGenre": 3,
   "demos": [
     {
       "slug": "a-sky-full-of-stars",
@@ -9,25 +9,60 @@
       "show": "/shows/a-sky-full-of-stars.show.json"
     },
     {
+      "slug": "closer",
+      "title": "Closer",
+      "artist": "The Chainsmokers feat. Halsey",
+      "genre": "edm",
+      "show": "/shows/closer.show.json"
+    },
+    {
+      "slug": "high-on-life-feat-bonn",
+      "title": "High On Life",
+      "artist": "Martin Garrix feat. Bonn",
+      "genre": "edm",
+      "show": "/shows/high-on-life-feat-bonn.show.json"
+    },
+    {
+      "slug": "smack-that",
+      "title": "Smack That",
+      "artist": "Akon feat. Eminem",
+      "genre": "pop",
+      "show": "/shows/smack-that.show.json"
+    },
+    {
       "slug": "yellow",
       "title": "Yellow",
       "artist": "Coldplay",
-      "genre": "edm",
+      "genre": "pop",
       "show": "/shows/yellow.show.json"
     },
     {
-      "slug": "girls-like-you",
-      "title": "Girls Like You",
-      "artist": "Maroon 5 feat. Cardi B",
-      "genre": "pop",
-      "show": "/shows/girls-like-you.show.json"
+      "slug": "band4band",
+      "title": "BAND4BAND",
+      "artist": "Central Cee & Lil Baby",
+      "genre": "rap",
+      "show": "/shows/band4band.show.json"
     },
     {
-      "slug": "one-dance",
-      "title": "One Dance",
-      "artist": "Drake feat. Wizkid & Kyla",
-      "genre": "pop",
-      "show": "/shows/one-dance.show.json"
+      "slug": "goosebumps",
+      "title": "goosebumps",
+      "artist": "Travis Scott",
+      "genre": "rap",
+      "show": "/shows/goosebumps.show.json"
+    },
+    {
+      "slug": "subha-hone-na-de",
+      "title": "Subha Hone Na De",
+      "artist": "Pritam (Desi Boyz)",
+      "genre": "bollywood",
+      "show": "/shows/subha-hone-na-de.show.json"
+    },
+    {
+      "slug": "uff-teri-adaa",
+      "title": "Uff Teri Adaa",
+      "artist": "Shankar-Ehsaan-Loy (Karthik Calling Karthik)",
+      "genre": "bollywood",
+      "show": "/shows/uff-teri-adaa.show.json"
     }
   ]
 }

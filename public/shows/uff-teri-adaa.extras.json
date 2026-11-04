@@ -1,0 +1,83 @@
+{
+  "title": "Uff Teri Adaa",
+  "artist": "Shankar-Ehsaan-Loy (Karthik Calling Karthik)",
+  "_note": "Hand-marked structure (bars of 1.82 s at 132.2 BPM, from the analysis bars): a beatless vocal opening lit free-flowing; the beat comes in 0:22; vocals 0:36; climbing 1:12; instrumental drop 1:19; groove 1:51; vocal hook 2:03; instrumental 2:49; quieter vocal break 3:31; climbing 3:49; final section 3:56; outro 4:58. Colours: warm amber, saffron and magenta. Re-run npm run demos after editing.",
+  "sections": [
+    {
+      "fromBar": 0,
+      "kind": "intro",
+      "free": true
+    },
+    {
+      "fromBar": 12,
+      "kind": "build"
+    },
+    {
+      "fromBar": 20,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 40,
+      "kind": "build"
+    },
+    {
+      "fromBar": 44,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 60,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 68,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 92,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 116,
+      "kind": "breakdown"
+    },
+    {
+      "fromBar": 126,
+      "kind": "build"
+    },
+    {
+      "fromBar": 130,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 164,
+      "kind": "outro"
+    }
+  ],
+  "paletteSpans": [
+    {
+      "from": 0,
+      "palettes": [
+        [
+          "#ffb000",
+          "#ff3df2"
+        ],
+        [
+          "#ff6a00",
+          "#00ffc8"
+        ],
+        [
+          "#ffd400",
+          "#a855f7"
+        ],
+        [
+          "#ff0055",
+          "#ffe8c8"
+        ],
+        [
+          "#ff9933",
+          "#19d9ff"
+        ]
+      ]
+    }
+  ]
+}

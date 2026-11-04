@@ -1,0 +1,24 @@
+{
+  "title": "High On Life",
+  "artist": "Martin Garrix feat. Bonn",
+  "genre": "edm",
+  "audio": "public/audio/edm/High On Life (feat. Bonn).mp3",
+  "bpm": 127.9,
+  "meter": 4,
+  "note": "From the hand-marked structure in public/shows/high-on-life-feat-bonn.extras.json. The sung choruses are not the peaks; the drops after them are.",
+  "sections": [
+    { "start": 0, "label": "intro" },
+    { "start": 7, "label": "verse" },
+    { "start": 37, "label": "chorus", "peak": false },
+    { "start": 52, "label": "pre-chorus" },
+    { "start": 67, "label": "drop", "peak": true },
+    { "start": 112, "label": "breakdown" },
+    { "start": 116, "label": "verse" },
+    { "start": 145, "label": "chorus", "peak": false },
+    { "start": 162, "label": "breakdown" },
+    { "start": 172, "label": "pre-chorus" },
+    { "start": 175, "label": "drop", "peak": true },
+    { "start": 222, "label": "outro" }
+  ],
+  "end": 230
+}

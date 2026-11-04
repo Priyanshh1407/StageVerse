@@ -186,3 +186,35 @@ describe('test set scoring', () => {
         expect(tempoScore(90, 120)).toBe('wrong');
     });
 });
+
+describe('programming hand-marked songs', () => {
+    // a plain 120 BPM song: 64 bars of 2 s
+    const beats = Array.from({ length: 64 * 4 }, (_, i) => i * 0.5);
+    const base = { bpm: 120, duration: 128, beats, downbeats: beats.map((_, i) => i).filter((i) => i % 4 === 0), energy: [], sections: [] };
+
+    it('takes a hand-marked structure as written', () => {
+        const extras = { sections: [{ fromBar: 0, kind: 'intro', free: true }, { fromBar: 8, kind: 'peak' }, { fromBar: 24, kind: 'groove' }, { fromBar: 40, kind: 'build' }, { fromBar: 48, kind: 'peak' }, { fromBar: 60, kind: 'outro' }] };
+        const show = programShow(base, { title: 'marked', extras });
+        // the groove after a peak isn't turned into a breakdown, the intro is free
+        expect(show.sections.map((s) => s.kind)).toEqual(['intro', 'peak', 'groove', 'build', 'peak', 'outro']);
+        expect(show.sections[0].free).toBe(true);
+        expect(show.cues.some((c) => /free/.test(c.name))).toBe(true);
+    });
+
+    it('keeps a build after a peak a build in an automatic structure too', () => {
+        const sections = [{ start: 0, end: 16, kind: 'intro' }, { start: 16, end: 48, kind: 'peak' }, { start: 48, end: 64, kind: 'build' }, { start: 64, end: 120, kind: 'peak' }, { start: 120, end: 128, kind: 'outro' }];
+        const show = programShow({ ...base, sections }, { title: 'auto' });
+        expect(show.sections.find((s) => s.start === 48).kind).toBe('build');
+    });
+
+    it('fires at most one burst per 8 bars in a peak, however often the loudness jumps', () => {
+        // a jump in loudness every 2 seconds (every bar), as trap kicks make
+        const energy = Array.from({ length: 256 }, (_, i) => (i % 4 === 0 ? 0.95 : 0.4));
+        const sections = [{ start: 0, end: 8, kind: 'intro' }, { start: 8, end: 120, kind: 'peak' }, { start: 120, end: 128, kind: 'outro' }];
+        const show = programShow({ ...base, energy, sections }, { title: 'jumpy' });
+        const bursts = show.hits.filter((h) => h.kind === 'burst').map((h) => h.t).sort((a, b) => a - b);
+        expect(bursts.length).toBeGreaterThan(0);
+        expect(bursts.length).toBeLessThanOrEqual(Math.ceil(112 / 16) + 1);
+        for (let i = 1; i < bursts.length; i++) expect(bursts[i] - bursts[i - 1]).toBeGreaterThanOrEqual(16 - 0.01);
+    });
+});

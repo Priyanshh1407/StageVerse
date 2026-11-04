@@ -61,7 +61,7 @@
     },
     {
       "fromBar": 39,
-      "kind": "groove"
+      "kind": "breakdown"
     },
     {
       "fromBar": 49,
@@ -73,7 +73,7 @@
     },
     {
       "fromBar": 69,
-      "kind": "groove"
+      "kind": "breakdown"
     },
     {
       "fromBar": 75,
@@ -85,7 +85,7 @@
     },
     {
       "fromBar": 91,
-      "kind": "calm"
+      "kind": "breakdown"
     },
     {
       "fromBar": 95,

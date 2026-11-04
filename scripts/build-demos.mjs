@@ -17,7 +17,7 @@ import { analyseSong } from '../lib/show/analysis.js';
 import { programShow } from '../lib/show/program.js';
 import { GENRE_KEYS, GENRES } from '../lib/show/genres.js';
 
-const MAX_PER_GENRE = 2;
+const MAX_PER_GENRE = 3;
 const AUDIO = /\.(mp3|m4a|ogg|wav|flac)$/i;
 const slugOf = (s) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;

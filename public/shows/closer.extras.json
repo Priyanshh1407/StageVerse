@@ -1,0 +1,82 @@
+{
+  "title": "Closer",
+  "artist": "The Chainsmokers feat. Halsey",
+  "_note": "Hand-marked structure (bars of 2.53 s at 95 BPM, from the analysis bars): intro; verse 1 0:11; sung chorus climbing into the drop 0:31; drop 1 0:51; post-drop 1:11; verse 2 1:34; chorus 2 climbing 1:52; drop 2 2:12; post-drop 2:32; bridge climbing 2:52; final drop 3:13 (the loudest part); outro 3:53. Colours: pastel blues, pinks and violets. Re-run npm run demos after editing.",
+  "sections": [
+    {
+      "fromBar": 0,
+      "kind": "intro"
+    },
+    {
+      "fromBar": 4,
+      "kind": "calm"
+    },
+    {
+      "fromBar": 12,
+      "kind": "build"
+    },
+    {
+      "fromBar": 20,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 28,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 36,
+      "kind": "calm"
+    },
+    {
+      "fromBar": 44,
+      "kind": "build"
+    },
+    {
+      "fromBar": 52,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 60,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 68,
+      "kind": "build"
+    },
+    {
+      "fromBar": 76,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 92,
+      "kind": "outro"
+    }
+  ],
+  "paletteSpans": [
+    {
+      "from": 0,
+      "palettes": [
+        [
+          "#3b5bff",
+          "#ff69b4"
+        ],
+        [
+          "#a855f7",
+          "#19d9ff"
+        ],
+        [
+          "#0066ff",
+          "#ff3df2"
+        ],
+        [
+          "#ffe8c8",
+          "#3b5bff"
+        ],
+        [
+          "#ff69b4",
+          "#00ffc8"
+        ]
+      ]
+    }
+  ]
+}

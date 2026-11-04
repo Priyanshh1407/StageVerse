@@ -1,0 +1,82 @@
+{
+  "title": "goosebumps",
+  "artist": "Travis Scott",
+  "_note": "Hand-marked structure (bars of 1.84 s at 130.2 BPM, from the analysis bars): quiet intro; the beat slams in 0:15; softer verse 0:29 (beat cut at 0:41); hook 0:44; loud verse 1:28; quieter verse climbing 2:05 (beat cut at 2:17); hook 2 2:20; vocal-heavy verse 2:49; climb 3:07; final hook 3:18; tail 3:48; outro 3:55. Colours: dark trap reds and purples. Re-run npm run demos after editing.",
+  "sections": [
+    {
+      "fromBar": 0,
+      "kind": "intro"
+    },
+    {
+      "fromBar": 8,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 16,
+      "kind": "calm"
+    },
+    {
+      "fromBar": 24,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 48,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 68,
+      "kind": "build"
+    },
+    {
+      "fromBar": 76,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 92,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 102,
+      "kind": "build"
+    },
+    {
+      "fromBar": 108,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 124,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 128,
+      "kind": "outro"
+    }
+  ],
+  "paletteSpans": [
+    {
+      "from": 0,
+      "palettes": [
+        [
+          "#ff0000",
+          "#a855f7"
+        ],
+        [
+          "#3b2bff",
+          "#ff0055"
+        ],
+        [
+          "#a855f7",
+          "#ffffff"
+        ],
+        [
+          "#ff0055",
+          "#0066ff"
+        ],
+        [
+          "#ff6a00",
+          "#3b2bff"
+        ]
+      ]
+    }
+  ]
+}

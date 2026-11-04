@@ -491,14 +491,17 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         {song.demos.length > 0 && (
                                             <div className="space-y-2 mb-4">
                                                 {GENRE_KEYS.filter((g) => song.demos.some((d) => d.genre === g)).map((g) => (
-                                                    <div key={g} className="flex flex-wrap items-center gap-2">
-                                                        <span className="w-20 shrink-0 font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400">{GENRES[g].label}</span>
-                                                        {song.demos.filter((d) => d.genre === g).map((demo) => (
-                                                            <button key={demo.slug} onClick={bigScreenOnly(() => playDemo(demo))} title={demo.artist ? `${demo.title} by ${demo.artist}` : demo.title}
-                                                                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/30 text-sm font-bold hover:border-white">
-                                                                <Music className="w-4 h-4" /> {demo.title}
-                                                            </button>
-                                                        ))}
+                                                    <div key={g} className="flex items-start gap-2">
+                                                        <span className="w-20 shrink-0 pt-2 font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400">{GENRES[g].label}</span>
+                                                        {/* the songs wrap within their own column, so a third song lines up under the first */}
+                                                        <div className="flex flex-wrap gap-2 min-w-0">
+                                                            {song.demos.filter((d) => d.genre === g).map((demo) => (
+                                                                <button key={demo.slug} onClick={bigScreenOnly(() => playDemo(demo))} title={demo.artist ? `${demo.title} by ${demo.artist}` : demo.title}
+                                                                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/30 text-sm font-bold hover:border-white">
+                                                                    <Music className="w-4 h-4" /> {demo.title}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -512,7 +515,8 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         </div>
                                         {song.demos.length > 0 && (
                                             <p className="mt-3 text-[11px] leading-snug text-gray-400">
-                                                Demo songs: {song.demos.map((d) => (d.artist ? `${d.title} (${d.artist})` : d.title)).join(', ')}. {SONG_NOTICE}
+                                                {/* each song's full credit is on its button and in the now-playing bar */}
+                                                Demo songs by {[...new Set(song.demos.map((d) => d.artist?.split(/ feat\. | \(/)[0]).filter(Boolean))].join(', ')}. {SONG_NOTICE}
                                             </p>
                                         )}
                                         {song.status && <p className="mt-3 text-xs text-cyan-200" role="status">{song.status}</p>}

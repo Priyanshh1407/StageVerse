@@ -2,7 +2,7 @@
   "title": "Yellow",
   "artist": "Coldplay",
   "genre": "pop",
-  "audio": "public/audio/edm/Yellow.mp3",
+  "audio": "public/audio/pop/Yellow.mp3",
   "bpm": 86.8,
   "meter": 4,
   "note": "From the hand annotation in public/shows/yellow.extras.json (bars of 2.76 s). The final, biggest section is a one-off climax, not a chorus.",
