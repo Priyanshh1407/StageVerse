@@ -60,8 +60,12 @@ export const DECK_DEPTH = 18;            // the stage deck runs from its front e
 // just above the LED wall (top edge y = 12.6). Seen from the audience every row shows, one below
 // the other. Each spans the full width and lands on the towers (on a column, or on a tie).
 const STEP = 1.5;
+// The front (top) row sits a little higher than the ladder below it, so its aerials read as hanging
+// clearly under it rather than level with the rows behind
+export const TOP_Y = 19.0;
+export const TOWER_HEIGHT = TOP_Y + 0.6;
 export const ROWS = [
-    { y: 18.4, z: TOWER_FRONT_Z },              // 1: aerials hanging underneath, facing the audience (front columns)
+    { y: TOP_Y, z: TOWER_FRONT_Z },             // 1: aerials hanging underneath, facing the audience (front columns)
     { y: 18.4 - STEP, z: TOWER_MID_Z },         // 2: stage wash, hanging (middle columns)
     { y: 18.4 - 2 * STEP, z: -11.5 },           // 3: stage wash, hanging (on a tie)
     { y: 18.4 - 3 * STEP, z: TOWER_REAR_Z },    // 4: aerials hanging underneath (rear columns)
@@ -73,10 +77,10 @@ export const TRUSS_BARS = [
     // middle and bottom; the ties run through the middle column, so it's one structure. Row 3
     // rests on its own tie. Side moving heads hang on the rear columns' inner faces.
     ...[TOWER_FRONT_Z, TOWER_MID_Z, TOWER_REAR_Z].flatMap((z) => [
-        [[-15.6, 0, z], [-15.6, 19, z]],
-        [[15.6, 0, z], [15.6, 19, z]],
+        [[-15.6, 0, z], [-15.6, TOWER_HEIGHT, z]],
+        [[15.6, 0, z], [15.6, TOWER_HEIGHT, z]],
     ]),
-    ...[18.4, ROWS[2].y, 8.5, 0.6].flatMap((y) => [
+    ...[TOP_Y, ROWS[2].y, 8.5, 0.6].flatMap((y) => [
         [[-15.6, y, TOWER_FRONT_Z], [-15.6, y, TOWER_REAR_Z]],
         [[15.6, y, TOWER_FRONT_Z], [15.6, y, TOWER_REAR_Z]],
     ]),

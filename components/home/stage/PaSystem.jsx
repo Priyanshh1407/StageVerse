@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three';
-import { DECK_HEIGHT, TOWER_FRONT_Z } from './trussGeometry';
+import { DECK_HEIGHT, TOP_Y, TOWER_FRONT_Z } from './trussGeometry';
 
 // The PA (item 13), as at big festivals:
 // - Line arrays: 16 boxes flown just outside each side tower from an outrigger arm off the top of
@@ -57,12 +57,12 @@ function createPa() {
         }
         // Bumper (the frame the array hangs from) and the two hoist chains up to the outrigger
         steel.push(place(new THREE.BoxGeometry(BOX.w + 0.1, 0.1, BOX.d + 0.1), toWorld(at(0, 0.06, 0))));
-        const len = 18.4 - (TOP + 0.11);
+        const len = TOP_Y - (TOP + 0.11);
         for (const z of [-0.25, 0.25]) steel.push(place(new THREE.CylinderGeometry(0.025, 0.025, len, 6), toWorld(at(0, 0.11 + len / 2, z))));
         // Outrigger: an arm out from the top of the tower, and a short one back to the front column
         const reach = ARRAY_X - TOWER_X + 0.5;
-        steel.push(place(new THREE.BoxGeometry(reach, 0.14, 0.14), at(side * (TOWER_X + reach / 2 - 0.2), 18.4, ARRAY_Z)));
-        steel.push(place(new THREE.BoxGeometry(0.14, 0.14, ARRAY_Z - TOWER_FRONT_Z), at(side * TOWER_X, 18.4, (ARRAY_Z + TOWER_FRONT_Z) / 2)));
+        steel.push(place(new THREE.BoxGeometry(reach, 0.14, 0.14), at(side * (TOWER_X + reach / 2 - 0.2), TOP_Y, ARRAY_Z)));
+        steel.push(place(new THREE.BoxGeometry(0.14, 0.14, ARRAY_Z - TOWER_FRONT_Z), at(side * TOWER_X, TOP_Y, (ARRAY_Z + TOWER_FRONT_Z) / 2)));
     }
 
     // The subs along the front of the stage, styled after a large touring sub (two 18" drivers
