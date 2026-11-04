@@ -11,6 +11,8 @@ import { buildIdleShow } from '@/lib/show/program';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
+import GenrePicker from './GenrePicker';
+import { DEFAULT_GENRE, GENRE_KEYS, GENRES } from '@/lib/show/genres';
 import BiggerScreenNotice from './BiggerScreenNotice';
 import { BEAM_COUNTS } from '@/components/home/stage/useQualityTier';
 
@@ -23,8 +25,9 @@ const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display:
 // Shown wherever the demo songs are offered or playing (commercial recordings, see README)
 const SONG_NOTICE = 'Songs on this site are used for educational, non-commercial purposes only. All rights belong to their respective owners.';
 
-// Demo songs with programmed shows, in button order (each offered only where its track exists)
-const DEMO_SHOWS = ['/shows/sky-full-of-stars.show.json', '/shows/yellow.show.json'];
+// Demo songs, up to 2 per genre, listed by `npm run demos` from public/audio/<genre>/. Only this small
+// list loads with the page; a song's programmed show is fetched when it's picked.
+const DEMO_INDEX = '/shows/index.json';
 const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', build: '#ff8a00', peak: '#ff3df2', outro: '#3b5bff' };
 const MAX_UPLOAD_MB = 80;
 // The show section's height (vh): the stage scrolls this minus one screen. Taller = more scroll per section
@@ -50,19 +53,22 @@ function Fade({ show, children, className = '' }) {
     );
 }
 
-/** Decode an audio file in the browser and resample it to mono 22.05 kHz for analysis. */
+/**
+ * Decode an audio file in the browser and resample it to 22.05 kHz stereo for analysis (the left
+ * and right channels let the vocal detection find what's mixed to the centre).
+ */
 async function decodeForAnalysis(file) {
     const ctx = new AudioContext();
     const decoded = await ctx.decodeAudioData(await file.arrayBuffer());
     ctx.close();
     const rate = 22050;
-    const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * rate), rate);
+    const offline = new OfflineAudioContext(2, Math.ceil(decoded.duration * rate), rate);
     const source = offline.createBufferSource();
     source.buffer = decoded;
     source.connect(offline.destination);
     source.start();
     const rendered = await offline.startRendering();
-    return { pcm: rendered.getChannelData(0).slice(), sampleRate: rate, duration: decoded.duration };
+    return { channels: [rendered.getChannelData(0).slice(), rendered.getChannelData(1).slice()], sampleRate: rate, duration: decoded.duration };
 }
 
 /**
@@ -83,7 +89,7 @@ function exitShowMode() {
 }
 
 /** Run the analysis and programming in a worker, so the page stays smooth meanwhile. */
-function analyseInWorker(pcm, sampleRate, title) {
+function analyseInWorker(channels, sampleRate, title, genre) {
     return new Promise((resolve, reject) => {
         const worker = new Worker(new URL('./analysisWorker.js', import.meta.url), { type: 'module' });
         worker.onmessage = ({ data }) => {
@@ -95,7 +101,7 @@ function analyseInWorker(pcm, sampleRate, title) {
             worker.terminate();
             reject(new Error(e.message || 'Analysis failed'));
         };
-        worker.postMessage({ pcm, sampleRate, title }, [pcm.buffer]);
+        worker.postMessage({ channels, sampleRate, title, genre }, channels.map((c) => c.buffer));
     });
 }
 
@@ -109,6 +115,8 @@ function ShowExperience({ events = [], isPhone = false }) {
     const section = useRef(null);
     const stage = useRef(null);
     const fileInput = useRef(null);
+    // The genre of the visitor's own song (each is analysed and lit its own way)
+    const [genre, setGenre] = useState(DEFAULT_GENRE);
     const look = useRef(DEFAULT_LOOK);
     const control = useRef({ mode: 'scroll', progress: 0, sheet: buildScrollSheet(), idle: prepareSongShow(buildIdleShow()), shot: 'outside' });
 
@@ -195,19 +203,13 @@ function ShowExperience({ events = [], isPhone = false }) {
         return () => observer.disconnect();
     }, []);
 
-    // Each demo song is offered only where its track exists
+    // The demo song list (each song's show loads when it's picked)
     useEffect(() => {
         let cancelled = false;
         const c = control.current;
-        const load = async (url) => {
-            const show = await fetch(url).then((r) => (r.ok ? r.json() : null));
-            if (!show?.audio) return null;
-            const head = await fetch(encodeURI(show.audio), { method: 'HEAD' });
-            return head.ok ? show : null;
-        };
-        Promise.all(DEMO_SHOWS.map((url) => load(url).catch(() => null))).then((shows) => {
-            if (!cancelled) setSong((s) => ({ ...s, demos: shows.filter(Boolean) }));
-        });
+        fetch(DEMO_INDEX).then((r) => (r.ok ? r.json() : null)).then((index) => {
+            if (!cancelled && Array.isArray(index?.demos)) setSong((s) => ({ ...s, demos: index.demos }));
+        }).catch(() => {});
         return () => {
             cancelled = true;
             c.audio?.pause();
@@ -331,7 +333,22 @@ function ShowExperience({ events = [], isPhone = false }) {
         setTimeout(() => setBrightnessTip(false), 6000);
     };
 
-    const playDemo = (show) => playShow(show, encodeURI(show.audio));
+    // A demo's show, fetched the first time it's picked
+    const demoShows = useRef(new Map());
+    const playDemo = async (demo) => {
+        try {
+            let show = demoShows.current.get(demo.slug);
+            if (!show) {
+                const res = await fetch(demo.show);
+                if (!res.ok) throw new Error('missing');
+                show = { ...(await res.json()), artist: demo.artist, demo: true };
+                demoShows.current.set(demo.slug, show);
+            }
+            playShow(show, encodeURI(show.audio));
+        } catch {
+            setSong((s) => ({ ...s, error: `Couldn't load ${demo.title}. Try again in a moment.` }));
+        }
+    };
 
     // The playground (lighting desk, demo songs, "Light up your song") is made for bigger screens: on a
     // phone, a tap explains that instead of starting it. The scroll show itself plays everywhere.
@@ -348,10 +365,10 @@ function ShowExperience({ events = [], isPhone = false }) {
         const title = file.name.replace(/\.[^.]+$/, '');
         try {
             setSong((s) => ({ ...s, status: 'Reading your song…', error: null }));
-            const { pcm, sampleRate, duration } = await decodeForAnalysis(file);
+            const { channels, sampleRate, duration } = await decodeForAnalysis(file);
             if (duration > 15 * 60) throw new Error('Songs up to 15 minutes, please.');
-            setSong((s) => ({ ...s, status: 'Finding the tempo, beats and sections…' }));
-            const show = await analyseInWorker(pcm, sampleRate, title);
+            setSong((s) => ({ ...s, status: `Finding the tempo, beats and sections (${GENRES[genre].label})…` }));
+            const show = await analyseInWorker(channels, sampleRate, title, genre);
             // Browsers only allow full screen from a click, so the visitor starts the show
             setSong((s) => ({ ...s, status: null, ready: { show, url: URL.createObjectURL(file) } }));
         } catch (error) {
@@ -470,12 +487,24 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         <p className="flex items-center gap-1.5 text-xs text-yellow-200/90 mb-3">
                                             <SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, turn your screen brightness and volume up.
                                         </p>
+                                        {/* Demo songs, grouped by genre (each genre is lit its own way) */}
+                                        {song.demos.length > 0 && (
+                                            <div className="space-y-2 mb-4">
+                                                {GENRE_KEYS.filter((g) => song.demos.some((d) => d.genre === g)).map((g) => (
+                                                    <div key={g} className="flex flex-wrap items-center gap-2">
+                                                        <span className="w-20 shrink-0 font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400">{GENRES[g].label}</span>
+                                                        {song.demos.filter((d) => d.genre === g).map((demo) => (
+                                                            <button key={demo.slug} onClick={bigScreenOnly(() => playDemo(demo))} title={demo.artist ? `${demo.title} by ${demo.artist}` : demo.title}
+                                                                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/30 text-sm font-bold hover:border-white">
+                                                                <Music className="w-4 h-4" /> {demo.title}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <GenrePicker value={genre} onChange={setGenre} disabled={Boolean(song.status)} />
                                         <div className="flex flex-wrap gap-2">
-                                            {song.demos.map((show) => (
-                                                <button key={show.title} onClick={bigScreenOnly(() => playDemo(show))} className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white">
-                                                    <Music className="w-4 h-4" /> {show.title}
-                                                </button>
-                                            ))}
                                             <button onClick={bigScreenOnly(() => fileInput.current?.click())} disabled={Boolean(song.status)}
                                                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-black text-sm font-bold disabled:opacity-60">
                                                 {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your song
@@ -483,7 +512,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         </div>
                                         {song.demos.length > 0 && (
                                             <p className="mt-3 text-[11px] leading-snug text-gray-400">
-                                                Demo songs: {song.demos.map((d) => d.title).join(' and ')} by Coldplay. {SONG_NOTICE}
+                                                Demo songs: {song.demos.map((d) => (d.artist ? `${d.title} (${d.artist})` : d.title)).join(', ')}. {SONG_NOTICE}
                                             </p>
                                         )}
                                         {song.status && <p className="mt-3 text-xs text-cyan-200" role="status">{song.status}</p>}
@@ -554,9 +583,9 @@ function ShowExperience({ events = [], isPhone = false }) {
                         <div className="flex items-center justify-between text-sm mb-2">
                             <div className="min-w-0">
                                 <div className="font-bold truncate">{now.title}</div>
-                                {song.demos.includes(now) && <div className="text-[10px] text-gray-500 truncate">Coldplay · educational, non-commercial use only</div>}
+                                {now?.demo && <div className="text-[10px] text-gray-500 truncate">{now.artist ? `${now.artist} · ` : ''}educational, non-commercial use only</div>}
                                 <div className="text-[11px] text-gray-400 font-mono">
-                                    {now.bpm} BPM · {songSection ? songSection.kind.toUpperCase() : ''}{mode === 'manual' ? ' · desk has the lights' : ''}
+                                    {now.bpm} BPM · {songSection ? (songSection.label ?? songSection.kind).toUpperCase() : ''}{mode === 'manual' ? ' · desk has the lights' : ''}
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -567,7 +596,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                         <div onClick={seek} role="slider" aria-label="Song position" aria-valuemin={0} aria-valuemax={Math.round(now.duration)} aria-valuenow={Math.round(song.time)} tabIndex={0}
                             className="relative h-8 rounded-md overflow-hidden cursor-pointer bg-white/5">
                             {now.sections.map((s) => (
-                                <div key={s.start} title={`${s.kind} ${fmt(s.start)}`} className="absolute top-0 bottom-0 border-r border-black/60"
+                                <div key={s.start} title={`${s.label ?? s.kind} ${fmt(s.start)}`} className="absolute top-0 bottom-0 border-r border-black/60"
                                     style={{ left: `${(s.start / now.duration) * 100}%`, width: `${((s.end - s.start) / now.duration) * 100}%`, background: `${SECTION_COLORS[s.kind]}55` }} />
                             ))}
                             {now.energy?.length > 1 && (

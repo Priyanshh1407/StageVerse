@@ -1,0 +1,33 @@
+{
+  "maxPerGenre": 2,
+  "demos": [
+    {
+      "slug": "a-sky-full-of-stars",
+      "title": "A Sky Full of Stars",
+      "artist": "Coldplay",
+      "genre": "edm",
+      "show": "/shows/a-sky-full-of-stars.show.json"
+    },
+    {
+      "slug": "yellow",
+      "title": "Yellow",
+      "artist": "Coldplay",
+      "genre": "edm",
+      "show": "/shows/yellow.show.json"
+    },
+    {
+      "slug": "girls-like-you",
+      "title": "Girls Like You",
+      "artist": "Maroon 5 feat. Cardi B",
+      "genre": "pop",
+      "show": "/shows/girls-like-you.show.json"
+    },
+    {
+      "slug": "one-dance",
+      "title": "One Dance",
+      "artist": "Drake feat. Wizkid & Kyla",
+      "genre": "pop",
+      "show": "/shows/one-dance.show.json"
+    }
+  ]
+}

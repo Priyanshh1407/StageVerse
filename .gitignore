@@ -55,16 +55,16 @@ bench/results/*
 !bench/results/live-before.json
 !bench/results/live-after.json
 
-# Songs are copyrighted recordings. By the owner's decision the two demo tracks are committed
-# (so the demo works after checkout); any other track stays local. The analysis/cue files
-# derived from them (beat times, our lighting program) are committed too.
+# Songs are copyrighted recordings. By the owner's decision the demo tracks are committed (so the
+# demo works after checkout and on the live site): those are the songs in the genre folders,
+# public/audio/<edm|pop|rap|bollywood>/ (npm run demos). Any track loose in public/audio/ itself
+# stays local. The analysis/cue files derived from them (beat times, our lighting program) are
+# committed too.
 public/audio/*.mp3
 public/audio/*.wav
 public/audio/*.m4a
 public/audio/*.ogg
 public/audio/*.flac
-!public/audio/A Sky Full of Stars.mp3
-!public/audio/Yellow.mp3
 !bench/results/stage-*.json
 
 # Old /test-3d 3D prototype (replaced by the homepage show, docs/homepage-show.md). Kept on disk

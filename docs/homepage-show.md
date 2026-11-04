@@ -76,11 +76,40 @@ mutating shader uniforms, so React never re-renders for animation.
 ## Programming a song
 
 ```bash
-# put the song in public/audio/ (gitignored, except the two demo songs; see "Demo songs" below)
-npm run analyse:song -- "public/audio/A Sky Full of Stars.mp3" sky-full-of-stars "A Sky Full of Stars"
+# demo songs: put the song in its genre's folder, public/audio/<edm|pop|rap|bollywood>/ (up to 2 each)
+npm run demos
+# any other song (stays local)
+npm run analyse:song -- "public/audio/My Song.mp3" my-song "My Song"
 ```
 
-This writes `public/shows/sky-full-of-stars.show.json`, which contains timings and numbers only, no audio.
+`npm run demos` analyses every song in the genre folders with that genre's settings, writes
+`public/shows/<slug>.show.json` for each (timings and numbers only, no audio) and lists them in
+`public/shows/index.json`, which is all the homepage loads up front; a song's show is fetched when it's
+picked. The slug is the file name in lower case with dashes; `public/shows/<slug>.extras.json` gives
+the title and artist shown on the site, plus any per-song touches (below).
+
+**Genres** (`lib/show/genres.js`): the analysis was built around EDM. Visitors pick their song's genre
+(a help button lists artists per genre), and each genre is analysed and lit its own way. EDM runs the
+original analysis unchanged; pop, rap and Bollywood add:
+
+- **Structure by repetition** (`lib/show/structure.js`): per-bar chroma (pitch classes from spectral
+  peaks, 100 Hz-2.5 kHz), a bar self-similarity matrix, Foote novelty for boundaries, sections grouped
+  by which repeat (on a contrast-normalised matrix, never across a big loudness gap), labelled
+  verse / pre-chorus / chorus / bridge. Only sung groups can be the chorus.
+- **Vocals** (`lib/show/vocals.js`): a rough singing/rapping curve from centre-panned voice-band energy
+  and syllable-rate wobble (stereo input); no ML model, so it's a lighting signal, not a transcription.
+- **Rap** (`lib/show/rhythm.js`): "beat cuts out and slams back" moments, a half/double tempo check,
+  beat-switch novelty from the per-bar drum pattern. Hooks slam in with strobes.
+- **Bollywood**: tempo following (8 s windows, beat tracking with a period per frame), rhythms in 3s
+  (only when clearly stronger than 4s), beatless intros lit free-flowing, dense percussion as peaks.
+- **Lighting style**: an EDM peak opens with the blackout-and-spool drop; a pop or Bollywood chorus lifts
+  in with a blinder; a rap hook slams in with strobes.
+
+**Test set** (`tests/songs/`, `npm run score:analysis`): hand-marked structures (timings and labels
+only; the audio stays local). Each song is analysed as EDM and as its genre, and scored on boundaries,
+peaks, chorus, tempo and meter. The structure settings (`TUNING` in `lib/show/analysis.js`) were picked by
+a grid search against it. With 2 songs marked so far (both pop), pop vs EDM: boundaries 38% -> 53%,
+peaks 64% -> 65%, chorus 25% -> 59%. Rap and Bollywood have synthetic tests only until songs are marked.
 
 **Analysis** (`lib/show/analysis.js`, self-written: no essentia.js, which is AGPL; only `audio-decode`
 (MIT) to decode the MP3):
@@ -110,15 +139,13 @@ Result for *A Sky Full of Stars* (4:28): **125.1 BPM** (the published tempo is 1
 hand-annotated structure (below), the programmed shows have 14 sections, 62 cues and 21 hits (A Sky Full of
 Stars) and 13 sections, 54 cues and 31 hits (Yellow).
 
-Concert mode only appears where the song file exists: for each demo show the page sends a HEAD request
-for its track first, and offers a button only for the tracks that are there.
-
 ### Demo songs
 
-*A Sky Full of Stars* and *Yellow* (Coldplay) are the only tracks committed (`.gitignore` excludes
-`public/audio/*` except these two), so the live site can play them. They're commercial recordings used for
-educational, non-commercial purposes only: the playground, the now-playing bar during a demo song, the site
-footer and the README all say so, with a takedown contact. Any other song stays local.
+The demo songs are the tracks in the genre folders, `public/audio/<genre>/` (up to 2 per genre), grouped
+by genre in the playground. They're the only tracks committed (`.gitignore` ignores audio loose in
+`public/audio/`), so the live site can play them. They're commercial recordings used for educational,
+non-commercial purposes only: the playground, the now-playing bar during a demo song (with the song's
+artist), the site footer and the README all say so, with a takedown contact. Any other song stays local.
 
 ### Hand-annotated structure for the demo songs
 

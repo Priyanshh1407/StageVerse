@@ -1,0 +1,23 @@
+{
+  "title": "A Sky Full of Stars",
+  "artist": "Coldplay",
+  "genre": "pop",
+  "audio": "public/audio/edm/A Sky Full of Stars.mp3",
+  "bpm": 125.1,
+  "meter": 4,
+  "note": "From the hand annotation in public/shows/a-sky-full-of-stars.extras.json (bars of 1.92 s). An EDM-style pop song: the two drops are the peaks, the sung choruses before them are not.",
+  "sections": [
+    { "start": 0, "label": "intro" },
+    { "start": 16, "label": "verse" },
+    { "start": 31, "label": "pre-chorus" },
+    { "start": 46, "label": "chorus", "peak": false },
+    { "start": 62, "label": "pre-chorus" },
+    { "start": 77, "label": "drop", "peak": true },
+    { "start": 92, "label": "verse" },
+    { "start": 121, "label": "chorus", "peak": false },
+    { "start": 146, "label": "pre-chorus" },
+    { "start": 169, "label": "drop", "peak": true },
+    { "start": 238, "label": "outro" }
+  ],
+  "end": 267
+}

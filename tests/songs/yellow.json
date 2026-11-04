@@ -1,0 +1,23 @@
+{
+  "title": "Yellow",
+  "artist": "Coldplay",
+  "genre": "pop",
+  "audio": "public/audio/edm/Yellow.mp3",
+  "bpm": 86.8,
+  "meter": 4,
+  "note": "From the hand annotation in public/shows/yellow.extras.json (bars of 2.76 s). The final, biggest section is a one-off climax, not a chorus.",
+  "sections": [
+    { "start": 0, "label": "intro" },
+    { "start": 13, "label": "instrumental" },
+    { "start": 35, "label": "verse" },
+    { "start": 66, "label": "pre-chorus" },
+    { "start": 85, "label": "chorus", "peak": true },
+    { "start": 107, "label": "instrumental" },
+    { "start": 135, "label": "verse" },
+    { "start": 168, "label": "chorus", "peak": true },
+    { "start": 190, "label": "bridge" },
+    { "start": 221, "label": "climax", "peak": true },
+    { "start": 251, "label": "outro" }
+  ],
+  "end": 266
+}
