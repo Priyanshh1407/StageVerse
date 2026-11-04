@@ -12,6 +12,11 @@ import Lasers from './Lasers';
 import Haze from './Haze';
 import HouseLights, { HOUSE_COLOR } from './HouseLights';
 import Venue from './Venue';
+import StageSkirt from './StageSkirt';
+import CrowdBarrier from './CrowdBarrier';
+import LowFog from './LowFog';
+import PaSystem from './PaSystem';
+import { dressing } from './dressing';
 import { createTrussGeometry, DECK_DEPTH, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
@@ -23,7 +28,8 @@ import { roomFlash } from './flash';
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 + pixel bars 1 + strobe glow 1 = 33, plus lasers and house lights (1 each, skipped while off) and bloom.
+ * + haze 3 + pixel bars 1 + strobe glow 1 + PA 2 + stage try-outs (skirt 2, barrier 1, low fog 3; hidden when switched off)
+ * = 41, plus lasers and house lights (1 each, skipped while off) and bloom.
  */
 
 /**
@@ -68,7 +74,7 @@ const SKY_FRAGMENT = /* glsl */ `
     }
 `;
 
-/** Arena floor: spill from the stage in the show's colours, warm when the house lights are up. */
+/** Arena floor: glossy black reflecting the stage (or the old colour smear), warm when the house lights are up. */
 function Floor({ look, blinders }) {
     const material = useMemo(() => createFloorMaterial(), []);
     const mesh = useRef();
@@ -81,6 +87,9 @@ function Floor({ look, blinders }) {
         u.uLight.value = (target.master ?? 1) * Math.min(target.intensity, 1.4) * (1 + (target.pulse ?? 0) * 0.4);
         u.uHouse.value += ((target.house ?? 0) - u.uHouse.value) * Math.min(1, delta * 1.5);
         u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
+        u.uTime.value = clock.elapsedTime;
+        u.uGlossy.value = dressing.glossy ? 1 : 0;
+        u.uFade.value = dressing.fade ? 1 : 0;
     });
     return (
         <mesh ref={mesh} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 24]} material={material}>
@@ -150,6 +159,9 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             </mesh>
             <Floor look={look} blinders={blinders} />
             <Deck look={look} />
+            <StageSkirt look={look} blinders={blinders} />
+            <CrowdBarrier />
+            <PaSystem />
             <mesh geometry={truss}>
                 <meshLambertMaterial color="#565c69" emissive="#040507" />
             </mesh>
@@ -165,6 +177,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             <Lasers look={look} count={lasers} fixtures={beams} />
             <HouseLights look={look} />
             <Haze look={look} blinders={blinders} />
+            <LowFog look={look} blinders={blinders} />
             <CameraFlash look={look} blinders={blinders} />
 
             {bloom && (

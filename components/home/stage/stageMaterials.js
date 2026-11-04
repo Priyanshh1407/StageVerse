@@ -93,8 +93,10 @@ export function createLedMaterial({ textTexture = null, grid = [160, 70], seed =
 }
 
 /**
- * Arena floor: dark, catching coloured light spilling off the front of the stage, strongest at
- * the stage edge and fading toward the audience (plus a faint glossy streak under the centre).
+ * Arena floor: glossy black (item 3, option 2). Instead of a broad colour smear it reflects what is
+ * in front of it: the LED wall, the lit rig and the LED edge of the deck, found by tracing the
+ * mirrored view ray in the shader (no extra render pass), blurred a little and stronger at grazing
+ * angles. Where the beams land in front of the stage there are tighter pools of light.
  */
 export function createFloorMaterial() {
     return new THREE.ShaderMaterial({
@@ -104,6 +106,9 @@ export function createFloorMaterial() {
             uLight: { value: 0.5 },
             uHouse: { value: 0 },
             uFlash: { value: 0 },
+            uTime: { value: 0 },
+            uGlossy: { value: 1 },   // 0 = the old matte floor with the colour smear (desk try-out switch)
+            uFade: { value: 1 },     // 1 = the floor nearest the camera fades to black (item 3, option 6)
         },
         vertexShader: /* glsl */ `
             varying vec3 vWorld;
@@ -119,7 +124,55 @@ export function createFloorMaterial() {
             uniform float uLight;
             uniform float uHouse;
             uniform float uFlash;
+            uniform float uTime;
+            uniform float uGlossy;
+            uniform float uFade;
             varying vec3 vWorld;
+
+            // A soft-edged rectangle test: 1 inside, fading out over blur metres
+            float softRect(vec2 p, vec2 lo, vec2 hi, float blur) {
+                vec2 a = smoothstep(lo - blur, lo + blur, p) * (1.0 - smoothstep(hi - blur, hi + blur, p));
+                return a.x * a.y;
+            }
+            // What the polished floor reflects at this point: trace the mirrored view ray back to the
+            // planes of the LED wall (z = -17.2), the rig (z = -9) and the deck edge (z = 0)
+            vec3 reflection(vec3 w, vec3 tint) {
+                vec3 v = normalize(w - cameraPosition);
+                vec3 r = vec3(v.x, -v.y, v.z);                        // mirrored in the floor
+                if (r.z > -0.01 || w.z < 0.0) return vec3(0.0);       // only looking back toward the stage
+                float dist = length(w - cameraPosition);
+                float blur = 0.25 + (w.z) * 0.06;                     // rougher with distance from the stage
+                vec3 c = vec3(0.0);
+                // The deck's LED edge, a thin line right at the stage front
+                float tE = (0.0 - w.z) / r.z;
+                vec3 e = w + r * tE;
+                c += tint * softRect(e.xy, vec2(-15.0, 0.44), vec2(15.0, 0.52), 0.05 + blur * 0.15) * 0.35;
+                // The rig: lit trusses and beam bases, a broad glow
+                float tR = (-9.0 - w.z) / r.z;
+                vec3 g = w + r * tR;
+                c += tint * softRect(g.xy, vec2(-15.0, 0.5), vec2(15.0, 18.0), 2.5 + blur) * 0.08;
+                // The LED wall, hidden below the deck top
+                float tW = (-17.2 - w.z) / r.z;
+                vec3 s = w + r * tW;
+                float wall = softRect(s.xy, vec2(-13.0, 0.5), vec2(13.0, 12.6), 0.6 + blur);
+                c += mix(tint, vec3(1.0), 0.25) * wall * 0.3;
+                float fresnel = 0.25 + 0.75 * pow(1.0 - abs(v.y), 4.0);
+                return c * fresnel * smoothstep(80.0, 20.0, dist);
+            }
+            // Tighter pools where the beams land: soft ellipses in front of the stage that drift
+            // slowly side to side, alternating the two colours
+            vec3 pools(vec3 w) {
+                vec3 c = vec3(0.0);
+                for (int i = 0; i < 6; i++) {
+                    float fi = float(i);
+                    float x = (fi - 2.5) * 5.2 + sin(uTime * 0.35 + fi * 1.7) * 1.4;
+                    float z = 3.5 + mod(fi, 2.0) * 3.0 + sin(uTime * 0.27 + fi) * 0.8;
+                    vec2 d = (w.xz - vec2(x, z)) / vec2(1.3, 2.0);
+                    float pool = exp(-dot(d, d) * 1.6);
+                    c += mix(uColorA, uColorB, mod(fi, 2.0)) * pool;
+                }
+                return c;
+            }
 
             // Outside the venue (beyond the gate wall at z = 34.75): wet asphalt. Bright things in
             // the scene smear into long vertical streaks on a wet road, so the reflections are
@@ -146,10 +199,26 @@ export function createFloorMaterial() {
                 // House lights: the whole room in warm, even light
                 vec3 house = vec3(1.0, 0.7, 0.28) * uHouse * (0.16 + 0.09 * smoothstep(40.0, 0.0, abs(vWorld.x))) * step(vWorld.z, 33.4);
                 float fromStage = max(0.0, vWorld.z);                    // stage front is at z = 0
-                float spill = exp(-fromStage * 0.055) * smoothstep(30.0, 4.0, abs(vWorld.x));
-                float streak = exp(-abs(vWorld.x) * 0.35) * exp(-fromStage * 0.05) * 0.5;
                 vec3 tint = mix(uColorA, uColorB, smoothstep(-14.0, 14.0, vWorld.x));
-                gl_FragColor = vec4(vec3(0.008, 0.009, 0.016) + tint * (spill + streak) * 0.22 * uLight + house + vec3(0.55) * uFlash + wetRoad(vWorld), 1.0);
+                vec3 lit;
+                vec3 base;
+                if (uGlossy > 0.5) {
+                    float inside = step(vWorld.z, 33.4);
+                    // A faint bounce right at the stage edge, so the stage still sits on the floor
+                    float spill = exp(-fromStage * 0.18) * smoothstep(20.0, 8.0, abs(vWorld.x)) * 0.35;
+                    lit = (tint * spill * 0.22 + reflection(vWorld, tint) + pools(vWorld) * 0.1) * uLight * inside;
+                    base = vec3(0.004, 0.0045, 0.008);
+                } else {
+                    // The old matte floor: a broad smear of colour spilling off the stage
+                    float spill = exp(-fromStage * 0.055) * smoothstep(30.0, 4.0, abs(vWorld.x));
+                    float streak = exp(-abs(vWorld.x) * 0.35) * exp(-fromStage * 0.05) * 0.5;
+                    lit = tint * (spill + streak) * 0.22 * uLight;
+                    base = vec3(0.008, 0.009, 0.016);
+                }
+                // Inside the venue the floor nearest the camera fades to black, keeping the eye on the stage
+                float near = smoothstep(3.0, 14.0, length(vWorld.xz - cameraPosition.xz));
+                float fade = mix(1.0, near, uFade * step(vWorld.z, 33.4));
+                gl_FragColor = vec4((base + lit + house + vec3(0.55) * uFlash) * fade + wetRoad(vWorld), 1.0);
             }
         `,
     });
