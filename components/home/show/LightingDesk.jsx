@@ -112,7 +112,7 @@ const Key = ({ on, onClick, children, danger }) => (
 /**
  * The lighting desk, laid out like a DMX console (item 8): a grand master fader (DMX 0-255) with
  * blackout, an on/off switch and a flash button per fixture type, then the programmer
- * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops, CO2 jets, cold sparks, confetti, streamers).
+ * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops, CO2 jets, confetti, streamers).
  * Touching any control takes the lights over (manual mode) until "Resume show". `desk` is the
  * look being shown, `counts` the fixture counts.
  */
@@ -126,7 +126,7 @@ const CANNON_PATTERNS = [
     ['sweep', 'Sweep', 'left to right'],
 ];
 // Every special effect the desk fires, for the EVERYTHING row
-const ALL_EFFECTS = ['co2', 'co2Truss', 'sparks', 'confetti', 'streamers'];
+const ALL_EFFECTS = ['co2', 'co2Truss', 'confetti', 'streamers'];
 
 export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, onEffect, onEffectHold, song }) {
     if (!open) {
@@ -283,7 +283,6 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 {[
                     { kind: 'co2', title: 'CO2 JETS', hold: 'CO2 BLAST', name: 'CO2', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'co2Truss', title: 'CO2 ON THE TRUSS', hold: 'TRUSS BLAST', name: 'TRUSS', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
-                    { kind: 'sparks', title: 'COLD SPARKS', hold: 'SPARKS', name: 'SPARKS', className: 'from-yellow-200 to-amber-500 active:from-white active:to-yellow-200 text-black', hintClass: 'text-black/60' },
                     { kind: 'confetti', title: 'CONFETTI', hold: 'CONFETTI', name: 'CONFETTI', patterns: CANNON_PATTERNS, holdHint: 'hold: keeps pouring', className: 'from-fuchsia-300 to-cyan-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'streamers', title: 'STREAMERS', hold: 'STREAMERS', name: 'STREAMERS', patterns: CANNON_PATTERNS, holdHint: 'hold for more', className: 'from-amber-200 to-slate-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                 ].map((fx) => (

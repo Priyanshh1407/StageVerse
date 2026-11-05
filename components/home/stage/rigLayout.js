@@ -184,35 +184,35 @@ export function co2Layout(fixtureCount) {
     });
 }
 
-// Cold spark machines: 6 on the deck's front lip (always in front of the lights), each clear of
-// everything else on the front of the stage, so a spark fountain never rises through a light, a
-// laser or a CO2 plume:
-// - not straight in front of a floor moving head or a CO2 nozzle back in the row (SPARK_FRONT_CLEAR
+// Pyro on the stage front (the fireworks' mines): 6 spots on the deck's front lip (always in front of
+// the lights), each clear of everything else on the front of the stage, so a burst never rises
+// through a light, a laser or a CO2 plume:
+// - not straight in front of a floor moving head or a CO2 nozzle back in the row (PYRO_FRONT_CLEAR
 //   from its centre);
-// - SPARK_CLEAR from anything standing on the lip itself: a floor laser's housing (it reaches almost
+// - PYRO_CLEAR from anything standing on the lip itself: a floor laser's housing (it reaches almost
 //   to the deck edge) and a CO2 nozzle moved forward onto the lip;
-// - SPARK_SPACING from each other.
+// - PYRO_SPACING from each other.
 // Preferably centred in a gap of the floor row, near where it's wanted.
-export const SPARK_Z = -0.18;
-export const SPARK_FRONT_CLEAR = 0.45;
-export const SPARK_CLEAR = 0.9;
-export const SPARK_SPACING = 1.5;
-const SPARK_WANT = [-12, -8.6, -4, 4, 8.6, 12];
+export const PYRO_Z = -0.18;
+export const PYRO_FRONT_CLEAR = 0.45;
+export const PYRO_CLEAR = 0.9;
+export const PYRO_SPACING = 1.5;
+const PYRO_WANT = [-12, -8.6, -4, 4, 8.6, 12];
 
-/** The spark machines, left to right: { pos: [x, y, z] } (y: the top of the machine, where the sparks leave). */
-export function sparkLayout(fixtureCount) {
+/** The pyro spots on the stage front, left to right: { pos: [x, y, z] } (y: the top of the mortar). */
+export function pyroLayout(fixtureCount) {
     const heads = rigLayout(fixtureCount).filter((f) => f.group === 'floor').map((f) => f.position[0]).sort((a, b) => a - b);
     const lasers = laserLayout(fixtureCount).filter((l) => !l.tower).map((l) => l.pos[0]);
     const jets = co2Layout(fixtureCount);
     const onLip = [...lasers, ...jets.filter((j) => j.front).map((j) => j.pos[0])];
     const behind = [...heads, ...jets.filter((j) => !j.front).map((j) => j.pos[0])];
     const placed = [];
-    const ok = (x) => behind.every((o) => Math.abs(o - x) >= SPARK_FRONT_CLEAR - 0.001)
-        && onLip.every((o) => Math.abs(o - x) >= SPARK_CLEAR - 0.001)
-        && placed.every((o) => Math.abs(o - x) >= SPARK_SPACING - 0.001)
+    const ok = (x) => behind.every((o) => Math.abs(o - x) >= PYRO_FRONT_CLEAR - 0.001)
+        && onLip.every((o) => Math.abs(o - x) >= PYRO_CLEAR - 0.001)
+        && placed.every((o) => Math.abs(o - x) >= PYRO_SPACING - 0.001)
         && Math.abs(x) <= 13.5;
     const gaps = heads.slice(1).map((x, i) => (x + heads[i]) / 2);
-    for (const want of SPARK_WANT) {
+    for (const want of PYRO_WANT) {
         // a free gap near where it's wanted, else the nearest free spot along the lip (5 cm steps)
         let x = gaps.filter((g) => Math.abs(g - want) <= 1.2 && ok(g)).sort((a, b) => Math.abs(a - want) - Math.abs(b - want))[0];
         for (let d = 0; x === undefined && d <= 3; d += 0.05) {
@@ -221,7 +221,7 @@ export function sparkLayout(fixtureCount) {
         }
         placed.push(x ?? want);
     }
-    return placed.map((x) => ({ pos: [x, DECK_HEIGHT + 0.3, SPARK_Z] }));
+    return placed.map((x) => ({ pos: [x, DECK_HEIGHT + 0.3, PYRO_Z] }));
 }
 // CO2 jets on the aerial truss: 4 nozzles clamped to the front face of the top truss,
 // half-way up it, between its two LED pixel bars (the bars run along the top and bottom chords), so
