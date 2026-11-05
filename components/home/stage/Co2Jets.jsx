@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { CO2_FADE, CO2_JETS, CO2_TRUSS_JETS } from '@/lib/show/co2';
 import { stateActive } from '@/lib/show/effects';
-import { co2Layout, co2TrussLayout } from './rigLayout';
+import { CANNON_UNITS, CONFETTI_SHOTS, CONFETTI_SHOT_GAP, blastsFromShots } from '@/lib/show/confetti';
+import { cannonLayout, co2Layout, co2TrussLayout } from './rigLayout';
 import { DECK_HEIGHT, ROWS } from './trussGeometry';
 import { roomFlash } from './flash';
 import { createNoiseTexture } from './LowFog';
@@ -17,6 +18,8 @@ import { createNoiseTexture } from './LowFog';
 // - truss: four nozzles on the front face of the top truss (co2TrussLayout) blasting out over the
 //   audience and down, carrying ~14 m, well past the barrier; the plume sags as it slows (CO2 is
 //   heavier than air).
+// - confetti: the confetti cannons are CO2-powered, so each confetti shot leaves the muzzle in a
+//   short white CO2 blast along the barrel (driven by the confetti state: one blast per shot).
 // A jet blasts for as long as its valve is open; when it closes the plume detaches from the nozzle,
 // billows out and fades over CO2_FADE seconds.
 //
@@ -37,6 +40,11 @@ const lean = new THREE.Vector3(0, 1, 0.05).normalize(); // floor jets: a little 
 const MOUNTS = {
     floor: { count: CO2_JETS, key: 'co2', reach: 8.5, sag: 0, layout: (n) => co2Layout(n).map((j) => ({ pos: j.pos, dir: lean.toArray() })) },
     truss: { count: CO2_TRUSS_JETS, key: 'co2Truss', reach: 14.0, sag: 0.015, layout: co2TrussLayout },
+    // the confetti cannons' own CO2 (no nozzles of their own: the cannons are drawn by Confetti)
+    confetti: {
+        count: CANNON_UNITS, key: 'confetti', reach: 7.0, sag: 0.01, layout: () => cannonLayout('confetti'), nozzles: false,
+        shots: { count: CONFETTI_SHOTS, gap: CONFETTI_SHOT_GAP, blast: 0.35 },
+    },
 };
 
 const vertexFor = (n) => /* glsl */ `
@@ -124,6 +132,7 @@ const FRAGMENT = /* glsl */ `
  * the truss a clamp on the truss's front face with a barrel along the jet.
  */
 function createNozzles(jets, mount) {
+    if (MOUNTS[mount]?.nozzles === false) return null;
     const parts = [];
     const q = new THREE.Quaternion();
     for (const { pos, dir } of jets) {
@@ -154,8 +163,8 @@ const tintA = new THREE.Color();
 const tintB = new THREE.Color();
 
 /** Each frame: the jets' state into the shader, and the smoke's colour from the rig. */
-function driveCo2(geometry, material, target, time, blinders, key, count, instances) {
-    const state = target[key];
+function driveCo2(geometry, material, target, time, blinders, key, count, instances, shots) {
+    const state = shots ? blastsFromShots(target[key], count, shots) : target[key];
     const active = stateActive(state, count, CO2_FADE);
     geometry.instanceCount = active ? instances : 0;
     if (!active) return;
@@ -231,16 +240,18 @@ export default function Co2Jets({ look, count, quality = 'low', blinders = 8, mo
 
     useEffect(() => placeNozzles(material, jets), [jets, material]);
     useEffect(() => () => { geometry.dispose(); }, [geometry]);
-    useEffect(() => () => { nozzles.dispose(); }, [nozzles]);
+    useEffect(() => () => { nozzles?.dispose(); }, [nozzles]);
     useEffect(() => () => { material.dispose(); noise.dispose(); }, [material, noise]);
 
-    useFrame(({ clock }) => driveCo2(geometry, material, look.current, clock.elapsedTime, blinders, m.key, n, n * puffs));
+    useFrame(({ clock }) => driveCo2(geometry, material, look.current, clock.elapsedTime, blinders, m.key, n, n * puffs, m.shots));
 
     return (
         <>
-            <mesh geometry={nozzles}>
-                <meshLambertMaterial color="#2a2e37" emissive="#050608" />
-            </mesh>
+            {nozzles && (
+                <mesh geometry={nozzles}>
+                    <meshLambertMaterial color="#2a2e37" emissive="#050608" />
+                </mesh>
+            )}
             <mesh geometry={geometry} material={material} frustumCulled={false} renderOrder={2} />
         </>
     );

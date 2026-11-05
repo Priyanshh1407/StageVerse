@@ -249,3 +249,21 @@ export function co2TrussLayout(fixtureCount) {
         return { pos: [x, ROWS[0].y, ROWS[0].z + TRUSS_HALF + 0.3], dir: d.map((v) => v / len) };
     });
 }
+
+// Confetti and streamer cannons: one of each at each wing of the stage front, on the deck's front
+// corners, beyond the floor row, the floor lasers, the CO2 nozzles and the spark machines (all within
+// |x| <= 13.5): the confetti cannon at the corner, the streamer launcher just behind it. Both aim up,
+// out over the audience and a little in toward the middle of the crowd.
+export const CANNON_X = { confetti: 14.35, streamers: 13.95 };
+export const CANNON_Z = { confetti: -0.45, streamers: -1.35 };
+const CANNON_AIM = { confetti: [0.38, 1.25, 0.95], streamers: [0.3, 1.35, 1.0] }; // for the right-hand cannon
+
+/** The cannons of one kind ('confetti' | 'streamers'), left then right: { pos: [x, y, z] (the muzzle), dir }. */
+export function cannonLayout(kind) {
+    return [-1, 1].map((side) => {
+        const [ax, ay, az] = CANNON_AIM[kind];
+        const d = [-side * ax, ay, az];
+        const len = Math.hypot(...d);
+        return { pos: [side * CANNON_X[kind], DECK_HEIGHT + 0.55, CANNON_Z[kind]], dir: d.map((v) => v / len) };
+    });
+}

@@ -112,10 +112,20 @@ const Key = ({ on, onClick, children, danger }) => (
 /**
  * The lighting desk, laid out like a DMX console (item 8): a grand master fader (DMX 0-255) with
  * blackout, an on/off switch and a flash button per fixture type, then the programmer
- * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops, CO2 jets, cold sparks).
+ * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops, CO2 jets, cold sparks, confetti, streamers).
  * Touching any control takes the lights over (manual mode) until "Resume show". `desk` is the
  * look being shown, `counts` the fixture counts.
  */
+// The pattern buttons next to each special effect's hold button
+const ROW_PATTERNS = [
+    ['chase', 'Chase', 'left to right and back'],
+    ['outside-in', 'Outside in', 'outer, middle, inner'],
+];
+const CANNON_PATTERNS = [
+    ['burst', 'Big burst', 'both cannons'],
+    ['sides', 'Left · right', 'one after the other'],
+];
+
 export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, onEffect, onEffectHold, song }) {
     if (!open) {
         return (
@@ -253,6 +263,8 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     { kind: 'co2', title: 'CO2 JETS', hold: 'CO2 BLAST', name: 'CO2', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'co2Truss', title: 'CO2 ON THE TRUSS', hold: 'TRUSS BLAST', name: 'TRUSS', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'sparks', title: 'COLD SPARKS', hold: 'SPARKS', name: 'SPARKS', className: 'from-yellow-200 to-amber-500 active:from-white active:to-yellow-200 text-black', hintClass: 'text-black/60' },
+                    { kind: 'confetti', title: 'CONFETTI', hold: 'CONFETTI', name: 'CONFETTI', patterns: CANNON_PATTERNS, holdHint: 'hold for more', className: 'from-fuchsia-300 to-cyan-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
+                    { kind: 'streamers', title: 'STREAMERS', hold: 'STREAMERS', name: 'STREAMERS', patterns: CANNON_PATTERNS, holdHint: 'hold for more', className: 'from-amber-200 to-slate-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                 ].map((fx) => (
                     <div key={fx.kind} className="mt-2 pt-2 border-t border-white/10">
                         <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mb-1.5">{fx.title}</div>
@@ -263,12 +275,9 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                                 onPointerLeave={() => onEffectHold(fx.kind, false)}
                                 onPointerCancel={() => onEffectHold(fx.kind, false)}
                                 className={`py-2.5 rounded bg-gradient-to-b ${fx.className} text-[11px] font-black tracking-widest select-none touch-none`}>
-                                {fx.hold} <span className={`block text-[9px] font-normal ${fx.hintClass}`}>hold</span>
+                                {fx.hold} <span className={`block text-[9px] font-normal ${fx.hintClass}`}>{fx.holdHint ?? 'hold'}</span>
                             </button>
-                            {[
-                                ['chase', 'Chase', 'left to right and back'],
-                                ['outside-in', 'Outside in', 'outer, middle, inner'],
-                            ].map(([pattern, label, hint]) => (
+                            {(fx.patterns ?? ROW_PATTERNS).map(([pattern, label, hint]) => (
                                 <button key={pattern} onClick={() => onEffect(fx.kind, pattern)}
                                     className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[11px] font-black tracking-wide">
                                     {fx.name} · {label.toUpperCase()}

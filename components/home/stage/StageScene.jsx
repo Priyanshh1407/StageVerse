@@ -18,6 +18,8 @@ import LowFog from './LowFog';
 import PaSystem from './PaSystem';
 import Co2Jets from './Co2Jets';
 import ColdSparks from './ColdSparks';
+import Confetti from './Confetti';
+import Streamers from './Streamers';
 import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
@@ -29,9 +31,9 @@ import { roomFlash } from './flash';
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 2 (floor, truss) + spark machines 1 (these a moment after the
- * first frames) = 44, plus lasers and house lights (1 each, skipped while off), the CO2 plumes (floor, truss) and the
- * cold sparks (1 each, zero instances while idle)
+ * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 2 (floor, truss) + spark machines 1 + confetti and streamer cannons 2 (these a moment after the
+ * first frames) = 46, plus lasers and house lights (1 each, skipped while off), the CO2 plumes (floor, truss), the cold
+ * sparks, the confetti (with its CO2 blasts) and the streamers (1 each, zero instances while idle)
  * and bloom.
  */
 
@@ -267,6 +269,9 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} />
                     <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} mount="truss" />
                     <ColdSparks look={look} count={beams} quality={effects} />
+                    <Confetti look={look} quality={effects} blinders={blinders} />
+                    <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} mount="confetti" />
+                    <Streamers look={look} quality={effects} blinders={blinders} />
                 </Warm>
             )}
             <CameraFlash look={look} blinders={blinders} />

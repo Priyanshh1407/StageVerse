@@ -2,6 +2,7 @@ import { sampleCueSheet, sampleSongShow } from '@/lib/show/timeline';
 import { smoothstep, venueLit } from '@/lib/show/look';
 import { CO2_FADE, co2FromFirings, co2TrussFromFirings } from '@/lib/show/co2';
 import { SPARK_LIFE, sparksFromFirings } from '@/lib/show/sparks';
+import { CONFETTI_LIFE, STREAMER_LIFE, confettiFromFirings, streamersFromFirings } from '@/lib/show/confetti';
 import { firingsDone } from '@/lib/show/effects';
 import { PLAY_FROM } from './scrollShow';
 
@@ -41,9 +42,10 @@ export const HOUSE_UP_MS = 3000;
 export function currentState(control) {
     if (control.mode === 'manual' && control.desk) {
         const look = { ...venueLit(control.desk, control.desk.house ?? 0) }; // a copy: never write onto the desk
-        // Special effects fired from the desk (CO2 jets on the floor and the truss, cold sparks)
+        // Special effects fired from the desk (CO2 jets on the floor and the truss, cold sparks, confetti, streamers)
         const now = performance.now();
-        for (const [kind, toState, fade] of [['co2', co2FromFirings, CO2_FADE], ['co2Truss', co2TrussFromFirings, CO2_FADE], ['sparks', sparksFromFirings, SPARK_LIFE]]) {
+        for (const [kind, toState, fade] of [['co2', co2FromFirings, CO2_FADE], ['co2Truss', co2TrussFromFirings, CO2_FADE], ['sparks', sparksFromFirings, SPARK_LIFE],
+            ['confetti', confettiFromFirings, CONFETTI_LIFE], ['streamers', streamersFromFirings, STREAMER_LIFE]]) {
             const fired = control.fired?.[kind];
             if (!fired?.length) continue;
             const state = toState(fired, now);

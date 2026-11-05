@@ -10,6 +10,7 @@ import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
 import { CO2_JETS, CO2_TRUSS_JETS, co2Pattern, co2TrussPattern } from '@/lib/show/co2';
 import { SPARK_UNITS, sparkPattern } from '@/lib/show/sparks';
+import { CANNON_UNITS, cannonPattern } from '@/lib/show/confetti';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
@@ -29,6 +30,8 @@ const DESK_EFFECTS = {
     co2: { units: CO2_JETS, pattern: co2Pattern, minHold: 0.4 },
     co2Truss: { units: CO2_TRUSS_JETS, pattern: co2TrussPattern, minHold: 0.4 },
     sparks: { units: SPARK_UNITS, pattern: sparkPattern, minHold: 0.3 },
+    confetti: { units: CANNON_UNITS, pattern: cannonPattern, minHold: 0.4 },
+    streamers: { units: CANNON_UNITS, pattern: cannonPattern, minHold: 0.4 },
 };
 // The logo's two faces, for the LED wall and the gate sign (drawn into canvases, so passed by name)
 const LOGO_FONTS = { tag: logoTag.style.fontFamily, script: logoScript.style.fontFamily };
@@ -359,7 +362,7 @@ function ShowExperience({ events = [], isPhone = false }) {
     };
     const nextDrop = useRef(0);
 
-    // Special effects from the desk (CO2 jets, cold sparks): hold to keep every unit firing (at least a
+    // Special effects from the desk (CO2 jets, cold sparks, confetti, streamers): hold to keep every unit firing (at least a
     // short burst), or fire a pattern. Each firing is { unit, at, len }, kept per effect in
     // control.fired; the director turns them into the units' state.
     const fireEffect = (kind, pattern) => {
