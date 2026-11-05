@@ -1,4 +1,4 @@
-import { sampleCueSheet, sampleSongShow } from '@/lib/show/timeline';
+import { EFFECT_KEYS, sampleCueSheet, sampleSongShow, songEffectsAt } from '@/lib/show/timeline';
 import { smoothstep, venueLit } from '@/lib/show/look';
 import { CO2_FADE, co2FromFirings, co2TrussFromFirings } from '@/lib/show/co2';
 import { CONFETTI_LIFE, STREAMER_LIFE, confettiFromFirings, streamersFromFirings } from '@/lib/show/confetti';
@@ -40,6 +40,33 @@ export const HOUSE_UP_MS = 3000;
  * keep their own programming.
  */
 export function currentState(control) {
+    const state = baseState(control);
+    return control.linger ? { ...state, look: withLingering(control, state.look) } : state;
+}
+
+/**
+ * A song's effects still in the air after it ends or is stopped (`control.linger`: the show, the
+ * song time it ended at and when) carry on in their own time, over whatever comes next (the house
+ * lights, the scroll show, the desk), until every one has finished: streamers reach the floor,
+ * confetti settles, the last shells burn out. An effect the stage is running itself takes priority.
+ */
+function withLingering(control, look) {
+    const { song, t, at } = control.linger;
+    const fx = songEffectsAt(song, t + (performance.now() - at) / 1000);
+    let out = look;
+    let any = false;
+    for (const key of EFFECT_KEYS) {
+        if (!fx[key]) continue;
+        any = true;
+        if (look[key]) continue;
+        if (out === look) out = { ...look };
+        out[key] = fx[key];
+    }
+    if (!any) control.linger = null;
+    return out;
+}
+
+function baseState(control) {
     if (control.mode === 'manual' && control.desk) {
         const look = { ...venueLit(control.desk, control.desk.house ?? 0) }; // a copy: never write onto the desk
         // Special effects fired from the desk (CO2 jets on the floor and the truss, confetti, streamers)
@@ -68,6 +95,8 @@ export function currentState(control) {
         if (control.houseUpAt) {
             const k = smoothstep((performance.now() - control.houseUpAt) / HOUSE_UP_MS);
             const look = { ...state.look, master: Math.max(state.look.master ?? 1, k), house: Math.max(state.look.house ?? 0, k) };
+            // the effects come from the lingering ones, which keep moving (the song's clock has stopped)
+            for (const key of EFFECT_KEYS) delete look[key];
             return { ...state, look: venueLit(look, k), name: 'House lights' };
         }
         return state;

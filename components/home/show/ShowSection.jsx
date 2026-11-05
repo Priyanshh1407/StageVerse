@@ -13,7 +13,7 @@ import { CONFETTI_UNITS, STREAMER_UNITS, confettiPattern, streamerPattern } from
 import { defaultGrid, finale, fireOne, rng as fwRng } from '@/lib/show/fireworks';
 import { primeFireworkSound, setFireworkSound } from './fireworkSound';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
-import { currentState, HOUSE_UP_MS } from './director';
+import { currentState, HOUSE_UP_MS, songTime } from './director';
 import LightingDesk from './LightingDesk';
 import { logoTag, logoScript } from '@/components/brand/Logo';
 import GenrePicker from './GenrePicker';
@@ -448,6 +448,8 @@ function ShowExperience({ events = [], isPhone = false }) {
     // --- Concert mode --------------------------------------------------------------------
     const stopSong = useCallback(() => {
         const c = control.current;
+        // effects still in the air carry on to their end (unless the song had already ended: then they already are)
+        if (c.mode === 'song' && c.song && c.audio && !c.houseUpAt) c.linger = { song: c.song, t: songTime(c), at: performance.now() };
         clearTimeout(c.afterShow);
         c.houseUpAt = null;
         c.audio?.pause();
@@ -473,6 +475,7 @@ function ShowExperience({ events = [], isPhone = false }) {
         // The last note: house lights up and hold for a moment, like the end of a concert, then back to the playground
         audio.addEventListener('ended', () => {
             c.houseUpAt = performance.now();
+            c.linger = { song: c.song, t: audio.duration || audio.currentTime, at: performance.now() };
             c.afterShow = setTimeout(stopSong, AFTER_SHOW_MS);
         });
         c.audio = audio;
