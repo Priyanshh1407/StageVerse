@@ -24,7 +24,8 @@ function directFrame(control, look, camera, aim, delta) {
     // In full screen the show runs ~30% brighter (a page can't raise the screen's own brightness)
     look.current = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;
     if (control.mode !== 'manual') control.shot = state.shot;
-    const shot = SHOTS[control.shot] || SHOTS.wide;
+    // While fireworks are in the air the camera stands back and looks up, so the whole sky is in view
+    const shot = (state.look.fireworks?.length ? SHOTS.sky : SHOTS[control.shot]) || SHOTS.wide;
     if (!aim.placed) {
         // First frame: start on the shot instead of flying in from the default camera
         camera.position.set(...shot.pos);
@@ -62,8 +63,10 @@ function directFrame(control, look, camera, aim, delta) {
             aim.pos[2] += (dz / len) * back;
         }
     }
-    easing.damp3(camera.position, aim.pos, 1.8, delta);
-    easing.damp3(aim.target, aim.look, 1.8, delta);
+    // fireworks: a quick move to the sky shot (a shell bursts 1.3 s after it fires), the usual glide back
+    const glide = state.look.fireworks?.length ? 0.6 : 1.8;
+    easing.damp3(camera.position, aim.pos, glide, delta);
+    easing.damp3(aim.target, aim.look, glide, delta);
     camera.lookAt(aim.target);
 }
 

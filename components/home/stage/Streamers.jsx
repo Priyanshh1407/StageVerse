@@ -29,6 +29,7 @@ const VERTEX = /* glsl */ `
     uniform vec3 uCannon[${STREAMER_UNITS}];
     uniform vec3 uDir[${STREAMER_UNITS}];
     uniform vec2 uState[${STREAMER_UNITS}];
+    uniform float uVolley[${STREAMER_UNITS}];  // a random number per firing of each launcher
     uniform float uTime;
     varying float vColor;
     varying float vGlint;
@@ -84,12 +85,22 @@ const VERTEX = /* glsl */ `
         float shotAt = shot * ${STREAMER_SHOT_GAP.toFixed(2)};
         float launched = shotAt + fract(r2 * 5.3) * 0.25;
         float t = age - launched;
-        vec3 side1 = normalize(cross(dir, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
-        vec3 side2 = cross(dir, side1);
-        float ang = r1 * 6.283 * 9.17;
-        float cone = 0.3 * sqrt(fract(r2 * 17.3));
-        vec3 aim = normalize(dir + (side1 * cos(ang) + side2 * sin(ang)) * cone);
-        float speed = 10.0 + 7.0 * fract(r2 * 3.7);
+        // Where this ribbon comes down: a random spot in its launcher's region of the audience (left,
+        // centre or right third, overlapping), reshuffled on every firing (uVolley), so repeated
+        // firings cover the whole crowd instead of following the same paths
+        float vs = uVolley[j];
+        float h1 = fract(sin((r1 + vs) * 91.17) * 43758.5453);
+        float h2 = fract(sin((r2 + vs * 1.31) * 57.33) * 43758.5453);
+        float h3 = fract(sin((r1 * 3.1 + r2 + vs * 2.7) * 23.71) * 43758.5453);
+        vec2 spot = vec2(clamp(cannon.x * 1.25, -12.0, 12.0) + (h1 * 2.0 - 1.0) * 9.5, 4.0 + h2 * 22.0);
+        vec2 toSpot = spot - cannon.xz;
+        float reach = length(toSpot);
+        // a random launch angle (5-28 degrees up), then the speed that carries it there through the air
+        // (how far it travels is speed x cos(angle) / drag), kept low enough that it never climbs far
+        float el = mix(0.09, 0.49, h3);
+        float speed = min(36.0, reach * ${DRAG.toFixed(2)} / cos(el));
+        el = min(el, asin(min(1.0, 8.8 / speed)));
+        vec3 aim = normalize(vec3(toSpot.x / reach * cos(el), sin(el), toSpot.y / reach * cos(el)));
         float fall = 1.0 + 0.5 * fract(r1 * 11.3);     // paper ribbons sink at 1-1.5 m/s
         float ribbon = 5.0 + 3.0 * fract(r2 * 29.0);
         // Each ribbon lives until it has come all the way down: its highest point (the launcher plus
@@ -159,7 +170,14 @@ function driveStreamers(geometry, material, target, time, blinders, instances) {
     geometry.instanceCount = active ? instances : 0;
     if (!active) return;
     const u = material.uniforms;
-    for (let j = 0; j < STREAMER_UNITS; j++) u.uState.value[j].set(state[j * 2], state[j * 2 + 1]);
+    for (let j = 0; j < STREAMER_UNITS; j++) {
+        // a new firing (its age starts again) gets new random landing spots for its ribbons
+        const age = state[j * 2];
+        const last = material.userData.ages?.[j];
+        if (age >= 0 && (last === undefined || last < 0 || age < last - 0.05)) u.uVolley.value[j] = Math.random();
+        (material.userData.ages ??= [])[j] = age;
+        u.uState.value[j].set(age, state[j * 2 + 1]);
+    }
     u.uTime.value = time;
     const flash = Math.min(1, roomFlash(target, time, blinders).total);
     u.uLevel.value = 0.35 + 0.35 * Math.min(1, (target.master ?? 1) * Math.min(target.intensity ?? 1, 1.4)) + 0.6 * flash;
@@ -206,6 +224,7 @@ export default function Streamers({ look, quality = 'low', blinders = 8 }) {
             uCannon: { value: Array.from({ length: STREAMER_UNITS }, () => new THREE.Vector3()) },
             uDir: { value: Array.from({ length: STREAMER_UNITS }, () => new THREE.Vector3(0, 1, 0)) },
             uState: { value: Array.from({ length: STREAMER_UNITS }, () => new THREE.Vector2(-1, 0)) },
+            uVolley: { value: Array.from({ length: STREAMER_UNITS }, (_, j) => j * 0.37) }, // reshuffled on every firing
             uTime: { value: 0 },
             uLevel: { value: 0.5 },
             // a party: vivid colours plus metallic gold and silver

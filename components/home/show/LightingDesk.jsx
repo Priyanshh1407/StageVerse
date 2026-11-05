@@ -125,10 +125,27 @@ const CANNON_PATTERNS = [
     ['burst', 'Big burst', 'every cannon'],
     ['sweep', 'Sweep', 'left to right'],
 ];
+// The fireworks the desk fires: [type, label, hint]
+const SHELL_BUTTONS = [
+    ['peony', 'Peony', 'a ball of stars'],
+    ['chrysanthemum', 'Chrysanthemum', 'sparkling trails'],
+    ['willow', 'Willow', 'golden rain'],
+    ['palm', 'Palm', 'thick arms'],
+    ['ring', 'Ring', 'a tilted ring'],
+    ['crossette', 'Crossette', 'stars that split'],
+    ['glitter', 'Glitter', 'crackling silver'],
+    ['shape', 'Shape', 'heart, smiley or S'],
+];
+const STAGE_BUTTONS = [
+    ['waterfall', 'Waterfall', 'from the top truss'],
+    ['comets', 'Roof comets', 'V and W fans'],
+    ['mines', 'Mines', 'from the stage front'],
+    ['candles', 'Roman candles', 'a chase on the truss'],
+];
 // Every special effect the desk fires, for the EVERYTHING row
 const ALL_EFFECTS = ['co2', 'co2Truss', 'confetti', 'streamers'];
 
-export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, onEffect, onEffectHold, song }) {
+export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, onEffect, onEffectHold, onFirework, onFinale, fwOptions, onFwOptions, song }) {
     if (!open) {
         return (
             <button onClick={() => onOpenChange(true)}
@@ -307,6 +324,43 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                         </div>
                     </div>
                 ))}
+            </Panel>
+
+            {/* Fireworks: shells in the sky behind the stage, pyro on the stage, and the finale */}
+            <Panel title="FIREWORKS" className="mt-2">
+                <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mb-1.5">SHELLS</div>
+                <div className="grid grid-cols-4 gap-1.5">
+                    {SHELL_BUTTONS.map(([type, label, hint]) => (
+                        <button key={type} onClick={() => onFirework(type)}
+                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-black tracking-wide">
+                            {label.toUpperCase()}
+                            <span className="block text-[9px] font-normal text-gray-400 leading-tight">{hint}</span>
+                        </button>
+                    ))}
+                </div>
+                <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mt-2 mb-1.5">STAGE PYRO</div>
+                <div className="grid grid-cols-4 gap-1.5">
+                    {STAGE_BUTTONS.map(([type, label, hint]) => (
+                        <button key={type} onClick={() => onFirework(type)}
+                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-black tracking-wide">
+                            {label.toUpperCase()}
+                            <span className="block text-[9px] font-normal text-gray-400 leading-tight">{hint}</span>
+                        </button>
+                    ))}
+                </div>
+                <button onClick={onFinale}
+                    className="mt-2 w-full py-2.5 rounded bg-gradient-to-r from-amber-400 via-fuchsia-500 to-cyan-400 hover:brightness-110 text-black text-[12px] font-black tracking-[0.3em]">
+                    FINALE <span className="block text-[9px] font-normal tracking-normal text-black/70">a barrage building to one big closing volley</span>
+                </button>
+                <div className="flex items-center justify-between gap-2 mt-2">
+                    <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-gray-400 mr-1">Colours</span>
+                        {[['mixed', 'Mixed'], ['classic', 'Classic'], ['show', 'Show colours']].map(([scheme, label]) => (
+                            <Key key={scheme} on={fwOptions.scheme === scheme} onClick={() => onFwOptions({ scheme })}>{label}</Key>
+                        ))}
+                    </div>
+                    <Key on={fwOptions.sound} onClick={() => onFwOptions({ sound: !fwOptions.sound })}>{fwOptions.sound ? 'Sound on' : 'Sound off'}</Key>
+                </div>
             </Panel>
 
             {song.available && (

@@ -3,6 +3,7 @@ import { smoothstep, venueLit } from '@/lib/show/look';
 import { CO2_FADE, co2FromFirings, co2TrussFromFirings } from '@/lib/show/co2';
 import { CONFETTI_LIFE, STREAMER_LIFE, confettiFromFirings, streamersFromFirings } from '@/lib/show/confetti';
 import { firingsDone } from '@/lib/show/effects';
+import { activeFireworks, fireworkDuration } from '@/lib/show/fireworks';
 import { PLAY_FROM } from './scrollShow';
 
 // Who is running the lights right now, read every frame by the 3D director (and a few times a
@@ -51,6 +52,13 @@ export function currentState(control) {
             if (state) look[kind] = state;
             // forget the firings once every one has fired and faded (not before a pattern's later steps)
             else if (firingsDone(fired, now, fade)) control.fired = { ...control.fired, [kind]: [] };
+        }
+        // Fireworks fired from the desk (each launch has `at`, in seconds; the finale's are spread out)
+        if (control.fireworks?.length) {
+            const t = now / 1000;
+            const live = activeFireworks(control.fireworks, t);
+            if (live.length) look.fireworks = live;
+            control.fireworks = control.fireworks.filter((f) => t - f.at < fireworkDuration(f));
         }
         return { look, shot: control.shot || 'wide', name: 'Lighting desk' };
     }

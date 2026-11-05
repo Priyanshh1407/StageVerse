@@ -10,6 +10,8 @@ import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
 import { CO2_JETS, CO2_TRUSS_JETS, co2Pattern, co2TrussPattern } from '@/lib/show/co2';
 import { CONFETTI_UNITS, STREAMER_UNITS, confettiPattern, streamerPattern } from '@/lib/show/confetti';
+import { finale, fireOne, rng as fwRng } from '@/lib/show/fireworks';
+import { primeFireworkSound, setFireworkSound } from './fireworkSound';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
@@ -386,6 +388,29 @@ function ShowExperience({ events = [], isPhone = false }) {
         }
     };
 
+    // Fireworks from the desk: one kind per press, or the FINALE. Colours: the scheme picked on the
+    // desk (mixed, classic firework colours, or the show's colours); sound on or off.
+    const [fwOptions, setFwOptions] = useState({ scheme: 'mixed', sound: true });
+    const changeFwOptions = (patch) => {
+        setFwOptions((o) => {
+            const next = { ...o, ...patch };
+            setFireworkSound(next.sound);
+            return next;
+        });
+    };
+    const fwRandom = useRef(null);
+    const launchFireworks = (volley) => {
+        takeOver();
+        primeFireworkSound(); // a click: the browser now allows sound
+        const c = control.current;
+        const now = performance.now() / 1000;
+        c.fireworks = [...(c.fireworks || []), ...volley.map(({ delay, launch }) => ({ ...launch, at: now + delay }))];
+    };
+    const fireworkOpts = () => ({ scheme: fwOptions.scheme, show: [control.current.desk?.colorA ?? '#19d9ff', control.current.desk?.colorB ?? '#ff3df2'] });
+    const randomFw = () => (fwRandom.current ??= fwRng(Math.random()));
+    const fireFirework = (type) => launchFireworks(fireOne(type, randomFw(), fireworkOpts()).map((launch) => ({ delay: 0, launch })));
+    const fireFinale = () => launchFireworks(finale(randomFw(), fireworkOpts()));
+
     // One-tap lighting for the playground's "Run the lights" step (the same actions as the desk)
     const manual = mode === 'manual';
     const isOn = (key) => manual && desk[key] > 0.05;
@@ -439,6 +464,7 @@ function ShowExperience({ events = [], isPhone = false }) {
             c.afterShow = setTimeout(stopSong, AFTER_SHOW_MS);
         });
         c.audio = audio;
+        primeFireworkSound(); // playing a song is a click: the fireworks in it may make sound
         audio.play().catch(() => stopSong());
         c.mode = 'song';
         setMode('song');
@@ -735,6 +761,10 @@ function ShowExperience({ events = [], isPhone = false }) {
                         onDrop={fireDrop}
                         onEffect={fireEffect}
                         onEffectHold={holdEffect}
+                        onFirework={fireFirework}
+                        onFinale={fireFinale}
+                        fwOptions={fwOptions}
+                        onFwOptions={changeFwOptions}
                         open={deskOpen}
                         onOpenChange={(open) => (open ? bigScreenOnly(() => setDeskOpen(true))() : setDeskOpen(false))}
                         desk={desk}

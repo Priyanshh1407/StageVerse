@@ -19,6 +19,7 @@ import PaSystem from './PaSystem';
 import Co2Jets from './Co2Jets';
 import Confetti from './Confetti';
 import Streamers from './Streamers';
+import Fireworks, { fireworkLight } from './Fireworks';
 import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
@@ -32,7 +33,7 @@ import { roomFlash } from './flash';
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
  * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 2 (floor, truss) + confetti and streamer cannons 2 (these a moment after the
  * first frames) = 45, plus lasers and house lights (1 each, skipped while off), the CO2 plumes (floor, truss),
- * the confetti (with its CO2 blasts) and the streamers (1 each, zero instances while idle)
+ * the confetti (with its CO2 blasts), the streamers and the fireworks (1 each, zero instances while idle)
  * and bloom.
  */
 
@@ -49,11 +50,14 @@ function StageLights({ look, blinders }) {
         const target = look.current;
         const { a, b, cool, warm, white } = colors.current;
         const flash = roomFlash(target, clock.elapsedTime, blinders).total;
-        bounce.current.color.copy(a.set(target.colorA).lerp(b.set(target.colorB), 0.5)).lerp(white, Math.min(1, flash));
-        bounce.current.intensity = (target.master ?? 1) * Math.min(target.intensity, 1.4) * 1.4 + flash * 6;
+        // fireworks bursting overhead tint the rig in their colours (a tint: stronger lit the backdrop
+        // grey and the night sky looked washed out)
+        const fw = Math.min(0.6, fireworkLight.level);
+        bounce.current.color.copy(a.set(target.colorA).lerp(b.set(target.colorB), 0.5)).lerp(fireworkLight.color, fw).lerp(white, Math.min(1, flash));
+        bounce.current.intensity = (target.master ?? 1) * Math.min(target.intensity, 1.4) * 1.4 + flash * 6 + fw * 2;
         const house = target.house ?? 0;
-        hemi.current.color.copy(cool).lerp(warm, house).lerp(white, Math.min(1, flash));
-        hemi.current.intensity = 0.5 + house * 2.2 + flash * 5; // a strobe hit lights every surface
+        hemi.current.color.copy(cool).lerp(warm, house).lerp(fireworkLight.color, fw * 0.5).lerp(white, Math.min(1, flash));
+        hemi.current.intensity = 0.5 + house * 2.2 + flash * 5 + fw * 0.6; // a strobe hit lights every surface; fireworks tint them
     });
     return (
         <>
@@ -270,6 +274,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     <Confetti look={look} quality={effects} blinders={blinders} />
                     <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} mount="confetti" />
                     <Streamers look={look} quality={effects} blinders={blinders} />
+                    <Fireworks look={look} count={beams} quality={effects} />
                 </Warm>
             )}
             <CameraFlash look={look} blinders={blinders} />
