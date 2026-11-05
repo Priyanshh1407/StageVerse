@@ -3,15 +3,13 @@
 import { useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { BURN, CANDLES_X, RISE, SHELLS, SMOKE, TYPES } from '@/lib/show/fireworks';
+import { BURN, CANDLES_X, CANDLE_STEP, COMET_STEP, RISE, SHELLS, SMOKE, TYPES } from '@/lib/show/fireworks';
 import { fireworkBoom } from '../show/fireworkSound';
 import { pyroLayout } from './rigLayout';
-import { DECK_HEIGHT } from './trussGeometry';
 
 // Fireworks (item 16): aerial shells bursting in the sky behind the stage (peony, chrysanthemum,
-// willow, palm, ring, crossette, glitter, shaped: heart / smiley / "S"), and pyro on the stage (a
-// waterfall pouring from the top truss, roof comets fanning up from it, mines from the stage front,
-// roman candles chasing along the truss).
+// willow, palm, ring, crossette, glitter), and pyro on the stage (roof comets fanning up from the top
+// truss, mines from the stage front, roman candles chasing along the truss).
 //
 // Each burst lights the sky (a soft glow where it bursts) and, through the stage's bounce light, the
 // rig in its colour (fireworkLight, read by StageScene); its smoke lingers in the sky, lit by the
@@ -19,7 +17,7 @@ import { DECK_HEIGHT } from './trussGeometry';
 //
 // Cheap enough for integrated graphics: one draw call for all of it. A pool of SLOTS launches, each
 // with PER_SLOT particles; every particle's role and motion (rising trail, the burst's pattern, arms,
-// rings, splitting stars, shapes, the waterfall's curtain...) is worked out in the vertex shader from
+// rings, splitting stars, comets, candles...) is worked out in the vertex shader from
 // its slot's launch, so the CPU only fills a few uniforms per launch. Nothing drawn while the sky is
 // empty; fewer slots and particles on integrated GPUs.
 
@@ -30,7 +28,7 @@ const BURNS = SHELLS.map((s) => BURN[s].toFixed(2));
 const VERTEX = /* glsl */ `
     attribute vec4 aStar;          // slot, particle index in the slot, two random numbers
     uniform vec4 uA[${MAX_SLOTS}];  // where it leaves from (x, y, z), its age
-    uniform vec4 uB[${MAX_SLOTS}];  // type, burst height, seed, how long it pours (waterfall)
+    uniform vec4 uB[${MAX_SLOTS}];  // type, burst height, seed, seconds between shots (candles, comets)
     uniform vec4 uC[${MAX_SLOTS}];  // colour A, variant
     uniform vec4 uD[${MAX_SLOTS}];  // colour B
     uniform float uTime;
@@ -63,24 +61,6 @@ const VERTEX = /* glsl */ `
         float e = exp(-k * t);
         return d * v * e - vec3(0.0, fall * (1.0 - e), 0.0);
     }
-    // the outline of a shaped shell, u along it (0..1), in [-1, 1]: 0 heart, 1 smiley, 2 "S"
-    vec2 shapePoint(int variant, float u) {
-        float a = 6.2831853 * u;
-        if (variant == 0) {
-            float s = sin(a);
-            return vec2(16.0 * s * s * s, 13.0 * cos(a) - 5.0 * cos(2.0 * a) - 2.0 * cos(3.0 * a) - cos(4.0 * a)) / 17.0;
-        }
-        if (variant == 1) {
-            if (u < 0.55) return vec2(cos(a / 0.55), sin(a / 0.55));                                     // face
-            if (u < 0.8) { float m = mix(3.6, 5.8, (u - 0.55) / 0.25); return vec2(0.55 * cos(m), 0.55 * sin(m) - 0.05); } // smile
-            if (u < 0.9) { float e = 6.2831853 * (u - 0.8) / 0.1; return vec2(-0.35, 0.32) + 0.09 * vec2(cos(e), sin(e)); }
-            float e = 6.2831853 * (u - 0.9) / 0.1; return vec2(0.35, 0.32) + 0.09 * vec2(cos(e), sin(e));
-        }
-        // "S": the upper arc from its right side over the top to the middle, the lower from the middle round to its left
-        if (u < 0.5) { float m = mix(0.0, 4.712389, u / 0.5); return vec2(0.5 * cos(m), 0.5 + 0.5 * sin(m)); }
-        float m = mix(1.5707963, -3.1415926, (u - 0.5) / 0.5);
-        return vec2(0.5 * cos(m), -0.5 + 0.5 * sin(m));
-    }
 
     void main() {
         int s = int(aStar.x + 0.5);
@@ -94,7 +74,7 @@ const VERTEX = /* glsl */ `
         int type = int(B.x + 0.5);
         float h = B.y;
         float seed = B.z;
-        float pour = B.w;
+        float shotStep = B.w;
         vec3 colA = uC[s].rgb;
         int variant = int(uC[s].w + 0.5);
         vec3 colB = uD[s].rgb;
@@ -104,7 +84,7 @@ const VERTEX = /* glsl */ `
         vHeat = 1.0;
         vColor = colA;
         gl_Position = vec4(0.0, 0.0, -2.0, 1.0); // hidden unless something below places it
-        bool shell = type <= 7;
+        bool shell = type <= ${SHELLS.length - 1};
         vec3 burst = origin + vec3(sin(seed * 40.0) * 1.5, h, cos(seed * 31.0) * 1.5);
         float tb = age - RISE; // time since the shell burst
         vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
@@ -117,7 +97,7 @@ const VERTEX = /* glsl */ `
             float level = 0.0;
             // (soft: in a finale many overlap, and bright glows added up to a white blob)
             if (shell && tb >= 0.0) level = exp(-tb * 3.5) * 0.14;
-            if (type == 10) { c = origin + vec3(0.0, 3.0, 0.0); size = 9.0; level = exp(-age * 3.0) * 0.3; }
+            if (type == ${TYPES.indexOf('mines')}) { c = origin + vec3(0.0, 3.0, 0.0); size = 9.0; level = exp(-age * 3.0) * 0.3; }
             if (level < 0.005) return;
             vKind = 1.0;
             vGlow = level;
@@ -263,43 +243,11 @@ const VERTEX = /* glsl */ `
             bright = pow(1.0 - heat, 1.2) * 1.4 * (1.0 - dup * 0.6);
             streakK = 0.18;
             streakMax = 2.5;
-        } else if (type == 7) {
-            // shaped: the outline expands, facing the audience, and sags a little as it burns
-            vec2 p2 = shapePoint(variant, u);
-            vec3 d = vec3(p2.x, p2.y, (r1 - 0.5) * 0.15);
-            float R = 15.0;
-            pos = burst + d * R * (1.0 - exp(-3.2 * tb)) - vec3(0.0, 0.6 * tb * tb, 0.0);
-            vel = d * R * 3.2 * exp(-3.2 * tb) - vec3(0.0, 1.2 * tb, 0.0);
-            heat = tb / burnOf(7);
-            if (heat > 1.0) return;
-            bright = pow(1.0 - heat, 1.2) * 1.7;
-            col = (variant == 1 && u >= 0.55) ? colB : colA;
-            streakK = 0.08;
-            streakMax = 1.0;
-        } else if (type == 8) {
-            // waterfall: a curtain of golden sparks pouring from just in front of the top truss
-            float L = 2.6;
-            float off = hash(r1 * 13.7);
-            float cyc = floor((age + off * L) / L);
-            float launched = cyc * L - off * L;
-            float t = age - launched;
-            float life = L * (0.8 + 0.2 * r2);
-            if (launched < 0.0 || launched > pour || t > life) return;
-            vec3 c = origin + vec3((u - 0.5) * 3.5, 0.0, 0.0);
-            vec3 d = normalize(vec3((r2 - 0.5) * 0.2, -0.6 - r2, 0.6 + 0.6 * r1));
-            pos = flyPos(c, d, 1.5, 1.0, 7.0, t);
-            vel = flyVel(d, 1.5, 1.0, 7.0, t);
-            if (pos.y < ${(DECK_HEIGHT + 0.1).toFixed(2)}) return;
-            heat = t / life;
-            bright = (1.0 - heat * 0.6) * 1.7 * (0.55 + 0.45 * step(0.3, hash(floor(uTime * 24.0) + r1 * 57.0)));
-            col = mix(vec3(1.0, 0.95, 0.8), gold, heat);
-            streakK = 0.2;
-            streakMax = 1.5;
-        } else if (type == 9) {
+        } else if (type == ${TYPES.indexOf('comets')}) {
             // roof comets: a fan cake firing eight comets one after another, in a V or a W
             float k8 = floor(u * 8.0);
             float j = fract(u * 8.0);
-            float tt = age - k8 * 0.14 - j * 0.3;
+            float tt = age - k8 * (shotStep > 0.0 ? shotStep : ${COMET_STEP.toFixed(2)}) - j * 0.3;
             if (tt < 0.0) return;
             float ang = variant == 0 ? (k8 - 3.5) / 3.5 * 0.6 : (mod(k8, 2.0) < 0.5 ? -1.0 : 1.0) * (0.25 + 0.45 * floor(k8 / 2.0) / 3.0);
             vec3 d = normalize(vec3(sin(ang), cos(ang), 0.25));
@@ -311,7 +259,7 @@ const VERTEX = /* glsl */ `
             col = j < 0.06 ? colA : gold;
             streakK = 0.3;
             streakMax = 5.0;
-        } else if (type == 10) {
+        } else if (type == ${TYPES.indexOf('mines')}) {
             // mines: a low, wide spray of stars straight from the stage front
             float phi = 6.2831853 * r1;
             float y = 0.45 + 0.55 * hash(r2 * 3.3);
@@ -327,14 +275,15 @@ const VERTEX = /* glsl */ `
             col = mix(colA, colB, step(0.5, hash(r1 * 2.9)));
             streakK = 0.16;
             streakMax = 2.2;
-        } else if (type == 11) {
-            // roman candles: six along the top of the truss, each firing four balls, in a chase
+        } else if (type == ${TYPES.indexOf('candles')}) {
+            // roman candles: six along the top of the truss, each firing four balls, in a chase (on the
+            // song's beat when it gives one)
             float id = floor(u * 240.0);
             if (id >= 240.0) return;
             float c = floor(id / 40.0);
             float b = floor(mod(id, 40.0) / 10.0);
             float j = mod(id, 10.0) / 10.0;
-            float tt = age - c * 0.15 - b * 0.55 - j * 0.06;
+            float tt = age - c * (shotStep > 0.0 ? shotStep : ${CANDLE_STEP.toFixed(2)}) - b * 0.55 - j * 0.06;
             if (tt < 0.0) return;
             vec3 o = vec3(${CANDLES_X[0].toFixed(1)} + c * ${(CANDLES_X[1] - CANDLES_X[0]).toFixed(1)}, origin.y, origin.z);
             vec3 d = normalize(vec3(0.05 * (c - 2.5) / 2.5, 1.0, 0.12));
@@ -445,7 +394,7 @@ function driveFireworks(geometry, material, target, time, pool, spots) {
         colour.set(f.colorB);
         u.uD.value[s].set(colour.r, colour.g, colour.b, 0);
         // the light each burst throws: a flash as it bursts, fading over half a second
-        const shell = type <= 7;
+        const shell = type < SHELLS.length;
         const since = shell ? f.age - RISE : f.age;
         if ((shell || f.type === 'mines') && since >= 0) {
             const l = Math.exp(-since * 2.2) * (shell ? 1 : 0.4);

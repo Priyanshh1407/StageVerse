@@ -10,7 +10,7 @@ import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
 import { CO2_JETS, CO2_TRUSS_JETS, co2Pattern, co2TrussPattern } from '@/lib/show/co2';
 import { CONFETTI_UNITS, STREAMER_UNITS, confettiPattern, streamerPattern } from '@/lib/show/confetti';
-import { finale, fireOne, rng as fwRng } from '@/lib/show/fireworks';
+import { defaultGrid, finale, fireOne, rng as fwRng } from '@/lib/show/fireworks';
 import { primeFireworkSound, setFireworkSound } from './fireworkSound';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
@@ -404,12 +404,13 @@ function ShowExperience({ events = [], isPhone = false }) {
         primeFireworkSound(); // a click: the browser now allows sound
         const c = control.current;
         const now = performance.now() / 1000;
-        c.fireworks = [...(c.fireworks || []), ...volley.map(({ delay, launch }) => ({ ...launch, at: now + delay }))];
+        c.fireworks = [...(c.fireworks || []), ...volley.map(({ at, launch }) => ({ ...launch, at: now + at }))];
     };
     const fireworkOpts = () => ({ scheme: fwOptions.scheme, show: [control.current.desk?.colorA ?? '#19d9ff', control.current.desk?.colorB ?? '#ff3df2'] });
     const randomFw = () => (fwRandom.current ??= fwRng(Math.random()));
-    const fireFirework = (type) => launchFireworks(fireOne(type, randomFw(), fireworkOpts()).map((launch) => ({ delay: 0, launch })));
-    const fireFinale = () => launchFireworks(finale(randomFw(), fireworkOpts()));
+    const fireFirework = (type) => launchFireworks(fireOne(type, randomFw(), fireworkOpts()).map((launch) => ({ at: 0, launch })));
+    // the desk's finale: the same choreography, on a 128 BPM grid, building steadily
+    const fireFinale = () => launchFireworks(finale(randomFw(), fireworkOpts(), defaultGrid(128), { genre: 'edm', bpm: 128 }));
 
     // One-tap lighting for the playground's "Run the lights" step (the same actions as the desk)
     const manual = mode === 'manual';

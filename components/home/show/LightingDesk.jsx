@@ -134,10 +134,8 @@ const SHELL_BUTTONS = [
     ['ring', 'Ring', 'a tilted ring'],
     ['crossette', 'Crossette', 'stars that split'],
     ['glitter', 'Glitter', 'crackling silver'],
-    ['shape', 'Shape', 'heart, smiley or S'],
 ];
 const STAGE_BUTTONS = [
-    ['waterfall', 'Waterfall', 'from the top truss'],
     ['comets', 'Roof comets', 'V and W fans'],
     ['mines', 'Mines', 'from the stage front'],
     ['candles', 'Roman candles', 'a chase on the truss'],
@@ -339,7 +337,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     ))}
                 </div>
                 <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mt-2 mb-1.5">STAGE PYRO</div>
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-3 gap-1.5">
                     {STAGE_BUTTONS.map(([type, label, hint]) => (
                         <button key={type} onClick={() => onFirework(type)}
                             className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-black tracking-wide">

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-    BURN, CANDLES_X, COMETS_X, MINES, RISE, SHELLS, SMOKE, STAGE_PYRO, TRUSS_TOP, TRUSS_Y, TRUSS_Z, WATERFALL_X, WATERFALL_Y, WATERFALL_Z,
-    activeFireworks, dropVolley, finale, fireOne, fireworkDuration, makeShell, makeStagePyro, rng, shellColours,
+    BURN, CANDLES_X, COMETS_X, MINES, RISE, SHELLS, SMOKE, STAGE_PYRO, TRUSS_TOP, TRUSS_Y, TRUSS_Z,
+    activeFireworks, defaultGrid, dropVolley, finale, fireOne, fireworkDuration, makeShell, makeStagePyro, rng, shellColours,
 } from '@/lib/show/fireworks';
 import { ROWS } from '@/components/home/stage/trussGeometry';
 import { SHOTS } from '@/lib/show/shots';
@@ -37,17 +37,6 @@ describe('fireworks: where they go', () => {
         }
     });
 
-    it('the waterfall pours from just in front of the top truss, so it falls in front of the hanging lights', () => {
-        const w = makeStagePyro('waterfall', rng(0.1));
-        expect(w).toHaveLength(WATERFALL_X.length);
-        for (const f of w) {
-            expect(f.z).toBeCloseTo(WATERFALL_Z, 6);
-            expect(f.z).toBeGreaterThan(TRUSS_Z + 0.3 + 0.2); // ahead of the heads hanging under the truss
-            expect(f.y).toBeCloseTo(WATERFALL_Y, 6);
-            expect(f.y).toBeLessThan(TRUSS_Y);
-        }
-    });
-
     it('roof comets and roman candles fire from the top of the truss; mines from the stage-front pyro spots', () => {
         const comets = makeStagePyro('comets', rng(0.2));
         expect(comets.map((c) => c.x)).toEqual(COMETS_X);
@@ -63,12 +52,15 @@ describe('fireworks: timing and colour', () => {
     it('every kind has a lifetime: shells climb, burn and leave smoke', () => {
         for (const type of SHELLS) expect(fireworkDuration({ type })).toBeCloseTo(RISE + BURN[type] + SMOKE, 6);
         for (const type of STAGE_PYRO) expect(fireworkDuration({ type, len: 5 })).toBeGreaterThan(1);
-        expect(fireworkDuration({ type: 'waterfall', len: 8 })).toBeGreaterThan(fireworkDuration({ type: 'waterfall', len: 3 }));
+        // candles and comets on a slower beat take longer
+        expect(fireworkDuration({ type: 'candles', len: 0.5 })).toBeGreaterThan(fireworkDuration({ type: 'candles' }));
     });
 
     it('one desk press fires one shell, or a piece of stage pyro', () => {
         expect(fireOne('palm', rng(0.5))).toHaveLength(1);
-        expect(fireOne('waterfall', rng(0.5)).length).toBe(WATERFALL_X.length);
+        expect(fireOne('mines', rng(0.5)).length).toBe(MINES);
+        expect(SHELLS).not.toContain('shape');
+        expect(STAGE_PYRO).not.toContain('waterfall');
     });
 
     it('colours: classic firework colours, the show\'s colours, or both; willows gold, glitter silver', () => {
@@ -80,20 +72,6 @@ describe('fireworks: timing and colour', () => {
         expect(shellColours('glitter', r)[0]).toBe('#f4f7ff');
     });
 
-    it('the finale: candles and comets open it, the waterfall pours, shells come faster and faster, a closing volley', () => {
-        const f = finale(rng(0.7));
-        const delays = f.map((x) => x.delay);
-        expect([...delays].sort((a, b) => a - b)).toEqual(delays);
-        expect(f[0].launch.type).toBe('candles');
-        const types = new Set(f.map((x) => x.launch.type));
-        for (const t of ['candles', 'comets', 'waterfall', 'mines', ...SHELLS]) expect(types.has(t)).toBe(true);
-        const shellTimes = f.filter((x) => SHELLS.includes(x.launch.type) && x.delay < 6.5).map((x) => x.delay);
-        const gaps = shellTimes.slice(1).map((d, i) => d - shellTimes[i]);
-        expect(gaps.at(-1)).toBeLessThan(gaps[0]); // the build accelerates
-        expect(f.filter((x) => x.delay >= 6.6 && SHELLS.includes(x.launch.type)).length).toBeGreaterThanOrEqual(5);
-        expect(Math.max(...delays)).toBeLessThan(8);
-    });
-
     it('only the launches in the air are shown, each with its age', () => {
         const list = [{ type: 'peony', at: 10 }, { type: 'mines', at: 30 }];
         expect(activeFireworks(list, 9)).toHaveLength(0);
@@ -103,10 +81,79 @@ describe('fireworks: timing and colour', () => {
         expect(activeFireworks(list, 10 + fireworkDuration(list[0]) + 0.1)).toHaveLength(0);
     });
 
-    it('a drop volley: mines on the beat, then shells', () => {
-        const v = dropVolley(rng(0.8));
-        expect(v.filter((x) => x.delay === 0).every((x) => x.launch.type === 'mines')).toBe(true);
-        expect(v.some((x) => SHELLS.includes(x.launch.type))).toBe(true);
+    it('a drop volley: stage pyro on the drop, then shells of one kind bursting on the beats after it', () => {
+        const beats = [0.5, 1.0, 1.5, 2.0, 2.5];
+        const v = dropVolley(rng(0.8), {}, beats, { genre: 'pop', beat: 0.5 });
+        const onDrop = v.filter((x) => x.at === 0).map((x) => x.launch.type);
+        expect(onDrop).toContain('mines');
+        expect(onDrop).toContain('candles');
+        const shells = v.filter((x) => SHELLS.includes(x.launch.type));
+        shells.forEach((x, i) => expect(x.at + RISE).toBeCloseTo(beats[i], 6));
+        expect(new Set(shells.map((x) => x.launch.type)).size).toBe(1); // one kind: the variety is for the finale
+        expect(shells[0].launch.type).toBe('peony');
+    });
+
+    it('every genre\'s finale has stage pyro: roman candles, roof comets and mines', () => {
+        for (const genre of ['edm', 'pop', 'rap', 'bollywood']) {
+            const types = new Set(finale(rng(0.9), {}, { bars: Array.from({ length: 9 }, (_, i) => 10 + i * 2) }, { genre, bpm: 120, energy: new Array(8).fill(0.8) }).map((x) => x.launch.type));
+            for (const t of ['candles', 'comets', 'mines']) expect(types.has(t)).toBe(true);
+        }
+    });
+});
+
+describe('the finale follows the song', () => {
+    // a 120 BPM song: 2 s bars
+    const grid = { bars: Array.from({ length: 9 }, (_, i) => 10 + i * 2) };
+    const beatTimes = Array.from({ length: 8 * 8 + 1 }, (_, i) => 10 + i * 0.25); // every half-beat
+    const shellsOf = (f) => f.filter((x) => SHELLS.includes(x.launch.type));
+
+    it('every shell bursts on the beat (or a half-beat), launched RISE s ahead', () => {
+        const f = finale(rng(0.1), {}, grid, { genre: 'edm', bpm: 120 });
+        for (const x of shellsOf(f)) {
+            const burst = x.at + RISE;
+            expect(Math.min(...beatTimes.map((b) => Math.abs(b - burst)))).toBeLessThan(1e-6);
+        }
+        for (const x of f.filter((y) => !SHELLS.includes(y.launch.type))) expect(Math.min(...beatTimes.map((b) => Math.abs(b - x.at)))).toBeLessThan(1e-6);
+    });
+
+    it('some fire together, some in sequence, and the closing volley lands together on the final hit', () => {
+        const f = finale(rng(0.2), {}, grid, { genre: 'edm', bpm: 120 });
+        const bursts = shellsOf(f).map((x) => Math.round((x.at + RISE) * 1000) / 1000);
+        const counts = bursts.reduce((m, t) => m.set(t, (m.get(t) ?? 0) + 1), new Map());
+        expect([...counts.values()].some((n) => n === 2)).toBe(true);       // pairs together
+        expect([...counts.values()].filter((n) => n === 1).length).toBeGreaterThan(6); // single shells in sequence
+        expect(counts.get(grid.bars[8])).toBeGreaterThanOrEqual(5);           // the closing volley
+        expect(Math.max(...bursts)).toBeCloseTo(grid.bars[8], 6);             // nothing after the final hit
+    });
+
+    it('the genre picks the shells: pop leans on peonies and rings, rap on crossettes and glitter', () => {
+        const types = (genre) => shellsOf(finale(rng(0.3), {}, grid, { genre, bpm: 120 })).map((x) => x.launch.type);
+        const share = (list, wanted) => list.filter((t) => wanted.includes(t)).length / list.length;
+        expect(share(types('pop'), ['peony', 'ring', 'chrysanthemum', 'willow'])).toBeGreaterThan(share(types('rap'), ['peony', 'ring', 'chrysanthemum', 'willow']));
+        expect(share(types('rap'), ['crossette', 'glitter'])).toBeGreaterThan(share(types('pop'), ['crossette', 'glitter']));
+    });
+
+    it('the song\'s loudness picks each bar\'s pattern: louder bars carry more shells', () => {
+        const quietThenLoud = [0.2, 0.25, 0.3, 0.8, 0.9, 1.0, 0.8, 0.9];
+        const f = finale(rng(0.4), {}, grid, { genre: 'edm', bpm: 120, energy: quietThenLoud });
+        const inBar = (i) => shellsOf(f).filter((x) => x.at + RISE >= grid.bars[i] - 1e-6 && x.at + RISE < grid.bars[i + 1] - 1e-6).length;
+        expect(inBar(0)).toBeLessThan(inBar(5));
+        expect(inBar(1)).toBeLessThan(inBar(4));
+    });
+
+    it('tempo picks the pace: only fast songs rush every half-beat; a harder ending means a bigger closing volley', () => {
+        const halfBeats = (bpm) => shellsOf(finale(rng(0.5), {}, grid, { genre: 'pop', bpm, energy: new Array(8).fill(0.95) }))
+            .filter((x) => Math.abs(((x.at + RISE - 10) / 0.5) % 1 - 0.5) < 1e-6).length;
+        expect(halfBeats(128)).toBeGreaterThan(0);
+        expect(halfBeats(80)).toBe(0);
+        const closing = (end) => shellsOf(finale(rng(0.6), {}, grid, { genre: 'edm', bpm: 120, energy: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, end] }))
+            .filter((x) => Math.abs(x.at + RISE - grid.bars[8]) < 1e-6).length;
+        expect(closing(1)).toBeGreaterThan(closing(0.1));
+    });
+
+    it('the desk finale runs on a steady 128 BPM grid, starting after its own first launch', () => {
+        const f = finale(rng(0.7), {}, defaultGrid(128));
+        expect(Math.min(...f.map((x) => x.at))).toBeGreaterThanOrEqual(0);
     });
 });
 
@@ -137,9 +184,15 @@ describe('special effects in a song', () => {
         const fireworks = kinds('firework');
         expect(fireworks.some((h) => h.t >= at(40) - 0.01 && h.t <= at(44))).toBe(true);
         // the finale lands in the last peak's closing bars and ends before the song does
-        const late = fireworks.filter((h) => h.t >= at(80) - 0.01);
+        const late = fireworks.filter((h) => h.t >= at(78) - 0.01);
         expect(late.length).toBeGreaterThan(20);
         expect(Math.max(...late.map((h) => h.t))).toBeLessThan(analysis.duration);
+        // its shells burst on the song's beats (or, in the fast rushes, half-beats)
+        const grid = beats.flatMap((b) => [b, b + 0.25]);
+        for (const h of late.filter((x) => SHELLS.includes(x.fw.type))) {
+            const burst = h.t + RISE;
+            expect(Math.min(...grid.map((b) => Math.abs(b - burst)))).toBeLessThan(0.002);
+        }
     });
 
     it('the finale\'s closing volley brings confetti, streamers and the truss CO2 in together', () => {
@@ -167,5 +220,80 @@ describe('special effects in a song', () => {
     it('the playground\'s looping house show has none of it', () => {
         const idle = programShow(analysis, { blackout: false });
         expect(idle.hits.some((h) => ['firework', 'confetti', 'streamers'].includes(h.kind))).toBe(false);
+    });
+});
+
+describe('fireworks outside the finale stay small', () => {
+    const beat = 0.5;
+    const beats = Array.from({ length: 120 * 4 }, (_, i) => i * beat);
+    const at = (bar) => bar * 4 * beat;
+    const sec = (start, bars, kind, energy = 0.5) => ({ start: at(start), end: at(start + bars), kind, bars, energy });
+    // a long song with room for every solo: two earlier peaks, the loudest in the middle, a last one at the end
+    const show = programShow({
+        bpm: 120, duration: 240, beats, downbeats: beats.map((_, i) => i).filter((i) => i % 4 === 0), energy: [],
+        sections: [sec(0, 8, 'intro', 0.2), sec(8, 8, 'build', 0.5), sec(16, 12, 'peak', 0.8), sec(28, 20, 'calm', 0.3), sec(48, 16, 'groove'),
+            sec(64, 8, 'build'), sec(72, 24, 'peak', 0.95), sec(96, 16, 'groove'), sec(112, 8, 'outro', 0.2)],
+    }, { extras: { co2: true } });
+    const shells = show.hits.filter((h) => h.kind === 'firework' && SHELLS.includes(h.fw.type));
+
+    it('the fireworks solo is a taste: the candles and at most one shell, of one kind', () => {
+        const solo = show.cues.find((c) => c.name === 'Solo · fireworks');
+        if (!solo) return; // only songs with a free slot get it
+        const inSolo = shells.filter((h) => h.t + RISE >= solo.t - 0.01 && h.t + RISE < solo.t + 4 * 4 * beat);
+        expect(inSolo.length).toBeLessThanOrEqual(1);
+        expect(show.hits.some((h) => h.kind === 'firework' && h.fw.type === 'candles' && Math.abs(h.t - solo.t) < 0.01)).toBe(true);
+    });
+
+    it('an earlier drop lands with one shell of the genre\'s own kind on its beat, the mines, and candles from its build', () => {
+        // the drop lands where its CO2 blast fires (an EDM spool lands two bars into the peak)
+        const drop = show.hits.find((h) => h.kind === 'co2' && h.jets === 'all' && h.t >= at(16) - 0.01 && h.t <= at(19)).t;
+        const near = show.hits.filter((h) => h.kind === 'firework' && h.t > drop - 3 && h.t < drop + 1);
+        const bursts = near.filter((h) => SHELLS.includes(h.fw.type));
+        expect(bursts).toHaveLength(1);
+        expect(bursts[0].fw.type).toBe('palm'); // EDM's signature shell
+        expect(bursts[0].t + RISE).toBeCloseTo(drop, 2);
+        expect(near.filter((h) => h.fw.type === 'mines')).toHaveLength(MINES);
+        expect(near.some((h) => h.fw.type === 'candles' && h.t < drop)).toBe(true);
+    });
+
+    it('accents never crowd the finale: the finale keeps its variety for the end', () => {
+        const finaleStart = Math.min(...show.hits.filter((h) => h.kind === 'firework' && h.fw.type === 'candles' && h.t > at(90)).map((h) => h.t));
+        const before = shells.filter((h) => h.t < finaleStart - 1);
+        const kindsBefore = new Set(before.map((h) => h.fw.type));
+        const kindsInFinale = new Set(shells.filter((h) => h.t >= finaleStart - 1.5).map((h) => h.fw.type));
+        expect(kindsInFinale.size).toBeGreaterThan(kindsBefore.size);
+    });
+});
+
+describe('every song gets every special effect', () => {
+    const beat = 0.5;
+    const beats = Array.from({ length: 100 * 4 }, (_, i) => i * beat);
+    const at = (bar) => bar * 4 * beat;
+    const sec = (start, bars, kind, energy = 0.5) => ({ start: at(start), end: at(start + bars), kind, bars, energy });
+    const song = (sections) => ({ bpm: 120, duration: at(100), beats, downbeats: beats.map((_, i) => i).filter((i) => i % 4 === 0), energy: [], sections });
+    const kindsIn = (show) => new Set(show.hits.map((h) => (h.kind === 'firework' ? (SHELLS.includes(h.fw.type) ? 'shell' : 'pyro') : h.kind)));
+    const EVERY = ['co2', 'co2Truss', 'confetti', 'streamers', 'shell', 'pyro'];
+
+    it('a song with peaks', () => {
+        const show = programShow(song([sec(0, 8, 'intro', 0.2), sec(8, 8, 'build'), sec(16, 24, 'peak', 0.9), sec(40, 24, 'groove'), sec(64, 24, 'peak', 0.85), sec(88, 12, 'outro', 0.2)]), { extras: { co2: true } });
+        for (const k of EVERY) expect(kindsIn(show).has(k)).toBe(true);
+    });
+
+    it('a song with no peak at all still gets every effect (its loudest section is the climax)', () => {
+        const show = programShow(song([sec(0, 8, 'intro', 0.2), sec(8, 30, 'calm', 0.3), sec(38, 40, 'groove', 0.55), sec(78, 22, 'outro', 0.2)]), { extras: { co2: true } });
+        for (const k of EVERY) expect(kindsIn(show).has(k)).toBe(true);
+    });
+
+    it('a visitor\'s uploaded song too (the browser programs it with the same options)', () => {
+        const show = programShow(song([sec(0, 8, 'intro', 0.2), sec(8, 30, 'groove'), sec(38, 30, 'peak', 0.9), sec(68, 32, 'outro', 0.2)]), { title: 'My song', genre: 'pop', extras: { co2: true } });
+        for (const k of EVERY) expect(kindsIn(show).has(k)).toBe(true);
+    });
+
+    it('no solo ever lands in the finale', () => {
+        const show = programShow(song([sec(0, 8, 'intro', 0.2), sec(8, 8, 'build'), sec(16, 24, 'peak', 0.9), sec(40, 24, 'groove'), sec(64, 24, 'peak', 0.85), sec(88, 12, 'outro', 0.2)]), { extras: { co2: true } });
+        // the finale: 8 bars (16 s at 120 BPM) up to its closing hit, where the streamers fire
+        const to = show.hits.find((h) => h.kind === 'streamers').t;
+        const from = to - 16;
+        for (const c of show.cues.filter((x) => /^Solo · [^·]+$/.test(x.name))) expect(c.t < from - 1 || c.t > to).toBe(true);
     });
 });

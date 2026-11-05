@@ -181,7 +181,11 @@ describe('programming a show', () => {
 
     it('cuts the camera on 8-bar phrases and only to known shots', () => {
         const phrases = show.cues.filter((c) => c.name.includes('phrase'));
-        expect(phrases.map((c) => c.t)).toContain(64);   // 8 bars into the peak
+        // 8 bars into the peak, unless a solo has taken that phrase (solos stay out of the finale, so they
+        // can land in an earlier peak)
+        const soloAt64 = show.cues.some((c) => /^Solo · [^·]+$/.test(c.name) && c.t <= 64 && c.t + 8 > 64);
+        if (!soloAt64) expect(phrases.map((c) => c.t)).toContain(64);
+        expect(phrases.length).toBeGreaterThan(3);
         for (const c of show.cues) if (c.shot) expect(SHOTS[c.shot]).toBeDefined();
     });
 
@@ -312,11 +316,11 @@ describe('programming rules (concert-style)', () => {
         expect(pixelLook('groove', 0, { beams: 1, wash: 1 }).pixelColor).toBe(0.5); // groove: both colours
     });
 
-    it('every song gives each fixture type a solo: side towers, aerial beams, floor, washes, floor and tower lasers, strobes', () => {
+    it('every song gives each fixture type a solo: side towers, aerial beams, floor, washes, floor and tower lasers, strobes (and the fireworks where there is room)', () => {
         const beats240 = Array.from({ length: 120 * 4 }, (_, i) => i * 0.5);
         const long = programShow({ ...analysis, beats: beats240, downbeats: beats240.map((_, i) => i).filter((i) => i % 4 === 0), duration: 240, sections: [sec(0, 8, 'intro'), sec(16, 16, 'calm'), sec(48, 16, 'groove'), sec(80, 8, 'build'), sec(96, 32, 'peak'), sec(160, 16, 'groove'), sec(192, 16, 'peak'), sec(224, 8, 'outro')] });
         const solos = long.cues.filter((c) => c.name.startsWith('Solo') && !c.name.includes(' · bar '));
-        expect(solos.map((c) => c.name.replace('Solo · ', '')).sort()).toEqual(['aerial beams', 'floor', 'floor lasers', 'side towers', 'strobes', 'tower lasers', 'washes']);
+        expect(solos.map((c) => c.name.replace('Solo · ', '')).sort()).toEqual(['aerial beams', 'fireworks', 'floor', 'floor lasers', 'side towers', 'strobes', 'tower lasers', 'washes']);
         for (const solo of solos) {
             const lit = ['beams', 'sides', 'floor', 'wash', 'laser'].filter((k) => (solo.look[k] ?? 0) > 0);
             // one fixture type alone: a group of moving heads or the lasers, or the strobes by themselves
