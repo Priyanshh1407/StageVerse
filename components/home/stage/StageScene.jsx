@@ -22,6 +22,7 @@ import Streamers from './Streamers';
 import Fireworks, { fireworkLight } from './Fireworks';
 import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
+import { markReady } from '@/components/home/show/stageReady';
 import { roomFlash } from './flash';
 
 /**
@@ -180,13 +181,17 @@ function useAfterFirstFrames(ms = 1200) {
  * first frame that draws them (over a second on integrated graphics). The lights stay outside, so
  * the lit materials compile for the lights the stage really has.
  */
-function Warm({ children }) {
+function Warm({ part, children }) {
     const group = useRef();
     const { gl, camera, scene } = useThree();
     const [ready, setReady] = useState(false);
     useEffect(() => {
         let alive = true;
-        const done = () => { if (alive) setReady(true); };
+        const done = () => {
+            if (!alive) return;
+            setReady(true);
+            if (part) markReady(part); // the loading screen waits for every part
+        };
         let timer;
         if (group.current) {
             // Shaders differ when drawn into an offscreen buffer (bloom renders the stage into one:
@@ -221,7 +226,7 @@ function Warm({ children }) {
             poll();
         }
         return () => { alive = false; clearTimeout(timer); };
-    }, [gl, camera, scene]);
+    }, [gl, camera, scene, part]);
     return <group ref={group} visible={ready}>{children}</group>;
 }
 
@@ -240,7 +245,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             </mesh>
             <StageLights look={look} blinders={blinders} />
 
-            <Warm>
+            <Warm part="stage">
                 <mesh position={[0, 12, SCREEN_Z - 2.8]} material={backdrop}>
                     <planeGeometry args={[80, 34]} />
                 </mesh>
@@ -258,13 +263,13 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             </Warm>
             {/* Fixture models stream in; the rest of the stage shows meanwhile */}
             <Suspense fallback={null}>
-                <Warm>
+                <Warm part="fixtures">
                     <Fixtures count={beams} look={look} />
                     <Strobes count={beams} look={look} blinders={blinders} />
                 </Warm>
             </Suspense>
             {dressed && (
-                <Warm>
+                <Warm part="effects">
                     <StageSkirt look={look} blinders={blinders} />
                     <CrowdBarrier />
                     <PaSystem />

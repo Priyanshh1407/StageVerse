@@ -10,6 +10,7 @@ import { useQualityTier, TIER_SETTINGS } from '@/components/home/stage/useQualit
 import { ConcertLights } from '@/components/ConcertLights';
 import { SHOTS } from '@/lib/show/shots';
 import { currentState } from './director';
+import { markReady } from './stageReady';
 import hero from '@/public/images/hero.jpg';
 
 /** One frame of the show: put the current look on the rig and fly the camera toward its shot. */
@@ -139,6 +140,12 @@ function Stage2D({ control, counts }) {
 export default function ShowStage({ control, look, visible, counts, events, screen, font, logoFonts }) {
     const tier = useQualityTier();
     const [reducedMotion] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+    // The loading screen: the tier is known; for the poster (tier 0) there's no 3D stage to wait for
+    useEffect(() => {
+        if (tier === null) return;
+        markReady('tier');
+        if (tier === 0) markReady('stage', 'fixtures', 'effects');
+    }, [tier]);
 
     if (tier === null) return null; // deciding (a few hundred ms); the HTML headline is already up
     if (tier === 0) {

@@ -19,6 +19,8 @@ import { logoTag, logoScript } from '@/components/brand/Logo';
 import GenrePicker from './GenrePicker';
 import { DEFAULT_GENRE, GENRE_KEYS, GENRES } from '@/lib/show/genres';
 import BiggerScreenNotice from './BiggerScreenNotice';
+import LoadingScreen from './LoadingScreen';
+import { markReady, resetReady } from './stageReady';
 import { BEAM_COUNTS } from '@/components/home/stage/useQualityTier';
 
 // The 3D stage is client-only and loads after the page (the headline below is plain HTML)
@@ -152,6 +154,15 @@ function ShowExperience({ events = [], isPhone = false }) {
     const [screenNotice, setScreenNotice] = useState(false); // phones: the playground is for bigger screens
     const [playStep, setPlayStep] = useState('genre'); // the playground: 'genre', then 'songs', then 'lights'
     const [stopKey, setStopKey] = useState(STOPS[0].key); // the section dot that's lit
+    // The loading screen starts over each time the homepage mounts. Done while rendering, before the
+    // stage's effects run, so nothing they report is wiped.
+    useState(resetReady);
+    // the faces the LED wall and the venue sign are drawn with
+    useEffect(() => {
+        let alive = true;
+        document.fonts?.ready.then(() => { if (alive) markReady('fonts'); }) ?? markReady('fonts');
+        return () => { alive = false; };
+    }, []);
 
     // Scroll progress through the section drives the show (no re-render unless an overlay changes)
     useEffect(() => {
@@ -263,7 +274,7 @@ function ShowExperience({ events = [], isPhone = false }) {
         const c = control.current;
         fetch(DEMO_INDEX).then((r) => (r.ok ? r.json() : null)).then((index) => {
             if (!cancelled && Array.isArray(index?.demos)) setSong((s) => ({ ...s, demos: index.demos }));
-        }).catch(() => {});
+        }).catch(() => {}).finally(() => markReady('songs'));
         return () => {
             cancelled = true;
             c.audio?.pause();
@@ -537,6 +548,7 @@ function ShowExperience({ events = [], isPhone = false }) {
 
     return (
         <section ref={section} className="relative bg-[#010208]" style={{ height: `${SHOW_VH}vh` }} aria-label="StageVerse live show">
+            <LoadingScreen />
             {/* Where the scroll can rest: the page settles gently on these (html has scroll-snap-type: y proximity).
                 The stage scrolls SHOW_VH − 100 vh (the section minus one screen), so a stop at progress p sits that far × p down. */}
             {STOPS.map((s) => (
