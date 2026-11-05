@@ -8,6 +8,7 @@ import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play, SunMedium
 import { DEFAULT_LOOK, mixHex } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
+import { CO2_JETS, co2Pattern } from '@/lib/show/co2';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
@@ -350,6 +351,27 @@ function ShowExperience({ events = [], isPhone = false }) {
         c.dropTimers.push(setTimeout(() => { c.desk = { ...saved }; c.dropTimers = []; c.dropSaved = null; }, 2600));
     };
     const nextDrop = useRef(0);
+
+    // CO2 jets from the desk: hold BLAST to keep the valves open (at least a short burst), or fire a
+    // pattern. Each firing is { jet, at, len }; the director turns them into the jets' state.
+    const fireCo2 = (pattern) => {
+        takeOver();
+        const c = control.current;
+        const now = performance.now();
+        const fresh = co2Pattern(pattern).map((f) => ({ jet: f.jet, at: now + f.delay, len: f.len }));
+        c.co2Fired = [...(c.co2Fired || []).filter((f) => f.len === null || now - f.at < (f.len + 2) * 1000), ...fresh];
+    };
+    const holdCo2 = (down) => {
+        const c = control.current;
+        const now = performance.now();
+        if (down) {
+            takeOver();
+            c.co2Fired = [...(c.co2Fired || []), ...Array.from({ length: CO2_JETS }, (_, jet) => ({ jet, at: now, len: null }))];
+        } else if (c.co2Fired?.some((f) => f.len === null)) {
+            // the valves close: every held jet fires for as long as it was held, at least 0.4 s
+            c.co2Fired = c.co2Fired.map((f) => (f.len === null ? { ...f, len: Math.max(0.4, (now - f.at) / 1000) } : f));
+        }
+    };
 
     // One-tap lighting for the playground's "Run the lights" step (the same actions as the desk)
     const manual = mode === 'manual';
@@ -698,6 +720,8 @@ function ShowExperience({ events = [], isPhone = false }) {
                 <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex flex-col items-end gap-3 pointer-events-none">
                     <LightingDesk
                         onDrop={fireDrop}
+                        onCo2={fireCo2}
+                        onCo2Hold={holdCo2}
                         open={deskOpen}
                         onOpenChange={(open) => (open ? bigScreenOnly(() => setDeskOpen(true))() : setDeskOpen(false))}
                         desk={desk}

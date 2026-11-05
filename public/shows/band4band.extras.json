@@ -1,6 +1,7 @@
 {
   "title": "BAND4BAND",
   "artist": "Central Cee & Lil Baby",
+  "co2": true,
   "_note": "Hand-marked structure (half-time bars of 3.43 s at 69.9 BPM, from the analysis bars): quiet intro; hook 0:13 (the beat cuts at 0:27); verses 0:54 at the same energy (the beat cuts at 1:50); outro 2:10. The beat cuts are found by the rap analysis and lit as blackout-and-slam. Colours: money green, white and gold. Re-run npm run demos after editing.",
   "sections": [
     {

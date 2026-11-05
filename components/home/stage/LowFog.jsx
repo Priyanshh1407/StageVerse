@@ -22,7 +22,7 @@ const LAYERS = [
 const SIZE = 128;
 
 /** A tiling fractal noise texture (4 octaves of smooth value noise), 128 x 128, one channel. */
-function createNoiseTexture() {
+export function createNoiseTexture() {
     const rand = (x, y, o) => {
         const s = Math.sin((x % o) * 127.1 + (y % o) * 311.7 + o * 74.7) * 43758.5453;
         return s - Math.floor(s);

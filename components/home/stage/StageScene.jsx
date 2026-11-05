@@ -16,6 +16,7 @@ import StageSkirt from './StageSkirt';
 import CrowdBarrier from './CrowdBarrier';
 import LowFog from './LowFog';
 import PaSystem from './PaSystem';
+import Co2Jets from './Co2Jets';
 import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { roomFlash } from './flash';
@@ -27,8 +28,9 @@ import { roomFlash } from './flash';
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 (these four a moment after the first frames)
- * = 41, plus lasers and house lights (1 each, skipped while off) and bloom.
+ * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 1 (these a moment after the
+ * first frames) = 42, plus lasers and house lights (1 each, skipped while off), the CO2 plumes (1, zero instances while idle)
+ * and bloom.
  */
 
 /**
@@ -216,7 +218,7 @@ function Warm({ children }) {
     return <group ref={group} visible={ready}>{children}</group>;
 }
 
-export default function StageScene({ beams, bloom, look, events = [], lasers = 40, blinders = 8, screen, font, logoFonts }) {
+export default function StageScene({ beams, bloom, look, events = [], lasers = 40, blinders = 8, screen, font, logoFonts, effects = 'low' }) {
     const dressed = useAfterFirstFrames();
     const truss = useMemo(() => createTrussGeometry(), []);
     const backdrop = useMemo(() => createBackdropMaterial(), []);
@@ -260,6 +262,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     <CrowdBarrier />
                     <PaSystem />
                     <LowFog look={look} blinders={blinders} />
+                    <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} />
                 </Warm>
             )}
             <CameraFlash look={look} blinders={blinders} />

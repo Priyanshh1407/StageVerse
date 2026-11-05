@@ -1,5 +1,6 @@
 import { sampleCueSheet, sampleSongShow } from '@/lib/show/timeline';
 import { smoothstep, venueLit } from '@/lib/show/look';
+import { CO2_FADE, co2FromFirings } from '@/lib/show/co2';
 import { PLAY_FROM } from './scrollShow';
 
 // Who is running the lights right now, read every frame by the 3D director (and a few times a
@@ -37,7 +38,16 @@ export const HOUSE_UP_MS = 3000;
  */
 export function currentState(control) {
     if (control.mode === 'manual' && control.desk) {
-        return { look: venueLit(control.desk, control.desk.house ?? 0), shot: control.shot || 'wide', name: 'Lighting desk' };
+        const look = { ...venueLit(control.desk, control.desk.house ?? 0) }; // a copy: never write onto the desk
+        // CO2 fired from the desk
+        if (control.co2Fired?.length) {
+            const now = performance.now();
+            const co2 = co2FromFirings(control.co2Fired, now);
+            if (co2) look.co2 = co2;
+            // forget firings once every one has fired and faded (not before a pattern's later steps)
+            else if (control.co2Fired.every((f) => f.len !== null && now - f.at > (f.len + CO2_FADE) * 1000)) control.co2Fired = [];
+        }
+        return { look, shot: control.shot || 'wide', name: 'Lighting desk' };
     }
     if (control.mode === 'song' && control.song && control.audio) {
         const state = sampleSongShow(control.song, songTime(control));

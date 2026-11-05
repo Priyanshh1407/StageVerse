@@ -1,6 +1,7 @@
 {
   "title": "Subha Hone Na De",
   "artist": "Pritam (Desi Boyz)",
+  "co2": true,
   "_note": "Hand-marked structure (bars of 1.82 s at 131.8 BPM, from the analysis bars): a near-silent opening lit free-flowing; the beat 0:29; climbing 0:58; chorus 1:12 and its instrumental hook; verse 2 2:11; climbing 2:32; chorus 2:40; instrumental break 3:09; final chorus 3:30; groove 3:59; outro 4:29. Colours: neon club pink and cyan. Re-run npm run demos after editing.",
   "sections": [
     {

@@ -147,3 +147,39 @@ export function laserLayout(fixtureCount) {
     const towers = [-1, 1].flatMap((side) => LASER_TOWER_HEIGHTS.map((y) => ({ pos: [side * LASER_TOWER_X, y, TOWER_FRONT_Z + 0.1], tower: 1, side })));
     return [...floor, ...towers].sort((a, b) => a.pos[0] - b.pos[0] || a.pos[1] - b.pos[1]);
 }
+
+// CO2 jets: 6 nozzles along the stage front, where nothing else stands. A nozzle (and the base of its
+// plume) needs CO2_CLEAR from a floor moving head's centre and CO2_LASER_CLEAR from a floor laser's
+// centre (its housing reaches almost to the deck edge). It stands in a free gap between two floor
+// heads near where it's wanted; when there's no such gap (a laser in it, or heads packed too tightly),
+// it moves forward to the deck's front lip, in front of the lights, still sliding clear of any laser.
+export const CO2_CLEAR = 0.75;
+export const CO2_LASER_CLEAR = 0.9;
+export const CO2_ROW_Z = -0.6;    // in line with the floor heads
+export const CO2_FRONT_Z = -0.08; // the front lip of the deck (it ends at z = 0), ahead of the heads
+const CO2_WANT = [-10.5, -6, -1.5, 1.5, 6, 10.5];
+const CO2_REACH = 2.5;            // how far from where it's wanted a gap may be
+
+/** The nozzles, left to right: { pos: [x, y, z] (the nozzle top), front: moved ahead of the lights }. */
+export function co2Layout(fixtureCount) {
+    const heads = rigLayout(fixtureCount).filter((f) => f.group === 'floor').map((f) => f.position[0]).sort((a, b) => a - b);
+    const lasers = laserLayout(fixtureCount).filter((l) => !l.tower).map((l) => l.pos[0]);
+    const clearOfLasers = (x) => lasers.every((l) => Math.abs(l - x) >= CO2_LASER_CLEAR - 0.001);
+    const gaps = heads.slice(1).map((x, i) => (x + heads[i]) / 2)
+        // (not the centre gap: the jets come in mirrored pairs)
+        .filter((g) => Math.abs(g) > 0.01 && Math.min(...heads.map((h) => Math.abs(h - g))) >= CO2_CLEAR - 0.001 && clearOfLasers(g));
+    const used = [];
+    const nozzleY = DECK_HEIGHT + 0.36;
+    return CO2_WANT.map((want) => {
+        const free = gaps.filter((g) => !used.includes(g) && Math.abs(g - want) <= CO2_REACH);
+        if (free.length) {
+            const x = free.reduce((best, g) => (Math.abs(g - want) < Math.abs(best - want) ? g : best));
+            used.push(x);
+            return { pos: [x, nozzleY, CO2_ROW_Z], front: false };
+        }
+        // in front of the lights: slide off any laser, toward the stage centre
+        let x = want;
+        for (const l of lasers) if (Math.abs(l - x) < CO2_LASER_CLEAR) x = Math.abs(l) > CO2_LASER_CLEAR ? l - Math.sign(l) * CO2_LASER_CLEAR : l + Math.sign(want) * CO2_LASER_CLEAR;
+        return { pos: [x, nozzleY, CO2_FRONT_Z], front: true };
+    });
+}

@@ -112,11 +112,11 @@ const Key = ({ on, onClick, children, danger }) => (
 /**
  * The lighting desk, laid out like a DMX console (item 8): a grand master fader (DMX 0-255) with
  * blackout, an on/off switch and a flash button per fixture type, then the programmer
- * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops).
+ * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops, CO2 jets).
  * Touching any control takes the lights over (manual mode) until "Resume show". `desk` is the
  * look being shown, `counts` the fixture counts.
  */
-export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, song }) {
+export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, onCo2, onCo2Hold, song }) {
     if (!open) {
         return (
             <button onClick={() => onOpenChange(true)}
@@ -247,6 +247,30 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                             <span className="block text-[9px] font-normal text-white/75 leading-tight">{hint}</span>
                         </button>
                     ))}
+                </div>
+                {/* CO2 jets: hold to keep the valves open, or a pattern across the six jets */}
+                <div className="mt-2 pt-2 border-t border-white/10">
+                    <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mb-1.5">CO2 JETS</div>
+                    <div className="grid grid-cols-3 gap-1.5">
+                        <button
+                            onPointerDown={() => onCo2Hold(true)}
+                            onPointerUp={() => onCo2Hold(false)}
+                            onPointerLeave={() => onCo2Hold(false)}
+                            onPointerCancel={() => onCo2Hold(false)}
+                            className="py-2.5 rounded bg-gradient-to-b from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black text-[11px] font-black tracking-widest select-none touch-none">
+                            CO2 BLAST <span className="block text-[9px] font-normal text-black/60">hold</span>
+                        </button>
+                        {[
+                            ['chase', 'Chase', 'left to right and back'],
+                            ['outside-in', 'Outside in', 'outer, middle, inner'],
+                        ].map(([pattern, label, hint]) => (
+                            <button key={pattern} onClick={() => onCo2(pattern)}
+                                className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[11px] font-black tracking-wide">
+                                CO2 · {label.toUpperCase()}
+                                <span className="block text-[9px] font-normal text-gray-400 leading-tight">{hint}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </Panel>
 

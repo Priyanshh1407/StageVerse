@@ -100,7 +100,7 @@ function Stage3D({ tier, control, look, visible, counts, events, screen, font, l
         >
             <PerformanceMonitor flipflops={3} onDecline={() => setStep((s) => Math.min(s + 1, MAX_STEP))} />
             <Director control={control} look={look} />
-            <StageScene beams={beams} bloom={bloom} look={look} events={events} lasers={counts.lasers} blinders={counts.blinders} screen={screen} font={font} logoFonts={logoFonts} />
+            <StageScene beams={beams} bloom={bloom} look={look} events={events} lasers={counts.lasers} blinders={counts.blinders} screen={screen} font={font} logoFonts={logoFonts} effects={tier >= 2 ? 'high' : 'low'} />
         </Canvas>
     );
 }

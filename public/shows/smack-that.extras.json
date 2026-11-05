@@ -1,6 +1,7 @@
 {
   "title": "Smack That",
   "artist": "Akon feat. Eminem",
+  "co2": true,
   "_note": "Hand-marked structure (bars of 2.02 s at 119.1 BPM, from the analysis bars): a 32-bar cycle throughout, mastered equally loud: intro; sung lead-in 0:08; hook 0:16; post-hook groove 0:33; verse 0:49; lead-in 0:57; hook 1:05; post-hook 1:21; verse 1:37; lead-in 1:57; hook 2:09; post-hook 2:26; verse 2:42; lead-in 2:50; hook 2:58; post-hook 3:14; outro 3:22. The hooks are the peaks; everything between stays a full-energy groove. Colours: red and gold party. Re-run npm run demos after editing.",
   "sections": [
     {
