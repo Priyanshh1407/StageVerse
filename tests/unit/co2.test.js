@@ -72,18 +72,18 @@ describe('CO2 jets: state', () => {
     });
 
     it('desk: held jets fire for as long as they are held', () => {
-        const held = [{ jet: 0, at: 1000, len: null }];
+        const held = [{ unit: 0, at: 1000, len: null }];
         expect(co2FromFirings(held, 3000).slice(0, 2)).toEqual([2, 2]);
-        const released = [{ jet: 0, at: 1000, len: 2 }];
+        const released = [{ unit: 0, at: 1000, len: 2 }];
         expect(co2FromFirings(released, 3000 + (CO2_FADE + 0.1) * 1000)).toBeNull();
         // a pattern's later steps haven't started yet
-        expect(co2FromFirings([{ jet: 1, at: 5000, len: 0.3 }], 4000)).toBeNull();
+        expect(co2FromFirings([{ unit: 1, at: 5000, len: 0.3 }], 4000)).toBeNull();
     });
 
     it('desk patterns: the chase runs left to right and back; outside-in goes outer, middle, inner', () => {
-        expect(co2Pattern('chase').map((f) => f.jet)).toEqual([0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0]);
+        expect(co2Pattern('chase').map((f) => f.unit)).toEqual([0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0]);
         const oi = co2Pattern('outside-in');
-        expect(oi.filter((f) => f.delay === 0).map((f) => f.jet)).toEqual([0, 5]);
+        expect(oi.filter((f) => f.delay === 0).map((f) => f.unit)).toEqual([0, 5]);
         expect(oi.at(-1).delay).toBeGreaterThan(oi[0].delay);
         expect(co2Pattern('blast')).toHaveLength(CO2_JETS);
     });

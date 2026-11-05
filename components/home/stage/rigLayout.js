@@ -183,3 +183,43 @@ export function co2Layout(fixtureCount) {
         return { pos: [x, nozzleY, CO2_FRONT_Z], front: true };
     });
 }
+
+// Flame units: 6 on the deck's front lip (always in front of the lights), each clear of everything
+// else on the front of the stage, so a fire column never rises through a light, a laser or a CO2
+// plume:
+// - not straight in front of a floor moving head or a CO2 nozzle back in the row (FLAME_FRONT_CLEAR
+//   from its centre);
+// - FLAME_CLEAR from anything standing on the lip itself: a floor laser's housing (it reaches almost
+//   to the deck edge) and a CO2 nozzle moved forward onto the lip;
+// - FLAME_SPACING from each other.
+// Preferably centred in a gap of the floor row, near where it's wanted.
+export const FLAME_Z = -0.18;
+export const FLAME_FRONT_CLEAR = 0.45;
+export const FLAME_CLEAR = 0.9;
+export const FLAME_SPACING = 1.5;
+const FLAME_WANT = [-12, -8.6, -4, 4, 8.6, 12];
+
+/** The flame units, left to right: { pos: [x, y, z] } (y: the top of the unit, where the fire starts). */
+export function flameLayout(fixtureCount) {
+    const heads = rigLayout(fixtureCount).filter((f) => f.group === 'floor').map((f) => f.position[0]).sort((a, b) => a - b);
+    const lasers = laserLayout(fixtureCount).filter((l) => !l.tower).map((l) => l.pos[0]);
+    const jets = co2Layout(fixtureCount);
+    const onLip = [...lasers, ...jets.filter((j) => j.front).map((j) => j.pos[0])];
+    const behind = [...heads, ...jets.filter((j) => !j.front).map((j) => j.pos[0])];
+    const placed = [];
+    const ok = (x) => behind.every((o) => Math.abs(o - x) >= FLAME_FRONT_CLEAR - 0.001)
+        && onLip.every((o) => Math.abs(o - x) >= FLAME_CLEAR - 0.001)
+        && placed.every((o) => Math.abs(o - x) >= FLAME_SPACING - 0.001)
+        && Math.abs(x) <= 13.5;
+    const gaps = heads.slice(1).map((x, i) => (x + heads[i]) / 2);
+    for (const want of FLAME_WANT) {
+        // a free gap near where it's wanted, else the nearest free spot along the lip (5 cm steps)
+        let x = gaps.filter((g) => Math.abs(g - want) <= 1.2 && ok(g)).sort((a, b) => Math.abs(a - want) - Math.abs(b - want))[0];
+        for (let d = 0; x === undefined && d <= 3; d += 0.05) {
+            // (toward the stage centre first, so the two sides come out mirrored)
+            for (const c of [want - Math.sign(want) * d, want + Math.sign(want) * d]) if (x === undefined && ok(c)) x = Math.round(c * 100) / 100;
+        }
+        placed.push(x ?? want);
+    }
+    return placed.map((x) => ({ pos: [x, DECK_HEIGHT + 0.3, FLAME_Z] }));
+}

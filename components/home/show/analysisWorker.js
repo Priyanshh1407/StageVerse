@@ -9,7 +9,8 @@ self.onmessage = (event) => {
     const { channels, sampleRate, title, genre } = event.data;
     try {
         const analysis = analyseSong(channels, sampleRate, { genre });
-        self.postMessage({ ok: true, show: programShow(analysis, { title, genre }) });
+        // a visitor's song gets the CO2 jets too (a blast on each drop or chorus, and a CO2 solo)
+        self.postMessage({ ok: true, show: programShow(analysis, { title, genre, extras: { co2: true } }) });
     } catch (error) {
         self.postMessage({ ok: false, error: String(error?.message || error) });
     }

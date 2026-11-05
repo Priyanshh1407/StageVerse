@@ -17,9 +17,10 @@ import CrowdBarrier from './CrowdBarrier';
 import LowFog from './LowFog';
 import PaSystem from './PaSystem';
 import Co2Jets from './Co2Jets';
+import Flames from './Flames';
 import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
-import { roomFlash } from './flash';
+import { FIRE_COLOR, roomFlash } from './flash';
 
 /**
  * Everything on stage, for use inside a <Canvas>: backdrop, floor, deck, truss, the moving heads
@@ -28,8 +29,9 @@ import { roomFlash } from './flash';
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 1 (these a moment after the
- * first frames) = 42, plus lasers and house lights (1 each, skipped while off), the CO2 plumes (1, zero instances while idle)
+ * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 1 + flame units 1 (these a moment after the
+ * first frames) = 43, plus lasers and house lights (1 each, skipped while off), the CO2 plumes and the flames (1 each,
+ * zero instances while idle)
  * and bloom.
  */
 
@@ -40,17 +42,17 @@ import { roomFlash } from './flash';
 function StageLights({ look, blinders }) {
     const bounce = useRef();
     const hemi = useRef();
-    const colors = useRef({ a: new THREE.Color(), b: new THREE.Color(), cool: new THREE.Color('#5a6688'), warm: new THREE.Color(HOUSE_COLOR), white: new THREE.Color('#ffffff') });
+    const colors = useRef({ a: new THREE.Color(), b: new THREE.Color(), cool: new THREE.Color('#5a6688'), warm: new THREE.Color(HOUSE_COLOR), white: new THREE.Color('#ffffff'), fire: new THREE.Color(FIRE_COLOR) });
     useFrame(({ clock }) => {
         if (!bounce.current) return;
         const target = look.current;
-        const { a, b, cool, warm, white } = colors.current;
-        const flash = roomFlash(target, clock.elapsedTime, blinders).total;
-        bounce.current.color.copy(a.set(target.colorA).lerp(b.set(target.colorB), 0.5)).lerp(white, Math.min(1, flash));
-        bounce.current.intensity = (target.master ?? 1) * Math.min(target.intensity, 1.4) * 1.4 + flash * 6;
+        const { a, b, cool, warm, white, fire: fireColor } = colors.current;
+        const { total: flash, fire } = roomFlash(target, clock.elapsedTime, blinders);
+        bounce.current.color.copy(a.set(target.colorA).lerp(b.set(target.colorB), 0.5)).lerp(fireColor, Math.min(1, fire * 1.2)).lerp(white, Math.min(1, flash));
+        bounce.current.intensity = (target.master ?? 1) * Math.min(target.intensity, 1.4) * 1.4 + flash * 6 + fire * 5;
         const house = target.house ?? 0;
-        hemi.current.color.copy(cool).lerp(warm, house).lerp(white, Math.min(1, flash));
-        hemi.current.intensity = 0.5 + house * 2.2 + flash * 5; // a strobe hit lights every surface
+        hemi.current.color.copy(cool).lerp(warm, house).lerp(fireColor, Math.min(1, fire * 0.7)).lerp(white, Math.min(1, flash));
+        hemi.current.intensity = 0.5 + house * 2.2 + flash * 5 + fire * 1.8; // a strobe hit lights every surface; so does the fire
     });
     return (
         <>
@@ -94,7 +96,9 @@ function Floor({ look, blinders }) {
         u.uLight.value += (wanted - u.uLight.value) * Math.min(1, delta * 4);
         u.uWall.value = master * 0.25;
         u.uHouse.value += ((target.house ?? 0) - u.uHouse.value) * Math.min(1, delta * 1.5);
-        u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
+        const flash = roomFlash(target, clock.elapsedTime, blinders);
+        u.uFlash.value = flash.total;
+        u.uFire.value = flash.fire;
         u.uTime.value = clock.elapsedTime;
     });
     return (
@@ -105,6 +109,8 @@ function Floor({ look, blinders }) {
 }
 
 /** The stage deck: dark, tinted by the washes that light it. */
+const fireColor = new THREE.Color();
+
 function Deck({ look }) {
     const mesh = useRef();
     const color = useRef(new THREE.Color());
@@ -113,6 +119,8 @@ function Deck({ look }) {
         const target = look.current;
         const level = (target.master ?? 1) * (target.wash ?? 0) * Math.min(target.intensity, 1.4);
         mesh.current.material.emissive.copy(color.current.set(target.washColor ?? '#3b5bff')).multiplyScalar(0.12 * level);
+        const fire = roomFlash(target, 0).fire;
+        if (fire > 0) mesh.current.material.emissive.lerp(fireColor.set(FIRE_COLOR).multiplyScalar(0.35), Math.min(1, fire));
     });
     return (
         <mesh ref={mesh} position={[0, DECK_HEIGHT / 2, -DECK_DEPTH / 2]}>
@@ -263,6 +271,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     <PaSystem />
                     <LowFog look={look} blinders={blinders} />
                     <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} />
+                    <Flames look={look} count={beams} quality={effects} />
                 </Warm>
             )}
             <CameraFlash look={look} blinders={blinders} />

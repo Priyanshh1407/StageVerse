@@ -9,6 +9,7 @@ import { DEFAULT_LOOK, mixHex } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
 import { CO2_JETS, co2Pattern } from '@/lib/show/co2';
+import { FLAME_UNITS, flamePattern } from '@/lib/show/flames';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
 import LightingDesk from './LightingDesk';
@@ -23,6 +24,11 @@ const ShowStage = dynamic(() => import('./ShowStage'), { ssr: false });
 
 // Display face for the LED wall and the venue sign (drawn into canvases, so it's passed by name)
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display: 'swap' });
+// The special effects the desk fires: how many units, their patterns, the shortest burst when held
+const DESK_EFFECTS = {
+    co2: { units: CO2_JETS, pattern: co2Pattern, minHold: 0.4 },
+    flames: { units: FLAME_UNITS, pattern: flamePattern, minHold: 0.25 },
+};
 // The logo's two faces, for the LED wall and the gate sign (drawn into canvases, so passed by name)
 const LOGO_FONTS = { tag: logoTag.style.fontFamily, script: logoScript.style.fontFamily };
 
@@ -352,24 +358,29 @@ function ShowExperience({ events = [], isPhone = false }) {
     };
     const nextDrop = useRef(0);
 
-    // CO2 jets from the desk: hold BLAST to keep the valves open (at least a short burst), or fire a
-    // pattern. Each firing is { jet, at, len }; the director turns them into the jets' state.
-    const fireCo2 = (pattern) => {
+    // Special effects from the desk (CO2 jets, flames): hold to keep every unit firing (at least a
+    // short burst), or fire a pattern. Each firing is { unit, at, len }, kept per effect in
+    // control.fired; the director turns them into the units' state.
+    const fireEffect = (kind, pattern) => {
         takeOver();
         const c = control.current;
         const now = performance.now();
-        const fresh = co2Pattern(pattern).map((f) => ({ jet: f.jet, at: now + f.delay, len: f.len }));
-        c.co2Fired = [...(c.co2Fired || []).filter((f) => f.len === null || now - f.at < (f.len + 2) * 1000), ...fresh];
+        const fx = DESK_EFFECTS[kind];
+        const fresh = fx.pattern(pattern).map((f) => ({ unit: f.unit, at: now + f.delay, len: f.len }));
+        const old = (c.fired?.[kind] || []).filter((f) => f.len === null || now - f.at < (f.len + 2) * 1000);
+        c.fired = { ...c.fired, [kind]: [...old, ...fresh] };
     };
-    const holdCo2 = (down) => {
+    const holdEffect = (kind, down) => {
         const c = control.current;
         const now = performance.now();
+        const fx = DESK_EFFECTS[kind];
+        const list = c.fired?.[kind] || [];
         if (down) {
             takeOver();
-            c.co2Fired = [...(c.co2Fired || []), ...Array.from({ length: CO2_JETS }, (_, jet) => ({ jet, at: now, len: null }))];
-        } else if (c.co2Fired?.some((f) => f.len === null)) {
-            // the valves close: every held jet fires for as long as it was held, at least 0.4 s
-            c.co2Fired = c.co2Fired.map((f) => (f.len === null ? { ...f, len: Math.max(0.4, (now - f.at) / 1000) } : f));
+            c.fired = { ...c.fired, [kind]: [...list, ...Array.from({ length: fx.units }, (_, unit) => ({ unit, at: now, len: null }))] };
+        } else if (list.some((f) => f.len === null)) {
+            // let go: every held unit fires for as long as it was held, at least a short burst
+            c.fired = { ...c.fired, [kind]: list.map((f) => (f.len === null ? { ...f, len: Math.max(fx.minHold, (now - f.at) / 1000) } : f)) };
         }
     };
 
@@ -720,8 +731,8 @@ function ShowExperience({ events = [], isPhone = false }) {
                 <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex flex-col items-end gap-3 pointer-events-none">
                     <LightingDesk
                         onDrop={fireDrop}
-                        onCo2={fireCo2}
-                        onCo2Hold={holdCo2}
+                        onEffect={fireEffect}
+                        onEffectHold={holdEffect}
                         open={deskOpen}
                         onOpenChange={(open) => (open ? bigScreenOnly(() => setDeskOpen(true))() : setDeskOpen(false))}
                         desk={desk}
