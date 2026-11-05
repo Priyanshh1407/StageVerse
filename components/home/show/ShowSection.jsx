@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Orbitron } from 'next/font/google';
-import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play, SunMedium, Flame, Zap, Sparkles, SunDim, Lamp, Power, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ChevronDown, Headphones, Music, Square, Upload, Settings2, Loader2, Play, SunMedium, Flame, Zap, Sparkles, SunDim, Lamp, Power, ArrowRight, ArrowLeft } from 'lucide-react';
 import { DEFAULT_LOOK, mixHex } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
@@ -563,10 +563,11 @@ function ShowExperience({ events = [], isPhone = false }) {
                 {/* Phones: tapping a playground control explains it's made for bigger screens */}
                 <BiggerScreenNotice open={screenNotice} onClose={closeScreenNotice} />
 
-                {/* Start of a show: recommend full screen brightness (a page can't set it itself) */}
+                {/* Start of a show: recommend headphones and full screen brightness (a page can't set it itself) */}
                 <div aria-live="polite" className={`absolute top-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur border border-white/15 text-sm text-white pointer-events-none transition-opacity duration-700 ${brightnessTip ? 'opacity-100' : 'opacity-0'}`}>
+                    <Headphones className="w-4 h-4 text-cyan-300" aria-hidden />
                     <SunMedium className="w-4 h-4 text-yellow-300" aria-hidden />
-                    {brightnessTip && 'For the full experience, turn your screen brightness all the way up'}
+                    {brightnessTip && 'For the full experience, put on headphones and turn your screen brightness all the way up'}
                 </div>
 
                 {/* While the show runs in the browser's full screen */}
@@ -658,7 +659,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         </button>
                                         <h2 className="text-2xl sm:text-3xl font-black mb-1">{GENRES[genre].label}</h2>
                                         <p className="flex items-center gap-1.5 text-xs text-yellow-200/90 mb-3">
-                                            <SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, turn your screen brightness and volume up.
+                                            <Headphones className="w-3.5 h-3.5" aria-hidden /><SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, use headphones and turn your screen brightness and volume up.
                                         </p>
                                         {genreDemos.length > 0 && (
                                             <div className="flex flex-wrap gap-2 mb-3">

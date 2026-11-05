@@ -2,6 +2,7 @@
   "title": "High On Life",
   "artist": "Martin Garrix feat. Bonn",
   "co2": true,
+  "finaleConfetti": true,
   "_note": "Hand-marked structure (bars of 1.88 s at 127.9 BPM, from npm run song:bars): intro; verse 1 0:07; sung chorus 0:37; build 0:52; drop 1 1:07 (biggest from 1:37); a near-silent break 1:52; verse 2 1:56; chorus 2 2:25; quiet breakdown 2:42; build 2:52; final drop 2:55 (biggest from 3:10); silence from 3:42. Colours: sunrise oranges and golds, a gold flash at each drop. Re-run npm run demos after editing.",
   "sections": [
     {
