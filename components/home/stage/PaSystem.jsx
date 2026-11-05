@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three';
 import { DECK_HEIGHT, TOP_Y, TOWER_FRONT_Z } from './trussGeometry';
+import { ARRAY_X, ARRAY_Z, SUB_PITCH, SUB_Z } from './rigLayout';
 
 // The PA (item 13), as at big festivals:
 // - Line arrays: 16 boxes flown just outside each side tower from an outrigger arm off the top of
@@ -15,8 +16,8 @@ import { DECK_HEIGHT, TOP_Y, TOWER_FRONT_Z } from './trussGeometry';
 //   photo pit and the crowd barrier in front of them.
 // Cabinets, grilles and steel are three merged geometries: 3 draw calls for the whole PA.
 const TOWER_X = 15.6;           // side tower centre line
-const ARRAY_X = 18.3;           // the arrays hang just outside the towers
-const ARRAY_Z = TOWER_FRONT_Z + 1.4;
+// where the arrays hang (just outside the towers) and the sub stacks stand: shared with rigLayout,
+// which places the confetti cannons under the arrays and in the gaps between the middle stacks
 const TOP = 16.6;               // the top of the array (bumper underneath the outrigger)
 const BOX = { w: 1.5, h: 0.42, d: 0.75 };
 const SPLAY = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9];  // degrees between boxes: straight at the top, curling at the bottom
@@ -25,8 +26,6 @@ const TOE_IN = 0.14;            // radians, turned toward the centre of the audi
 const SUB = { w: 1.35, h: 0.55, d: 0.7 };   // touring sub proportions
 const SUB_STACK = 3;            // 3 high (1.65 m) still stays under the deck top, so the stage edge shows
 const SUB_COUNT = 12;           // separate stacks across the front of the stage
-const SUB_PITCH = 2.4;          // centre to centre: about a metre of gap between stacks
-const SUB_Z = 0.06 + SUB.d / 2; // just in front of the deck
 export const SUB_FRONT_Z = SUB_Z + SUB.d / 2;
 export const BARRIER_Z = SUB_FRONT_Z + 2.4;   // the photo pit between the subs and the barrier
 

@@ -4,29 +4,31 @@ import { useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { CANNON_UNITS, CONFETTI_LIFE, CONFETTI_SHOTS, CONFETTI_SHOT_GAP, confettiActive } from '@/lib/show/confetti';
-import { cannonLayout } from './rigLayout';
+import { CONFETTI_BLAST_SHARE, CONFETTI_LIFE, CONFETTI_STREAM, CONFETTI_TAP, CONFETTI_UNITS, confettiActive } from '@/lib/show/confetti';
+import { confettiLayout } from './rigLayout';
 import { DECK_HEIGHT } from './trussGeometry';
 import { roomFlash } from './flash';
 
-// Confetti cannons (item 15): one at each wing of the stage front (cannonLayout) blasting thousands
-// of paper pieces ~15 m up and out over the audience. The air stops the paper within a few seconds,
-// then it flutters down for up to 16 s, filling the air over the crowd, tumbling, in the show's colours plus white and gold, glinting whenever
+// Confetti cannons (item 15): four on the ground in front of the stage (confettiLayout): two in the
+// gaps between the middle sub stacks, one under each line array, blasting paper up and out over the
+// whole audience. While a cannon fires it streams confetti
+// continuously (a tap gives an instant burst; holding keeps it pouring, see lib/show/confetti.js), and
+// its CO2 blasts the whole time (Co2Jets, mount "confetti"). The air stops the paper within a few
+// seconds, then it flutters down for many seconds, filling the air over the crowd, tumbling, in the show's colours plus white and gold, glinting whenever
 // a piece turns its face to the light.
 //
 // Cheap enough for integrated graphics: one draw call for every piece of both cannons (tiny opaque
 // quads, no blending), each piece's flight, flutter and tumble worked out in the vertex shader from
-// its cannon's state; nothing drawn while idle; fewer pieces on integrated GPUs. A cannon's load is
-// split into CONFETTI_SHOTS shots: a tap fires one, holding fires more (see lib/show/confetti.js).
+// its cannon's state; nothing drawn while idle; fewer pieces on integrated GPUs.
 
-const PIECES = { high: 2800, low: 1600 }; // per cannon, the whole load
+const PIECES = { high: 2000, low: 1100 }; // per cannon, the whole load (four cannons)
 const DRAG = 1.4;                         // paper: the air stops it within a few seconds, ~15 m up
 
 const VERTEX = /* glsl */ `
     attribute vec4 aPiece;     // cannon index, piece index within the load (0..1), two random numbers
-    uniform vec3 uCannon[${CANNON_UNITS}];
-    uniform vec3 uDir[${CANNON_UNITS}];
-    uniform vec2 uState[${CANNON_UNITS}];   // per cannon: seconds since it started firing (< 0 idle), how long it fires
+    uniform vec3 uCannon[${CONFETTI_UNITS}];
+    uniform vec3 uDir[${CONFETTI_UNITS}];
+    uniform vec2 uState[${CONFETTI_UNITS}];   // per cannon: seconds since it started firing (< 0 idle), how long it fires
     uniform float uTime;
     varying float vColor;
     varying float vGlint;
@@ -44,7 +46,7 @@ const VERTEX = /* glsl */ `
         vec3 cannon = uCannon[0];
         vec3 dir = uDir[0];
         vec2 st = uState[0];
-        for (int k = 1; k < ${CANNON_UNITS}; k++) if (k == j) { cannon = uCannon[k]; dir = uDir[k]; st = uState[k]; }
+        for (int k = 1; k < ${CONFETTI_UNITS}; k++) if (k == j) { cannon = uCannon[k]; dir = uDir[k]; st = uState[k]; }
         float age = st.x;
         float len = st.y;
         float r1 = aPiece.z;
@@ -52,13 +54,15 @@ const VERTEX = /* glsl */ `
         vFade = 0.0;
         vColor = r1;
         vGlint = 0.0;
-        // which shot of the load this piece belongs to, and when that shot fires
-        float shot = floor(aPiece.y * ${CONFETTI_SHOTS.toFixed(1)});
-        float shotAt = shot * ${CONFETTI_SHOT_GAP.toFixed(2)};
-        float launched = shotAt + fract(r2 * 5.3) * 0.3;  // a shot takes a moment to leave the barrel
+        // when this piece leaves the barrel: the first share of the load in the instant burst, the rest
+        // streaming evenly while the cannon keeps firing (confettiLaunchAt in lib/show/confetti.js)
+        float u = aPiece.y;
+        float launched = u < ${CONFETTI_BLAST_SHARE.toFixed(2)}
+            ? u / ${CONFETTI_BLAST_SHARE.toFixed(2)} * ${CONFETTI_TAP.toFixed(2)}
+            : ${CONFETTI_TAP.toFixed(2)} + (u - ${CONFETTI_BLAST_SHARE.toFixed(2)}) / ${(1 - CONFETTI_BLAST_SHARE).toFixed(2)} * ${(CONFETTI_STREAM - CONFETTI_TAP).toFixed(2)};
         float t = age - launched;
         float life = ${CONFETTI_LIFE.toFixed(1)} * (0.7 + 0.3 * r1);
-        if (age < 0.0 || shotAt > len || t < 0.0 || t > life) {
+        if (age < 0.0 || launched > len || t < 0.0 || t > life) {
             gl_Position = vec4(0.0, 0.0, -2.0, 1.0);    // outside the view: nothing drawn
             return;
         }
@@ -67,9 +71,10 @@ const VERTEX = /* glsl */ `
         vec3 side1 = normalize(cross(dir, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
         vec3 side2 = cross(dir, side1);
         float ang = r1 * 6.283 * 9.17;
-        float cone = 0.55 * sqrt(fract(r2 * 17.3));
+        float cone = 0.75 * sqrt(fract(r2 * 17.3));
         vec3 aim = normalize(dir + (side1 * cos(ang) + side2 * sin(ang)) * cone);
-        float speed = 22.0 + 10.0 * fract(r2 * 3.7);
+        // a wide range of speeds: some pieces drop close to the stage, others carry far out
+        float speed = 8.0 + 28.0 * fract(r2 * 3.7);
         float k = ${DRAG.toFixed(2)};
         float fall = 0.8 + 0.5 * fract(r1 * 11.3);
         float s = (1.0 - exp(-k * t)) / k;
@@ -114,16 +119,16 @@ const FRAGMENT = /* glsl */ `
     }
 `;
 
-/** A cannon: a base block with a fat barrel along its aim. */
+/** A cannon: a base block with a fat barrel along its aim, ending at the muzzle. */
 export function createCannons(cannons, { radius = 0.13, length = 0.9 } = {}) {
     const parts = [];
     const q = new THREE.Quaternion();
     const up = new THREE.Vector3(0, 1, 0);
-    for (const { pos, dir } of cannons) {
+    for (const { pos, dir, base: at } of cannons) {
         const [x, y, z] = pos;
         const d = new THREE.Vector3(...dir);
-        const base = new THREE.BoxGeometry(0.5, 0.2, 0.5);
-        base.translate(x, DECK_HEIGHT + 0.1, z);
+        const base = new THREE.BoxGeometry(0.5, 0.2, 0.4);
+        base.translate(...(at ?? [x, DECK_HEIGHT + 0.1, z]));
         const barrel = new THREE.CylinderGeometry(radius, radius * 1.1, length, 14);
         barrel.applyQuaternion(q.setFromUnitVectors(up, d));
         barrel.translate(x - d.x * length * 0.5, y - d.y * length * 0.5, z - d.z * length * 0.5);
@@ -143,7 +148,7 @@ function driveConfetti(geometry, material, target, time, blinders, instances) {
     geometry.instanceCount = active ? instances : 0;
     if (!active) return;
     const u = material.uniforms;
-    for (let j = 0; j < CANNON_UNITS; j++) u.uState.value[j].set(state[j * 2], state[j * 2 + 1]);
+    for (let j = 0; j < CONFETTI_UNITS; j++) u.uState.value[j].set(state[j * 2], state[j * 2 + 1]);
     u.uTime.value = time;
     u.uPalette.value[0].set(target.colorA ?? '#19d9ff');
     u.uPalette.value[1].set(target.colorB ?? '#ff3df2');
@@ -160,7 +165,7 @@ function placeCannons(material, cannons) {
 }
 
 export default function Confetti({ look, quality = 'low', blinders = 8 }) {
-    const cannons = useMemo(() => cannonLayout('confetti'), []);
+    const cannons = useMemo(() => confettiLayout(), []);
     const bodies = useMemo(() => createCannons(cannons), [cannons]);
     const perCannon = PIECES[quality] ?? PIECES.low;
 
@@ -169,10 +174,10 @@ export default function Confetti({ look, quality = 'low', blinders = 8 }) {
         const quad = new THREE.PlaneGeometry(1, 1);
         g.index = quad.index;
         g.setAttribute('position', quad.attributes.position);
-        const data = new Float32Array(CANNON_UNITS * perCannon * 4);
+        const data = new Float32Array(CONFETTI_UNITS * perCannon * 4);
         let a = 0.2718281;
         let b = 0.5772156;
-        for (let j = 0; j < CANNON_UNITS; j++) {
+        for (let j = 0; j < CONFETTI_UNITS; j++) {
             for (let p = 0; p < perCannon; p++) {
                 const i = (j * perCannon + p) * 4;
                 a = (a + 0.6180339887) % 1;
@@ -190,9 +195,9 @@ export default function Confetti({ look, quality = 'low', blinders = 8 }) {
 
     const material = useMemo(() => new THREE.ShaderMaterial({
         uniforms: {
-            uCannon: { value: Array.from({ length: CANNON_UNITS }, () => new THREE.Vector3()) },
-            uDir: { value: Array.from({ length: CANNON_UNITS }, () => new THREE.Vector3(0, 1, 0)) },
-            uState: { value: Array.from({ length: CANNON_UNITS }, () => new THREE.Vector2(-1, 0)) },
+            uCannon: { value: Array.from({ length: CONFETTI_UNITS }, () => new THREE.Vector3()) },
+            uDir: { value: Array.from({ length: CONFETTI_UNITS }, () => new THREE.Vector3(0, 1, 0)) },
+            uState: { value: Array.from({ length: CONFETTI_UNITS }, () => new THREE.Vector2(-1, 0)) },
             uTime: { value: 0 },
             uLevel: { value: 0.5 },
             // the show's two colours (set each frame), white and gold
@@ -208,7 +213,7 @@ export default function Confetti({ look, quality = 'low', blinders = 8 }) {
     useEffect(() => () => { bodies.dispose(); }, [bodies]);
     useEffect(() => () => { material.dispose(); }, [material]);
 
-    useFrame(({ clock }) => driveConfetti(geometry, material, look.current, clock.elapsedTime, blinders, CANNON_UNITS * perCannon));
+    useFrame(({ clock }) => driveConfetti(geometry, material, look.current, clock.elapsedTime, blinders, CONFETTI_UNITS * perCannon));
 
     return (
         <>

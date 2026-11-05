@@ -3,18 +3,19 @@
 import { useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { CANNON_UNITS, STREAMER_LIFE, STREAMER_SHOTS, STREAMER_SHOT_GAP, streamersActive } from '@/lib/show/confetti';
-import { cannonLayout } from './rigLayout';
+import { STREAMER_LIFE, STREAMER_SHOTS, STREAMER_SHOT_GAP, STREAMER_UNITS, streamersActive } from '@/lib/show/confetti';
+import { streamerLayout } from './rigLayout';
 import { roomFlash } from './flash';
 import { createCannons } from './Confetti';
 
-// Streamer cannons (item 15): a launcher at each wing of the stage front, just behind the confetti
-// cannon (cannonLayout), firing long paper ribbons (5-8 m) up and out over the audience. In flight a
+// Streamer cannons (item 15): three launchers on top of the aerial truss (streamerLayout), left,
+// centre and right, firing long paper ribbons (5-8 m) up and out over the audience from the stage. In flight a
 // ribbon trails along the path its head flew; as the air slows it, it settles into hanging below the
 // head, waving as it floats down slowly, twisting so it flashes when it turns to the light, and
-// lies on the floor where it lands. Metallic gold and silver plus the show's colours.
+// lies on the floor where it lands. Every colour of a party: pink, cyan, yellow, lime, purple,
+// orange, red, blue, and metallic gold and silver.
 //
-// Cheap enough for integrated graphics: one draw call for every ribbon of both launchers (thin strips
+// Cheap enough for integrated graphics: one draw call for every ribbon of all three launchers (thin strips
 // of 24 segments, instanced), the whole shape worked out in the vertex shader from the launcher's
 // state; nothing drawn while idle; fewer ribbons on integrated GPUs. A launcher's load is split
 // into STREAMER_SHOTS shots: a tap fires one, holding fires more.
@@ -25,9 +26,9 @@ const DRAG = 1.1;
 
 const VERTEX = /* glsl */ `
     attribute vec4 aRibbon;    // launcher index, ribbon index within the load (0..1), two random numbers
-    uniform vec3 uCannon[${CANNON_UNITS}];
-    uniform vec3 uDir[${CANNON_UNITS}];
-    uniform vec2 uState[${CANNON_UNITS}];
+    uniform vec3 uCannon[${STREAMER_UNITS}];
+    uniform vec3 uDir[${STREAMER_UNITS}];
+    uniform vec2 uState[${STREAMER_UNITS}];
     uniform float uTime;
     varying float vColor;
     varying float vGlint;
@@ -56,7 +57,7 @@ const VERTEX = /* glsl */ `
         vec3 cannon = uCannon[0];
         vec3 dir = uDir[0];
         vec2 st = uState[0];
-        for (int k = 1; k < ${CANNON_UNITS}; k++) if (k == j) { cannon = uCannon[k]; dir = uDir[k]; st = uState[k]; }
+        for (int k = 1; k < ${STREAMER_UNITS}; k++) if (k == j) { cannon = uCannon[k]; dir = uDir[k]; st = uState[k]; }
         float age = st.x;
         float len = st.y;
         float r1 = aRibbon.z;
@@ -78,7 +79,7 @@ const VERTEX = /* glsl */ `
         float ang = r1 * 6.283 * 9.17;
         float cone = 0.3 * sqrt(fract(r2 * 17.3));
         vec3 aim = normalize(dir + (side1 * cos(ang) + side2 * sin(ang)) * cone);
-        float speed = 18.0 + 8.0 * fract(r2 * 3.7);
+        float speed = 10.0 + 7.0 * fract(r2 * 3.7);
         float fall = 0.45 + 0.35 * fract(r1 * 11.3);
         float ribbon = 5.0 + 3.0 * fract(r2 * 29.0);
 
@@ -100,7 +101,7 @@ const VERTEX = /* glsl */ `
 `;
 
 const FRAGMENT = /* glsl */ `
-    uniform vec3 uPalette[4];
+    uniform vec3 uPalette[10];
     uniform float uLevel;
     varying float vColor;
     varying float vGlint;
@@ -108,11 +109,9 @@ const FRAGMENT = /* glsl */ `
 
     void main() {
         if (vFade < 0.01) discard;
-        int i = int(floor(fract(vColor * 7.0) * 4.0));
+        int i = int(floor(fract(vColor * 7.0) * 10.0));
         vec3 c = uPalette[0];
-        if (i == 1) c = uPalette[1];
-        else if (i == 2) c = uPalette[2];
-        else if (i == 3) c = uPalette[3];
+        for (int k = 1; k < 10; k++) if (k == i) c = uPalette[k];
         gl_FragColor = vec4(c * (uLevel + 1.8 * vGlint) * vFade, 1.0);
     }
 `;
@@ -124,10 +123,8 @@ function driveStreamers(geometry, material, target, time, blinders, instances) {
     geometry.instanceCount = active ? instances : 0;
     if (!active) return;
     const u = material.uniforms;
-    for (let j = 0; j < CANNON_UNITS; j++) u.uState.value[j].set(state[j * 2], state[j * 2 + 1]);
+    for (let j = 0; j < STREAMER_UNITS; j++) u.uState.value[j].set(state[j * 2], state[j * 2 + 1]);
     u.uTime.value = time;
-    u.uPalette.value[2].set(target.colorA ?? '#19d9ff');
-    u.uPalette.value[3].set(target.colorB ?? '#ff3df2');
     const flash = Math.min(1, roomFlash(target, time, blinders).total);
     u.uLevel.value = 0.35 + 0.35 * Math.min(1, (target.master ?? 1) * Math.min(target.intensity ?? 1, 1.4)) + 0.6 * flash;
 }
@@ -140,7 +137,7 @@ function placeLaunchers(material, launchers) {
 }
 
 export default function Streamers({ look, quality = 'low', blinders = 8 }) {
-    const launchers = useMemo(() => cannonLayout('streamers'), []);
+    const launchers = useMemo(() => streamerLayout(), []);
     const bodies = useMemo(() => createCannons(launchers, { radius: 0.1, length: 0.75 }), [launchers]);
     const perLauncher = RIBBONS[quality] ?? RIBBONS.low;
 
@@ -149,10 +146,10 @@ export default function Streamers({ look, quality = 'low', blinders = 8 }) {
         const strip = new THREE.PlaneGeometry(1, 1, 1, SEGMENTS);
         g.index = strip.index;
         g.setAttribute('position', strip.attributes.position);
-        const data = new Float32Array(CANNON_UNITS * perLauncher * 4);
+        const data = new Float32Array(STREAMER_UNITS * perLauncher * 4);
         let a = 0.1414213;
         let b = 0.8660254;
-        for (let j = 0; j < CANNON_UNITS; j++) {
+        for (let j = 0; j < STREAMER_UNITS; j++) {
             for (let p = 0; p < perLauncher; p++) {
                 const i = (j * perLauncher + p) * 4;
                 a = (a + 0.6180339887) % 1;
@@ -170,13 +167,13 @@ export default function Streamers({ look, quality = 'low', blinders = 8 }) {
 
     const material = useMemo(() => new THREE.ShaderMaterial({
         uniforms: {
-            uCannon: { value: Array.from({ length: CANNON_UNITS }, () => new THREE.Vector3()) },
-            uDir: { value: Array.from({ length: CANNON_UNITS }, () => new THREE.Vector3(0, 1, 0)) },
-            uState: { value: Array.from({ length: CANNON_UNITS }, () => new THREE.Vector2(-1, 0)) },
+            uCannon: { value: Array.from({ length: STREAMER_UNITS }, () => new THREE.Vector3()) },
+            uDir: { value: Array.from({ length: STREAMER_UNITS }, () => new THREE.Vector3(0, 1, 0)) },
+            uState: { value: Array.from({ length: STREAMER_UNITS }, () => new THREE.Vector2(-1, 0)) },
             uTime: { value: 0 },
             uLevel: { value: 0.5 },
-            // metallic gold and silver, and the show's two colours (set each frame)
-            uPalette: { value: [new THREE.Color('#ffc845'), new THREE.Color('#d8dde6'), new THREE.Color('#19d9ff'), new THREE.Color('#ff3df2')] },
+            // a party: vivid colours plus metallic gold and silver
+            uPalette: { value: ['#ff2d95', '#19d9ff', '#ffe600', '#7dff3a', '#a855f7', '#ff7a1a', '#ff3b3b', '#3b6bff', '#ffc845', '#d8dde6'].map((c) => new THREE.Color(c)) },
         },
         vertexShader: VERTEX,
         fragmentShader: FRAGMENT,
@@ -188,7 +185,7 @@ export default function Streamers({ look, quality = 'low', blinders = 8 }) {
     useEffect(() => () => { bodies.dispose(); }, [bodies]);
     useEffect(() => () => { material.dispose(); }, [material]);
 
-    useFrame(({ clock }) => driveStreamers(geometry, material, look.current, clock.elapsedTime, blinders, CANNON_UNITS * perLauncher));
+    useFrame(({ clock }) => driveStreamers(geometry, material, look.current, clock.elapsedTime, blinders, STREAMER_UNITS * perLauncher));
 
     return (
         <>

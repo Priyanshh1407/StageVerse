@@ -9,7 +9,7 @@ import { sparkLayout } from './rigLayout';
 import { DECK_HEIGHT } from './trussGeometry';
 
 // Cold spark machines (item 15): six machines on the stage's front lip (placed clear of the lights,
-// lasers and CO2 nozzles by sparkLayout) shooting dense fountains of golden sparks 4-6 m up for as long as
+// lasers and CO2 nozzles by sparkLayout) shooting dense, intense fountains of golden sparks 5-6.5 m up for as long as
 // they're fired. Each spark flies on its own arc (a little air drag, then gravity), cooling from
 // white-gold to orange as it falls back; when a machine stops, the sparks already in the air finish
 // their fall.
@@ -22,9 +22,9 @@ import { DECK_HEIGHT } from './trussGeometry';
 // - no real lights.
 // The machines themselves are one merged mesh (one more draw call).
 
-const SPARKS = { high: 620, low: 380 }; // per machine: a dense fountain
+const SPARKS = { high: 1100, low: 650 }; // per machine: a dense, intense fountain
 const GRAVITY = 9.81;
-const DRAG = 0.35;
+const DRAG = 0.3;
 
 const VERTEX = /* glsl */ `
     attribute vec4 aSpark;     // machine index, launch offset (0..1), two random numbers
@@ -53,15 +53,16 @@ const VERTEX = /* glsl */ `
         float cycle = floor((age + aSpark.y * L) / L);
         float launched = cycle * L - aSpark.y * L;       // seconds after the machine started
         float t = age - launched;                        // this spark's flight time
-        float life = L * (0.55 + 0.45 * r1);
+        float life = L * (0.7 + 0.3 * r1); // long enough to fall back: the fountain shape
         if (age < 0.0 || launched < 0.0 || launched > len || t > life) {
             gl_Position = vec4(0.0, 0.0, -2.0, 1.0);     // outside the view: nothing drawn
             return;
         }
         // Launch: a tight column straight up (9.5-12 m/s, so 4-6 m high), blooming out as it falls
-        float up = 9.5 + 2.5 * fract(r2 * 7.13);
+        float up = 10.5 + 2.5 * fract(r2 * 7.13);
         float ang = r1 * 6.283 * 7.13;
-        float spread = 0.8 * fract(r2 * 13.1);
+        // a column that opens into a fountain: most sparks near the middle, some thrown well out
+        float spread = 1.5 * pow(fract(r2 * 13.1), 1.6);
         vec3 v0 = vec3(cos(ang) * spread, up, sin(ang) * spread * 0.7 + 0.15);
         // a little air drag, then gravity
         float k = ${DRAG.toFixed(2)};
@@ -76,15 +77,16 @@ const VERTEX = /* glsl */ `
         vec3 axis = speed > 0.001 ? vel / speed : vec3(0.0, 1.0, 0.0);
         vec3 toCam = normalize(cameraPosition - pos);
         vec3 side = normalize(cross(axis, toCam) + vec3(1e-4, 0.0, 0.0));
-        float streak = clamp(speed * 0.05, 0.06, 0.5);
-        vec3 world = pos + axis * (position.y * streak) + side * (position.x * 0.05);
+        // fine, long streaks (a spark moving fast is a line of light, not a dot)
+        float streak = clamp(speed * 0.06, 0.07, 0.6);
+        vec3 world = pos + axis * (position.y * streak) + side * (position.x * 0.04);
         gl_Position = projectionMatrix * viewMatrix * vec4(world, 1.0);
 
         vHeat = t / life;
         // twinkle: each spark flickers on and off as it burns
         float twinkle = 0.55 + 0.45 * step(0.35, fract(sin(floor(uTime * 30.0) + r1 * 917.0) * 43758.5453));
         // white-hot as it leaves the machine
-        float launch = 1.0 + 1.5 * exp(-t * 12.0);
+        float launch = 1.0 + 1.8 * exp(-t * 14.0);  // white-hot right above the machine
         vGlow = pow(1.0 - vHeat, 1.2) * twinkle * above * launch;
     }
 `;
@@ -100,9 +102,10 @@ const FRAGMENT = /* glsl */ `
         float glow = across * across * mix(0.35, 1.0, vUv.y) * vGlow;
         if (glow < 0.004) discard;
         // white-gold when it leaves the machine, gold, then orange as it cools
-        vec3 c = mix(vec3(1.0, 0.93, 0.72), vec3(1.0, 0.72, 0.28), smoothstep(0.0, 0.35, vHeat));
-        c = mix(c, vec3(1.0, 0.42, 0.1), smoothstep(0.35, 0.9, vHeat));
-        gl_FragColor = vec4(c * glow * 5.0, 1.0);
+        // white-hot as it leaves, rich gold, then deep orange as it cools: saturated, not pale
+        vec3 c = mix(vec3(1.0, 0.95, 0.8), vec3(1.0, 0.66, 0.16), smoothstep(0.0, 0.3, vHeat));
+        c = mix(c, vec3(1.0, 0.34, 0.04), smoothstep(0.3, 0.9, vHeat));
+        gl_FragColor = vec4(c * glow * 9.0, 1.0);
     }
 `;
 

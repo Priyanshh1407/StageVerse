@@ -250,20 +250,55 @@ export function co2TrussLayout(fixtureCount) {
     });
 }
 
-// Confetti and streamer cannons: one of each at each wing of the stage front, on the deck's front
-// corners, beyond the floor row, the floor lasers, the CO2 nozzles and the spark machines (all within
-// |x| <= 13.5): the confetti cannon at the corner, the streamer launcher just behind it. Both aim up,
-// out over the audience and a little in toward the middle of the crowd.
-export const CANNON_X = { confetti: 14.35, streamers: 13.95 };
-export const CANNON_Z = { confetti: -0.45, streamers: -1.35 };
-const CANNON_AIM = { confetti: [0.38, 1.25, 0.95], streamers: [0.3, 1.35, 1.0] }; // for the right-hand cannon
+// Confetti cannons: 4 on the ground in front of the stage. Two in the middle, each sitting in one of
+// the two gaps between the sub stacks either side of centre (the stacks stand SUB_PITCH apart and
+// SUB_WIDTH wide, so each gap is ~1 m: room for a 0.5 m cannon base), fired steeply so the paper clears
+// the crowd barrier and fills the middle of the crowd; and one at each side, standing under each
+// flown line array, angled in over the sides of the crowd. Together they cover every region evenly.
+// (The sub and line-array positions mirror PaSystem.jsx; a test keeps them in step.)
+export const SUB_PITCH = 2.4;
+export const SUB_WIDTH = 1.35;
+export const SUB_Z = 0.06 + 0.7 / 2;
+export const ARRAY_X = 18.3;
+export const ARRAY_Z = TOWER_FRONT_Z + 1.4;
+const CONFETTI_BARREL = 0.9;
 
-/** The cannons of one kind ('confetti' | 'streamers'), left then right: { pos: [x, y, z] (the muzzle), dir }. */
-export function cannonLayout(kind) {
-    return [-1, 1].map((side) => {
-        const [ax, ay, az] = CANNON_AIM[kind];
-        const d = [-side * ax, ay, az];
+/** The confetti cannons, left to right: { pos: [x, y, z] (the muzzle), dir, base: [x, y, z] (base centre), spot }. */
+export function confettiLayout() {
+    const cannons = [
+        { x: -ARRAY_X, z: ARRAY_Z, aim: [0.32, 1.3, 1.0], spot: 'line array' },
+        { x: -SUB_PITCH, z: SUB_Z, aim: [-0.08, 1.45, 1.0], spot: 'sub gap' },
+        { x: SUB_PITCH, z: SUB_Z, aim: [0.08, 1.45, 1.0], spot: 'sub gap' },
+        { x: ARRAY_X, z: ARRAY_Z, aim: [-0.32, 1.3, 1.0], spot: 'line array' },
+    ];
+    return cannons.map(({ x, z, aim, spot }) => {
+        const len = Math.hypot(...aim);
+        const dir = aim.map((v) => v / len);
+        const base = [x, 0.1, z];
+        const pivot = [x, 0.2, z];
+        return { pos: pivot.map((v, k) => v + dir[k] * CONFETTI_BARREL), dir, base, spot };
+    });
+}
+
+// Streamer launchers: 3 standing on top of the aerial (top) truss, left, centre and right, so the
+// ribbons come from the stage itself. Nothing else is on top of the truss (the aerial heads and
+// strobes hang below it, the LED bars and truss CO2 nozzles are on its front face), and the bases sit
+// within the truss's depth, clear of the front-face LED bar. They fire up and out over the audience,
+// each covering its own third of the crowd: the left one angled left, the centre one straight out,
+// the right one angled right.
+export const STREAMER_X = [-9, 0, 9];
+const STREAMER_BARREL = 0.75;
+const TOP_OF_TRUSS = ROWS[0].y + 0.225; // the truss is 0.45 m deep
+
+/** The streamer launchers, left to right: { pos: [x, y, z] (the muzzle), dir, base: [x, y, z] (base centre) }. */
+export function streamerLayout() {
+    return STREAMER_X.map((x) => {
+        // forward and only a little up: from 19 m they arc out over the front and middle of the crowd
+        const d = [(x / 9) * 0.4, 0.3, 1.0];
         const len = Math.hypot(...d);
-        return { pos: [side * CANNON_X[kind], DECK_HEIGHT + 0.55, CANNON_Z[kind]], dir: d.map((v) => v / len) };
+        const dir = d.map((v) => v / len);
+        const base = [x, TOP_OF_TRUSS + 0.1, ROWS[0].z];
+        const pivot = [x, TOP_OF_TRUSS + 0.2, ROWS[0].z];
+        return { pos: pivot.map((v, k) => v + dir[k] * STREAMER_BARREL), dir, base };
     });
 }

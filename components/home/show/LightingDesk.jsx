@@ -122,9 +122,11 @@ const ROW_PATTERNS = [
     ['outside-in', 'Outside in', 'outer, middle, inner'],
 ];
 const CANNON_PATTERNS = [
-    ['burst', 'Big burst', 'both cannons'],
-    ['sides', 'Left · right', 'one after the other'],
+    ['burst', 'Big burst', 'every cannon'],
+    ['sweep', 'Sweep', 'left to right'],
 ];
+// Every special effect the desk fires, for the EVERYTHING row
+const ALL_EFFECTS = ['co2', 'co2Truss', 'sparks', 'confetti', 'streamers'];
 
 export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, onEffect, onEffectHold, song }) {
     if (!open) {
@@ -258,12 +260,31 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                         </button>
                     ))}
                 </div>
-                {/* Special effects: hold to keep every unit firing, or a pattern across the six units */}
+                {/* Everything at once: to see the whole look and feel */}
+                <div className="mt-2 pt-2 border-t border-white/10">
+                    <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mb-1.5">EVERYTHING</div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                            onPointerDown={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, true))}
+                            onPointerUp={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
+                            onPointerLeave={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
+                            onPointerCancel={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
+                            className="py-2.5 rounded bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-amber-300 active:from-white active:to-white text-black text-[11px] font-black tracking-widest select-none touch-none">
+                            ALL EFFECTS <span className="block text-[9px] font-normal text-black/60">hold</span>
+                        </button>
+                        <button onClick={() => ALL_EFFECTS.forEach((k) => onEffect(k, 'burst'))}
+                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[11px] font-black tracking-wide">
+                            ALL · AT ONCE
+                            <span className="block text-[9px] font-normal text-gray-400 leading-tight">one burst of each</span>
+                        </button>
+                    </div>
+                </div>
+                {/* Special effects: hold to keep every unit firing, or a pattern across the units */}
                 {[
                     { kind: 'co2', title: 'CO2 JETS', hold: 'CO2 BLAST', name: 'CO2', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'co2Truss', title: 'CO2 ON THE TRUSS', hold: 'TRUSS BLAST', name: 'TRUSS', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'sparks', title: 'COLD SPARKS', hold: 'SPARKS', name: 'SPARKS', className: 'from-yellow-200 to-amber-500 active:from-white active:to-yellow-200 text-black', hintClass: 'text-black/60' },
-                    { kind: 'confetti', title: 'CONFETTI', hold: 'CONFETTI', name: 'CONFETTI', patterns: CANNON_PATTERNS, holdHint: 'hold for more', className: 'from-fuchsia-300 to-cyan-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
+                    { kind: 'confetti', title: 'CONFETTI', hold: 'CONFETTI', name: 'CONFETTI', patterns: CANNON_PATTERNS, holdHint: 'hold: keeps pouring', className: 'from-fuchsia-300 to-cyan-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'streamers', title: 'STREAMERS', hold: 'STREAMERS', name: 'STREAMERS', patterns: CANNON_PATTERNS, holdHint: 'hold for more', className: 'from-amber-200 to-slate-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                 ].map((fx) => (
                     <div key={fx.kind} className="mt-2 pt-2 border-t border-white/10">
