@@ -29,8 +29,8 @@ import { FIRE_COLOR, roomFlash } from './flash';
  * controls; the homepage drives the camera from scroll).
  *
  * Draw calls: backdrop, floor, deck, truss (4) + 4 fixture groups x 5 (20) + strobes 1 + screens 3
- * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 1 + flame units 1 (these a moment after the
- * first frames) = 43, plus lasers and house lights (1 each, skipped while off), the CO2 plumes and the flames (1 each,
+ * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 2 (floor, truss) + flame units 1 (these a moment after the
+ * first frames) = 44, plus lasers and house lights (1 each, skipped while off), the CO2 plumes (floor, truss) and the flames (1 each,
  * zero instances while idle)
  * and bloom.
  */
@@ -271,6 +271,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     <PaSystem />
                     <LowFog look={look} blinders={blinders} />
                     <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} />
+                    <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} mount="truss" />
                     <Flames look={look} count={beams} quality={effects} />
                 </Warm>
             )}

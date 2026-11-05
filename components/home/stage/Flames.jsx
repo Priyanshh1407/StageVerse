@@ -10,7 +10,7 @@ import { DECK_HEIGHT } from './trussGeometry';
 import { createNoiseTexture } from './LowFog';
 
 // Flame units (item 15): six units on the stage's front lip (placed clear of the lights, lasers and
-// CO2 nozzles by flameLayout) that shoot fire columns about 5.5 m up for as long as they're fired; the
+// CO2 nozzles by flameLayout) that shoot narrow fire columns about 8 m up for as long as they're fired; the
 // fire is gone a moment after they stop. The warm light they throw on the stage, floor, haze and
 // fog goes through the flash system (flash.js, `fire`), with no real lights.
 //
@@ -22,9 +22,11 @@ import { createNoiseTexture } from './LowFog';
 // - nothing drawn while the units are idle (zero instances); fewer tongues on integrated GPUs.
 // The units themselves are one merged mesh (one more draw call).
 
-const HEIGHT = 5.5;  // how high a column reaches, in metres above the unit
-const FLOW = 2.6;    // stream speed: 2.6 column heights per second (about 13 m/s)
-const TONGUES = { high: 30, low: 18 };
+// A real flame projector fires a narrow, fast jet: bright white-yellow through its lower half, then
+// orange, rolling into a wider fireball at the top
+const HEIGHT = 8.0;  // how high a column reaches, in metres above the unit
+const FLOW = 4.4;    // stream speed: 4.4 column heights per second (about 35 m/s): a violent jet
+const TONGUES = { high: 44, low: 28 };
 
 const VERTEX = /* glsl */ `
     attribute vec3 aPuff;      // unit index, place in the stream (0..1), random
@@ -57,24 +59,33 @@ const VERTEX = /* glsl */ `
         // Fuel streams out while the unit fires; when it stops, the last of the column lifts off and
         // burns out on the way up
         float phase = fract(aPuff.y + firing * ${FLOW.toFixed(2)}) + 0.5 * (1.0 - exp(-after * 4.0));
-        float front = 1.0 - exp(-age * 14.0); // the whoosh shooting up as it ignites
+        float front = 1.0 - exp(-age * 20.0); // the whoosh shooting up as it ignites
         float h = phase * ${HEIGHT.toFixed(1)};
-        float r = (0.21 + 0.15 * h) * (1.0 + 0.4 * fade);
-        float size = 2.0 * r * (0.8 + 0.4 * fract(aPuff.z * 7.31));
-        vec3 jitter = vec3(fract(aPuff.z * 13.7) - 0.5, 0.0, fract(aPuff.z * 29.3) - 0.5) * r * 0.6;
-        // flames lick from side to side, more at the top
-        float lick = sin(uTime * 9.0 + aPuff.z * 30.0) * 0.05 * h;
-        vec3 centre = unit + vec3(jitter.x + lick, h + size * 0.25, jitter.z);
+        float top = smoothstep(0.72, 1.0, phase); // the fireball rolling out at the top
+        // a tight jet (16 cm at the burner), widening only gently, then the fireball
+        // as it ignites, a fireball leads the column up: the tongues at the front swell
+        float lead = smoothstep(front - 0.18, front, phase) * exp(-age * 3.0);
+        float r = (0.08 + 0.05 * h) * (1.0 + 0.9 * top) * (1.0 + 1.4 * lead) * (1.0 + 0.4 * fade);
+        // turbulence: every tongue pulses in size many times a second
+        float churn = 0.8 + 0.4 * fract(sin(floor(uTime * 24.0) * 12.9898 + aPuff.z * 78.233) * 43758.5453);
+        float size = 1.9 * r * (0.8 + 0.4 * fract(aPuff.z * 7.31)) * churn;
+        vec3 jitter = vec3(fract(aPuff.z * 13.7) - 0.5, 0.0, fract(aPuff.z * 29.3) - 0.5) * r * 0.5;
+        // a stiff, powerful jet: only a slight flicker from side to side, more at the top
+        float lick = sin(uTime * 17.0 + aPuff.z * 30.0) * 0.02 * h;
+        vec3 centre = unit + vec3(jitter.x + lick, h + size * 0.3, jitter.z);
 
         vHeat = phase;
         vAlpha = (1.0 - smoothstep(front - 0.05, front + 0.02, phase))   // not above the column's front yet
-            * (1.0 - smoothstep(0.7, 1.0, phase))                         // burning out at the top
-            * smoothstep(0.0, 0.02, phase)
-            * (1.0 - fade);
+            * (1.0 - smoothstep(0.82, 1.02, phase))                       // burning out at the top
+            * smoothstep(0.0, 0.015, phase)
+            * (1.0 - fade)
+            * (1.0 + 0.9 * exp(-age * 7.0))                               // the ignition burst
+            * (0.85 + 0.15 * sin(uTime * 37.0 + float(j) * 2.1));         // the whole column flickering
 
         // a quad facing the camera, taller than wide (flames stretch upward), turned a little per tongue
-        float a = (aPuff.z - 0.5) * 0.5 + sin(uTime * 6.0 + aPuff.z * 20.0) * 0.08;
-        vec2 q = mat2(cos(a), -sin(a), sin(a), cos(a)) * (position.xy * vec2(1.0, 1.6)) * size;
+        float a = (aPuff.z - 0.5) * 0.3 + sin(uTime * 8.0 + aPuff.z * 20.0) * 0.05;
+        // tongues stretched upward along the jet; rounder in the fireball
+        vec2 q = mat2(cos(a), -sin(a), sin(a), cos(a)) * (position.xy * vec2(1.0, mix(2.4, 1.3, top))) * size;
         vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
         vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
         gl_Position = projectionMatrix * viewMatrix * vec4(centre + right * q.x + up * q.y, 1.0);
@@ -98,11 +109,11 @@ const FRAGMENT = /* glsl */ `
         float d = length(p * vec2(1.0, 0.75)) * 2.0 + (n2 - 0.5) * 0.55;
         float shape = 1.0 - smoothstep(0.25, 1.0, d);
         // higher up, the fire breaks into tongues
-        float density = shape * smoothstep(0.2 + 0.45 * vHeat, 0.7 + 0.25 * vHeat, 0.7 * n1 + 0.5 * n2);
-        // hot white-yellow at the base, orange, then deep red at the tips
-        vec3 c = mix(vec3(1.0, 0.92, 0.62), vec3(1.0, 0.52, 0.1), smoothstep(0.0, 0.35, vHeat));
-        c = mix(c, vec3(0.8, 0.16, 0.03), smoothstep(0.35, 0.85, vHeat));
-        float glow = density * vAlpha * mix(1.5, 0.6, vHeat);
+        float density = shape * smoothstep(0.15 + 0.5 * vHeat, 0.65 + 0.3 * vHeat, 0.7 * n1 + 0.5 * n2);
+        // a long white-yellow core through the lower half, orange, then deep red at the tips
+        vec3 c = mix(vec3(1.0, 0.95, 0.75), vec3(1.0, 0.58, 0.12), smoothstep(0.05, 0.5, vHeat));
+        c = mix(c, vec3(0.8, 0.16, 0.03), smoothstep(0.55, 0.95, vHeat));
+        float glow = density * vAlpha * mix(2.4, 0.75, vHeat);
         if (glow < 0.003) discard;
         // premultiplied and partly additive (see the material): the fire also covers some of what is
         // behind it, so it stays orange in front of the bright LED wall and beams instead of going white

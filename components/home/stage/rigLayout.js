@@ -223,3 +223,29 @@ export function flameLayout(fixtureCount) {
     }
     return placed.map((x) => ({ pos: [x, DECK_HEIGHT + 0.3, FLAME_Z] }));
 }
+// CO2 jets on the aerial truss (a test): 4 nozzles clamped to the front face of the top truss,
+// half-way up it, between its two LED pixel bars (the bars run along the top and bottom chords), so
+// nothing on the truss is covered. Each lines up with one of the strobes hanging between the aerial
+// heads, so its plume leaves between two heads' beams. They're aimed out over the audience and down
+// (CO2_TRUSS_DOWN below level), the outer ones fanning out a little; from the front face the plume
+// moves away from the truss, never back past the heads hanging underneath.
+// (25 degrees came almost straight at the audience camera: the plumes read as round puffs; 40 shows
+// the jet sweeping down over the crowd, as truss CO2 does at festivals)
+export const CO2_TRUSS_DOWN = (40 * Math.PI) / 180;
+const CO2_TRUSS_WANT = [-10.5, -3.5, 3.5, 10.5];
+const TRUSS_HALF = 0.225; // half the truss section
+
+/** The truss nozzles, left to right: { pos: [x, y, z] (the nozzle tip), dir: unit vector of the jet }. */
+export function co2TrussLayout(fixtureCount) {
+    const strobes = strobeLayout(fixtureCount).filter((s) => s[1] > ROWS[0].y - 1).map((s) => s[0]);
+    const used = [];
+    return CO2_TRUSS_WANT.map((want) => {
+        const free = strobes.filter((s) => !used.includes(s));
+        const x = free.length ? free.reduce((best, s) => (Math.abs(s - want) < Math.abs(best - want) ? s : best)) : want;
+        used.push(x);
+        const fan = (x / 15) * 0.12; // the outer jets angled a little outward
+        const d = [fan, -Math.sin(CO2_TRUSS_DOWN), Math.cos(CO2_TRUSS_DOWN)];
+        const len = Math.hypot(...d);
+        return { pos: [x, ROWS[0].y, ROWS[0].z + TRUSS_HALF + 0.3], dir: d.map((v) => v / len) };
+    });
+}

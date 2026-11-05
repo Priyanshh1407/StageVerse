@@ -8,7 +8,7 @@ import { ChevronDown, Music, Square, Upload, Settings2, Loader2, Play, SunMedium
 import { DEFAULT_LOOK, mixHex } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
-import { CO2_JETS, co2Pattern } from '@/lib/show/co2';
+import { CO2_JETS, CO2_TRUSS_JETS, co2Pattern, co2TrussPattern } from '@/lib/show/co2';
 import { FLAME_UNITS, flamePattern } from '@/lib/show/flames';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS } from './director';
@@ -27,6 +27,7 @@ const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display:
 // The special effects the desk fires: how many units, their patterns, the shortest burst when held
 const DESK_EFFECTS = {
     co2: { units: CO2_JETS, pattern: co2Pattern, minHold: 0.4 },
+    co2Truss: { units: CO2_TRUSS_JETS, pattern: co2TrussPattern, minHold: 0.4 },
     flames: { units: FLAME_UNITS, pattern: flamePattern, minHold: 0.25 },
 };
 // The logo's two faces, for the LED wall and the gate sign (drawn into canvases, so passed by name)

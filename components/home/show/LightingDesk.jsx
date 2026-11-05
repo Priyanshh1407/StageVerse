@@ -251,6 +251,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 {/* Special effects: hold to keep every unit firing, or a pattern across the six units */}
                 {[
                     { kind: 'co2', title: 'CO2 JETS', hold: 'CO2 BLAST', name: 'CO2', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
+                    { kind: 'co2Truss', title: 'CO2 ON THE TRUSS (TEST)', hold: 'TRUSS BLAST', name: 'TRUSS', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'flames', title: 'FLAMES', hold: 'FLAME', name: 'FLAME', className: 'from-amber-400 to-orange-600 active:from-yellow-200 active:to-amber-400 text-black', hintClass: 'text-black/60' },
                 ].map((fx) => (
                     <div key={fx.kind} className="mt-2 pt-2 border-t border-white/10">

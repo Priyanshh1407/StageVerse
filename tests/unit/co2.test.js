@@ -139,3 +139,41 @@ describe('CO2 jets in a song', () => {
         expect(co2Active(look.co2)).toBe(true);
     });
 });
+
+describe('CO2 jets on the aerial truss (test)', () => {
+    for (const count of [64, 96, 140]) {
+        it(`${count} moving heads: 4 nozzles on the top truss's front face, between its LED bars, aimed out and down at the audience`, async () => {
+            const { co2TrussLayout, strobeLayout, rigLayout: layout, CO2_TRUSS_DOWN } = await import('@/components/home/stage/rigLayout');
+            const { ROWS } = await import('@/components/home/stage/trussGeometry');
+            const jets = co2TrussLayout(count);
+            expect(jets).toHaveLength(4);
+            const strobes = strobeLayout(count).filter((s) => s[1] > ROWS[0].y - 1).map((s) => s[0]);
+            const heads = layout(count).filter((f) => f.group === 'topFan');
+            for (const { pos, dir } of jets) {
+                // half-way up the truss (the LED bars run along its top and bottom chords), on its front face
+                expect(pos[1]).toBe(ROWS[0].y);
+                expect(pos[2]).toBeGreaterThan(ROWS[0].z + 0.225);
+                // in line with a strobe, i.e. between two aerial heads
+                expect(strobes.some((s) => Math.abs(s - pos[0]) < 1e-6)).toBe(true);
+                // toward the audience (+z) and down, never back toward the stage
+                expect(dir[2]).toBeGreaterThan(0.6);
+                expect(dir[1]).toBeCloseTo(-Math.sin(CO2_TRUSS_DOWN) / Math.hypot(...dir), 1);
+                expect(Math.hypot(...dir)).toBeCloseTo(1, 6);
+                // the plume leaves ahead of the heads hanging underneath (their front is ~0.3 m ahead of the truss line)
+                for (const h of heads) expect(pos[2]).toBeGreaterThan(h.position[2] + 0.3);
+                // and as it widens (radius 0.16 + 0.15 m per metre travelled) its back edge stays ahead of them
+                for (let t = 0; t <= 3; t += 0.25) {
+                    const back = pos[2] + dir[2] * t - (0.16 + 0.15 * t);
+                    for (const h of heads) expect(back).toBeGreaterThan(h.position[2] + 0.3);
+                }
+            }
+        });
+    }
+
+    it('desk patterns over 4 jets fire each jet once', async () => {
+        const { co2TrussPattern } = await import('@/lib/show/co2');
+        const oi = co2TrussPattern('outside-in');
+        expect(oi.map((f) => f.unit).sort()).toEqual([0, 1, 2, 3]);
+        expect(co2TrussPattern('chase').map((f) => f.unit)).toEqual([0, 1, 2, 3, 2, 1, 0]);
+    });
+});

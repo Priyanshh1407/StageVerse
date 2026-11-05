@@ -28,6 +28,7 @@ export function roomFlash(look, t, blinderCount = REFERENCE_BLINDERS) {
     const master = look.master ?? 1;
     const strobe = (look.strobe ?? 0) * strobeGate(t) * master * FLASH_BRIGHTNESS;
     const blinder = (look.blinder ?? 0) * master * Math.min(2.5, blinderCount / REFERENCE_BLINDERS) * FLASH_BRIGHTNESS;
-    const fire = flameGlow(look.flames) * FIRE_BRIGHTNESS;
+    // fire light flickers fast, like the flames throwing it
+    const fire = flameGlow(look.flames) * FIRE_BRIGHTNESS * (0.88 + 0.12 * Math.sin(t * 31) * Math.sin(t * 17.3));
     return { strobe, blinder, fire, total: Math.min(2.2, strobe + blinder * 0.8) };
 }

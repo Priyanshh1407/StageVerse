@@ -1,6 +1,6 @@
 import { sampleCueSheet, sampleSongShow } from '@/lib/show/timeline';
 import { smoothstep, venueLit } from '@/lib/show/look';
-import { CO2_FADE, co2FromFirings } from '@/lib/show/co2';
+import { CO2_FADE, co2FromFirings, co2TrussFromFirings } from '@/lib/show/co2';
 import { FLAME_FADE, flamesFromFirings } from '@/lib/show/flames';
 import { firingsDone } from '@/lib/show/effects';
 import { PLAY_FROM } from './scrollShow';
@@ -41,9 +41,9 @@ export const HOUSE_UP_MS = 3000;
 export function currentState(control) {
     if (control.mode === 'manual' && control.desk) {
         const look = { ...venueLit(control.desk, control.desk.house ?? 0) }; // a copy: never write onto the desk
-        // Special effects fired from the desk (CO2 jets, flames)
+        // Special effects fired from the desk (CO2 jets on the floor and the truss, flames)
         const now = performance.now();
-        for (const [kind, toState, fade] of [['co2', co2FromFirings, CO2_FADE], ['flames', flamesFromFirings, FLAME_FADE]]) {
+        for (const [kind, toState, fade] of [['co2', co2FromFirings, CO2_FADE], ['co2Truss', co2TrussFromFirings, CO2_FADE], ['flames', flamesFromFirings, FLAME_FADE]]) {
             const fired = control.fired?.[kind];
             if (!fired?.length) continue;
             const state = toState(fired, now);
