@@ -41,15 +41,30 @@ const VERTEX = /* glsl */ `
         return cannon + aim * speed * s - vec3(0.0, fall, 0.0) * (t - s);
     }
 
-    // a point u along the ribbon (0 = head, 1 = tail): trailing along the flight path at first,
-    // hanging below the head and waving once the air has slowed it
-    vec3 ribbonAt(float u, float t, vec3 cannon, vec3 aim, float speed, float fall, float len, float r1) {
-        vec3 trail = headAt(max(t - u * 0.45, 0.0), cannon, aim, speed, fall);
-        vec3 hang = headAt(t, cannon, aim, speed, fall)
-            + vec3(sin(u * 7.0 - t * 1.6 + r1 * 20.0) * 0.35 * u, -u * len, cos(u * 5.0 - t * 1.3 + r1 * 9.0) * 0.2 * u);
-        vec3 p = mix(trail, hang, smoothstep(0.5, 2.2, t));
-        p.y = max(p.y, 0.02 + u * 0.002); // lying on the floor where it lands
-        return p;
+    // the head's velocity t seconds after launch (the derivative of headAt)
+    vec3 velocityAt(float t, vec3 aim, float speed, float fall) {
+        float e = exp(-${DRAG.toFixed(2)} * t);
+        return aim * speed * e - vec3(0.0, fall * (1.0 - e), 0.0);
+    }
+
+    // A ribbon has a fixed length and lies along the path its head has flown: the point \`back\` metres
+    // behind the head is where the head was when it had flown \`back\` metres less. This finds that
+    // moment by walking back along the path. (The head is never slower than now on the stretch
+    // behind it, so steps sized by its current speed always reach the full length.) 0 means the
+    // point hasn't left the launcher yet: the ribbon is still unspooling.
+    float timeBehind(float back, float t, vec3 aim, float speed, float fall) {
+        float now = max(length(velocityAt(t, aim, speed, fall)), 0.2);
+        float dt = back / (36.0 * now) + 1e-4;
+        float tt = t;
+        float walked = 0.0;
+        for (int i = 0; i < 48; i++) {
+            if (walked >= back || tt <= 0.0) break;
+            walked += length(velocityAt(max(tt - 0.5 * dt, 0.0), aim, speed, fall)) * dt;
+            tt -= dt;
+        }
+        // step back the overshoot, so the point moves smoothly rather than in step-sized jumps
+        if (walked > back) tt += (walked - back) / max(length(velocityAt(max(tt, 0.0), aim, speed, fall)), 0.05);
+        return max(tt, 0.0);
     }
 
     void main() {
@@ -69,25 +84,46 @@ const VERTEX = /* glsl */ `
         float shotAt = shot * ${STREAMER_SHOT_GAP.toFixed(2)};
         float launched = shotAt + fract(r2 * 5.3) * 0.25;
         float t = age - launched;
-        float life = ${STREAMER_LIFE.toFixed(1)} * (0.75 + 0.25 * r1);
-        if (age < 0.0 || shotAt > len || t < 0.0 || t > life) {
-            gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
-            return;
-        }
         vec3 side1 = normalize(cross(dir, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
         vec3 side2 = cross(dir, side1);
         float ang = r1 * 6.283 * 9.17;
         float cone = 0.3 * sqrt(fract(r2 * 17.3));
         vec3 aim = normalize(dir + (side1 * cos(ang) + side2 * sin(ang)) * cone);
         float speed = 10.0 + 7.0 * fract(r2 * 3.7);
-        float fall = 0.45 + 0.35 * fract(r1 * 11.3);
+        float fall = 1.0 + 0.5 * fract(r1 * 11.3);     // paper ribbons sink at 1-1.5 m/s
         float ribbon = 5.0 + 3.0 * fract(r2 * 29.0);
+        // Each ribbon lives until it has come all the way down: its highest point (the launcher plus
+        // how far it climbs before the air stops it), plus its own length, at its sinking speed;
+        // then it lies on the floor a few seconds and fades. (A fixed lifetime made ribbons from the
+        // top of the truss vanish halfway down.)
+        float climb = max(aim.y, 0.0) * speed / ${DRAG.toFixed(2)};
+        float life = (cannon.y + climb + ribbon) / fall + 1.0 / ${DRAG.toFixed(2)} + 3.0;
+        if (age < 0.0 || shotAt > len || t < 0.0 || t > life) {
+            gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
+            return;
+        }
 
         float u = 0.5 - position.y; // 0 at the head, 1 at the tail
-        vec3 p = ribbonAt(u, t, cannon, aim, speed, fall, ribbon, r1);
-        vec3 next = ribbonAt(min(1.0, u + 0.03), t, cannon, aim, speed, fall, ribbon, r1);
-        vec3 prev = ribbonAt(max(0.0, u - 0.03), t, cannon, aim, speed, fall, ribbon, r1);
-        vec3 tangent = normalize(next - prev + vec3(0.0, -1e-4, 0.0));
+        // where this point of the ribbon is: on the head's path, u x the ribbon's length behind it
+        float tp = timeBehind(u * ribbon, t, aim, speed, fall);
+        vec3 p = headAt(tp, cannon, aim, speed, fall);
+        // which way the ribbon runs here (along the path; straight out of the launcher while unspooling)
+        vec3 v = velocityAt(tp, aim, speed, fall);
+        vec3 tangent = length(v) > 1e-3 ? normalize(v) : aim;
+        // As the air slows it, the ribbon flutters: a wave running down it, side to side, growing
+        // toward the tail; and the whole ribbon drifts a little, as paper does in the air
+        float slow = smoothstep(0.6, 3.0, t);
+        vec3 across = normalize(cross(tangent, vec3(0.0, 1.0, 0.0)) + vec3(0.25, 0.0, 0.1));
+        p += across * (0.3 * slow) * sin(u * 8.0 - t * 2.4 + r1 * 20.0) * (0.35 + 0.65 * u);
+        p.z += 0.15 * slow * cos(u * 5.0 - t * 1.7 + r2 * 9.0) * u;
+        p += vec3(sin(t * 0.35 + r1 * 6.0), 0.0, cos(t * 0.28 + r2 * 6.0)) * 0.7 * smoothstep(1.0, 5.0, t);
+        // landed: the part that reaches the floor lies down along it instead of piling up in one spot
+        float under = 0.02 - p.y;
+        if (under > 0.0) {
+            float a = r1 * 40.0;
+            p.xz += vec2(cos(a), sin(a)) * under;
+            p.y = 0.02 + u * 0.002;
+        }
         vec3 toCam = normalize(cameraPosition - p);
         vec3 side = normalize(cross(tangent, toCam) + vec3(1e-4, 0.0, 0.0));
         // the ribbon twists along its length: edge-on it narrows, face-on it flashes
