@@ -25,7 +25,6 @@ function createHazeMaterial(seed) {
             uLevel: { value: 0.5 },
             uHouse: { value: 0 },
             uFlash: { value: 0 },
-            uFire: { value: 0 },
         },
         vertexShader: /* glsl */ `
             varying vec2 vUv;
@@ -39,7 +38,6 @@ function createHazeMaterial(seed) {
             uniform float uLevel;
             uniform float uHouse;
             uniform float uFlash;
-            uniform float uFire;
             varying vec2 vUv;
 
             float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + uSeed) * 43758.5453); }
@@ -67,9 +65,7 @@ function createHazeMaterial(seed) {
                 color = mix(color, vec3(1.0, 0.68, 0.3), uHouse * 0.8);
                 // A strobe or blinder hit lights the smoke white
                 color = mix(color, vec3(1.0), min(1.0, uFlash));
-                // ...and the flames light it orange
-                color = mix(color, vec3(1.0, 0.42, 0.1) * 1.4, min(1.0, uFire) * 0.7);
-                gl_FragColor = vec4(color, smoke * smoke * mask * (uLevel + uHouse * 0.11 + uFlash * 0.5 + uFire * 0.3));
+                gl_FragColor = vec4(color, smoke * smoke * mask * (uLevel + uHouse * 0.11 + uFlash * 0.5));
             }
         `,
         transparent: true,
@@ -96,9 +92,7 @@ export default function Haze({ look, blinders }) {
             u.uColorB.value.set(target.colorB);
             u.uLevel.value += (level * LAYERS[i].strength - u.uLevel.value) * Math.min(1, delta * 2);
             u.uHouse.value += ((target.house ?? 0) - u.uHouse.value) * Math.min(1, delta * 1.5);
-            const flash = roomFlash(target, clock.elapsedTime, blinders);
-            u.uFlash.value = flash.total;
-            u.uFire.value = flash.fire;
+            u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
         });
     });
 

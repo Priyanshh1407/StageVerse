@@ -27,7 +27,6 @@ function createSkirtMaterial() {
             uColor: { value: new THREE.Color('#3b5bff') },
             uLight: { value: 0 },
             uFlash: { value: 0 },
-            uFire: { value: 0 },
         },
         vertexShader: /* glsl */ `
             varying vec3 vWorld;
@@ -43,7 +42,6 @@ function createSkirtMaterial() {
             uniform vec3 uColor;
             uniform float uLight;
             uniform float uFlash;
-            uniform float uFire;
             varying vec3 vWorld;
             varying float vY;
             void main() {
@@ -53,9 +51,7 @@ function createSkirtMaterial() {
                 // Darker toward the floor, a faint wash of the show's colour near the top edge
                 vec3 base = vec3(0.012, 0.013, 0.017) * fold * (0.6 + 0.4 * vY);
                 vec3 tint = uColor * 0.035 * uLight * vY * vY * fold;
-                // the flames just above light the top of the skirt
-                vec3 fire = vec3(1.0, 0.42, 0.1) * uFire * 0.12 * vY * vY * fold;
-                gl_FragColor = vec4(base + tint + vec3(0.05) * uFlash * fold + fire, 1.0);
+                gl_FragColor = vec4(base + tint + vec3(0.05) * uFlash * fold, 1.0);
             }
         `,
     });
@@ -109,9 +105,7 @@ export default function StageSkirt({ look, blinders }) {
         const s = skirtMesh.current.material.uniforms;
         s.uColor.value.copy(colors.current.a.set(target.colorA).lerp(colors.current.b.set(target.colorB), 0.5));
         s.uLight.value = light;
-        const room = roomFlash(target, t, blinders);
-        s.uFlash.value = Math.min(1, room.total);
-        s.uFire.value = room.fire;
+        s.uFlash.value = Math.min(1, roomFlash(target, t, blinders).total);
 
         const u = stripMesh.current.material.uniforms;
         u.uTime.value = t;

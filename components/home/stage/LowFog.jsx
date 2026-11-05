@@ -81,7 +81,6 @@ const FRAGMENT = /* glsl */ `
     uniform vec3 uColorB;
     uniform float uLevel;
     uniform float uFlash;
-    uniform float uFire;
     varying vec3 vWorld;
     varying vec2 vUv;
     void main() {
@@ -94,9 +93,7 @@ const FRAGMENT = /* glsl */ `
         float edge = smoothstep(0.0, 0.15, vUv.x) * smoothstep(1.0, 0.85, vUv.x) * smoothstep(0.0, 0.12, vUv.y) * smoothstep(1.0, 0.75, vUv.y);
         float thin = exp(-max(0.0, vWorld.z) * 0.07);
         vec3 tint = mix(uColorA, uColorB, smoothstep(-16.0, 16.0, vWorld.x + sin(uTime * 0.1) * 6.0));
-        // the flames at the stage front light the fog near them orange
-        vec3 fire = vec3(1.0, 0.42, 0.1) * uFire * 0.9 * exp(-abs(vWorld.z) * 0.12);
-        vec3 c = (mix(tint, vec3(0.8), 0.25) * uLevel + vec3(0.6) * uFlash + fire) * d * edge * thin * uStrength * 0.5;
+        vec3 c = (mix(tint, vec3(0.8), 0.25) * uLevel + vec3(0.6) * uFlash) * d * edge * thin * uStrength * 0.5;
         gl_FragColor = vec4(c, 1.0);
     }
 `;
@@ -112,7 +109,6 @@ function createFogMaterial(noise, { seed, strength }) {
             uColorB: { value: new THREE.Color('#ff3df2') },
             uLevel: { value: 0 },
             uFlash: { value: 0 },
-            uFire: { value: 0 },
         },
         vertexShader: VERTEX,     // the same source for every layer: one shader program to compile
         fragmentShader: FRAGMENT,
@@ -136,8 +132,7 @@ export default function LowFog({ look, blinders }) {
         const master = (target.master ?? 1) * Math.min(target.intensity, 1.4) * (0.6 + 0.4 * (target.haze ?? 0.5));
         const down = Math.min(1, Math.max(0, (0.4 - (target.tiltShift ?? 0)) / 0.6)) * (1 - Math.min(1, target.converge ?? 0));
         const wanted = { aerials: master * (target.beams ?? 0) * down, washes: master * (target.wash ?? 0) };
-        const room = roomFlash(target, t, blinders);
-        const flash = Math.min(1, room.total);
+        const flash = Math.min(1, roomFlash(target, t, blinders).total);
         group.current.children.forEach((child, i) => {
             const u = child.material.uniforms;
             const level = wanted[LAYERS[i].lit];
@@ -146,9 +141,8 @@ export default function LowFog({ look, blinders }) {
             u.uColorB.value.set(target.colorB);
             u.uLevel.value += (level - u.uLevel.value) * Math.min(1, delta * 4);
             u.uFlash.value = flash;
-            u.uFire.value = room.fire;
             // a dark layer isn't drawn at all (no GPU time spent on fog nobody can see)
-            child.visible = u.uLevel.value > 0.005 || flash > 0.01 || room.fire > 0.01;
+            child.visible = u.uLevel.value > 0.005 || flash > 0.01;
         });
     });
     return (

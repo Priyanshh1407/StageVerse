@@ -14,8 +14,9 @@ import { createNoiseTexture } from './LowFog';
 // CO2 jets (item 15). Two mounts, the same plume:
 // - floor: six nozzles on the stage front (placed clear of the lights by co2Layout) blasting white
 //   plumes about 8.5 m straight up, leaning a little toward the audience;
-// - truss (a test): four nozzles on the front face of the top truss (co2TrussLayout) aimed out over
-//   the audience and down; the plume sags as it slows (CO2 is heavier than air).
+// - truss: four nozzles on the front face of the top truss (co2TrussLayout) blasting out over the
+//   audience and down, carrying ~14 m, well past the barrier; the plume sags as it slows (CO2 is
+//   heavier than air).
 // A jet blasts for as long as its valve is open; when it closes the plume detaches from the nozzle,
 // billows out and fades over CO2_FADE seconds.
 //
@@ -35,7 +36,7 @@ const lean = new THREE.Vector3(0, 1, 0.05).normalize(); // floor jets: a little 
 
 const MOUNTS = {
     floor: { count: CO2_JETS, key: 'co2', reach: 8.5, sag: 0, layout: (n) => co2Layout(n).map((j) => ({ pos: j.pos, dir: lean.toArray() })) },
-    truss: { count: CO2_TRUSS_JETS, key: 'co2Truss', reach: 10.0, sag: 0.03, layout: co2TrussLayout },
+    truss: { count: CO2_TRUSS_JETS, key: 'co2Truss', reach: 14.0, sag: 0.015, layout: co2TrussLayout },
 };
 
 const vertexFor = (n) => /* glsl */ `

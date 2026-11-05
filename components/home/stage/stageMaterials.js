@@ -108,7 +108,6 @@ export function createFloorMaterial() {
             uWall: { value: 0 },     // the LED wall's faint reflection
             uHouse: { value: 0 },
             uFlash: { value: 0 },
-            uFire: { value: 0 },     // the flames' warm glow
             uTime: { value: 0 },
         },
         vertexShader: /* glsl */ `
@@ -126,7 +125,6 @@ export function createFloorMaterial() {
             uniform float uWall;
             uniform float uHouse;
             uniform float uFlash;
-            uniform float uFire;
             uniform float uTime;
             varying vec3 vWorld;
 
@@ -210,9 +208,7 @@ export function createFloorMaterial() {
                 // Inside the venue the floor nearest the camera fades to black, keeping the eye on the stage
                 float near = smoothstep(3.0, 14.0, length(vWorld.xz - cameraPosition.xz));
                 float fade = mix(1.0, near, step(vWorld.z, 33.4));
-                // Flames on the stage's front lip light the floor in front of it, warm and fading with distance
-                vec3 fire = vec3(1.0, 0.42, 0.1) * uFire * 0.55 * exp(-fromStage * 0.1) * smoothstep(22.0, 6.0, abs(vWorld.x)) * inside;
-                gl_FragColor = vec4((base + lit + house + vec3(0.55) * uFlash + fire) * fade + wetRoad(vWorld), 1.0);
+                gl_FragColor = vec4((base + lit + house + vec3(0.55) * uFlash) * fade + wetRoad(vWorld), 1.0);
             }
         `,
     });

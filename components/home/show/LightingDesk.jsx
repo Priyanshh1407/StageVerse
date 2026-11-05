@@ -112,7 +112,7 @@ const Key = ({ on, onClick, children, danger }) => (
 /**
  * The lighting desk, laid out like a DMX console (item 8): a grand master fader (DMX 0-255) with
  * blackout, an on/off switch and a flash button per fixture type, then the programmer
- * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops, CO2 jets, flames).
+ * (position, effects, colour), the lasers and rig, and playback (strobe, the three drops, CO2 jets, cold sparks).
  * Touching any control takes the lights over (manual mode) until "Resume show". `desk` is the
  * look being shown, `counts` the fixture counts.
  */
@@ -251,8 +251,8 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 {/* Special effects: hold to keep every unit firing, or a pattern across the six units */}
                 {[
                     { kind: 'co2', title: 'CO2 JETS', hold: 'CO2 BLAST', name: 'CO2', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
-                    { kind: 'co2Truss', title: 'CO2 ON THE TRUSS (TEST)', hold: 'TRUSS BLAST', name: 'TRUSS', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
-                    { kind: 'flames', title: 'FLAMES', hold: 'FLAME', name: 'FLAME', className: 'from-amber-400 to-orange-600 active:from-yellow-200 active:to-amber-400 text-black', hintClass: 'text-black/60' },
+                    { kind: 'co2Truss', title: 'CO2 ON THE TRUSS', hold: 'TRUSS BLAST', name: 'TRUSS', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
+                    { kind: 'sparks', title: 'COLD SPARKS', hold: 'SPARKS', name: 'SPARKS', className: 'from-yellow-200 to-amber-500 active:from-white active:to-yellow-200 text-black', hintClass: 'text-black/60' },
                 ].map((fx) => (
                     <div key={fx.kind} className="mt-2 pt-2 border-t border-white/10">
                         <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mb-1.5">{fx.title}</div>
