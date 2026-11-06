@@ -1,8 +1,29 @@
-# ⚡ StageVerse
+<p align="center">
+  <img src="docs/media/banner.svg" alt="StageVerse: live concert production, from the patch to the light show" width="100%">
+</p>
 
-### *Bridging Live Event Production and Systems Engineering*
+<h1 align="center">⚡ StageVerse</h1>
+<p align="center"><b><i>Bridging live event production and systems engineering</i></b></p>
 
-![CI](https://github.com/Priyanshh1407/StageVerse/actions/workflows/ci.yml/badge.svg)
+<p align="center">
+  <a href="https://stage-verse.vercel.app/"><img alt="Live site" src="https://img.shields.io/badge/live-stage--verse.vercel.app-ff3df2?style=for-the-badge&logo=vercel&logoColor=white"></a>
+  <img alt="CI" src="https://github.com/Priyanshh1407/StageVerse/actions/workflows/ci.yml/badge.svg">
+</p>
+<p align="center">
+  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-19d9ff?style=flat-square&logo=react&logoColor=black">
+  <img alt="three.js" src="https://img.shields.io/badge/three.js-R3F-a855f7?style=flat-square&logo=threedotjs&logoColor=white">
+  <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Mongoose_9-00ed64?style=flat-square&logo=mongodb&logoColor=black">
+  <img alt="Socket.IO" src="https://img.shields.io/badge/Socket.IO-4-ffb000?style=flat-square&logo=socketdotio&logoColor=black">
+  <img alt="Gemini" src="https://img.shields.io/badge/AI-Gemini_%2F_Groq-ff6a00?style=flat-square&logo=googlegemini&logoColor=white">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-392_passing-39ff14?style=flat-square&logo=vitest&logoColor=black">
+  <img alt="60 FPS" src="https://img.shields.io/badge/60_FPS-on_Intel_Iris_Xe-ff3df2?style=flat-square">
+</p>
+
+<p align="center">
+  <img src="docs/media/finale.gif" alt="The fireworks finale of a demo song: confetti, streamers, CO2, stage pyro and shells timed to the music" width="88%"><br>
+  <sub><b>The homepage's fireworks finale</b>, programmed automatically from the song: confetti, streamers and CO2 on the first beat, then stage pyro, then shells chosen bar by bar by how loud the music is.</sub>
+</p>
 
 StageVerse is a full-stack platform for live concert production that connects the four groups behind a show: **fans**, **artists**, **organizers** and the **production crew**. Organizers publish shows, artists build setlists, tech riders and day sheets, crews patch lighting and track logistics, and during the show the artist's console, the crew's screens and fans' phones stay in sync in real time, including a live encore vote. It aims to cut the technical overhead, signal collisions and communication gaps of concert production for technical directors, systems engineers and front-of-house (FOH) crews.
 
@@ -38,13 +59,34 @@ Live shows change fast; the artist's console, the crew's cue screens and fans' p
 * **The logic:** the server is the source of truth: clients request changes over HTTP, the server writes to MongoDB and *then* broadcasts to the show's room (p50 ≈ 3 ms push latency to 10 screens).
 * **The show clock** is stored with the show (seconds banked plus when the current run started), so a screen that opens late or presses refresh is on the right second ([`docs/live-sync.md`](docs/live-sync.md)).
 
-### 3. The homepage: a 3D concert you can run
+### 3. 🎆 The homepage: a 3D concert you can run
 A scroll-driven 3D concert that runs at 56–60 FPS on integrated graphics: a venue gate, then a festival main stage (raised deck, four truss rows, three-column side towers, 64 moving heads, LED pixel bars, truss and tower strobes, 8 laser projectors, an LED wall, flown line arrays, sub stacks and a crowd barrier). Visitors pick a genre (EDM, pop, rap or Bollywood) and play one of 9 demo songs, or their own song, which is analysed in the browser with that genre's settings (tempo, beats, sections, chorus by repetition, vocals) and programmed into a light show the way a lighting designer would. Every show also fires special effects on the music: CO2 jets on the floor and the truss, confetti, streamers, stage pyro (roman candles, roof comets, a comet chase, mines) through the song, and a fireworks finale choreographed on the song's own beats, opening differently for every song. During a song, Space and Shift fire the CO2 and confetti live without stopping the show. Then they can run the lights and effects themselves with one-tap controls or a DMX-style lighting desk. A loading screen holds the page until the stage, its shaders and the songs are ready. The scroll settles gently on each of its 9 sections, with small dots to jump between them, and every transition is paced to play out visibly. House lights light the venue in warm work light, as at the end of a real concert. On phones the scroll show plays and the playground asks for a bigger screen ([`docs/homepage-show.md`](docs/homepage-show.md)).
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/media/gate.jpg" alt="The venue gate with the neon StageVerse sign"><br><sub>🎟️ <b>The gate</b>: scroll to walk in</sub></td>
+    <td width="50%"><img src="docs/media/rig.jpg" alt="The festival main stage with moving-head beams"><br><sub>💡 <b>The rig</b>: 64 moving heads, 8 lasers, an LED wall</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/media/song-drop.jpg" alt="A drop in a demo song with lasers, beams, CO2 and confetti"><br><sub>🔊 <b>A drop</b>, programmed from the song's analysis</sub></td>
+    <td><img src="docs/media/fireworks.jpg" alt="Fireworks, streamers and confetti in the finale"><br><sub>🎆 <b>The finale</b>: shells, streamers and confetti</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/media/live-effects.jpg" alt="CO2 jets and confetti fired live with the Space and Shift keys"><br><sub>💨 <b>Live keys</b>: hold Space for CO2, Shift for confetti, and the show carries on</sub></td>
+    <td><img src="docs/media/desk.jpg" alt="The STAGEVERSE CONSOLE lighting desk"><br><sub>🎛️ <b>The lighting desk</b>: run the lights, effects and fireworks yourself</sub></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="docs/media/scroll.gif" alt="Scrolling from the venue gate into the main stage" width="49%">
+  <img src="docs/media/live.gif" alt="CO2 and confetti fired live during a song" width="49%"><br>
+  <sub>Left: the scroll journey from the gate to the rig. Right: CO2 and confetti fired live during a song.</sub>
+</p>
 
 ### 4. grandMA3 patch export
 The crew's patch sheet downloads the show's patch as a grandMA3 XML file ([`lib/patch/grandma3.js`](lib/patch/grandma3.js)), ready to import on a grandMA3 console. Lines with clashing or invalid addresses are left out and listed at the top of the file. It hasn't been test-imported on grandMA3 onPC yet.
 
-## What each role can do
+## 🎭 What each role can do
 
 | Role | Highlights |
 |---|---|
@@ -112,7 +154,7 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 
 **Deploying:** the site runs on Vercel. [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) covers environment variables, MongoDB Atlas, shipping and rolling back, seeding production and the checks to run after a deploy.
 
-## Scripts
+## 📜 Scripts
 
 | Command | What it does |
 |---|---|
@@ -128,14 +170,14 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 | `npm run score:analysis` | Score the song analysis against the hand-marked test set in `tests/songs/` (each song as EDM and as its own genre) |
 | `npm run eval:patch -- --provider groq` | AI patch-assistant evaluation, legacy vs current pipeline (~65 real API calls; `-- --fake` checks the harness without API calls) |
 
-## Testing and quality
+## 🧪 Testing and quality
 
 - **392 tests in 36 files** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, the grandMA3 export, and the homepage show: song analysis (against a synthetic click track), genre analysis (synthetic pop, rap and Bollywood songs), the cue engine, every lighting-programming rule, the strobe/blinder light, the scroll stops, the special effects and fireworks (the finale follows each song's beats, loudness, genre and tempo; shells are kept for the finale), the live CO2/confetti keys and the loading screen.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, tests with coverage, a production build and a dependency audit on every push.
 - **Manual test guide:** [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md) walks through every upgraded feature in the browser (including how to force each AI fallback level) and lists the automated test commands.
 - The engineering history (each bug, how it was found, the fix and the trade-off) is in [`FIX_LOG.md`](FIX_LOG.md). The audit that started it is in [`PROJECT_AUDIT_REPORT.md`](PROJECT_AUDIT_REPORT.md).
 
-## Measured
+## 📊 Measured
 
 | What | Result | Source |
 |---|---|---|
@@ -150,7 +192,7 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 | Song analysis: tempo | *A Sky Full of Stars* 125.1 BPM (published 125); *Yellow* 86.8 BPM (published ~87) | [docs](docs/homepage-show.md) |
 | Song analysis: pop by genre vs the EDM analysis | boundaries 38% → 53%, chorus 25% → 59%, peaks 64% → 65% (hand-marked songs) | `npm run score:analysis` |
 
-## Known limitations
+## ⚠️ Known limitations
 
 Written down on purpose: this is a portfolio project, and these are the honest edges.
 
@@ -159,12 +201,12 @@ Written down on purpose: this is a portfolio project, and these are the honest e
 - **Rate limits are per process** (in-memory token buckets).
 - **Free AI tiers are tight** (Gemini: 5 requests/minute and 20/day per model). The provider chain and non-AI fallbacks keep features working, but fallback answers are simpler; heavy AI use needs a billed key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
-- **Demo songs.** The 9 demo songs (listed in the [disclaimer](#disclaimer)) are commercial recordings, committed only so the homepage demo works and used for educational purposes only; any other track stays local (gitignored). Their programmed shows and hand-marked structures are in `public/shows/` (`<slug>.show.json`, `<slug>.extras.json`). "Light up your song" analyses any MP3/WAV/OGG/FLAC in the visitor's browser without uploading it.
+- **Demo songs.** The 9 demo songs (listed in the [disclaimer](#-disclaimer)) are commercial recordings, committed only so the homepage demo works and used for educational purposes only; any other track stays local (gitignored). Their programmed shows and hand-marked structures are in `public/shows/` (`<slug>.show.json`, `<slug>.extras.json`). "Light up your song" analyses any MP3/WAV/OGG/FLAC in the visitor's browser without uploading it.
 - **Genre analysis is measured on few songs.** The genre settings were tuned on hand-marked pop songs; rap and Bollywood are checked on synthetic songs only until real ones are marked in `tests/songs/`. Vocal detection is a rough signal-processing cue (no ML model): good enough to drive lighting, not a transcription.
 - **Sentiment analysis isn't built.** The analysis page shows labelled sample data.
 - The AI patch eval uses 30 cases I wrote, and the second prompt version was tuned on them, so its 100% intent accuracy is optimistic; a held-out case set is the next step. Gemini results are pending: the free tier's 20 requests/day per model is less than one full run.
 
-## Disclaimer
+## 📄 Disclaimer
 
 This is a non-commercial portfolio project built for learning. The songs used in the homepage demo (*A Sky Full of Stars* and *Yellow* by Coldplay; *Closer* by The Chainsmokers feat. Halsey; *High On Life* by Martin Garrix feat. Bonn; *Smack That* by Akon feat. Eminem; *BAND4BAND* by Central Cee & Lil Baby; *goosebumps* by Travis Scott; *Subha Hone Na De* from *Desi Boyz*, music by Pritam; *Uff Teri Adaa* from *Karthik Calling Karthik*, music by Shankar-Ehsaan-Loy) are used for **educational, non-commercial purposes only**, to demonstrate the song analysis and light-show programming. All rights to the music belong to its respective owners (the artists, songwriters and labels). No ownership is claimed and nothing is sold. If you are a rights holder and want a track removed, contact me on [LinkedIn](https://www.linkedin.com/in/priyansh-waghela-3b754b282/) and it will be taken down. Fixture models and fonts are used under their own licences (see Credits).
 
@@ -180,7 +222,7 @@ This is a non-commercial portfolio project built for learning. The songs used in
 - [ ] RDM (Remote Device Management) telemetry, to simulate automated fixture monitoring.
 - [ ] Ticketing (parked; see above).
 
-## Project structure
+## 🗂️ Project structure
 
 ```
 app/            pages (grouped by role) and API route handlers (app/api)
@@ -197,7 +239,7 @@ bench/ evals/   performance benchmark and LLM evaluation harness
 docs/           design notes, manual test guide, deployment guide
 ```
 
-## Credits
+## 🙏 Credits
 
 3D fixture models (CC BY 4.0): "Moving Head Beam (high Poly)" by Lord Henry and "STROBO LIGHTING WASIS" by eventdesignws, both from Sketchfab. Details in [`public/fixtures/CREDITS.md`](public/fixtures/CREDITS.md). Fonts (SIL Open Font License, via Google Fonts and `next/font`): Sedgwick Ave Display and Yellowtail for the logo, Orbitron for the LED wall.
 

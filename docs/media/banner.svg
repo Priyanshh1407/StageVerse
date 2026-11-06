@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="StageVerse: live concert production, from the patch to the light show">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#05061a"/>
+      <stop offset="1" stop-color="#010208"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#19d9ff"/>
+      <stop offset="0.5" stop-color="#ff3df2"/>
+      <stop offset="1" stop-color="#ffb000"/>
+    </linearGradient>
+    <linearGradient id="beamC" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#19d9ff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#19d9ff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beamM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff3df2" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ff3df2" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beamO" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffb000" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ffb000" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.55" r="0.5">
+      <stop offset="0" stop-color="#ff3df2" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#ff3df2" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <rect width="1200" height="320" fill="url(#sky)"/>
+  <!-- beams from the truss -->
+  <g filter="url(#soft)">
+    <polygon points="200,40 230,40 420,320 250,320" fill="url(#beamC)"/>
+    <polygon points="340,40 370,40 300,320 150,320" fill="url(#beamM)"/>
+    <polygon points="520,40 550,40 760,320 600,320" fill="url(#beamO)"/>
+    <polygon points="650,40 680,40 560,320 420,320" fill="url(#beamC)"/>
+    <polygon points="830,40 860,40 1080,320 920,320" fill="url(#beamM)"/>
+    <polygon points="970,40 1000,40 900,320 760,320" fill="url(#beamC)"/>
+  </g>
+  <!-- truss -->
+  <rect x="150" y="34" width="900" height="8" rx="2" fill="#2a2f45"/>
+  <g fill="#19d9ff"><circle cx="215" cy="44" r="4"/><circle cx="655" cy="44" r="4"/><circle cx="985" cy="44" r="4"/></g>
+  <g fill="#ff3df2"><circle cx="355" cy="44" r="4"/><circle cx="845" cy="44" r="4"/></g>
+  <circle cx="535" cy="44" r="4" fill="#ffb000"/>
+  <!-- fireworks -->
+  <g stroke-linecap="round" stroke-width="2.4">
+    <g stroke="#ffd27a" transform="translate(1080 92)">
+      <line x1="0" y1="0" x2="0" y2="-30"/><line x1="0" y1="0" x2="21" y2="-21"/><line x1="0" y1="0" x2="30" y2="0"/><line x1="0" y1="0" x2="21" y2="21"/>
+      <line x1="0" y1="0" x2="0" y2="30"/><line x1="0" y1="0" x2="-21" y2="21"/><line x1="0" y1="0" x2="-30" y2="0"/><line x1="0" y1="0" x2="-21" y2="-21"/>
+    </g>
+    <g stroke="#19d9ff" transform="translate(110 110) scale(0.75)">
+      <line x1="0" y1="0" x2="0" y2="-30"/><line x1="0" y1="0" x2="21" y2="-21"/><line x1="0" y1="0" x2="30" y2="0"/><line x1="0" y1="0" x2="21" y2="21"/>
+      <line x1="0" y1="0" x2="0" y2="30"/><line x1="0" y1="0" x2="-21" y2="21"/><line x1="0" y1="0" x2="-30" y2="0"/><line x1="0" y1="0" x2="-21" y2="-21"/>
+    </g>
+  </g>
+  <ellipse cx="600" cy="175" rx="420" ry="110" fill="url(#glow)"/>
+  <!-- wordmark -->
+  <text x="600" y="190" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="96" font-weight="900" letter-spacing="2" fill="url(#word)">StageVerse</text>
+  <text x="600" y="238" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="5" fill="#e8ecff">LIVE CONCERT PRODUCTION · FROM THE PATCH TO THE LIGHT SHOW</text>
+  <!-- stage edge -->
+  <rect x="0" y="300" width="1200" height="3" fill="url(#word)" opacity="0.8"/>
+</svg>
