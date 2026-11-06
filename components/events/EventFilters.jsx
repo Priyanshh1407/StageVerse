@@ -37,7 +37,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-bold text-white">Filter By</h3>
             <div className="flex items-center gap-4">
-              <button onClick={onReset} className="flex items-center gap-1 text-xs text-[#00d4ff] hover:text-white transition-colors">
+              <button onClick={onReset} className="flex items-center gap-1 text-xs text-[#ffb000] hover:text-white transition-colors">
                 <RotateCcw className="w-3 h-3" /> Reset
               </button>
               <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-white">
@@ -60,7 +60,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                       onClick={() => toggleArrayItem('genres', genre)}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm border transition-all ${
                         isSelected 
-                          ? 'bg-[#00d4ff]/10 border-[#00d4ff] text-[#00d4ff]' 
+                          ? 'bg-[#ff6a00]/10 border-[#a855f7] text-[#ffb000]' 
                           : 'bg-[#1e1e1e] border-transparent text-slate-400 hover:border-white/20 hover:text-white'
                       }`}
                     >
@@ -80,7 +80,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
               <select 
                 value={filters.city}
                 onChange={(e) => update('city', e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-[#1e1e1e] px-3 py-2 text-sm text-white focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none"
+                className="w-full rounded-lg border border-white/10 bg-[#1e1e1e] px-3 py-2 text-sm text-white focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none"
               >
                 <option value="All">All Cities</option>
                 <option value="New York">New York, NY</option>
@@ -99,7 +99,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                 type="date" 
                 value={filters.date}
                 onChange={(e) => update('date', e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-[#1e1e1e] px-3 py-2 text-sm text-white focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none [color-scheme:dark]" 
+                className="w-full rounded-lg border border-white/10 bg-[#1e1e1e] px-3 py-2 text-sm text-white focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none [color-scheme:dark]" 
               />
             </div>
 
@@ -107,7 +107,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
             <div>
               <div className="mb-2 flex justify-between text-sm text-slate-300">
                 <span>Max Price</span>
-                <span className="text-[#00d4ff]">${filters.maxPrice}</span>
+                <span className="text-[#ffb000]">${filters.maxPrice}</span>
               </div>
               <input 
                 type="range" 
@@ -115,7 +115,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                 max="300" 
                 value={filters.maxPrice}
                 onChange={(e) => update('maxPrice', Number(e.target.value))}
-                className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-gray-700 accent-[#00d4ff]" 
+                className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-gray-700 accent-[#ff6a00]" 
               />
               <div className="mt-1 flex justify-between text-xs text-slate-500">
                 <span>Free</span>
@@ -135,8 +135,8 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                       onClick={() => toggleArrayItem('vibes', vibe)}
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                         isActive 
-                          ? 'border-[#00d4ff] bg-[#00d4ff] text-black font-bold' 
-                          : 'border-white/10 bg-[#1e1e1e] text-slate-400 hover:border-[#00d4ff]/50 hover:text-white'
+                          ? 'border-[#a855f7] sv-sunset text-black font-bold' 
+                          : 'border-white/10 bg-[#1e1e1e] text-slate-400 hover:border-[#a855f7]/50 hover:text-white'
                       }`}
                     >
                       {vibe}
@@ -149,7 +149,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
             <div className="lg:hidden pt-4">
               <button 
                 onClick={onClose}
-                className="w-full py-3 rounded-lg bg-[#00d4ff] text-black font-bold hover:bg-white transition-colors"
+                className="w-full py-3 rounded-lg sv-sunset text-black font-bold hover:bg-white hover:bg-none transition-colors"
               >
                 Show Results
               </button>

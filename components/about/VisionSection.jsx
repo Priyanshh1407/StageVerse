@@ -9,9 +9,9 @@ export default function VisionSection() {
         style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '32px 32px' }}
       ></div>
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <span className="text-[#00E5FF] font-bold uppercase tracking-widest text-sm mb-4 block">The StageVerse Vision</span>
+        <span className="text-[#ffb000] font-bold uppercase tracking-widest text-sm mb-4 block">The StageVerse Vision</span>
         <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-8 leading-tight">
-            Building the <span className="text-[#00E5FF]">meta-layer</span> for live events.
+            Building the <span className="text-[#ffb000]">meta-layer</span> for live events.
         </h2>
         <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto">
             We envision a future where the boundary between physical and digital attendance dissolves. Where you can feel the bass in your chest whether you&apos;re in the front row or in your living room. We are building the infrastructure for the next generation of entertainment.

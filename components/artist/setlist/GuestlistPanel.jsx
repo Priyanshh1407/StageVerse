@@ -99,14 +99,14 @@ export default function GuestlistPanel({ eventId }) {
     return (
         <div className="bg-[#0b1217] rounded-3xl overflow-hidden flex flex-col h-full shadow-2xl border border-[#315168]/30 relative">
             {}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#0d93f2]/5 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff6a00]/5 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
             {}
             <div className="p-5 border-b border-[#315168]/30 bg-[#0b1217]/60 backdrop-blur-xl flex items-center justify-between z-10">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[#0d93f2]/10 rounded-xl">
-                        <Users className="w-5 h-5 text-[#0d93f2]" />
+                    <div className="p-2 bg-[#ff6a00]/10 rounded-xl">
+                        <Users className="w-5 h-5 text-[#ff6a00]" />
                     </div>
                     <div>
                         <h3 className="text-white font-bold text-lg tracking-tight">Guestlist</h3>
@@ -124,11 +124,11 @@ export default function GuestlistPanel({ eventId }) {
                 <div className={`w-full md:w-[400px] border-r border-[#315168]/30 flex flex-col bg-[#0b1217]/40 backdrop-blur-sm ${selectedGuest ? 'hidden md:flex' : 'flex'}`}>
                     <div className="p-4 border-b border-[#315168]/30">
                         <div className="relative group">
-                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#90b2cb] group-focus-within:text-[#0d93f2] transition-colors" />
+                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#90b2cb] group-focus-within:text-[#ff6a00] transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search guests..."
-                                className="w-full bg-[#101b23] border border-[#315168]/50 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-[#587b94] focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2]/50 transition-all font-medium"
+                                className="w-full bg-[#101b23] border border-[#315168]/50 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-[#587b94] focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7]/50 transition-all font-medium"
                             />
                         </div>
                     </div>
@@ -142,12 +142,12 @@ export default function GuestlistPanel({ eventId }) {
                                     key={guest._id}
                                     onClick={() => setSelectedGuest(guest)}
                                     className={`p-3 rounded-xl cursor-pointer transition-all duration-200 border border-transparent group ${selectedGuest?._id === guest._id
-                                        ? 'bg-[#0d93f2]/10 border-[#0d93f2]/30 shadow-[0_0_15px_rgba(13,147,242,0.1)]'
+                                        ? 'bg-[#ff6a00]/10 border-[#a855f7]/30 shadow-[0_0_15px_rgba(255,106,0,0.1)]'
                                         : 'hover:bg-[#182934] hover:border-[#315168]/30'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white uppercase shadow-lg ring-2 ring-offset-2 ring-offset-[#0b1217] transition-all ${selectedGuest?._id === guest._id ? 'bg-[#0d93f2] ring-[#0d93f2]' : 'bg-slate-700 ring-slate-700 group-hover:ring-slate-600'}`}>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white uppercase shadow-lg ring-2 ring-offset-2 ring-offset-[#0b1217] transition-all ${selectedGuest?._id === guest._id ? 'sv-sunset ring-[#a855f7]' : 'bg-slate-700 ring-slate-700 group-hover:ring-slate-600'}`}>
                                             {guest.name?.substring(0, 2)}
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -189,10 +189,10 @@ export default function GuestlistPanel({ eventId }) {
                             {}
                             <div className="bg-gradient-to-br from-[#182934]/80 to-[#101b23]/80 backdrop-blur-xl border border-[#315168]/50 rounded-3xl p-8 relative overflow-hidden shadow-2xl">
                                 {}
-                                <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#0d93f2]/20 rounded-full blur-[80px]" />
+                                <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#ff6a00]/20 rounded-full blur-[80px]" />
 
                                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-10 text-center md:text-left">
-                                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#0d93f2] to-[#0066cc] flex items-center justify-center text-3xl font-bold text-white uppercase shadow-[0_0_30px_rgba(13,147,242,0.3)] ring-4 ring-[#0b1217]">
+                                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#ffb000] to-[#ff3d7a] flex items-center justify-center text-3xl font-bold text-white uppercase shadow-[0_0_30px_rgba(255,106,0,0.3)] ring-4 ring-[#0b1217]">
                                         {selectedGuest.name?.substring(0, 2)}
                                     </div>
                                     <div className="flex-1">
@@ -217,8 +217,8 @@ export default function GuestlistPanel({ eventId }) {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                                    <div className="bg-[#0b1217]/50 rounded-2xl p-4 border border-[#315168]/30 flex items-start gap-4 hover:border-[#0d93f2]/30 transition-colors group">
-                                        <div className="p-2.5 bg-[#0d93f2]/10 rounded-xl text-[#0d93f2] group-hover:scale-110 transition-transform">
+                                    <div className="bg-[#0b1217]/50 rounded-2xl p-4 border border-[#315168]/30 flex items-start gap-4 hover:border-[#a855f7]/30 transition-colors group">
+                                        <div className="p-2.5 bg-[#ff6a00]/10 rounded-xl text-[#ff6a00] group-hover:scale-110 transition-transform">
                                             <Mail className="w-5 h-5" />
                                         </div>
                                         <div>
@@ -226,8 +226,8 @@ export default function GuestlistPanel({ eventId }) {
                                             <p className="text-white text-sm font-medium">{selectedGuest.email}</p>
                                         </div>
                                     </div>
-                                    <div className="bg-[#0b1217]/50 rounded-2xl p-4 border border-[#315168]/30 flex items-start gap-4 hover:border-[#0d93f2]/30 transition-colors group">
-                                        <div className="p-2.5 bg-[#0d93f2]/10 rounded-xl text-[#0d93f2] group-hover:scale-110 transition-transform">
+                                    <div className="bg-[#0b1217]/50 rounded-2xl p-4 border border-[#315168]/30 flex items-start gap-4 hover:border-[#a855f7]/30 transition-colors group">
+                                        <div className="p-2.5 bg-[#ff6a00]/10 rounded-xl text-[#ff6a00] group-hover:scale-110 transition-transform">
                                             <Calendar className="w-5 h-5" />
                                         </div>
                                         <div>
@@ -241,12 +241,12 @@ export default function GuestlistPanel({ eventId }) {
                                 <div className="mt-6 bg-[#0b1217]/50 rounded-2xl p-5 border border-[#315168]/30">
                                     <div className="flex items-center justify-between mb-3">
                                         <p className="text-[#587b94] text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-[#0d93f2]" /> Internal Notes
+                                            <span className="w-1.5 h-1.5 rounded-full sv-sunset" /> Internal Notes
                                         </p>
                                         {!isEditingNotes && (
                                             <button
                                                 onClick={() => setIsEditingNotes(true)}
-                                                className="text-xs text-[#0d93f2] hover:text-white font-bold transition-colors"
+                                                className="text-xs text-[#ff6a00] hover:text-white font-bold transition-colors"
                                             >
                                                 Edit
                                             </button>
@@ -258,7 +258,7 @@ export default function GuestlistPanel({ eventId }) {
                                             <textarea
                                                 value={notesBuffer}
                                                 onChange={e => setNotesBuffer(e.target.value)}
-                                                className="w-full bg-[#101b23] border border-[#315168] rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#0d93f2] min-h-[100px] shadow-inner font-normal leading-relaxed"
+                                                className="w-full bg-[#101b23] border border-[#315168] rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#a855f7] min-h-[100px] shadow-inner font-normal leading-relaxed"
                                                 placeholder="Add notes about this guest..."
                                                 autoFocus
                                             />
@@ -271,7 +271,7 @@ export default function GuestlistPanel({ eventId }) {
                                                 </button>
                                                 <button
                                                     onClick={handleSaveNotes}
-                                                    className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#0d93f2] text-white hover:bg-[#0b84db] shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                                                    className="px-4 py-1.5 rounded-lg text-xs font-bold sv-sunset text-white hover:brightness-110 shadow-lg shadow-orange-500/20 transition-all active:scale-95"
                                                     disabled={actionLoading}
                                                 >
                                                     {actionLoading ? 'Saving...' : 'Save Notes'}
@@ -305,7 +305,7 @@ export default function GuestlistPanel({ eventId }) {
                         </div>
                     ) : (
                         <div className="text-center text-[#90b2cb]/50">
-                            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-[#0d93f2]/5 flex items-center justify-center animate-pulse">
+                            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-[#ff6a00]/5 flex items-center justify-center animate-pulse">
                                 <Users className="w-10 h-10 opacity-50" />
                             </div>
                             <h2 className="text-2xl font-bold text-white mb-2">Select a Guest</h2>

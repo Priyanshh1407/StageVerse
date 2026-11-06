@@ -186,7 +186,7 @@ export default function EventsPage() {
 
 
   return (
-    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30">
+    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#ffb000]/30">
 
       {}
       <OrganizerSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -211,7 +211,7 @@ export default function EventsPage() {
             <div className="bg-[#192734] rounded-xl border border-[#2c3b47] overflow-hidden flex flex-col min-h-[400px]">
               {isLoading ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-[#90b2cb] gap-3">
-                  <RefreshCw className="w-8 h-8 animate-spin text-[#0d93f2]" />
+                  <RefreshCw className="w-8 h-8 animate-spin text-[#ff6a00]" />
                   <p>Loading your events...</p>
                 </div>
               ) : (
@@ -257,10 +257,10 @@ function Header({ onMenuClick }) {
       <div className="flex items-center gap-4 md:gap-6">
         <button className="relative p-2 text-[#90b2cb] hover:text-white">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#0d93f2] rounded-full"></span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 sv-sunset rounded-full"></span>
         </button>
         <div className="flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffb000] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
             <div className="w-full h-full rounded-full bg-[#101b22] relative overflow-hidden">
               <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
             </div>
@@ -285,7 +285,7 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] transition-colors"
+            className="block w-full pl-10 pr-3 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] transition-colors"
             placeholder="Search events..."
             type="text"
           />
@@ -330,7 +330,7 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
       {}
       <button
         onClick={onCreate}
-        className="flex items-center gap-2 bg-[#0d93f2] hover:bg-[#0b84db] text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-lg shadow-[#0d93f2]/20 w-full md:w-auto justify-center"
+        className="flex items-center gap-2 sv-sunset hover:brightness-110 text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-lg shadow-[#ff6a00]/20 w-full md:w-auto justify-center"
       >
         <Plus className="w-5 h-5" />
         Create New Event
@@ -410,9 +410,9 @@ function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLiv
 
   const getProgressColor = (status) => {
     if (status === 'Completed') return 'bg-[#90b2cb]';
-    if (status === 'Draft') return 'bg-blue-500';
+    if (status === 'Draft') return 'sv-sunset';
     if (status === 'Scheduled') return 'bg-gray-600';
-    return 'bg-[#0d93f2]';
+    return 'sv-sunset';
   };
 
   return (
@@ -530,7 +530,7 @@ function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageC
             key={page}
             onClick={() => onPageChange(page)}
             className={`px-3 py-1.5 text-xs font-medium rounded shadow-sm transition-colors ${currentPage === page
-              ? 'text-white bg-[#0d93f2] hover:bg-[#0b84db]'
+              ? 'text-white sv-sunset hover:brightness-110'
               : 'text-[#90b2cb] hover:text-white hover:bg-[#2c3b47]'
               }`}
           >

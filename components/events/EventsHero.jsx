@@ -18,12 +18,12 @@ export default function EventsHero({ searchValue, onSearchChange }) {
 
         <div className="w-full max-w-2xl">
           <div className="relative flex items-center group">
-            <Search className="absolute left-4 w-5 h-5 text-slate-400 group-focus-within:text-[#00d4ff] transition-colors" />
+            <Search className="absolute left-4 w-5 h-5 text-slate-400 group-focus-within:text-[#ffb000] transition-colors" />
             <input
               type="text"
               value={searchValue}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full rounded-full border border-white/10 bg-[#121212]/80 py-3 pl-12 pr-4 text-white placeholder-slate-500 backdrop-blur-md focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] outline-none transition-all"
+              className="w-full rounded-full border border-white/10 bg-[#121212]/80 py-3 pl-12 pr-4 text-white placeholder-slate-500 backdrop-blur-md focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none transition-all"
               placeholder="Search events, artists, or venues..."
             />
           </div>

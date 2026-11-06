@@ -74,7 +74,7 @@ export default function ArtistsPage() {
   };
 
   return (
-    <div className="bg-[#0F0F10] font-sans text-white min-h-screen flex flex-col antialiased selection:bg-[#00C2FF] selection:text-black">
+    <div className="bg-[#0F0F10] font-sans text-white min-h-screen flex flex-col antialiased selection:bg-[#ffb000] selection:text-black">
 
       <Navbar />
 

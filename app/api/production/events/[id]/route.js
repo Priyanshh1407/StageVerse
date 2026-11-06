@@ -8,7 +8,7 @@ import { verifyAuth } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 function getTypeColor(type) {
     switch (type) {
-        case 'Touring': return 'bg-blue-500';
+        case 'Touring': return 'sv-sunset';
         case 'Festival': return 'bg-indigo-500';
         case 'Corporate': return 'bg-slate-600';
         case 'Theatre': return 'bg-amber-600';

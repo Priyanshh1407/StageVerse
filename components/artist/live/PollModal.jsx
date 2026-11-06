@@ -15,8 +15,8 @@ export default function PollModal({ isOpen, onClose, onActivate, pollData }) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050505]/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
 
       {}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(0,240,255,0.15),transparent_70%)] pointer-events-none"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#00f0ff]/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(255,106,0,0.15),transparent_70%)] pointer-events-none"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#ff6a00]/5 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="w-full max-w-md relative z-10 flex flex-col justify-between bg-[#121212] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
 
@@ -49,12 +49,12 @@ export default function PollModal({ isOpen, onClose, onActivate, pollData }) {
               <div
                 key={id}
                 onClick={() => setSelectedOptionId(id)}
-                className={`cursor-pointer w-full rounded-2xl bg-[#1a1a1a] border-2 p-5 flex flex-col justify-between relative overflow-hidden transition-all ${isSelected ? 'border-[#00f0ff] bg-[#00f0ff]/10 shadow-[0_0_30px_rgba(0,240,255,0.2)]' : 'border-white/10 hover:border-white/20'}`}
+                className={`cursor-pointer w-full rounded-2xl bg-[#1a1a1a] border-2 p-5 flex flex-col justify-between relative overflow-hidden transition-all ${isSelected ? 'border-[#a855f7] bg-[#ff6a00]/10 shadow-[0_0_30px_rgba(255,106,0,0.2)]' : 'border-white/10 hover:border-white/20'}`}
               >
                 <div className="flex justify-between items-start relative z-10">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Option {idx + 1}</span>
                   {isSelected && (
-                    <div className="w-6 h-6 rounded-full bg-[#00f0ff] text-black flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full sv-sunset text-black flex items-center justify-center">
                       <Check className="w-4 h-4 font-bold" />
                     </div>
                   )}
@@ -70,7 +70,7 @@ export default function PollModal({ isOpen, onClose, onActivate, pollData }) {
         <footer className="p-6 bg-[#050505] border-t border-white/10">
           <button
             onClick={onActivate}
-            className="w-full py-4 rounded-xl bg-[#00f0ff] hover:bg-[#00c3d1] text-black font-black uppercase tracking-widest text-lg shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all transform hover:scale-[1.02]"
+            className="w-full py-4 rounded-xl sv-sunset hover:brightness-110 text-black font-black uppercase tracking-widest text-lg shadow-[0_0_20px_rgba(255,106,0,0.4)] transition-all transform hover:scale-[1.02]"
           >
             Launch Poll to Audience
           </button>

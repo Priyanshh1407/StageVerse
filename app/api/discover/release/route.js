@@ -12,7 +12,7 @@ export async function GET(req) {
       .limit(5)
       .populate('venue', 'name') // <--- FIX: Get the venue name, not just ID
       .select('title artist venue images createdAt');
-    const colors = ['bg-purple-600', 'bg-blue-500', 'bg-pink-600', 'bg-orange-500', 'bg-indigo-600'];
+    const colors = ['bg-purple-600', 'sv-sunset', 'bg-pink-600', 'bg-orange-500', 'bg-indigo-600'];
     const releases = newEvents.map((event, index) => ({
       id: event._id,
       artist: event.artist,

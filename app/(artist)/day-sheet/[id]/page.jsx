@@ -64,7 +64,7 @@ export default function DaySheetDetailPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#0d93f2]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#ff6a00]" />
             </div>
         );
     }

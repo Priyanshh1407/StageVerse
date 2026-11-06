@@ -128,7 +128,7 @@ export default function CreateVenueModal({
           {}
           <div className="flex items-center justify-between px-5 py-4 md:px-6 md:py-5 border-b border-[#314368] bg-[#101622] shrink-0 z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#0d59f2] shadow-lg shadow-[#0d59f2]/20 flex items-center justify-center text-white shrink-0">
+              <div className="w-10 h-10 rounded-lg sv-sunset shadow-lg shadow-[#ff6a00]/20 flex items-center justify-center text-white shrink-0">
                 <Landmark className="w-6 h-6" />
               </div>
               <div>
@@ -150,7 +150,7 @@ export default function CreateVenueModal({
             {}
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2 pb-2 border-b border-[#314368]/50">
-                <Info className="w-5 h-5 text-[#0d59f2]" />
+                <Info className="w-5 h-5 text-[#ff6a00]" />
                 <h3 className="text-base md:text-lg font-bold text-white">Core Details</h3>
               </div>
 
@@ -163,7 +163,7 @@ export default function CreateVenueModal({
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#0d59f2] focus:border-transparent outline-none transition-all"
+                    className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
                     placeholder="e.g., Hollywood Bowl"
                   />
                 </div>
@@ -176,7 +176,7 @@ export default function CreateVenueModal({
                       name="type"
                       value={formData.type}
                       onChange={handleChange}
-                      className="w-full appearance-none rounded-lg border border-[#314368] bg-[#182234] h-12 pl-4 pr-10 text-white focus:ring-2 focus:ring-[#0d59f2] focus:border-transparent outline-none cursor-pointer"
+                      className="w-full appearance-none rounded-lg border border-[#314368] bg-[#182234] h-12 pl-4 pr-10 text-white focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none cursor-pointer"
                     >
                       <option value="" disabled>Select a type...</option>
                       <option value="amphitheater">Outdoor Amphitheater</option>
@@ -198,7 +198,7 @@ export default function CreateVenueModal({
                       type="text"
                       value={formData.capacity}
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 pl-4 pr-10 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#0d59f2] focus:border-transparent outline-none transition-all"
+                      className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 pl-4 pr-10 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
                       placeholder="e.g., 17,500"
                     />
                     <Users className="absolute right-3 top-1/2 -translate-y-1/2 text-[#90a4cb] w-5 h-5 pointer-events-none" />
@@ -210,7 +210,7 @@ export default function CreateVenueModal({
             {}
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2 pb-2 border-b border-[#314368]/50">
-                <MapPin className="w-5 h-5 text-[#0d59f2]" />
+                <MapPin className="w-5 h-5 text-[#ff6a00]" />
                 <h3 className="text-base md:text-lg font-bold text-white">Location</h3>
               </div>
 
@@ -223,7 +223,7 @@ export default function CreateVenueModal({
                     type="text"
                     value={formData.address}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#0d59f2] focus:border-transparent outline-none transition-all"
+                    className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
                     placeholder="e.g., 2301 N Highland Ave"
                   />
                 </div>
@@ -236,7 +236,7 @@ export default function CreateVenueModal({
                     type="text"
                     value={formData.city}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#0d59f2] focus:border-transparent outline-none transition-all"
+                    className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
                     placeholder="e.g., Los Angeles"
                   />
                 </div>
@@ -260,7 +260,7 @@ export default function CreateVenueModal({
             {}
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2 pb-2 border-b border-[#314368]/50">
-                <Check className="w-5 h-5 text-[#0d59f2]" />
+                <Check className="w-5 h-5 text-[#ff6a00]" />
                 <h3 className="text-base md:text-lg font-bold text-white">Details & Policies</h3>
               </div>
 
@@ -275,7 +275,7 @@ export default function CreateVenueModal({
                     <span className="text-[#90a4cb] text-xs">Can attendees park on-site?</span>
                   </div>
                   {}
-                  <div className={`w-11 h-6 rounded-full relative transition-colors ${formData.hasParking ? 'bg-[#0d59f2]' : 'bg-gray-700'}`}>
+                  <div className={`w-11 h-6 rounded-full relative transition-colors ${formData.hasParking ? 'sv-sunset' : 'bg-gray-700'}`}>
                     <div className={`absolute top-[2px] left-[2px] bg-white w-5 h-5 rounded-full transition-transform ${formData.hasParking ? 'translate-x-full' : ''}`}></div>
                   </div>
                 </div>
@@ -288,7 +288,7 @@ export default function CreateVenueModal({
                     type="text"
                     value={formData.bagPolicy}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-[#314368] bg-[#182234] h-20 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#0d59f2] focus:border-transparent outline-none transition-all"
+                    className="w-full rounded-lg border border-[#314368] bg-[#182234] h-20 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
                     placeholder="e.g., Clear Bags Only"
                   />
                 </div>
@@ -300,7 +300,7 @@ export default function CreateVenueModal({
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-[#314368] bg-[#182234] min-h-[140px] p-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#0d59f2] focus:border-transparent outline-none transition-all resize-y custom-scrollbar text-sm"
+                    className="w-full rounded-lg border border-[#314368] bg-[#182234] min-h-[140px] p-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all resize-y custom-scrollbar text-sm"
                     placeholder="Describe the venue, its history, acoustics, and what makes it unique for events..."
                   ></textarea>
                 </div>
@@ -310,18 +310,18 @@ export default function CreateVenueModal({
             {}
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2 pb-2 border-b border-[#314368]/50">
-                <ImageIcon className="w-5 h-5 text-[#0d59f2]" />
+                <ImageIcon className="w-5 h-5 text-[#ff6a00]" />
                 <h3 className="text-base md:text-lg font-bold text-white">Media</h3>
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-white text-sm font-medium">Venue Photo</label>
-                <div className="w-full h-48 md:h-56 border-2 border-dashed border-[#314368] rounded-xl bg-[#182234]/30 hover:bg-[#182234] hover:border-[#0d59f2]/50 transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#0d59f2]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#182234] border border-[#314368] flex items-center justify-center mb-4 group-hover:scale-110 group-hover:border-[#0d59f2] group-hover:text-[#0d59f2] transition-all z-10 shadow-lg">
-                    <CloudUpload className="text-[#90a4cb] group-hover:text-[#0d59f2] w-6 h-6 md:w-8 md:h-8" />
+                <div className="w-full h-48 md:h-56 border-2 border-dashed border-[#314368] rounded-xl bg-[#182234]/30 hover:bg-[#182234] hover:border-[#a855f7]/50 transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#ffb000]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#182234] border border-[#314368] flex items-center justify-center mb-4 group-hover:scale-110 group-hover:border-[#a855f7] group-hover:text-[#ff6a00] transition-all z-10 shadow-lg">
+                    <CloudUpload className="text-[#90a4cb] group-hover:text-[#ff6a00] w-6 h-6 md:w-8 md:h-8" />
                   </div>
-                  <p className="text-white text-sm font-medium z-10 group-hover:text-[#0d59f2] transition-colors">Click to upload or drag and drop</p>
+                  <p className="text-white text-sm font-medium z-10 group-hover:text-[#ff6a00] transition-colors">Click to upload or drag and drop</p>
                   <p className="text-[#90a4cb] text-xs z-10 mt-1">SVG, PNG, JPG or GIF (max. 5MB)</p>
                 </div>
               </div>
@@ -340,7 +340,7 @@ export default function CreateVenueModal({
             <button
               onClick={handleSaveVenue}
               disabled={isSubmitting}
-              className="px-6 md:px-8 h-10 md:h-12 rounded-lg bg-[#0d59f2] hover:bg-blue-600 text-white font-bold shadow-lg shadow-[#0d59f2]/25 hover:shadow-[#0d59f2]/40 active:scale-95 transition-all flex items-center gap-2 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 md:px-8 h-10 md:h-12 rounded-lg sv-sunset hover:brightness-110 text-white font-bold shadow-lg shadow-[#ff6a00]/25 hover:shadow-[#ff6a00]/40 active:scale-95 transition-all flex items-center gap-2 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>

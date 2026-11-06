@@ -63,7 +63,7 @@ export default function FanDashboard() {
   if (loading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-[#f5f7f8] dark:bg-[#101b22]">
-        <Loader2 className="w-10 h-10 text-[#0d93f2] animate-spin" />
+        <Loader2 className="w-10 h-10 text-[#ff6a00] animate-spin" />
       </div>
     );
   }
@@ -73,7 +73,7 @@ export default function FanDashboard() {
   const { activeEvent, activeEventSongs, activeEventPrediction, activeEventSetlist, upcomingEvents } = data;
 
   return (
-    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#0d93f2]/30">
+    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#ffb000]/30">
 
       <FanSidebar
         isOpen={isSidebarOpen}
@@ -107,7 +107,7 @@ export default function FanDashboard() {
 
             {}
             <motion.section variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-white dark:bg-[#1a2632] p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50 relative overflow-hidden group">
-              <div className="absolute -left-20 -top-20 w-64 h-64 bg-[#0d93f2]/10 rounded-full blur-[80px] group-hover:bg-[#0d93f2]/20 transition-all duration-700"></div>
+              <div className="absolute -left-20 -top-20 w-64 h-64 bg-[#ff6a00]/10 rounded-full blur-[80px] group-hover:bg-[#ff6a00]/20 transition-all duration-700"></div>
               <div className="flex items-center gap-6 relative z-10">
                 <div className="relative">
                   <div className="relative h-24 w-24 md:h-32 md:w-32 rounded-full border-4 border-white dark:border-[#1a2632] shadow-xl overflow-hidden bg-gray-700">
@@ -126,7 +126,7 @@ export default function FanDashboard() {
                       </div>
                     )}
                     {data.user.socials?.instagram && (
-                      <div className="flex items-center gap-1 text-xs text-[#0d93f2]">
+                      <div className="flex items-center gap-1 text-xs text-[#ff6a00]">
                         <Instagram className="w-3 h-3" /> @{data.user.socials.instagram}
                       </div>
                     )}
@@ -137,7 +137,7 @@ export default function FanDashboard() {
                   )}
 
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#0d93f2]/10 text-[#0d93f2] border border-[#0d93f2]/20">LEVEL {data.user.level} FAN</span>
+                    <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#ff6a00]/10 text-[#ff6a00] border border-[#a855f7]/20">LEVEL {data.user.level} FAN</span>
                     <span className="text-xs text-slate-400">Member since {data.user.memberSince}</span>
                   </div>
                 </div>
@@ -151,17 +151,17 @@ export default function FanDashboard() {
 
               <StatCard icon={TicketStub} label="Total Shows" value={data.stats.showsAttended.value} subtext={data.stats.showsAttended.subtext} progress={data.stats.showsAttended.progress} />
 
-              <StatCard icon={MapPin} label="Cities Visited" value={data.stats.citiesVisited.value} extra={<div className="flex items-center gap-2 mt-4 text-[#0d93f2] text-sm font-medium"><PlaneTakeoff className="w-4 h-4" /><span>{data.stats.citiesVisited.value} cities</span></div>} />
+              <StatCard icon={MapPin} label="Cities Visited" value={data.stats.citiesVisited.value} extra={<div className="flex items-center gap-2 mt-4 text-[#ff6a00] text-sm font-medium"><PlaneTakeoff className="w-4 h-4" /><span>{data.stats.citiesVisited.value} cities</span></div>} />
 
               {}
               {activeEvent ? (
-                <div className="flex flex-col gap-1 rounded-xl p-6 bg-gradient-to-br from-[#101b22] to-[#1a2632] border border-[#0d93f2]/30 shadow-lg relative overflow-hidden group cursor-pointer" onClick={() => setIsPredictorOpen(true)}>
+                <div className="flex flex-col gap-1 rounded-xl p-6 bg-gradient-to-br from-[#101b22] to-[#1a2632] border border-[#a855f7]/30 shadow-lg relative overflow-hidden group cursor-pointer" onClick={() => setIsPredictorOpen(true)}>
                   <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <ListMusic className="w-24 h-24 text-[#0d93f2]" />
+                    <ListMusic className="w-24 h-24 text-[#ff6a00]" />
                   </div>
                   <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-1 rounded bg-[#0d93f2] text-white text-[10px] font-bold uppercase tracking-wider animate-pulse">Live Challenge</span>
+                      <span className="px-2 py-1 rounded sv-sunset text-white text-[10px] font-bold uppercase tracking-wider animate-pulse">Live Challenge</span>
                     </div>
                     <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Predict Setlist</p>
                     <h3 className="text-white text-2xl font-bold leading-tight mt-1 truncate">{activeEvent.artist}</h3>
@@ -170,7 +170,7 @@ export default function FanDashboard() {
                     <div className="mt-4 flex gap-2">
                       <button
                         onClick={(e) => { e.stopPropagation(); setIsPredictorOpen(true); }}
-                        className="px-4 py-2 bg-[#0d93f2] hover:bg-[#0b84db] text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-[#0d93f2]/20"
+                        className="px-4 py-2 sv-sunset hover:brightness-110 text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-[#ff6a00]/20"
                       >
                         {activeEventPrediction ? (activeEventPrediction.status === 'graded' ? 'View Results' : 'Edit Prediction') : 'Play'}
                       </button>
@@ -200,12 +200,12 @@ export default function FanDashboard() {
                     )}
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[#0d93f2] font-bold text-2xl">{data.topFriends.length}</span>
+                    <span className="text-[#ff6a00] font-bold text-2xl">{data.topFriends.length}</span>
                     <span className="text-[10px] text-slate-400 uppercase tracking-wide">Following</span>
                   </div>
                 </div>
                 <div className="mt-4 p-2 bg-slate-100 dark:bg-[#151f28] rounded-lg border border-slate-200 dark:border-slate-700/50">
-                  <button onClick={() => setIsTopFriendsOpen(true)} className="text-xs text-[#0d93f2] hover:underline flex items-center gap-1 font-medium w-full justify-center">
+                  <button onClick={() => setIsTopFriendsOpen(true)} className="text-xs text-[#ff6a00] hover:underline flex items-center gap-1 font-medium w-full justify-center">
                     View All Friends <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -218,7 +218,7 @@ export default function FanDashboard() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold tracking-tight">TOP ARTISTS SEEN</h3>
-                  <Button onClick={() => setIsTopArtistsOpen(true)} className="text-sm bg-transparent text-[#0d93f2] hover:bg-transparent hover:text-white font-medium">View All</Button>
+                  <Button onClick={() => setIsTopArtistsOpen(true)} className="text-sm bg-transparent text-[#ff6a00] hover:bg-transparent hover:text-white font-medium">View All</Button>
                 </div>
                 <div className="flex flex-col bg-white dark:bg-[#1a2632] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                   {data.topArtists.length > 0 ? (
@@ -235,9 +235,9 @@ export default function FanDashboard() {
                 </div>
                 <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm h-full flex flex-col">
                   <div className="h-32 w-full bg-slate-800 relative bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1514525253440-b393332569ca?q=80&w=800&auto=format&fit=crop")' }}>
-                    <div className="absolute inset-0 bg-[#0d93f2]/20 backdrop-brightness-50"></div>
+                    <div className="absolute inset-0 bg-[#ff6a00]/20 backdrop-brightness-50"></div>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <button className="bg-white dark:bg-[#1a2632] text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 hover:scale-105 transition-transform"><MapPin className="w-3 h-3 text-[#0d93f2]" />View Interactive Map</button>
+                      <button className="bg-white dark:bg-[#1a2632] text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 hover:scale-105 transition-transform"><MapPin className="w-3 h-3 text-[#ff6a00]" />View Interactive Map</button>
                     </div>
                   </div>
                   <div className="flex-1 flex flex-col">
@@ -254,8 +254,8 @@ export default function FanDashboard() {
             {}
             <motion.section variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col gap-6 pt-4">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
-                <div><h3 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-2"><ImageIcon className="w-6 h-6 text-[#0d93f2]" />Memory Vault</h3><p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Your curated collection of moments.</p></div>
-                <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</button>
+                <div><h3 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-2"><ImageIcon className="w-6 h-6 text-[#ff6a00]" />Memory Vault</h3><p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Your curated collection of moments.</p></div>
+                <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 px-4 py-2 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
                 {data.memories.length > 0 ? data.memories.slice(0, 5).map((memory, memoryIndex) => {
@@ -287,7 +287,7 @@ export default function FanDashboard() {
                         <MediaContent />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                           <p className="text-white font-bold text-lg">{memory.title}</p>
-                          <p className="text-[#0d93f2] text-sm font-medium">{memory.date}</p>
+                          <p className="text-[#ff6a00] text-sm font-medium">{memory.date}</p>
                         </div>
                       </div>
                     );
@@ -295,8 +295,8 @@ export default function FanDashboard() {
 
                   if (memory.type === "ticket") {
                     return (
-                      <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed hover:border-[#0d93f2] transition-colors">
-                        <TicketStub className="text-slate-500 w-10 h-10 mb-2 group-hover:text-[#0d93f2] transition-colors" />
+                      <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed hover:border-[#a855f7] transition-colors">
+                        <TicketStub className="text-slate-500 w-10 h-10 mb-2 group-hover:text-[#ff6a00] transition-colors" />
                         <p className="text-slate-300 text-center text-sm font-mono uppercase">TICKET STUB</p>
                         <p className="text-white font-bold text-center mt-1">{memory.title}</p>
                       </div>
@@ -320,7 +320,7 @@ export default function FanDashboard() {
                 onClose={() => setOpenMemory(null)}
                 onIndex={setOpenMemory}
               />
-              <div className="flex justify-center mt-2"><Link href="/memory-vault" className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-[#0d93f2] transition-colors flex items-center gap-1">Enter Memory Vault<ArrowRight className="w-4 h-4" /></Link></div>
+              <div className="flex justify-center mt-2"><Link href="/memory-vault" className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-[#ff6a00] transition-colors flex items-center gap-1">Enter Memory Vault<ArrowRight className="w-4 h-4" /></Link></div>
             </motion.section>
 
           </motion.div>
@@ -386,7 +386,7 @@ function StatCard({ icon: Icon, label, value, valueColor, subtext, progress, ext
       <div className="absolute top-0 right-0 p-4 opacity-5"><Icon className="w-24 h-24" /></div>
       <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider relative z-10">{label}</p>
       <p className={`text-slate-900 dark:text-white text-4xl font-bold leading-tight relative z-10 ${valueColor || ''}`}>{value}</p>
-      {progress !== undefined && <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-4 relative z-10 overflow-hidden"><div className="bg-[#0d93f2] h-full rounded-full" style={{ width: `${progress}%` }}></div></div>}
+      {progress !== undefined && <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-4 relative z-10 overflow-hidden"><div className="sv-sunset h-full rounded-full" style={{ width: `${progress}%` }}></div></div>}
       {subtext && <p className="text-xs text-slate-400 mt-2">{subtext}</p>}
       {extra}
     </div>
@@ -401,7 +401,7 @@ function ArtistRow({ rank, name, genre, count, image }) {
         <Image src={image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"} alt={name} fill className="object-cover" />
       </div>
       <div className="flex-1 min-w-0"><p className="text-slate-900 dark:text-white font-bold truncate">{name}</p><p className="text-xs text-slate-500">{genre}</p></div>
-      <div className="shrink-0 flex items-center gap-1"><TicketStub className="w-4 h-4 text-[#0d93f2]" /><p className="text-slate-900 dark:text-white font-bold">{count}</p></div>
+      <div className="shrink-0 flex items-center gap-1"><TicketStub className="w-4 h-4 text-[#ff6a00]" /><p className="text-slate-900 dark:text-white font-bold">{count}</p></div>
     </div>
   );
 }
@@ -409,9 +409,9 @@ function ArtistRow({ rank, name, genre, count, image }) {
 function VenueRow({ name, location, visits, active }) {
   return (
     <div className={`flex items-center gap-4 p-4 ${active ? 'border-b border-slate-200 dark:border-slate-800/50' : ''}`}>
-      <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-slate-500 dark:text-slate-400"><MapPin className={`w-5 h-5 ${active ? 'text-[#0d93f2]' : ''}`} /></div>
+      <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-slate-500 dark:text-slate-400"><MapPin className={`w-5 h-5 ${active ? 'text-[#ff6a00]' : ''}`} /></div>
       <div className="flex-1"><p className="text-slate-900 dark:text-white font-bold">{name}</p><p className="text-xs text-slate-500">{location}</p></div>
-      <span className={`text-sm font-bold px-2 py-1 rounded ${active ? 'bg-[#0d93f2]/10 text-[#0d93f2]' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{visits} Visits</span>
+      <span className={`text-sm font-bold px-2 py-1 rounded ${active ? 'bg-[#ff6a00]/10 text-[#ff6a00]' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{visits} Visits</span>
     </div>
   );
 }

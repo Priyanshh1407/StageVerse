@@ -57,7 +57,7 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <input
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#1a2632] text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#0d93f2] focus:border-transparent outline-none shadow-sm"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#1a2632] text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none shadow-sm"
               placeholder="Search artists, genres..."
               type="text"
               value={searchQuery}
@@ -84,11 +84,11 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
 
                 {}
                 <div className="shrink-0 flex flex-col items-end gap-1">
-                  <div className="flex items-center gap-1 bg-[#0d93f2]/10 px-2 py-0.5 rounded text-[#0d93f2] border border-[#0d93f2]/20">
+                  <div className="flex items-center gap-1 bg-[#ff6a00]/10 px-2 py-0.5 rounded text-[#ff6a00] border border-[#a855f7]/20">
                     <Ticket className="w-3 h-3" />
                     <p className="font-bold text-xs">{artist.count} Shows</p>
                   </div>
-                  <button className="text-[10px] text-slate-400 hover:text-[#0d93f2] transition-colors flex items-center gap-0.5">
+                  <button className="text-[10px] text-slate-400 hover:text-[#ff6a00] transition-colors flex items-center gap-0.5">
                     View Profile <ArrowUpRight className="w-3 h-3" />
                   </button>
                 </div>

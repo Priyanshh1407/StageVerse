@@ -151,7 +151,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
           <div className="flex flex-col gap-2">
             <label className="text-white text-sm font-bold uppercase tracking-wider">Poll Question</label>
             <input
-              className="w-full bg-[#101b22] border border-[#223949] text-white text-sm rounded-lg focus:ring-1 focus:ring-[#0d93f2] focus:border-[#0d93f2] p-2.5"
+              className="w-full bg-[#101b22] border border-[#223949] text-white text-sm rounded-lg focus:ring-1 focus:ring-[#a855f7] focus:border-[#a855f7] p-2.5"
               type="text"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
@@ -165,7 +165,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
                 <span className="text-[#90b2cb] font-mono text-sm w-4">{index + 1}.</span>
                 <div className="relative flex-1">
                   <input
-                    className={`w-full bg-[#101b22] border text-white text-sm rounded-lg focus:ring-1 focus:ring-[#0d93f2] focus:border-[#0d93f2] p-2.5 placeholder:text-[#90b2cb]/50 ${opt.value === "" ? 'border-dashed border-[#223949] bg-[#223949]/10' : 'border-[#223949]'}`}
+                    className={`w-full bg-[#101b22] border text-white text-sm rounded-lg focus:ring-1 focus:ring-[#a855f7] focus:border-[#a855f7] p-2.5 placeholder:text-[#90b2cb]/50 ${opt.value === "" ? 'border-dashed border-[#223949] bg-[#223949]/10' : 'border-[#223949]'}`}
                     type="text"
                     value={opt.value}
                     onChange={(e) => handleOptionChange(opt.id, e.target.value)}
@@ -202,7 +202,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
         <button
           onClick={handleSavePoll}
           disabled={loading}
-          className="px-6 py-2 bg-[#0d93f2] hover:bg-[#0b85db] text-white text-sm font-bold rounded-lg shadow-lg flex items-center gap-2 disabled:opacity-50"
+          className="px-6 py-2 sv-sunset hover:brightness-110 text-white text-sm font-bold rounded-lg shadow-lg flex items-center gap-2 disabled:opacity-50"
         >
           {loading ? 'Saving...' : <><Check className="w-4 h-4" /> Save Poll</>}
         </button>
@@ -215,7 +215,7 @@ function PollPreviewModal({ onClose }) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="bg-[#101b22] p-6 rounded-xl border border-white/10 w-full max-w-md">
         <h2 className="text-white text-xl font-bold mb-4">Poll Preview</h2>
-        <button onClick={onClose} className="w-full bg-[#0d93f2] py-2 rounded font-bold">Close Preview</button>
+        <button onClick={onClose} className="w-full sv-sunset py-2 rounded font-bold">Close Preview</button>
       </div>
     </div>
   );

@@ -168,7 +168,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
         </div>
         <div className="text-right">
           <span className="block text-sm font-medium text-slate-500 dark:text-[#90b2cb]">Time Zone: CST</span>
-          <span className="text-xs font-mono text-[#0d93f2] animate-pulse">
+          <span className="text-xs font-mono text-[#ff6a00] animate-pulse">
             Current: {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
@@ -176,7 +176,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
 
       { }
       {isModalOpen && (
-        <div className="mb-6 p-6 rounded-xl border border-[#0d93f2] bg-[#131d24] shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-top-4 relative z-50">
+        <div className="mb-6 p-6 rounded-xl border border-[#a855f7] bg-[#131d24] shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-top-4 relative z-50">
           <h4 className="text-white font-bold mb-4 flex justify-between items-center">
             {editingItem ? 'Edit Event' : 'Add New Event'}
             <button onClick={() => setIsModalOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-white" /></button>
@@ -189,7 +189,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 placeholder="05:00 PM"
                 value={formData.time}
                 onChange={e => setFormData({ ...formData, time: e.target.value })}
-                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#0d93f2] outline-none"
+                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none"
               />
             </div>
             <div className="lg:col-span-2">
@@ -198,7 +198,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 placeholder="Event Title"
                 value={formData.title}
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#0d93f2] outline-none"
+                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none"
               />
             </div>
             <div>
@@ -206,7 +206,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
               <select
                 value={formData.type}
                 onChange={e => setFormData({ ...formData, type: e.target.value })}
-                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#0d93f2] outline-none"
+                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none"
               >
                 <option value="other">General</option>
                 <option value="sound">Sound</option>
@@ -224,13 +224,13 @@ export default function Timeline({ initialSchedule, onUpdate }) {
               placeholder="Location, notes, or team details..."
               value={formData.sub}
               onChange={e => setFormData({ ...formData, sub: e.target.value })}
-              className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#0d93f2] outline-none"
+              className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none"
             />
           </div>
 
           { }
           <div className="mb-6 p-4 bg-[#0b1219] rounded-lg border border-slate-800">
-            <label className="text-xs text-[#0d93f2] font-bold mb-2 block uppercase tracking-wider">Checklist Items (Optional)</label>
+            <label className="text-xs text-[#ff6a00] font-bold mb-2 block uppercase tracking-wider">Checklist Items (Optional)</label>
 
             { }
             {formData.tasks && formData.tasks.length > 0 && (
@@ -251,7 +251,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 value={tempTask}
                 onChange={e => setTempTask(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addTempTask()}
-                className="flex-1 bg-[#131d24] border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:border-[#0d93f2] outline-none"
+                className="flex-1 bg-[#131d24] border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:border-[#a855f7] outline-none"
               />
               <button onClick={addTempTask} className="px-3 py-1 bg-[#223949] hover:bg-[#315168] text-white text-xs font-bold rounded-lg transition-colors">Add</button>
             </div>
@@ -263,7 +263,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 Delete
               </button>
             )}
-            <button onClick={handleSubmit} className="flex-[2] bg-[#0d93f2] hover:bg-blue-600 text-white font-bold py-2 rounded-lg text-sm transition-colors shadow-lg shadow-blue-500/20">
+            <button onClick={handleSubmit} className="flex-[2] sv-sunset hover:brightness-110 text-white font-bold py-2 rounded-lg text-sm transition-colors shadow-lg shadow-orange-500/20">
               {editingItem ? 'Save Changes' : 'Add to Schedule'}
             </button>
           </div>
@@ -274,7 +274,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
         { }
         { }
         { }
-        <div className="absolute left-[24px] top-4 bottom-12 w-[2px] bg-[#0d93f2] opacity-30 shadow-[0_0_15px_#0d93f2]"></div>
+        <div className="absolute left-[24px] top-4 bottom-12 w-[2px] sv-sunset opacity-30 shadow-[0_0_15px_#ff6a00]"></div>
 
         <div className="flex flex-col gap-6">
           {schedule.map((item, index) => {
@@ -321,16 +321,16 @@ function TimelineItem({ item, isActive, isCompleted, isExpanded, onToggleExpand,
   const showDetails = isActive || isExpanded;
 
   const containerClasses = isActive
-    ? 'bg-[#1c2a35] border-[#0d93f2] shadow-[0_0_20px_rgba(13,147,242,0.15)] opacity-100'
+    ? 'bg-[#1c2a35] border-[#a855f7] shadow-[0_0_20px_rgba(255,106,0,0.15)] opacity-100'
     : isCompleted
       ? 'bg-[#101b22] border-[#223949] opacity-60'
       : 'bg-[#131d24] border-[#223949] opacity-100';
 
   const iconClasses = isActive
-    ? 'bg-[#0d93f2] text-white border-[#0d93f2] shadow-lg scale-110'
+    ? 'sv-sunset text-white border-[#a855f7] shadow-lg scale-110'
     : isCompleted
       ? 'bg-[#101b22] text-[#587386] border-[#223949]'
-      : 'bg-[#101b22] text-white border-[#223949] group-hover:border-[#0d93f2]';
+      : 'bg-[#101b22] text-white border-[#223949] group-hover:border-[#a855f7]';
 
   return (
     <div className="flex gap-6 group">
@@ -384,7 +384,7 @@ function TimelineItem({ item, isActive, isCompleted, isExpanded, onToggleExpand,
             >
               {isCompleted ? (<>DONE <CheckCircle2 className="w-4 h-4" /></>) : (<>MARK DONE</>)}
             </button>
-            <div className={`text-sm font-mono font-medium ${isActive ? 'text-[#0d93f2]' : 'text-slate-500'}`}>{item.time}</div>
+            <div className={`text-sm font-mono font-medium ${isActive ? 'text-[#ff6a00]' : 'text-slate-500'}`}>{item.time}</div>
             <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
           </div>
         </div>
@@ -406,7 +406,7 @@ function TimelineItem({ item, isActive, isCompleted, isExpanded, onToggleExpand,
                     className={`flex items-center gap-3 p-2 rounded transition-all cursor-pointer group/task ${task.done ? 'bg-[#223949]/20' : 'hover:bg-[#223949]/50'}`}
                   >
                     { }
-                    <div className={`w-5 h-5 border rounded flex items-center justify-center transition-colors ${task.done ? 'border-green-500 bg-green-500/10' : 'border-slate-600 group-hover/task:border-[#0d93f2]'}`}>
+                    <div className={`w-5 h-5 border rounded flex items-center justify-center transition-colors ${task.done ? 'border-green-500 bg-green-500/10' : 'border-slate-600 group-hover/task:border-[#a855f7]'}`}>
                       {task.done && <Check className="w-3 h-3 text-green-500" />}
                     </div>
                     { }

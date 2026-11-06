@@ -26,7 +26,7 @@ export default function EncoreScreen({ winnerName, onClose }) {
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center w-full h-full bg-[#050505] text-white overflow-hidden font-sans">
       
       {}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-[#0d93f2]/10 rounded-full blur-[150px] opacity-40 pointer-events-none"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-[#ff6a00]/10 rounded-full blur-[150px] opacity-40 pointer-events-none"></div>
 
       {}
       <button 
@@ -42,10 +42,10 @@ export default function EncoreScreen({ winnerName, onClose }) {
         
         {}
         <div className="mb-4 sm:mb-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500 fill-mode-forwards opacity-0" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#0d93f2] font-bold tracking-[0.2em] text-xs sm:text-sm uppercase backdrop-blur-md">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#ff6a00] font-bold tracking-[0.2em] text-xs sm:text-sm uppercase backdrop-blur-md">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0d93f2] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0d93f2]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full sv-sunset opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 sv-sunset"></span>
             </span>
             Winner Selected
           </span>
@@ -63,7 +63,7 @@ export default function EncoreScreen({ winnerName, onClose }) {
 
         {}
         <div className="absolute -bottom-32 w-64 h-1 bg-white/10 rounded-full overflow-hidden">
-             <div className="h-full bg-[#0d93f2] w-full animate-[shrink_20s_linear_forwards]" style={{ animationName: 'shrinkWidth' }}></div>
+             <div className="h-full sv-sunset w-full animate-[shrink_20s_linear_forwards]" style={{ animationName: 'shrinkWidth' }}></div>
         </div>
 
       </div>

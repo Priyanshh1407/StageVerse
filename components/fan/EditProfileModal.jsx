@@ -97,7 +97,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
                   <Camera className="text-white w-8 h-8" />
                 </div>
               </div>
-              <button className="absolute bottom-1 right-1 bg-[#0d93f2] text-white p-2 rounded-full shadow-lg border-[3px] border-white dark:border-[#1a2632] hover:bg-blue-500 transition-colors">
+              <button className="absolute bottom-1 right-1 sv-sunset text-white p-2 rounded-full shadow-lg border-[3px] border-white dark:border-[#1a2632] hover:brightness-110 transition-colors">
                 <Edit2 className="w-4 h-4" />
               </button>
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
@@ -107,7 +107,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
               <div className="col-span-1 space-y-2">
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Name</label>
                 <input
-                  className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] text-slate-900 dark:text-white shadow-sm focus:border-[#0d93f2] focus:ring-[#0d93f2] sm:text-sm px-4 py-2.5 outline-none"
+                  className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] text-slate-900 dark:text-white shadow-sm focus:border-[#a855f7] focus:ring-[#a855f7] sm:text-sm px-4 py-2.5 outline-none"
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -119,7 +119,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
                   <MapPin className="text-slate-500 w-5 h-5" />
                 </div>
                 <input
-                  className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] pl-10 text-slate-900 dark:text-white focus:border-[#0d93f2] focus:ring-[#0d93f2] sm:text-sm px-4 py-2.5 outline-none"
+                  className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] pl-10 text-slate-900 dark:text-white focus:border-[#a855f7] focus:ring-[#a855f7] sm:text-sm px-4 py-2.5 outline-none"
                   type="text"
                   placeholder="e.g. New York, NY"
                   value={formData.location} // Connected to State
@@ -131,7 +131,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
             <div className="col-span-1 md:col-span-2 space-y-2">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Bio</label>
               <textarea
-                className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] text-slate-900 dark:text-white shadow-sm focus:border-[#0d93f2] focus:ring-[#0d93f2] sm:text-sm px-4 py-2.5 resize-none outline-none"
+                className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] text-slate-900 dark:text-white shadow-sm focus:border-[#a855f7] focus:ring-[#a855f7] sm:text-sm px-4 py-2.5 resize-none outline-none"
                 rows="3"
                 placeholder="Tell us about your music taste..."
                 value={formData.bio} // Connected to State
@@ -149,7 +149,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
                     <Instagram className="w-5 h-5" />
                   </span>
                   <input
-                    className="block w-full min-w-0 flex-1 rounded-none rounded-r-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] px-4 py-2.5 text-slate-900 dark:text-white focus:border-[#0d93f2] focus:ring-[#0d93f2] sm:text-sm outline-none"
+                    className="block w-full min-w-0 flex-1 rounded-none rounded-r-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] px-4 py-2.5 text-slate-900 dark:text-white focus:border-[#a855f7] focus:ring-[#a855f7] sm:text-sm outline-none"
                     type="text"
                     placeholder="Instagram Username"
                     value={socials.instagram} // Connected to State
@@ -161,7 +161,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
                     <Twitter className="w-5 h-5" />
                   </span>
                   <input
-                    className="block w-full min-w-0 flex-1 rounded-none rounded-r-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] px-4 py-2.5 text-slate-900 dark:text-white focus:border-[#0d93f2] focus:ring-[#0d93f2] sm:text-sm outline-none"
+                    className="block w-full min-w-0 flex-1 rounded-none rounded-r-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] px-4 py-2.5 text-slate-900 dark:text-white focus:border-[#a855f7] focus:ring-[#a855f7] sm:text-sm outline-none"
                     type="text"
                     placeholder="X / Twitter Username"
                     value={socials.twitter} // Connected to State
@@ -183,7 +183,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
                 </div>
                 <div className="relative inline-block text-left">
                   <select
-                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#1a2632] py-1.5 pl-3 pr-8 text-slate-900 dark:text-white focus:border-[#0d93f2] focus:ring-[#0d93f2] text-sm font-medium outline-none cursor-pointer"
+                    className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#1a2632] py-1.5 pl-3 pr-8 text-slate-900 dark:text-white focus:border-[#a855f7] focus:ring-[#a855f7] text-sm font-medium outline-none cursor-pointer"
                     value={formData.visibility}
                     onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
                   >
@@ -201,7 +201,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
 
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-[#151f28]/50">
           <button onClick={onClose} className="rounded-lg border border-slate-300 dark:border-slate-600 px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-          <button onClick={handleSave} className="rounded-lg bg-[#0d93f2] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#0d93f2]/25 hover:bg-[#0d93f2]/90 transition-all hover:scale-[1.02]">Save Changes</button>
+          <button onClick={handleSave} className="rounded-lg sv-sunset px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#ff6a00]/25 hover:bg-[#ff6a00]/90 hover:bg-none transition-all hover:scale-[1.02]">Save Changes</button>
         </div>
 
       </div>

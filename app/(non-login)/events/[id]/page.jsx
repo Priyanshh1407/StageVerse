@@ -66,7 +66,7 @@ export default function EventDetailPage() {
             <div className="flex flex-col min-h-screen bg-black text-white">
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center">
-                    <Loader2 className="w-10 h-10 animate-spin text-[#00d4ff]" />
+                    <Loader2 className="w-10 h-10 animate-spin text-[#ffb000]" />
                 </div>
             </div>
         );
@@ -80,7 +80,7 @@ export default function EventDetailPage() {
                     <Flame className="w-16 h-16 text-red-500 mb-6 animate-bounce" />
                     <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tighter">Event Not Found</h2>
                     <p className="text-slate-400 mb-8 text-lg">{error || "The event you're looking for has vanished."}</p>
-                    <Link href="/events" className="bg-[#00d4ff] hover:bg-white hover:text-black text-black px-8 py-4 rounded-full font-bold transition-all text-lg uppercase tracking-widest shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+                    <Link href="/events" className="sv-sunset hover:bg-white hover:bg-none hover:text-black text-black px-8 py-4 rounded-full font-bold transition-all text-lg uppercase tracking-widest shadow-[0_0_20px_rgba(255,106,0,0.4)]">
                         Explore Other Gigs
                     </Link>
                 </div>
@@ -105,7 +105,7 @@ export default function EventDetailPage() {
     const tiers = event.ticketTiers || [];
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#050505] text-white font-sans selection:bg-[#00d4ff] selection:text-black overflow-x-hidden">
+        <div className="flex flex-col min-h-screen bg-[#050505] text-white font-sans selection:bg-[#ffb000] selection:text-black overflow-x-hidden">
             <Navbar />
 
             <main className="flex-1 flex flex-col relative w-full">
@@ -124,7 +124,7 @@ export default function EventDetailPage() {
 
                     {}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-[#050505] via-transparent to-[#00d4ff]/10 mix-blend-overlay" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-[#050505] via-transparent to-[#ff3d7a]/10 mix-blend-overlay" />
 
                     {}
                     <div className="absolute inset-0 flex flex-col justify-end px-6 md:px-12 lg:px-24 pb-24 z-10">
@@ -136,7 +136,7 @@ export default function EventDetailPage() {
                         >
                             {}
                             <div className="flex flex-wrap items-center gap-4 mb-6">
-                                <span className="bg-[#00d4ff] text-black text-xs font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm shadow-[0_0_15px_rgba(0,212,255,0.6)]">
+                                <span className="sv-sunset text-black text-xs font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm shadow-[0_0_15px_rgba(255,106,0,0.6)]">
                                     {event.type || 'Concert'}
                                 </span>
                                 {event.status && (
@@ -150,14 +150,14 @@ export default function EventDetailPage() {
                             <h1 className="text-5xl md:text-7xl lg:text-9xl font-black text-white tracking-tighter leading-[0.9] mb-4 drop-shadow-2xl mix-blend-screen text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-slate-400">
                                 {event.title}
                             </h1>
-                            <h2 className="text-xl md:text-3xl font-light text-[#00d4ff] mb-8 tracking-wide font-display">
+                            <h2 className="text-xl md:text-3xl font-light text-[#ffb000] mb-8 tracking-wide font-display">
                                 {event.subtitle}
                             </h2>
 
                             {}
                             <div className="flex flex-wrap items-center gap-8 md:gap-16 text-white/90 glass-panel p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md inline-flex">
                                 <div className="flex items-center gap-4 group cursor-default">
-                                    <div className="p-3 bg-white/10 rounded-full group-hover:bg-[#00d4ff] group-hover:text-black transition-colors duration-300">
+                                    <div className="p-3 bg-white/10 rounded-full group-hover:sv-sunset group-hover:text-black transition-colors duration-300">
                                         <Calendar className="w-6 h-6" />
                                     </div>
                                     <div className="flex flex-col">
@@ -167,7 +167,7 @@ export default function EventDetailPage() {
                                 </div>
                                 <div className="w-px h-10 bg-white/10 hidden md:block"></div>
                                 <div className="flex items-center gap-4 group cursor-default">
-                                    <div className="p-3 bg-white/10 rounded-full group-hover:bg-[#00d4ff] group-hover:text-black transition-colors duration-300">
+                                    <div className="p-3 bg-white/10 rounded-full group-hover:sv-sunset group-hover:text-black transition-colors duration-300">
                                         <MapPin className="w-6 h-6" />
                                     </div>
                                     <div className="flex flex-col">
@@ -195,13 +195,13 @@ export default function EventDetailPage() {
                                 transition={{ duration: 0.6 }}
                             >
                                 <div className="flex items-center gap-3 mb-8">
-                                    <Sparkles className="w-6 h-6 text-[#00d4ff]" />
+                                    <Sparkles className="w-6 h-6 text-[#ffb000]" />
                                     <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-500">The Experience</h3>
                                 </div>
 
                                 <div className="bg-[#111] p-8 md:p-10 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
                                     {}
-                                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-blue-500/10 transition-colors duration-700" />
+                                    <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-orange-500/10 transition-colors duration-700" />
 
                                     <div className="prose prose-invert prose-lg max-w-none text-slate-300 relative z-10 leading-relaxed">
                                         {aboutSection.map((text, index) => {
@@ -216,8 +216,8 @@ export default function EventDetailPage() {
                                                             const content = contentArr.join(':').trim();
                                                             if (content) {
                                                                 return (
-                                                                    <div key={i} className="pl-6 border-l-2 border-[#00d4ff]/30 hover:border-[#00d4ff] transition-colors duration-300">
-                                                                        <span className="text-[#00d4ff] font-bold text-sm uppercase tracking-[0.2em] block mb-2">{label.trim()}</span>
+                                                                    <div key={i} className="pl-6 border-l-2 border-[#a855f7]/30 hover:border-[#a855f7] transition-colors duration-300">
+                                                                        <span className="text-[#ffb000] font-bold text-sm uppercase tracking-[0.2em] block mb-2">{label.trim()}</span>
                                                                         <p className="text-white mb-0 text-lg font-light">{content}</p>
                                                                     </div>
                                                                 );
@@ -240,7 +240,7 @@ export default function EventDetailPage() {
                                 viewport={{ once: true }}
                             >
                                 <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-                                    <Users className="w-6 h-6 text-[#00d4ff]" /> Lineup
+                                    <Users className="w-6 h-6 text-[#ffb000]" /> Lineup
                                 </h3>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {lineup.map((act, index) => (
@@ -252,7 +252,7 @@ export default function EventDetailPage() {
                                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
                                             <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                                                 <h4 className="text-white font-bold text-lg leading-none mb-1">{act.name}</h4>
-                                                <p className="text-[#00d4ff] text-xs font-bold uppercase tracking-wider">{act.role || 'Artist'}</p>
+                                                <p className="text-[#ffb000] text-xs font-bold uppercase tracking-wider">{act.role || 'Artist'}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -266,7 +266,7 @@ export default function EventDetailPage() {
                                 viewport={{ once: true }}
                             >
                                 <h3 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-                                    <MapIcon className="w-6 h-6 text-[#00d4ff]" /> Location
+                                    <MapIcon className="w-6 h-6 text-[#ffb000]" /> Location
                                 </h3>
                                 <div className="rounded-3xl overflow-hidden border border-white/10 h-[400px] relative group">
                                     <div
@@ -280,7 +280,7 @@ export default function EventDetailPage() {
                                             <h4 className="text-xl font-bold text-white">{event.venue.name}</h4>
                                             <p className="text-slate-400 text-sm">{event.venue.address || event.venue.city}</p>
                                         </div>
-                                        <button className="px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-[#00d4ff] transition-colors flex items-center gap-2">
+                                        <button className="px-6 py-3 bg-white text-black font-bold rounded-xl hover:sv-sunset transition-colors flex items-center gap-2">
                                             <Navigation className="w-4 h-4" /> Get Directions
                                         </button>
                                     </div>
@@ -298,14 +298,14 @@ export default function EventDetailPage() {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.5, duration: 0.6 }}
-                                    className="bg-[#111] border border-[#00d4ff]/20 rounded-3xl p-1 shadow-[0_0_40px_-10px_rgba(0,212,255,0.15)]"
+                                    className="bg-[#111] border border-[#a855f7]/20 rounded-3xl p-1 shadow-[0_0_40px_-10px_rgba(255,106,0,0.15)]"
                                 >
                                     <TicketSelection eventId={event._id} tiers={tiers} />
                                 </motion.div>
 
                                 {}
                                 <div className="bg-[#111]/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 flex items-center gap-5 hover:bg-[#111] transition-colors">
-                                    <div className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-[#00d4ff]" style={{ backgroundImage: `url("${artistImage}")` }} />
+                                    <div className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-[#a855f7]" style={{ backgroundImage: `url("${artistImage}")` }} />
                                     <div>
                                         <h4 className="text-white font-bold text-lg">{event.artist.name}</h4>
                                         <p className="text-slate-500 text-sm">{event.artist.listeners || 'Top Artist'}</p>
@@ -322,7 +322,7 @@ export default function EventDetailPage() {
                                     <span className="text-slate-500 text-sm font-bold uppercase">Share Event</span>
                                     <div className="flex gap-4">
                                         {[Share2, LinkIcon, Heart].map((Icon, i) => (
-                                            <button key={i} className="text-slate-400 hover:text-[#00d4ff] transition-colors">
+                                            <button key={i} className="text-slate-400 hover:text-[#ffb000] transition-colors">
                                                 <Icon className="w-5 h-5" />
                                             </button>
                                         ))}
@@ -340,10 +340,10 @@ export default function EventDetailPage() {
                     <div className="px-6 md:px-12 lg:px-24">
                         <div className="flex items-end justify-between mb-12">
                             <div>
-                                <h3 className="text-sm font-bold text-[#00d4ff] uppercase tracking-widest mb-2">More Like This</h3>
+                                <h3 className="text-sm font-bold text-[#ffb000] uppercase tracking-widest mb-2">More Like This</h3>
                                 <h2 className="text-3xl md:text-5xl font-black text-white">Don&apos;t Miss Out</h2>
                             </div>
-                            <Link href="/discover" className="text-white hover:text-[#00d4ff] font-bold border-b border-white hover:border-[#00d4ff] pb-1 transition-colors">
+                            <Link href="/discover" className="text-white hover:text-[#ffb000] font-bold border-b border-white hover:border-[#a855f7] pb-1 transition-colors">
                                 View All Events
                             </Link>
                         </div>
@@ -371,7 +371,7 @@ export default function EventDetailPage() {
 }
 function SimilarEventCard({ event }) {
     return (
-        <Link href={`/events/${event.id}`} className="group block bg-[#111] rounded-2xl overflow-hidden border border-white/5 hover:border-[#00d4ff]/50 transition-all duration-500 hover:-translate-y-2">
+        <Link href={`/events/${event.id}`} className="group block bg-[#111] rounded-2xl overflow-hidden border border-white/5 hover:border-[#a855f7]/50 transition-all duration-500 hover:-translate-y-2">
             <div className="h-64 bg-cover bg-center relative overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
@@ -379,7 +379,7 @@ function SimilarEventCard({ event }) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute top-4 left-4">
-                    <span className="bg-[#00d4ff] text-black text-[10px] font-black uppercase px-2 py-1 rounded-sm">{event.genre}</span>
+                    <span className="sv-sunset text-black text-[10px] font-black uppercase px-2 py-1 rounded-sm">{event.genre}</span>
                 </div>
                 <div className="absolute bottom-4 left-4">
                     <p className="text-white font-black text-xl leading-none mb-1">{event.name}</p>
@@ -391,7 +391,7 @@ function SimilarEventCard({ event }) {
                     <p className="text-xs text-slate-500 font-bold uppercase mb-0.5">Starting at</p>
                     <p className="text-white font-bold text-lg">${event.price}</p>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white group-hover:bg-[#00d4ff] group-hover:text-black transition-colors">
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white group-hover:sv-sunset group-hover:text-black transition-colors">
                     <ArrowRight className="w-4 h-4" />
                 </div>
             </div>

@@ -13,7 +13,7 @@ function Input({ val, field, label, onChange }) {
       <input
         value={val || ''}
         onChange={e => onChange(field, e.target.value)}
-        className="w-full bg-[#101b23] border border-slate-700 rounded px-2 py-1 text-sm text-white focus:border-[#0d93f2] outline-none"
+        className="w-full bg-[#101b23] border border-slate-700 rounded px-2 py-1 text-sm text-white focus:border-[#a855f7] outline-none"
       />
     </div>
   );
@@ -49,7 +49,7 @@ export default function VenueIntel({ intel, onUpdate }) {
     <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Info className="w-5 h-5 text-[#0d93f2]" />
+          <Info className="w-5 h-5 text-[#ff6a00]" />
           <h3 className="text-xl font-bold text-slate-900 dark:text-white">Venue Intel</h3>
         </div>
         <button
@@ -61,9 +61,9 @@ export default function VenueIntel({ intel, onUpdate }) {
       </div>
 
       {}
-      <div className="flex flex-col gap-4 rounded-xl border border-[#315168] bg-white dark:bg-[#1c2a35] p-5 shadow-sm hover:border-[#0d93f2]/50 transition-colors">
+      <div className="flex flex-col gap-4 rounded-xl border border-[#315168] bg-white dark:bg-[#1c2a35] p-5 shadow-sm hover:border-[#a855f7]/50 transition-colors">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-slate-100 dark:bg-[#101b23] rounded-lg text-[#0d93f2]">
+          <div className="p-2 bg-slate-100 dark:bg-[#101b23] rounded-lg text-[#ff6a00]">
             <Wifi className="w-5 h-5" />
           </div>
           <div className="flex-1">
@@ -80,7 +80,7 @@ export default function VenueIntel({ intel, onUpdate }) {
             <Input val={data.wifiPass} field="wifiPass" label="Password" onChange={setField} />
           ) : (
             <>
-              <p className="font-mono text-[#0d93f2] text-sm tracking-wide">{data.wifiPass || '---'}</p>
+              <p className="font-mono text-[#ff6a00] text-sm tracking-wide">{data.wifiPass || '---'}</p>
               <button onClick={() => handleCopy(data.wifiPass)} className="text-[#90b2cb] hover:text-white transition-colors">
                 <Copy className="w-4 h-4" />
               </button>
@@ -90,7 +90,7 @@ export default function VenueIntel({ intel, onUpdate }) {
       </div>
 
       {}
-      <div className="flex flex-col gap-4 rounded-xl border border-[#315168] bg-white dark:bg-[#1c2a35] p-5 shadow-sm hover:border-[#0d93f2]/50 transition-colors">
+      <div className="flex flex-col gap-4 rounded-xl border border-[#315168] bg-white dark:bg-[#1c2a35] p-5 shadow-sm hover:border-[#a855f7]/50 transition-colors">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-slate-100 dark:bg-[#101b23] rounded-lg text-green-500">
             <Lock className="w-5 h-5" />
@@ -147,7 +147,7 @@ export default function VenueIntel({ intel, onUpdate }) {
 
           <button
             onClick={handleGetDirections}
-            className="w-full h-10 rounded-lg bg-[#0d93f2] hover:bg-blue-600 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors"
+            className="w-full h-10 rounded-lg sv-sunset hover:brightness-110 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors"
           >
             <Navigation className="w-4 h-4" />
             Get Directions

@@ -93,9 +93,9 @@ export default function Navbar() {
                   href={item.href} 
                   className={`text-sm tracking-wide uppercase transition-colors flex items-center gap-2 ${
                     isActive 
-                      ? 'text-white border-b-2 border-[#00d4ff] pb-0.5 font-bold' 
+                      ? 'text-white border-b-2 border-[#a855f7] pb-0.5 font-bold' 
                       : isDashboard 
-                        ? 'text-[#00d4ff] font-bold hover:text-white' 
+                        ? 'text-[#ffb000] font-bold hover:text-white' 
                         : 'text-slate-400 font-medium hover:text-white'
                   }`}
                 >
@@ -116,12 +116,12 @@ export default function Navbar() {
               <div className="hidden sm:flex items-center gap-4 pl-4 border-l border-white/10">
                 <div className="flex flex-col items-end leading-tight">
                     <span className="text-xs text-slate-400 uppercase tracking-wider">Welcome</span>
-                    <span className="text-sm font-bold text-white">Hi, <span className="text-[#00d4ff]">{user.name?.split(' ')[0]}</span>!</span>
+                    <span className="text-sm font-bold text-white">Hi, <span className="text-[#ffb000]">{user.name?.split(' ')[0]}</span>!</span>
                 </div>
 
                 <Link 
                   href={getDashboardLink()}
-                  className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-[#00d4ff] flex items-center justify-center text-white font-bold text-lg hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,212,255,0.3)] border border-white/20"
+                  className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-600 to-[#ff3d7a] flex items-center justify-center text-white font-bold text-lg hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,106,0,0.3)] border border-white/20"
                 >
                    {user.name?.charAt(0).toUpperCase()}
                 </Link>
@@ -136,10 +136,10 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-4">
-                <Link href="/login" className="text-sm font-bold text-slate-300 uppercase transition-colors hover:text-white hover:underline decoration-[#00d4ff] underline-offset-4">
+                <Link href="/login" className="text-sm font-bold text-slate-300 uppercase transition-colors hover:text-white hover:underline decoration-[#ffb000] underline-offset-4">
                   Login
                 </Link>
-                <Link href="/signup" className="rounded-full bg-[#00d4ff] px-6 py-2 text-sm font-bold text-black uppercase transition-all hover:bg-white hover:scale-105 shadow-[0_0_15px_rgba(0,212,255,0.3)]">
+                <Link href="/signup" className="rounded-full sv-sunset px-6 py-2 text-sm font-bold text-black uppercase transition-all hover:bg-white hover:bg-none hover:scale-105 shadow-[0_0_15px_rgba(255,106,0,0.3)]">
                   Sign Up
                 </Link>
               </div>
@@ -147,7 +147,7 @@ export default function Navbar() {
 
             {}
             <button 
-              className="md:hidden text-white hover:text-[#00d4ff] transition-colors p-1"
+              className="md:hidden text-white hover:text-[#ffb000] transition-colors p-1"
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
@@ -176,9 +176,9 @@ export default function Navbar() {
                     href={item.href} 
                     className={`text-lg font-bold tracking-wide uppercase transition-colors flex items-center gap-3 ${
                       isActive 
-                        ? 'text-[#00d4ff]' 
+                        ? 'text-[#ffb000]' 
                         : isDashboard 
-                            ? 'text-[#00d4ff]' 
+                            ? 'text-[#ffb000]' 
                             : 'text-slate-300 hover:text-white'
                     }`}
                     onClick={() => setIsOpen(false)}
@@ -195,14 +195,14 @@ export default function Navbar() {
                       <Link 
                         href={getDashboardLink()}
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-white/5 to-transparent border border-white/10 hover:border-[#00d4ff]/50 transition-all"
+                        className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-white/5 to-transparent border border-white/10 hover:border-[#a855f7]/50 transition-all"
                       >
-                        <div className="w-10 h-10 rounded-full bg-[#00d4ff] flex items-center justify-center text-black font-bold text-lg shadow-[0_0_10px_rgba(0,212,255,0.4)]">
+                        <div className="w-10 h-10 rounded-full sv-sunset flex items-center justify-center text-black font-bold text-lg shadow-[0_0_10px_rgba(255,106,0,0.4)]">
                            {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
                           <span className="text-white font-bold text-lg">{user.name}</span>
-                          <span className="text-xs text-[#00d4ff] uppercase tracking-wider font-semibold">{user.role} Account</span>
+                          <span className="text-xs text-[#ffb000] uppercase tracking-wider font-semibold">{user.role} Account</span>
                         </div>
                       </Link>
                       <button 
@@ -217,7 +217,7 @@ export default function Navbar() {
                     <Link href="/login" onClick={() => setIsOpen(false)} className="py-3 rounded-lg border border-white/10 text-white font-bold text-center hover:bg-white/5 transition-colors uppercase">
                       Login
                     </Link>
-                    <Link href="/signup" onClick={() => setIsOpen(false)} className="py-3 rounded-lg bg-[#00d4ff] text-black font-bold text-center hover:bg-white transition-colors shadow-[0_0_15px_rgba(0,212,255,0.25)] uppercase">
+                    <Link href="/signup" onClick={() => setIsOpen(false)} className="py-3 rounded-lg sv-sunset text-black font-bold text-center hover:bg-white hover:bg-none transition-colors shadow-[0_0_15px_rgba(255,106,0,0.25)] uppercase">
                       Sign Up
                     </Link>
                    </div>

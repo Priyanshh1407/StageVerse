@@ -30,13 +30,13 @@ export default function CrewMessenger() {
     return (
         <div id="crew-messenger" className="bg-[#1a2632] border border-[#223949] rounded-2xl p-6 relative overflow-hidden group">
             {}
-            <div className="absolute top-0 right-0 p-8 opacity-10 blur-3xl rounded-full bg-[#0d93f2]" />
+            <div className="absolute top-0 right-0 p-8 opacity-10 blur-3xl rounded-full sv-sunset" />
 
             <div className="relative z-10 flex flex-col gap-4">
                 <div className="flex justify-between items-start">
                     <div>
                         <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                            <MessageSquare className="w-5 h-5 text-[#0d93f2]" />
+                            <MessageSquare className="w-5 h-5 text-[#ff6a00]" />
                             Message Crew
                         </h3>
                         <p className="text-slate-400 text-sm mt-1">Send a high-priority note to the production team.</p>
@@ -48,7 +48,7 @@ export default function CrewMessenger() {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="e.g. We need to check the drum riser height..."
-                        className="w-full h-24 bg-[#101b23] border border-[#223949] rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:border-[#0d93f2] resize-none transition-colors"
+                        className="w-full h-24 bg-[#101b23] border border-[#223949] rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:border-[#a855f7] resize-none transition-colors"
                         disabled={status === 'sending'}
                     />
                     {status === 'success' && (
@@ -65,7 +65,7 @@ export default function CrewMessenger() {
                     <button
                         onClick={handleSend}
                         disabled={status === 'sending' || !message.trim()}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-[#0d93f2] hover:bg-[#0d93f2]/90 disabled:opacity-50 disabled:hover:bg-[#0d93f2] text-white font-bold rounded-lg transition-all active:scale-95"
+                        className="flex items-center gap-2 px-6 py-2.5 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:hover:brightness-110 text-white font-bold rounded-lg transition-all active:scale-95"
                     >
                         {status === 'sending' ? (
                             <span className="animate-pulse">Sending...</span>

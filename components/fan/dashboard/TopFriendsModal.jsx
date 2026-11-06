@@ -55,7 +55,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <input
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#1a2632] text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#0d93f2] focus:border-transparent outline-none shadow-sm"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#1a2632] text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none shadow-sm"
               placeholder="Search friends..."
               type="text"
               value={searchQuery}
@@ -91,7 +91,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
                     <p className="font-bold text-xs">{friend.sharedShows} Shared</p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="text-[10px] text-slate-400 hover:text-[#0d93f2] transition-colors flex items-center gap-0.5">
+                    <button className="text-[10px] text-slate-400 hover:text-[#ff6a00] transition-colors flex items-center gap-0.5">
                       Message <MessageSquare className="w-3 h-3" />
                     </button>
                   </div>

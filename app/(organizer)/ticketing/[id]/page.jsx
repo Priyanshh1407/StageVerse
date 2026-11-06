@@ -134,7 +134,7 @@ export default function TicketingPage() {
         return (
             <div className="flex h-screen items-center justify-center bg-[#f5f7f8] dark:bg-[#101b22]">
                 <div className="flex flex-col items-center gap-2">
-                    <RefreshCw className="w-8 h-8 animate-spin text-[#0d93f2]" />
+                    <RefreshCw className="w-8 h-8 animate-spin text-[#ff6a00]" />
                     <p className="text-slate-500 text-sm">Loading Ticketing Dashboard...</p>
                 </div>
             </div>
@@ -142,7 +142,7 @@ export default function TicketingPage() {
     }
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#0d93f2]/30">
+        <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#ffb000]/30">
             <style>{`
         .no-spinner::-webkit-inner-spin-button, 
         .no-spinner::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -167,7 +167,7 @@ export default function TicketingPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3 md:gap-6">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[2px]">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffb000] to-purple-500 p-[2px]">
                             <div className="w-full h-full rounded-full bg-white dark:bg-[#1a2632] flex items-center justify-center overflow-hidden">
                                 <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="User" width={40} height={40} className="object-cover" />
                             </div>
@@ -187,7 +187,7 @@ export default function TicketingPage() {
                                 <StatCard label="Inventory Left" value={(data.stats?.inventory || 0).toLocaleString()} icon={Package} footer={<span className="text-yellow-600 bg-yellow-500/10 px-1.5 py-0.5 rounded text-xs font-bold">Track Stock</span>} />
                             </div>
                             <div className="col-span-12 lg:col-span-3 bg-white dark:bg-[#1a2632] rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <h4 className="font-bold mb-4 flex items-center gap-2 text-slate-900 dark:text-white"><Zap className="text-[#0d93f2] w-4 h-4" /> Quick Actions</h4>
+                                <h4 className="font-bold mb-4 flex items-center gap-2 text-slate-900 dark:text-white"><Zap className="text-[#ff6a00] w-4 h-4" /> Quick Actions</h4>
                                 <div className="flex flex-col gap-2">
                                     <ActionButton label="Create New Ticket Tier" icon={PlusCircle} primary onClick={() => openModal('create-tier')} />
                                     <ActionButton label="Manage Discounts" icon={Percent} onClick={() => openModal('create-discount')} />
@@ -203,8 +203,8 @@ export default function TicketingPage() {
                                     <button
                                         onClick={() => setPricingMode(!pricingMode)}
                                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${pricingMode
-                                            ? 'bg-[#0d93f2] text-white border-[#0d93f2]'
-                                            : 'bg-white dark:bg-[#1a2632] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-[#0d93f2] dark:hover:border-[#0d93f2]'
+                                            ? 'sv-sunset text-white border-[#a855f7]'
+                                            : 'bg-white dark:bg-[#1a2632] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-[#a855f7] dark:hover:border-[#a855f7]'
                                             }`}
                                     >
                                         {pricingMode ? 'Done Editing' : 'Adjust Pricing'}
@@ -267,7 +267,7 @@ export default function TicketingPage() {
                             <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col shadow-sm">
                                 <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">Active Discounts</h3>
-                                    <button onClick={() => openModal('create-discount')} className="text-slate-400 hover:text-[#0d93f2]"><PlusCircle className="w-5 h-5" /></button>
+                                    <button onClick={() => openModal('create-discount')} className="text-slate-400 hover:text-[#ff6a00]"><PlusCircle className="w-5 h-5" /></button>
                                 </div>
                                 <div className="p-4 flex flex-col gap-2">
                                     {data.discounts && data.discounts.map((discount) => (
@@ -280,8 +280,8 @@ export default function TicketingPage() {
                                             onClick={() => openModal('manage-discounts', discount)}
                                         />
                                     ))}
-                                    <div onClick={() => openModal('create-discount')} className="flex items-center justify-between p-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg hover:border-[#0d93f2]/50 cursor-pointer transition-colors group">
-                                        <div className="flex items-center gap-2 text-slate-500 group-hover:text-[#0d93f2]">
+                                    <div onClick={() => openModal('create-discount')} className="flex items-center justify-between p-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg hover:border-[#a855f7]/50 cursor-pointer transition-colors group">
+                                        <div className="flex items-center gap-2 text-slate-500 group-hover:text-[#ff6a00]">
                                             <PlusCircle className="w-5 h-5" /><span className="text-sm font-medium">Create new promo code</span>
                                         </div>
                                     </div>
@@ -331,7 +331,7 @@ function TicketTierRow({ tier, isEditing, activeDropdown, onToggleDropdown, onAc
                             type="number"
                             value={localPrice}
                             onChange={(e) => setLocalPrice(e.target.value)}
-                            className="w-20 p-1 bg-white dark:bg-[#101b22] border border-slate-300 dark:border-slate-600 rounded text-sm focus:border-[#0d93f2] outline-none"
+                            className="w-20 p-1 bg-white dark:bg-[#101b22] border border-slate-300 dark:border-slate-600 rounded text-sm focus:border-[#a855f7] outline-none"
                         />
                         {}
                         {Number(localPrice) !== tier.price && (
@@ -347,7 +347,7 @@ function TicketTierRow({ tier, isEditing, activeDropdown, onToggleDropdown, onAc
             <td className="px-6 py-4">
                 <div className="flex flex-col gap-1 w-32">
                     <div className="flex justify-between text-xs text-slate-500"><span>{tier.sold}</span><span>{tier.capacity}</span></div>
-                    <div className="w-full bg-slate-200 dark:bg-[#101b22] h-1.5 rounded-full overflow-hidden"><div className="h-full rounded-full bg-[#0d93f2]" style={{ width: `${percentSold}%` }}></div></div>
+                    <div className="w-full bg-slate-200 dark:bg-[#101b22] h-1.5 rounded-full overflow-hidden"><div className="h-full rounded-full sv-sunset" style={{ width: `${percentSold}%` }}></div></div>
                 </div>
             </td>
             <td className="px-6 py-4 text-slate-900 dark:text-white font-mono">${(tier.revenue || 0).toLocaleString()}</td>
@@ -408,7 +408,7 @@ function DiscountForm({ initialData, onSave }) {
                     <input required type="number" value={value} onChange={e => setValue(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="20" />
                 </div>
             </div>
-            <button type="submit" className="w-full py-3 bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold rounded-xl mt-2">Save Discount</button>
+            <button type="submit" className="w-full py-3 sv-sunset hover:brightness-110 text-white font-bold rounded-xl mt-2">Save Discount</button>
         </form>
     );
 }
@@ -441,19 +441,19 @@ function CreateTierForm({ onSave, initialData }) {
         <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Tier Name</label>
-                <input required value={name} onChange={e => setName(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0d93f2]" placeholder="e.g. VIP Early Bird" />
+                <input required value={name} onChange={e => setName(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#a855f7]" placeholder="e.g. VIP Early Bird" />
             </div>
             <div className="grid grid-cols-2 gap-5">
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Price</label>
-                    <input required type="number" value={price} onChange={e => setPrice(e.target.value)} className="no-spinner w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0d93f2]" placeholder="0.00" />
+                    <input required type="number" value={price} onChange={e => setPrice(e.target.value)} className="no-spinner w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#a855f7]" placeholder="0.00" />
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Quantity</label>
-                    <input required type="number" value={capacity} onChange={e => setCapacity(e.target.value)} className="no-spinner w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0d93f2]" placeholder="100" />
+                    <input required type="number" value={capacity} onChange={e => setCapacity(e.target.value)} className="no-spinner w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#a855f7]" placeholder="100" />
                 </div>
             </div>
-            <button type="submit" className="w-full py-3 bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold rounded-xl mt-2">{initialData ? 'Update Tier' : 'Create Tier'}</button>
+            <button type="submit" className="w-full py-3 sv-sunset hover:brightness-110 text-white font-bold rounded-xl mt-2">{initialData ? 'Update Tier' : 'Create Tier'}</button>
         </form>
     );
 }
@@ -472,7 +472,7 @@ function StatCard({ label, value, icon: Icon, footer }) {
 
 function ActionButton({ label, icon: Icon, primary, onClick }) {
     return (
-        <button onClick={onClick} className={`w-full text-left px-4 py-3 rounded-lg font-bold text-sm flex justify-between items-center group ${primary ? "bg-[#0d93f2] text-white hover:bg-[#0b84db]" : "bg-slate-100 dark:bg-[#151f28] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e2a35]"}`}>
+        <button onClick={onClick} className={`w-full text-left px-4 py-3 rounded-lg font-bold text-sm flex justify-between items-center group ${primary ? "sv-sunset text-white hover:brightness-110" : "bg-slate-100 dark:bg-[#151f28] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e2a35]"}`}>
             {label} <Icon className="w-5 h-5" />
         </button>
     );

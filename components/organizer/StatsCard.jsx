@@ -12,7 +12,7 @@ export default function StatsCard({ label, value, icon: Icon, trend, trendLabel,
           <p className="text-[#90b2cb] text-sm font-medium mb-1">{label}</p>
           <h3 className="text-3xl font-bold text-white">{value}</h3>
         </div>
-        <span className="p-2 bg-[#2c3b47]/50 rounded-lg text-[#0d93f2]">
+        <span className="p-2 bg-[#2c3b47]/50 rounded-lg text-[#ff6a00]">
           <Icon className="w-6 h-6" />
         </span>
       </div>
@@ -20,7 +20,7 @@ export default function StatsCard({ label, value, icon: Icon, trend, trendLabel,
       {progress ? (
         <div className="mt-4">
           <div className="w-full bg-[#2c3b47] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#0d93f2] h-full rounded-full" style={{ width: `${progress}%` }}></div>
+            <div className="sv-sunset h-full rounded-full" style={{ width: `${progress}%` }}></div>
           </div>
           <div className="mt-2 text-right">
             <span className="text-[#90b2cb] text-xs">{progress}% Capacity</span>

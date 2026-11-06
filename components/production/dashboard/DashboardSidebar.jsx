@@ -11,10 +11,10 @@ export default function DashboardSidebar({ tasks, activity }) {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Kanban className="w-5 h-5 text-blue-500" />
+            <Kanban className="w-5 h-5 text-orange-500" />
             Tasks
           </h2>
-          <Link href="/tasks" className="text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-blue-500 transition-colors">View All</Link>
+          <Link href="/tasks" className="text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-orange-500 transition-colors">View All</Link>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -26,7 +26,7 @@ export default function DashboardSidebar({ tasks, activity }) {
       <div className="flex flex-col gap-4 mt-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <History className="w-5 h-5 text-blue-500" />
+            <History className="w-5 h-5 text-orange-500" />
             Activity
           </h2>
         </div>
@@ -44,14 +44,14 @@ function TaskItem({ task }) {
   const colorMap = {
     red: { border: 'bg-red-500', badge: 'text-red-500 bg-red-500/10' },
     amber: { border: 'bg-amber-500', badge: 'text-amber-500 bg-amber-500/10' },
-    blue: { border: 'bg-blue-500', badge: 'text-blue-500 bg-blue-500/10' },
+    blue: { border: 'sv-sunset', badge: 'text-orange-500 bg-orange-500/10' },
   };
   const theme = isMessage
     ? { border: 'bg-purple-500', badge: 'text-purple-400 bg-purple-500/10' }
     : (colorMap[task.color] || colorMap.blue);
 
   return (
-    <div className={`bg-[#18181B] border border-[#27272A] rounded-lg p-4 flex flex-col gap-2 shadow-sm relative overflow-hidden group hover:border-blue-500/30 transition-colors ${isMessage ? 'bg-purple-500/5' : ''}`}>
+    <div className={`bg-[#18181B] border border-[#27272A] rounded-lg p-4 flex flex-col gap-2 shadow-sm relative overflow-hidden group hover:border-purple-500/30 transition-colors ${isMessage ? 'bg-purple-500/5' : ''}`}>
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.border}`}></div>
       <div className="flex justify-between items-start">
         <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${theme.badge}`}>
@@ -90,7 +90,7 @@ function ActivityItem({ item }) {
         icon: CheckCircle2, color: 'bg-green-500', ring: 'ring-green-500/20', text: 'text-green-400'
       };
       case 'document': return {
-        icon: FileText, color: 'bg-blue-500', ring: 'ring-blue-500/20', text: 'text-blue-400'
+        icon: FileText, color: 'sv-sunset', ring: 'ring-purple-500/20', text: 'text-orange-400'
       };
       default: return {
         icon: Zap, color: 'bg-gray-500', ring: 'ring-gray-500/20', text: 'text-gray-400'

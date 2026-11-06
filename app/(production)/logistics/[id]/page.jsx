@@ -226,7 +226,7 @@ export default function LogisticsPage(props) {
     if (isLoading) {
         return (
             <div className="flex h-screen w-full bg-[#0F0F10] items-center justify-center text-white">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
             </div>
         );
     }
@@ -268,7 +268,7 @@ export default function LogisticsPage(props) {
                                 <button onClick={handleDownloadPDF} className="bg-green-600 text-white px-4 py-2 rounded mr-2 font-bold hover:bg-green-700 inline-flex items-center gap-2">
                                     <Download className="w-4 h-4" /> Download PDF
                                 </button>
-                                <button onClick={() => window.print()} className="bg-blue-600 text-white px-4 py-2 rounded mr-2 font-bold hover:bg-blue-700">Print</button>
+                                <button onClick={() => window.print()} className="sv-sunset text-white px-4 py-2 rounded mr-2 font-bold hover:brightness-110">Print</button>
                                 <button onClick={() => setIsReportOpen(false)} className="bg-gray-200 text-gray-800 px-4 py-2 rounded font-bold hover:bg-gray-300">Close</button>
                             </div>
                         </div>
@@ -321,7 +321,7 @@ export default function LogisticsPage(props) {
                     <div className="flex flex-col gap-0 border-b border-[#27272A] bg-[#0F0F10] z-10 shadow-sm">
                         <div className="px-6 py-5 flex flex-wrap justify-between items-end gap-4">
                             <div className="flex min-w-72 flex-col gap-2">
-                                <div className="flex items-center gap-2 text-blue-500 text-sm font-bold uppercase tracking-wider">
+                                <div className="flex items-center gap-2 text-orange-500 text-sm font-bold uppercase tracking-wider">
                                     <MapPin className="w-4 h-4" />
                                     {showData.venue}
                                 </div>
@@ -337,7 +337,7 @@ export default function LogisticsPage(props) {
                                 </button>
                                 <button
                                     onClick={handleExport}
-                                    className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-blue-600 hover:bg-blue-500 text-white gap-2 text-xs font-bold uppercase leading-normal tracking-wide shadow-lg shadow-blue-500/20 transition-all">
+                                    className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 sv-sunset hover:brightness-110 text-white gap-2 text-xs font-bold uppercase leading-normal tracking-wide shadow-lg shadow-orange-500/20 transition-all">
                                     <Download className="w-4 h-4" />
                                     <span>Export</span>
                                 </button>
@@ -358,7 +358,7 @@ export default function LogisticsPage(props) {
                                         <Search className="w-4 h-4" />
                                     </div>
                                     <input
-                                        className="block w-full rounded-lg border-none bg-[#18181B] py-2.5 pl-10 pr-3 text-sm placeholder:text-gray-600 focus:ring-1 focus:ring-blue-500 text-white"
+                                        className="block w-full rounded-lg border-none bg-[#18181B] py-2.5 pl-10 pr-3 text-sm placeholder:text-gray-600 focus:ring-1 focus:ring-purple-500 text-white"
                                         placeholder="Search tasks..."
                                         type="text"
                                         value={searchQuery}
@@ -488,7 +488,7 @@ function FilterButton({ label, active, color, onClick }) {
         <button
             onClick={onClick}
             className={`flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg border px-3 transition-colors ${active
-                ? 'bg-[#18181B] border-blue-500/50 text-blue-400'
+                ? 'bg-[#18181B] border-purple-500/50 text-orange-400'
                 : 'bg-[#18181B] border-[#27272A] hover:border-[#3F3F46] ' + (color || 'text-gray-400')
                 }`}>
             <span className="text-xs font-medium uppercase tracking-wide">{label}</span>

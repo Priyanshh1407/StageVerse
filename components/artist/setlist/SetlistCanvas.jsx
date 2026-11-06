@@ -186,18 +186,18 @@ export default function SetlistCanvas({ items, setItems }) {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           className={`group relative flex gap-4 bg-[#101b22] hover:bg-[#223949] border rounded-xl px-4 py-5 justify-between transition-all 
-                            ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-[#0d93f2] bg-[#1a2c38] z-50' : 'border-[#223949]'}
+                            ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-[#a855f7] bg-[#1a2c38] z-50' : 'border-[#223949]'}
                           `}
                           style={{ ...provided.draggableProps.style }}
                         >
-                          {index === 0 && !snapshot.isDragging && (<div className="absolute left-0 top-0 bottom-0 w-1 bg-[#0d93f2] rounded-l-xl"></div>)}
+                          {index === 0 && !snapshot.isDragging && (<div className="absolute left-0 top-0 bottom-0 w-1 sv-sunset rounded-l-xl"></div>)}
                           <div className="flex items-start gap-5">
                             <div {...provided.dragHandleProps} className="text-[#90b2cb]/30 group-hover:text-[#90b2cb] flex items-center justify-center shrink-0 w-6 pt-1.5 cursor-grab active:cursor-grabbing hover:bg-white/5 rounded">
                               <GripVertical className="w-6 h-6" />
                             </div>
                             <div className="flex flex-1 flex-col justify-center">
                               <div className="flex items-center gap-3 mb-2">
-                                <span className={`font-mono text-base ${index === 0 ? 'text-[#0d93f2] font-bold' : 'text-[#90b2cb]'}`}>{String(index + 1).padStart(2, '0')}</span>
+                                <span className={`font-mono text-base ${index === 0 ? 'text-[#ff6a00] font-bold' : 'text-[#90b2cb]'}`}>{String(index + 1).padStart(2, '0')}</span>
                                 <p className={`text-xl leading-normal ${index === 0 ? 'text-white font-bold' : 'text-white/90 group-hover:text-white font-medium'}`}>{item.title}</p>
                               </div>
                               <div className="flex gap-2 flex-wrap">

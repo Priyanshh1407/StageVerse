@@ -17,7 +17,7 @@ export default function LiveHeader({ showName, status, bpm, showTime, onResync }
   return (
     <div className="flex-none flex items-center justify-between whitespace-nowrap border-b border-[#223949] bg-[#101b22] px-6 py-4 z-20">
       <div className="flex items-center gap-4 text-white">
-        <div className="size-8 flex items-center justify-center rounded bg-[#0d93f2]/20 text-[#0d93f2]">
+        <div className="size-8 flex items-center justify-center rounded bg-[#ff6a00]/20 text-[#ff6a00]">
           <Activity className="w-5 h-5" />
         </div>
         <div>
@@ -38,7 +38,7 @@ export default function LiveHeader({ showName, status, bpm, showTime, onResync }
           <div className="flex flex-col items-end">
             <span className="text-xs text-[#90b2cb] uppercase font-bold">BPM</span>
             {}
-            <span className="text-xl font-bold font-mono tracking-widest text-[#0d93f2]">{bpm}</span>
+            <span className="text-xl font-bold font-mono tracking-widest text-[#ff6a00]">{bpm}</span>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs text-[#90b2cb] uppercase font-bold">Show Duration</span>
@@ -79,10 +79,10 @@ function ConnectionStatus({ onResync }) {
       <button
         onClick={handleResync}
         disabled={isSyncing}
-        className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#16222b] border border-[#223949] text-slate-400 hover:text-white hover:border-[#0d93f2] hover:bg-[#0d93f2]/10 transition-all"
+        className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#16222b] border border-[#223949] text-slate-400 hover:text-white hover:border-[#a855f7] hover:bg-[#ff6a00]/10 transition-all"
         title="Force Re-Sync"
       >
-        <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-[#0d93f2]' : ''}`} />
+        <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-[#ff6a00]' : ''}`} />
       </button>
 
       {}

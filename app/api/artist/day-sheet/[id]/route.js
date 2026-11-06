@@ -129,7 +129,7 @@ export async function PUT(req, { params }) {
                 urgent: true,
                 columnId: 'preprod',
                 tag: 'General',
-                tagColor: 'bg-blue-500/10 text-blue-500',
+                tagColor: 'bg-orange-500/10 text-orange-500',
                 dueDate: 'Today'
             });
         }

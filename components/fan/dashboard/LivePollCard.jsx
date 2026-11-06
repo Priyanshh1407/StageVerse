@@ -131,8 +131,8 @@ export default function LivePollCard({ eventId, onComplete }) {
             `}</style>
 
             {}
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(0,240,255,0.15),transparent_70%)] pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#00f0ff]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(255,106,0,0.15),transparent_70%)] pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#ff6a00]/5 rounded-full blur-3xl pointer-events-none" />
 
             {}
             <div className="relative z-10 w-full max-w-md p-6 flex flex-col items-center text-center font-display">
@@ -165,13 +165,13 @@ export default function LivePollCard({ eventId, onComplete }) {
                                 style={{ touchAction: 'manipulation' }}
                                 className={`
                                     relative w-full min-h-[80px] py-4 rounded-2xl px-6 flex items-center justify-between overflow-hidden transition-all duration-200 text-left cursor-pointer active:scale-[0.98]
-                                    border-2 ${isSelected ? 'border-[#00f0ff] bg-[#00f0ff]/10 shadow-[0_0_30px_rgba(0,240,255,0.2)]' : 'border-white/10 bg-[#121212] active:border-white/30'}
+                                    border-2 ${isSelected ? 'border-[#a855f7] bg-[#ff6a00]/10 shadow-[0_0_30px_rgba(255,106,0,0.2)]' : 'border-white/10 bg-[#121212] active:border-white/30'}
                                     ${!!votedOptionId && !isSelected ? 'opacity-50' : ''}
                                     ${isSubmitting ? 'opacity-70' : ''}
                                 `}
                             >
                                 {}
-                                {!votedOptionId && <div className="absolute inset-0 bg-gradient-to-br from-[#00f0ff]/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity pointer-events-none" />}
+                                {!votedOptionId && <div className="absolute inset-0 bg-gradient-to-br from-[#ffb000]/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity pointer-events-none" />}
 
                                 {}
                                 <div className="relative z-10 flex flex-col items-start pointer-events-none">
@@ -182,7 +182,7 @@ export default function LivePollCard({ eventId, onComplete }) {
                                 {}
                                 {isSelected && (
                                     <div className="relative z-10 flex items-center gap-3 pointer-events-none">
-                                        <div className="w-8 h-8 rounded-full bg-[#00f0ff] text-black flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-full sv-sunset text-black flex items-center justify-center">
                                             <Check className="w-5 h-5 font-bold" strokeWidth={4} />
                                         </div>
                                     </div>
@@ -190,7 +190,7 @@ export default function LivePollCard({ eventId, onComplete }) {
 
                                 {}
                                 {!!votedOptionId && (
-                                    <div className="absolute bottom-0 left-0 h-1 bg-[#00f0ff] transition-all duration-1000 ease-out pointer-events-none" style={{ width: `${percent}%` }} />
+                                    <div className="absolute bottom-0 left-0 h-1 sv-sunset transition-all duration-1000 ease-out pointer-events-none" style={{ width: `${percent}%` }} />
                                 )}
                             </button>
                         );
@@ -201,12 +201,12 @@ export default function LivePollCard({ eventId, onComplete }) {
                 <div className="w-full bg-[#121212] rounded-xl p-4 border border-white/10 shadow-lg relative overflow-hidden">
                     <div className="flex justify-between items-end mb-2 relative z-10">
                         <span className="text-xs font-bold text-slate-400 uppercase">Voting Closes In</span>
-                        <span className="font-mono text-xl font-bold text-[#00f0ff]">00:{timeLeft.toString().padStart(2, '0')}</span>
+                        <span className="font-mono text-xl font-bold text-[#ffb000]">00:{timeLeft.toString().padStart(2, '0')}</span>
                     </div>
                     {}
                     <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden relative z-10">
                         <div
-                            className="h-full bg-[#00f0ff] shadow-[0_0_10px_#00f0ff] transition-all duration-1000 linear"
+                            className="h-full sv-sunset shadow-[0_0_10px_#ffb000] transition-all duration-1000 linear"
                             style={{ width: `${(timeLeft / 60) * 100}%` }}
                         />
                     </div>
@@ -215,7 +215,7 @@ export default function LivePollCard({ eventId, onComplete }) {
                 <p className="text-center text-[10px] text-slate-600 mt-4 uppercase tracking-widest font-bold">Powered by StageVerse Live</p>
 
                 {}
-                <div className="absolute top-1/4 -left-12 w-24 h-24 bg-[#00f0ff]/20 rounded-full blur-xl animate-float" />
+                <div className="absolute top-1/4 -left-12 w-24 h-24 bg-[#ff6a00]/20 rounded-full blur-xl animate-float" />
                 <div className="absolute bottom-1/3 -right-8 w-16 h-16 bg-purple-500/20 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }} />
             </div>
         </div>

@@ -115,7 +115,7 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#0d93f2]/30">
+    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#ffb000]/30">
 
       <FanSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -140,7 +140,7 @@ export default function DiscoverPage() {
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input
-                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0d93f2] outline-none shadow-sm transition-all"
+                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#a855f7] outline-none shadow-sm transition-all"
                     placeholder="Search artists, venues, or cities..."
                     type="text"
                     value={searchQuery}
@@ -153,7 +153,7 @@ export default function DiscoverPage() {
                   <FilterDropdown icon={Music} label="Genre" options={filterOptions.genres} value={selectedGenre} onChange={setSelectedGenre} />
                   <FilterDropdown icon={MapPin} label="City" options={filterOptions.cities} value={selectedCity} onChange={setSelectedCity} />
                   <FilterDropdown icon={Calendar} label="Date" options={dateOptions} value={selectedDate} onChange={setSelectedDate} />
-                  <button onClick={resetFilters} className="flex items-center gap-2 px-4 py-3 bg-[#0d93f2]/5 border border-[#0d93f2]/30 rounded-xl transition-colors whitespace-nowrap shadow-sm text-sm font-medium text-[#0d93f2] hover:bg-[#0d93f2]/10"><SlidersHorizontal className="w-4 h-4" /> Reset</button>
+                  <button onClick={resetFilters} className="flex items-center gap-2 px-4 py-3 bg-[#ff6a00]/5 border border-[#a855f7]/30 rounded-xl transition-colors whitespace-nowrap shadow-sm text-sm font-medium text-[#ff6a00] hover:bg-[#ff6a00]/10"><SlidersHorizontal className="w-4 h-4" /> Reset</button>
                 </div>
               </div>
 
@@ -190,7 +190,7 @@ export default function DiscoverPage() {
                   </motion.div>
                   {filteredRecommended.length > 3 && (
                     <div className="flex justify-center mt-6">
-                      <button onClick={() => toggleSection('recommended')} className="flex items-center gap-2 text-sm font-bold text-[#0d93f2] hover:bg-[#0d93f2]/10 px-4 py-2 rounded-lg transition-colors">
+                      <button onClick={() => toggleSection('recommended')} className="flex items-center gap-2 text-sm font-bold text-[#ff6a00] hover:bg-[#ff6a00]/10 px-4 py-2 rounded-lg transition-colors">
                         {expandedSections.recommended ? <><ChevronUp className="w-4 h-4" /> Show Less</> : <><ChevronDown className="w-4 h-4" /> View All ({filteredRecommended.length})</>}
                       </button>
                     </div>
@@ -221,7 +221,7 @@ export default function DiscoverPage() {
                 </motion.div>
                 {filteredFriends.length > 2 && (
                   <div className="flex justify-center mt-6">
-                    <button onClick={() => toggleSection('friends')} className="flex items-center gap-2 text-sm font-bold text-[#0d93f2] hover:bg-[#0d93f2]/10 px-4 py-2 rounded-lg transition-colors">
+                    <button onClick={() => toggleSection('friends')} className="flex items-center gap-2 text-sm font-bold text-[#ff6a00] hover:bg-[#ff6a00]/10 px-4 py-2 rounded-lg transition-colors">
                       {expandedSections.friends ? <><ChevronUp className="w-4 h-4" /> Show Less</> : <><ChevronDown className="w-4 h-4" /> View All ({filteredFriends.length})</>}
                     </button>
                   </div>
@@ -264,14 +264,14 @@ export default function DiscoverPage() {
             )}
 
             { }
-            <section className="mt-4 rounded-2xl bg-gradient-to-r from-[#0d93f2] to-blue-600 p-8 md:p-12 relative overflow-hidden">
+            <section className="mt-4 rounded-2xl bg-gradient-to-r from-[#ffb000] to-pink-600 p-8 md:p-12 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="max-w-xl">
                   <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Can&apos;t find what you&apos;re looking for?</h2>
-                  <p className="text-blue-100">Set up alerts for your favorite artists and never miss a show again.</p>
+                  <p className="text-orange-100">Set up alerts for your favorite artists and never miss a show again.</p>
                 </div>
-                <button onClick={() => setIsAlertModalOpen(true)} className="bg-white text-[#0d93f2] hover:bg-blue-50 px-6 py-3 rounded-xl font-bold shadow-lg transition-colors whitespace-nowrap">
+                <button onClick={() => setIsAlertModalOpen(true)} className="bg-white text-[#ff6a00] hover:bg-orange-50 px-6 py-3 rounded-xl font-bold shadow-lg transition-colors whitespace-nowrap">
                   Create Alert
                 </button>
               </div>
@@ -295,7 +295,7 @@ function FilterDropdown({ icon: Icon, label, options, value, onChange }) {
       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
         <Icon className="w-4 h-4 text-slate-500" />
       </div>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full appearance-none pl-10 pr-8 py-3 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0d93f2] cursor-pointer">
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full appearance-none pl-10 pr-8 py-3 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#a855f7] cursor-pointer">
         <option value="All">{label}: All</option>
         {options.filter(opt => opt !== 'All').map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
@@ -306,14 +306,14 @@ function FilterDropdown({ icon: Icon, label, options, value, onChange }) {
 
 function VibeTag({ label, active, onClick }) {
   return (
-    <button onClick={onClick} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${active ? 'bg-[#0d93f2] text-white border-[#0d93f2] shadow-md shadow-[#0d93f2]/20' : 'bg-white dark:bg-[#1a2632] border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-[#0d93f2] hover:text-[#0d93f2]'}`}>{label}</button>
+    <button onClick={onClick} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${active ? 'sv-sunset text-white border-[#a855f7] shadow-md shadow-[#ff6a00]/20' : 'bg-white dark:bg-[#1a2632] border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-[#a855f7] hover:text-[#ff6a00]'}`}>{label}</button>
   );
 }
 
 function SectionHeader({ icon: Icon, title }) {
   return (
     <div className="flex items-center justify-between mb-6">
-      <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white"><Icon className="w-5 h-5 text-[#0d93f2]" />{title}</h2>
+      <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white"><Icon className="w-5 h-5 text-[#ff6a00]" />{title}</h2>
     </div>
   );
 }
@@ -322,14 +322,14 @@ function EmptyState({ message }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 bg-slate-50 dark:bg-[#1a2632]/50 rounded-2xl border border-slate-200 dark:border-slate-800 border-dashed">
       <Search className="w-10 h-10 text-slate-300 mb-2" /><p className="text-slate-500 font-medium">{message}</p>
-      <button onClick={() => window.location.reload()} className="mt-4 text-sm text-[#0d93f2] hover:underline">Clear Filters</button>
+      <button onClick={() => window.location.reload()} className="mt-4 text-sm text-[#ff6a00] hover:underline">Clear Filters</button>
     </div>
   );
 }
 
 function RecommendedCard({ event }) {
   return (
-    <Link href={`/events/${event.id}`} className="group flex flex-col bg-white dark:bg-[#1a2632] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-lg hover:border-[#0d93f2]/50 transition-all duration-300 cursor-pointer">
+    <Link href={`/events/${event.id}`} className="group flex flex-col bg-white dark:bg-[#1a2632] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-lg hover:border-[#a855f7]/50 transition-all duration-300 cursor-pointer">
       <div className="relative h-48 overflow-hidden">
         { }
         <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/80 backdrop-blur text-slate-900 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold z-10 text-center shadow-sm">
@@ -353,13 +353,13 @@ function RecommendedCard({ event }) {
         />
 
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
-        <span className="absolute bottom-3 left-3 px-2 py-1 rounded bg-[#0d93f2]/20 border border-[#0d93f2]/30 backdrop-blur text-[10px] font-bold text-white uppercase tracking-wider">
+        <span className="absolute bottom-3 left-3 px-2 py-1 rounded bg-[#ff6a00]/20 border border-[#a855f7]/30 backdrop-blur text-[10px] font-bold text-white uppercase tracking-wider">
           {event.match || '95% Match'}
         </span>
       </div>
 
       <div className="p-5 flex flex-col flex-1">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1 group-hover:text-[#0d93f2] transition-colors">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1 group-hover:text-[#ff6a00] transition-colors">
           {event.title}
         </h3>
 
@@ -396,13 +396,13 @@ function FriendEventCard({ event }) {
       <div className="w-full md:w-48 h-48 md:h-auto relative shrink-0"><Image src={event.image} alt={event.title} fill className="object-cover" /></div>
       <div className="p-5 flex flex-col flex-1 justify-between">
         <div>
-          <div className="flex items-center justify-between mb-2"><span className={`text-xs font-bold uppercase tracking-wide ${event.statusColor || 'text-[#0d93f2]'}`}>{event.status}</span><span className="text-xs text-slate-500">{event.date}</span></div>
+          <div className="flex items-center justify-between mb-2"><span className={`text-xs font-bold uppercase tracking-wide ${event.statusColor || 'text-[#ff6a00]'}`}>{event.status}</span><span className="text-xs text-slate-500">{event.date}</span></div>
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{event.title}</h3>
           <p className="text-sm text-slate-500 mb-4">{event.venue}</p>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <div className="flex -space-x-3">{event.attendees.map((person, i) => <div key={i} className={`size-8 rounded-full ring-2 ring-white dark:ring-[#1a2632] flex items-center justify-center overflow-hidden ${person.color || 'bg-gray-300 dark:bg-slate-700'}`}>{person.img ? <Image src={person.img} alt="User" width={32} height={32} className="object-cover h-full w-full" /> : <span className={`text-[10px] font-bold ${person.count ? 'text-white bg-[#0d93f2] w-full h-full flex items-center justify-center' : 'text-slate-600 dark:text-slate-300'}`}>{person.initials || `+${person.count}`}</span>}</div>)}</div>
-          <span className="text-sm font-bold text-[#0d93f2] hover:text-[#0d93f2]/80 transition-colors">Join Them</span>
+          <div className="flex -space-x-3">{event.attendees.map((person, i) => <div key={i} className={`size-8 rounded-full ring-2 ring-white dark:ring-[#1a2632] flex items-center justify-center overflow-hidden ${person.color || 'bg-gray-300 dark:bg-slate-700'}`}>{person.img ? <Image src={person.img} alt="User" width={32} height={32} className="object-cover h-full w-full" /> : <span className={`text-[10px] font-bold ${person.count ? 'text-white sv-sunset w-full h-full flex items-center justify-center' : 'text-slate-600 dark:text-slate-300'}`}>{person.initials || `+${person.count}`}</span>}</div>)}</div>
+          <span className="text-sm font-bold text-[#ff6a00] hover:text-[#ff6a00]/80 transition-colors">Join Them</span>
         </div>
       </div>
     </Link>

@@ -95,7 +95,7 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="bg-[#f5f7f8] dark:bg-[#0a0a0a] font-sans text-slate-900 dark:text-white antialiased selection:bg-[#00d4ff] selection:text-black">
+    <div className="bg-[#f5f7f8] dark:bg-[#0a0a0a] font-sans text-slate-900 dark:text-white antialiased selection:bg-[#ffb000] selection:text-black">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
 
         <Navbar />

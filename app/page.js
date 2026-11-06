@@ -33,7 +33,7 @@ export default function Home() {
             location: e.venue?.name || e.city || 'Unknown Location',
             price: e.ticketTiers?.[0]?.price || 0,
             image: e.images?.hero || e.images?.cover || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800",
-            color: 'text-[#00d4ff] border-[#00d4ff]/20 bg-[#00d4ff]/20', // Default styling
+            color: 'text-[#ffb000] border-[#a855f7]/20 bg-[#ff6a00]/20', // Default styling
             title: e.title, // For LocalEvents
             venue: e.venue?.name || 'TBA', // For LocalEvents
             time: e.time || '8:00 PM', // For LocalEvents
@@ -62,7 +62,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="bg-[#f5f7f8] dark:bg-[#050505] font-sans text-slate-900 dark:text-white antialiased selection:bg-[#00d4ff] selection:text-black">
+    <div className="bg-[#f5f7f8] dark:bg-[#050505] font-sans text-slate-900 dark:text-white antialiased selection:bg-[#ffb000] selection:text-black">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-clip">
 
         <Navbar isLoggedIn={false} />

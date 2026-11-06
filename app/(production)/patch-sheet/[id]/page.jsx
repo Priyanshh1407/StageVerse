@@ -166,7 +166,7 @@ export default function PatchSheetPage(props) {
   if (isLoading) {
     return (
       <div className="flex h-screen w-full bg-[#0F0F10] items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-[#00d4ff]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#ffb000]" />
       </div>
     );
   }
@@ -187,7 +187,7 @@ export default function PatchSheetPage(props) {
           <button
             onClick={() => setMobileView('sheet')}
             className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all duration-200 ${mobileView === 'sheet'
-              ? 'bg-[#00d4ff] text-black shadow-md'
+              ? 'sv-sunset text-black shadow-md'
               : 'text-gray-500 hover:text-gray-300'
               }`}
           >
@@ -198,7 +198,7 @@ export default function PatchSheetPage(props) {
           <button
             onClick={() => setMobileView('tools')}
             className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all duration-200 ${mobileView === 'tools'
-              ? 'bg-[#00d4ff] text-black shadow-md'
+              ? 'sv-sunset text-black shadow-md'
               : 'text-gray-500 hover:text-gray-300'
               }`}
           >
@@ -240,7 +240,7 @@ export default function PatchSheetPage(props) {
               <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-[#546b81] uppercase tracking-wider">
                 <span>Version {activeShow.version}</span>
                 <span className="w-1 h-1 rounded-full bg-[#2c3e50]"></span>
-                <span className="text-[#00d4ff]">Auto-Saved</span>
+                <span className="text-[#ffb000]">Auto-Saved</span>
                 {lastSaved && <span className="ml-2 text-green-500 animate-in fade-in transition-all"> • Saved {lastSaved.toLocaleTimeString()}</span>}
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function PatchSheetPage(props) {
               <button
                 onClick={handleSavePatch}
                 disabled={isSaving}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 border border-blue-500 rounded-lg text-xs font-bold text-white transition-all shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 py-2 sv-sunset hover:brightness-110 border border-purple-500 rounded-lg text-xs font-bold text-white transition-all shadow-lg hover:shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 SAVE PATCH
@@ -292,7 +292,7 @@ export default function PatchSheetPage(props) {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-[#2c3e50] bg-[#111]">
-              <h3 className="text-white font-bold flex items-center gap-2"><Pencil className="w-4 h-4 text-blue-500" /> Edit Fixture {editingFixture.fixtureId}</h3>
+              <h3 className="text-white font-bold flex items-center gap-2"><Pencil className="w-4 h-4 text-orange-500" /> Edit Fixture {editingFixture.fixtureId}</h3>
               <button onClick={() => setEditingFixture(null)} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleEditSubmission} className="p-6 space-y-4">
@@ -302,7 +302,7 @@ export default function PatchSheetPage(props) {
                   <label className="block text-xs font-bold text-gray-400 mb-1">Universe</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                     value={editingFixture.universe}
                     onChange={e => setEditingFixture({ ...editingFixture, universe: parseInt(e.target.value) })}
                     min={1}
@@ -313,7 +313,7 @@ export default function PatchSheetPage(props) {
                   <label className="block text-xs font-bold text-gray-400 mb-1">Address</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                     value={editingFixture.address}
                     onChange={e => setEditingFixture({ ...editingFixture, address: parseInt(e.target.value) })}
                     min={1}
@@ -331,7 +331,7 @@ export default function PatchSheetPage(props) {
                     const colors = { "Intro Sequence": "blue", "Drum Solo": "red", "Main Wash": "orange", "Audience Blinders": "orange", "Specials": "blue" };
                     setEditingFixture({ ...editingFixture, cue: e.target.value, cueColor: colors[e.target.value] || 'blue' })
                   }}
-                  className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                  className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                 >
                   <option value="Intro Sequence">Intro Sequence</option>
                   <option value="Drum Solo">Drum Solo</option>
@@ -343,7 +343,7 @@ export default function PatchSheetPage(props) {
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
+                className="w-full sv-sunset hover:brightness-110 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
               >
                 <Save className="w-4 h-4" />
                 Update Fixture

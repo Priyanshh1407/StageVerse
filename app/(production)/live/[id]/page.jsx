@@ -225,7 +225,7 @@ export default function LiveShowPage(props) {
   if (isLoading) {
     return (
       <div className="flex h-screen w-full bg-[#0F0F10] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#0d93f2]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#ff6a00]" />
       </div>
     );
   }
@@ -237,11 +237,11 @@ export default function LiveShowPage(props) {
       { }
       <div className="lg:hidden flex h-screen w-full bg-[#0F0F10] items-center justify-center p-6 text-center relative overflow-hidden">
         { }
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#0d93f2]/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#ff6a00]/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10 flex flex-col items-center max-w-sm">
           <div className="w-20 h-20 bg-[#1F1F22] rounded-2xl flex items-center justify-center mb-6 border border-white/10 shadow-xl">
-            <Monitor className="w-10 h-10 text-[#0d93f2]" />
+            <Monitor className="w-10 h-10 text-[#ff6a00]" />
           </div>
 
           <h2 className="text-2xl font-bold text-white mb-3">Desktop Access Only</h2>

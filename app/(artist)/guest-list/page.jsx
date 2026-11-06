@@ -239,7 +239,7 @@ export default function GuestListPage() {
 
           {isLoading ? (
             <div className="lg:col-span-2 flex items-center justify-center h-64 bg-white dark:bg-[#182934] rounded-xl border border-slate-200 dark:border-[#315168]">
-              <Loader2 className="w-8 h-8 animate-spin text-[#0d93f2]" />
+              <Loader2 className="w-8 h-8 animate-spin text-[#ff6a00]" />
             </div>
           ) : (
             <GuestTable

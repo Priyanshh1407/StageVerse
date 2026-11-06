@@ -90,7 +90,7 @@ export default function AnalysisPage() {
   }, [reviewFilter]);
 
   return (
-    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30 relative">
+    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#ffb000]/30 relative">
 
       {}
       {IS_COMING_SOON && (
@@ -98,10 +98,10 @@ export default function AnalysisPage() {
           <div className="bg-[#192734] p-8 rounded-2xl border border-[#2c3b47] shadow-2xl max-w-md w-full relative overflow-hidden group">
 
             {}
-            <div className="absolute top-0 right-0 p-12 bg-[#0d93f2]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute top-0 right-0 p-12 bg-[#ff6a00]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
             <div className="relative z-10 flex flex-col items-center">
-              <div className="w-16 h-16 bg-[#0d93f2]/20 rounded-full flex items-center justify-center mb-6 text-[#0d93f2]">
+              <div className="w-16 h-16 bg-[#ff6a00]/20 rounded-full flex items-center justify-center mb-6 text-[#ff6a00]">
                 <Rocket className="w-8 h-8" />
               </div>
 
@@ -112,7 +112,7 @@ export default function AnalysisPage() {
 
               <button
                 onClick={() => router.push('/manage/dashboard')}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold transition-all shadow-lg shadow-[#0d93f2]/20"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl sv-sunset hover:brightness-110 text-white font-bold transition-all shadow-lg shadow-[#ff6a00]/20"
               >
                 <ArrowLeft className="w-4 h-4" /> Return to Dashboard
               </button>
@@ -156,7 +156,7 @@ export default function AnalysisPage() {
 
                 {}
                 <div className="relative h-3 w-full bg-[#315168]/30 rounded-full overflow-hidden z-10">
-                  <div className="absolute h-full bg-gradient-to-r from-blue-500 to-[#0d93f2] w-[84%] rounded-full shadow-[0_0_10px_rgba(13,147,242,0.5)]"></div>
+                  <div className="absolute h-full bg-gradient-to-r from-amber-500 to-[#ff3d7a] w-[84%] rounded-full shadow-[0_0_10px_rgba(255,106,0,0.5)]"></div>
                 </div>
                 <div className="flex justify-between mt-3 text-xs text-[#90b2cb] z-10">
                   <span>Based on 1,240 verified reviews</span>
@@ -167,10 +167,10 @@ export default function AnalysisPage() {
               {}
               <div className="lg:col-span-2 bg-gradient-to-br from-[#18242e] to-[#1c2a35] rounded-xl border border-[#2c3b47] p-6 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Sparkles className="w-32 h-32 text-[#0d93f2]" />
+                  <Sparkles className="w-32 h-32 text-[#ff6a00]" />
                 </div>
                 <div className="flex items-center gap-2 mb-4 relative z-10">
-                  <Sparkles className="w-5 h-5 text-[#0d93f2]" />
+                  <Sparkles className="w-5 h-5 text-[#ff6a00]" />
                   <h3 className="text-white text-lg font-bold">AI Executive Summary</h3>
                 </div>
                 <p className="text-white/90 text-lg font-normal leading-relaxed mb-4 font-body relative z-10">
@@ -189,7 +189,7 @@ export default function AnalysisPage() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between px-2">
                   <h3 className="text-white text-xl font-bold flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#0d93f2]"></span>
+                    <span className="w-2 h-2 rounded-full sv-sunset"></span>
                     What they loved
                   </h3>
                   <span className="text-xs text-[#90b2cb] uppercase tracking-wider font-bold">Positive Sentiment</span>
@@ -240,13 +240,13 @@ export default function AnalysisPage() {
                   <div className="flex bg-white/5 rounded-lg p-0.5">
                     <button
                       onClick={() => setChartView('event')}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'event' ? 'bg-[#0d93f2] text-white shadow' : 'text-[#90b2cb] hover:text-white'}`}
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'event' ? 'sv-sunset text-white shadow' : 'text-[#90b2cb] hover:text-white'}`}
                     >
                       Event Day
                     </button>
                     <button
                       onClick={() => setChartView('post')}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'post' ? 'bg-[#0d93f2] text-white shadow' : 'text-[#90b2cb] hover:text-white'}`}
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'post' ? 'sv-sunset text-white shadow' : 'text-[#90b2cb] hover:text-white'}`}
                     >
                       Post-Event
                     </button>
@@ -265,7 +265,7 @@ export default function AnalysisPage() {
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                         {currentChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.type === 'positive' ? '#0d93f2' : '#f24822'} fillOpacity={0.8} />
+                          <Cell key={`cell-${index}`} fill={entry.type === 'positive' ? '#ff6a00' : '#f24822'} fillOpacity={0.8} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -282,7 +282,7 @@ export default function AnalysisPage() {
                       key={i}
                       className={`
                         px-3 py-1.5 rounded-lg border font-bold ${tag.size} cursor-default transition-transform hover:scale-105
-                        ${tag.type === 'positive' ? 'bg-[#0d93f2]/20 text-[#0d93f2] border-[#0d93f2]/30' :
+                        ${tag.type === 'positive' ? 'bg-[#ff6a00]/20 text-[#ff6a00] border-[#a855f7]/30' :
                           tag.type === 'negative' ? 'bg-red-500/20 text-red-500 border-red-500/30' :
                             'bg-white/5 text-white/80 border-white/10'}
                       `}
@@ -312,7 +312,7 @@ export default function AnalysisPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleReviewFilterToggle}
-                    className={`p-1 rounded transition-colors ${reviewFilter !== 'all' ? 'text-[#0d93f2] bg-[#0d93f2]/10' : 'text-[#90b2cb] hover:text-white'}`}
+                    className={`p-1 rounded transition-colors ${reviewFilter !== 'all' ? 'text-[#ff6a00] bg-[#ff6a00]/10' : 'text-[#90b2cb] hover:text-white'}`}
                     title="Toggle Filter (All / Positive / Negative)"
                   >
                     <Filter className="w-4 h-4" />
@@ -386,7 +386,7 @@ function Header({ onMenuClick, isGenerating, onGenerate }) {
             disabled={isGenerating}
             className={`
               flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg 
-              bg-[#0d93f2] hover:bg-[#0b84db] text-white text-sm font-bold shadow-lg shadow-[#0d93f2]/20 
+              sv-sunset hover:sv-sunset text-white text-sm font-bold shadow-lg shadow-[#ff6a00]/20 
               transition-all hover:translate-y-[-1px] disabled:opacity-70 disabled:cursor-wait
             `}
           >
@@ -395,7 +395,7 @@ function Header({ onMenuClick, isGenerating, onGenerate }) {
           </button>
 
           <div className="hidden md:flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[1px]">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffb000] to-purple-500 p-[1px]">
               <div className="w-full h-full rounded-full bg-[#101b22] relative overflow-hidden">
                 <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
               </div>
@@ -408,9 +408,9 @@ function Header({ onMenuClick, isGenerating, onGenerate }) {
 }
 
 function TopicCard({ icon: Icon, title, score, quote, subtext, type }) {
-  const borderColor = type === 'positive' ? 'border-[#0d93f2]' : 'border-red-500';
-  const textColor = type === 'positive' ? 'text-[#0d93f2]' : 'text-red-500';
-  const hoverColor = type === 'positive' ? 'group-hover:text-[#0d93f2]' : 'group-hover:text-red-500';
+  const borderColor = type === 'positive' ? 'border-[#a855f7]' : 'border-red-500';
+  const textColor = type === 'positive' ? 'text-[#ff6a00]' : 'text-red-500';
+  const hoverColor = type === 'positive' ? 'group-hover:text-[#ff6a00]' : 'group-hover:text-red-500';
 
   return (
     <div className={`bg-[#192734] rounded-xl p-5 border-l-4 ${borderColor} hover:bg-[#202e3b] transition-colors cursor-pointer group`}>

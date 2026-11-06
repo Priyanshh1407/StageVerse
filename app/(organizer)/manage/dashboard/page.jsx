@@ -15,10 +15,10 @@ import Link from 'next/link';
 
 function StatsCard({ label, value, icon: Icon, trend, trendLabel, progress }) {
   return (
-    <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] shadow-lg hover:border-[#0d93f2]/50 transition-colors group">
+    <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] shadow-lg hover:border-[#a855f7]/50 transition-colors group">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-[#101b22] rounded-lg group-hover:bg-[#0d93f2]/10 transition-colors">
-          <Icon className="w-5 h-5 text-[#90b2cb] group-hover:text-[#0d93f2]" />
+        <div className="p-2 bg-[#101b22] rounded-lg group-hover:bg-[#ff6a00]/10 transition-colors">
+          <Icon className="w-5 h-5 text-[#90b2cb] group-hover:text-[#ff6a00]" />
         </div>
         {trend && (
           <span className="flex items-center gap-1 text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
@@ -32,7 +32,7 @@ function StatsCard({ label, value, icon: Icon, trend, trendLabel, progress }) {
       </div>
       {progress && (
         <div className="mt-4 w-full bg-[#101b22] h-1.5 rounded-full overflow-hidden">
-          <div className="bg-[#0d93f2] h-full rounded-full" style={{ width: `${progress}%` }}></div>
+          <div className="sv-sunset h-full rounded-full" style={{ width: `${progress}%` }}></div>
         </div>
       )}
       {trendLabel && <p className="text-[10px] text-[#587386] mt-3">{trendLabel}</p>}
@@ -63,10 +63,10 @@ const dashboardData = {
     { date: 'Sep 25', velocity: 90 },
   ],
   locations: [
-    { city: "New York", percent: 42, color: "bg-[#0d93f2]" },
-    { city: "London", percent: 21, color: "bg-[#3b82f6]" },
-    { city: "Berlin", percent: 15, color: "bg-[#60a5fa]" },
-    { city: "Tokyo", percent: 9, color: "bg-[#93c5fd]" },
+    { city: "New York", percent: 42, color: "sv-sunset" },
+    { city: "London", percent: 21, color: "sv-sunset" },
+    { city: "Berlin", percent: 15, color: "sv-sunset" },
+    { city: "Tokyo", percent: 9, color: "sv-sunset" },
   ]
 };
 
@@ -88,14 +88,14 @@ export default function OrganizerDashboard() {
       {IS_COMING_SOON && (
         <div className="absolute inset-0 z-[100] bg-[#101b22]/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-500">
           <div className="bg-[#192734] p-8 rounded-2xl border border-[#2c3b47] shadow-2xl max-w-md w-full relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-12 bg-[#0d93f2]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute top-0 right-0 p-12 bg-[#ff6a00]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative z-10 flex flex-col items-center">
-              <div className="w-16 h-16 bg-[#0d93f2]/20 rounded-full flex items-center justify-center mb-6 text-[#0d93f2]">
+              <div className="w-16 h-16 bg-[#ff6a00]/20 rounded-full flex items-center justify-center mb-6 text-[#ff6a00]">
                 <Rocket className="w-8 h-8" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Dashboard Coming Soon</h2>
               <p className="text-[#90b2cb] mb-8">We are finalizing the command center. Check back shortly.</p>
-              <button onClick={() => window.location.reload()} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold transition-all shadow-lg shadow-[#0d93f2]/20">
+              <button onClick={() => window.location.reload()} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl sv-sunset hover:brightness-110 text-white font-bold transition-all shadow-lg shadow-[#ff6a00]/20">
                 <ArrowLeft className="w-4 h-4" /> Refresh Page
               </button>
             </div>
@@ -129,7 +129,7 @@ export default function OrganizerDashboard() {
             <div className="w-64 relative hidden lg:block">
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#90b2cb]" />
               <input
-                className="w-full pl-10 pr-3 py-2 bg-[#192734] border border-[#2c3b47] rounded-lg text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#0d93f2]"
+                className="w-full pl-10 pr-3 py-2 bg-[#192734] border border-[#2c3b47] rounded-lg text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#a855f7]"
                 placeholder="Search events..."
               />
             </div>
@@ -140,7 +140,7 @@ export default function OrganizerDashboard() {
             </button>
             <button className="relative p-2 text-[#90b2cb] hover:text-white transition-colors">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#0d93f2] rounded-full"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 sv-sunset rounded-full"></span>
             </button>
           </div>
         </header>
@@ -160,9 +160,9 @@ export default function OrganizerDashboard() {
 
               <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] flex flex-col justify-center gap-3 shadow-lg">
                 <h4 className="text-white font-bold text-sm flex items-center gap-2 mb-1">
-                  <Zap className="w-4 h-4 text-[#0d93f2]" /> Quick Actions
+                  <Zap className="w-4 h-4 text-[#ff6a00]" /> Quick Actions
                 </h4>
-                <Link href="/create-event" className="w-full px-4 py-2.5 rounded-lg bg-[#0d93f2] text-white font-bold text-sm hover:bg-[#0b84db] transition-colors flex justify-between items-center group">
+                <Link href="/create-event" className="w-full px-4 py-2.5 rounded-lg sv-sunset text-white font-bold text-sm hover:brightness-110 transition-colors flex justify-between items-center group">
                   Create New Event <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <div className="flex gap-2">
@@ -196,10 +196,10 @@ export default function OrganizerDashboard() {
                 </div>
                 <div className="space-y-4">
                   {[
-                    { label: "18 - 24", val: 45, color: "bg-[#0d93f2]" },
-                    { label: "25 - 34", val: 32, color: "bg-[#3b82f6]" },
-                    { label: "35 - 44", val: 15, color: "bg-[#60a5fa]" },
-                    { label: "45+", val: 8, color: "bg-[#93c5fd]" },
+                    { label: "18 - 24", val: 45, color: "sv-sunset" },
+                    { label: "25 - 34", val: 32, color: "sv-sunset" },
+                    { label: "35 - 44", val: 15, color: "sv-sunset" },
+                    { label: "45+", val: 8, color: "sv-sunset" },
                   ].map((item) => (
                     <div key={item.label}>
                       <div className="flex justify-between text-sm mb-1">
@@ -223,9 +223,9 @@ export default function OrganizerDashboard() {
                 <div className="flex-1 flex gap-4">
                   <div className="relative flex-1 rounded-lg overflow-hidden bg-[#101b22] border border-[#2c3b47]">
                     <div className="absolute inset-0 opacity-40 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-cover bg-center invert filter brightness-50 contrast-125"></div>
-                    <div className="absolute top-[30%] left-[25%] w-3 h-3 bg-[#0d93f2] rounded-full animate-ping"></div>
-                    <div className="absolute top-[30%] left-[25%] w-3 h-3 bg-[#0d93f2] rounded-full"></div>
-                    <div className="absolute top-[35%] left-[48%] w-2 h-2 bg-[#3b82f6] rounded-full"></div>
+                    <div className="absolute top-[30%] left-[25%] w-3 h-3 sv-sunset rounded-full animate-ping"></div>
+                    <div className="absolute top-[30%] left-[25%] w-3 h-3 sv-sunset rounded-full"></div>
+                    <div className="absolute top-[35%] left-[48%] w-2 h-2 sv-sunset rounded-full"></div>
                   </div>
                   <div className="w-32 flex flex-col justify-center gap-4">
                     {dashboardData.locations.map((loc) => (

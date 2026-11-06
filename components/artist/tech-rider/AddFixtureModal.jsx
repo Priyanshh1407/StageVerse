@@ -41,7 +41,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="e.g. Clay Paky Sharpy"
-                            className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#0d93f2] outline-none transition-all"
+                            className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#a855f7] outline-none transition-all"
                             autoFocus
                         />
                     </div>
@@ -51,7 +51,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                         <select
                             value={type}
                             onChange={(e) => setType(e.target.value)}
-                            className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#0d93f2] outline-none"
+                            className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#a855f7] outline-none"
                         >
                             <option>Speakers/PA</option>
                             <option>Spot</option>
@@ -71,7 +71,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                                     key={icn}
                                     type="button"
                                     onClick={() => setIconType(icn)}
-                                    className={`p-3 rounded-lg border transition-all ${iconType === icn ? 'bg-[#0d93f2] border-[#0d93f2] text-white' : 'bg-[#101b23] border-[#223949] text-white/50 hover:border-white/30'}`}
+                                    className={`p-3 rounded-lg border transition-all ${iconType === icn ? 'sv-sunset border-[#a855f7] text-white' : 'bg-[#101b23] border-[#223949] text-white/50 hover:border-white/30'}`}
                                 >
                                     {icn === 'Lightbulb' && <Lightbulb className="w-5 h-5" />}
                                     {icn === 'Zap' && <Zap className="w-5 h-5" />}
@@ -85,7 +85,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
 
                     <button
                         type="submit"
-                        className="mt-2 w-full bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white font-bold py-3 rounded-lg transition-all active:scale-[0.98]"
+                        className="mt-2 w-full sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white font-bold py-3 rounded-lg transition-all active:scale-[0.98]"
                     >
                         Add to Grid
                     </button>

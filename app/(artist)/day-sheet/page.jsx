@@ -27,17 +27,17 @@ export default function DaySheetListPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0b1219] font-sans text-white selection:bg-[#0d93f2]/30">
+    <div className="min-h-screen bg-[#0b1219] font-sans text-white selection:bg-[#ffb000]/30">
       <ArtistNavbar />
 
       <main className="w-full max-w-7xl mx-auto px-4 lg:px-10 py-12">
 
         {}
-        <div className="relative mb-16 rounded-3xl overflow-hidden bg-gradient-to-r from-[#0d93f2]/10 to-transparent border border-[#0d93f2]/10 p-8 md:p-12">
+        <div className="relative mb-16 rounded-3xl overflow-hidden bg-gradient-to-r from-[#ffb000]/10 to-transparent border border-[#a855f7]/10 p-8 md:p-12">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2600&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-overlay pointer-events-none"></div>
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div>
-              <h5 className="text-[#0d93f2] font-bold uppercase tracking-widest text-sm mb-2">StageVerse Tour Manager</h5>
+              <h5 className="text-[#ff6a00] font-bold uppercase tracking-widest text-sm mb-2">StageVerse Tour Manager</h5>
               <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-4">
                 Tour Itineraries
               </h1>
@@ -45,7 +45,7 @@ export default function DaySheetListPage() {
                 Access detailed day sheets, production schedules, and logistical data for your upcoming run.
               </p>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#0d93f2]/10 border border-[#0d93f2]/20 text-[#0d93f2] text-sm font-bold">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#ff6a00]/10 border border-[#a855f7]/20 text-[#ff6a00] text-sm font-bold">
               <Star className="w-4 h-4 fill-current" />
               <span>Next Show: Chicago</span>
             </div>
@@ -55,8 +55,8 @@ export default function DaySheetListPage() {
         {}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 opacity-50">
-            <Loader2 className="w-10 h-10 animate-spin text-[#0d93f2] mb-4" />
-            <p className="text-sm font-mono text-[#0d93f2] uppercase tracking-widest">Syncing Tour Data...</p>
+            <Loader2 className="w-10 h-10 animate-spin text-[#ff6a00] mb-4" />
+            <p className="text-sm font-mono text-[#ff6a00] uppercase tracking-widest">Syncing Tour Data...</p>
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-32 rounded-3xl border border-dashed border-[#223949] bg-[#101b22]">
@@ -68,10 +68,10 @@ export default function DaySheetListPage() {
               <Link
                 key={event._id}
                 href={`/day-sheet/${event._id}`}
-                className="group relative flex flex-col bg-[#131d24] rounded-2xl border border-[#223949] overflow-hidden hover:border-[#0d93f2] hover:shadow-[0_0_30px_rgba(13,147,242,0.1)] transition-all duration-300"
+                className="group relative flex flex-col bg-[#131d24] rounded-2xl border border-[#223949] overflow-hidden hover:border-[#a855f7] hover:shadow-[0_0_30px_rgba(255,106,0,0.1)] transition-all duration-300"
               >
                 {}
-                <div className="h-1.5 w-full bg-gradient-to-r from-[#223949] to-[#101b22] group-hover:from-[#0d93f2] group-hover:to-[#60a5fa] transition-all duration-500"></div>
+                <div className="h-1.5 w-full bg-gradient-to-r from-[#223949] to-[#101b22] group-hover:from-[#ffb000] group-hover:to-[#ff3d7a] transition-all duration-500"></div>
 
                 <div className="p-6 flex flex-col h-full relative">
                   {}
@@ -80,27 +80,27 @@ export default function DaySheetListPage() {
                   </span>
 
                   <div className="relative z-10">
-                    <span className={`inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider mb-4 ${index === 0 ? 'bg-[#0d93f2] text-white shadow-lg shadow-blue-500/20' : 'bg-[#223949] text-slate-400'}`}>
+                    <span className={`inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider mb-4 ${index === 0 ? 'sv-sunset text-white shadow-lg shadow-orange-500/20' : 'bg-[#223949] text-slate-400'}`}>
                       {index === 0 ? 'Next Up' : 'Scheduled'}
                     </span>
 
-                    <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-[#0d93f2] transition-colors line-clamp-1">{event.city}</h3>
+                    <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-[#ff6a00] transition-colors line-clamp-1">{event.city}</h3>
                     <p className="text-[#90b2cb] text-sm font-medium line-clamp-1 mb-6 border-b border-[#223949] pb-6">{event.venue?.name || 'Venue TBA'}</p>
 
                     <div className="space-y-3">
                       <div className="flex items-center gap-3 text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
-                        <Calendar className="w-4 h-4 text-[#0d93f2]" />
+                        <Calendar className="w-4 h-4 text-[#ff6a00]" />
                         <span>{new Date(event.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
-                        <Clock className="w-4 h-4 text-[#0d93f2]" />
+                        <Clock className="w-4 h-4 text-[#ff6a00]" />
                         <span>Doors: {event.doorsOpen || '19:00'}</span>
                       </div>
                     </div>
                   </div>
 
                   {}
-                  <div className="mt-8 pt-4 flex items-center text-sm font-bold text-[#0d93f2] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  <div className="mt-8 pt-4 flex items-center text-sm font-bold text-[#ff6a00] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                     View Full Itinerary <ArrowRight className="w-4 h-4 ml-2" />
                   </div>
                 </div>

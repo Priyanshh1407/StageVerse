@@ -30,7 +30,7 @@ export default function EventsFeed({
         <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
           <button 
             onClick={onToggleFilters}
-            className="lg:hidden flex items-center gap-2 px-4 py-2 rounded-lg bg-[#121212] border border-white/10 text-white text-sm font-medium hover:border-[#00d4ff] transition-all whitespace-nowrap"
+            className="lg:hidden flex items-center gap-2 px-4 py-2 rounded-lg bg-[#121212] border border-white/10 text-white text-sm font-medium hover:border-[#a855f7] transition-all whitespace-nowrap"
           >
             <SlidersHorizontal className="w-4 h-4" /> Filters
           </button>
@@ -69,7 +69,7 @@ export default function EventsFeed({
             <div className="mt-12 flex justify-center">
               <button 
                 onClick={onLoadMore}
-                className="group flex items-center gap-2 rounded-full border border-white/10 bg-[#1e1e1e] px-6 py-3 text-sm font-bold text-white transition-all hover:border-[#00d4ff] hover:bg-[#121212] hover:text-[#00d4ff]"
+                className="group flex items-center gap-2 rounded-full border border-white/10 bg-[#1e1e1e] px-6 py-3 text-sm font-bold text-white transition-all hover:border-[#a855f7] hover:bg-[#121212] hover:text-[#ffb000]"
               >
                 <span>Load More Events</span>
                 <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />

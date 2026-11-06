@@ -80,14 +80,14 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
       <div className="p-4 border-b border-[#223949] bg-[#1a2c38] z-10 flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <h3 className="text-white text-lg font-bold flex items-center gap-2">
-            <Library className="w-5 h-5 text-[#0d93f2]" />
+            <Library className="w-5 h-5 text-[#ff6a00]" />
             Song Bank
           </h3>
           
           {!isCreating ? (
              <button 
                onClick={() => setIsCreating(true)}
-               className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#223949] hover:bg-[#0d93f2]/10 hover:text-[#0d93f2] text-[#90b2cb] text-xs font-bold transition-colors border border-white/5 hover:border-[#0d93f2]/30"
+               className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#223949] hover:bg-[#ff6a00]/10 hover:text-[#ff6a00] text-[#90b2cb] text-xs font-bold transition-colors border border-white/5 hover:border-[#a855f7]/30"
              >
                <PlusCircle className="w-3.5 h-3.5" />
                New
@@ -108,7 +108,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
           <form onSubmit={handleCreateSubmit} className="flex flex-col gap-2 animate-in slide-in-from-top-2 duration-200">
             <input 
               autoFocus
-              className="w-full bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#0d93f2] px-3 py-2 placeholder:text-white/30"
+              className="w-full bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
               placeholder="Song Title (e.g. My New Track)"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
@@ -116,13 +116,13 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
             
             <div className="flex gap-2">
                <input 
-                className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#0d93f2] px-3 py-2 placeholder:text-white/30"
+                className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
                 placeholder="Genre (Pop)"
                 value={newGenre}
                 onChange={(e) => setNewGenre(e.target.value)}
               />
               <input 
-                className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#0d93f2] px-3 py-2 placeholder:text-white/30"
+                className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
                 placeholder="Mood (Sad)"
                 value={newMood}
                 onChange={(e) => setNewMood(e.target.value)}
@@ -131,7 +131,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
 
             <div className="flex gap-2">
               <input 
-                className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#0d93f2] px-3 py-2 placeholder:text-white/30"
+                className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
                 placeholder="BPM (120)"
                 value={newBpm}
                 onChange={(e) => setNewBpm(e.target.value)}
@@ -139,7 +139,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
               
               {}
               <input 
-                className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#0d93f2] px-3 py-2 placeholder:text-white/30"
+                className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
                 placeholder="MM:SS"
                 value={newDuration}
                 onChange={handleDurationChange} // Use the new handler
@@ -154,7 +154,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 </div>
             )}
 
-            <button type="submit" className="w-full py-2 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white text-xs font-bold rounded-lg transition-colors mt-1 shadow-lg shadow-[#0d93f2]/20">
+            <button type="submit" className="w-full py-2 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white text-xs font-bold rounded-lg transition-colors mt-1 shadow-lg shadow-[#ff6a00]/20">
               Add to Bank
             </button>
           </form>
@@ -169,7 +169,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#223949] text-white text-sm rounded-lg border-none focus:ring-1 focus:ring-[#0d93f2] pl-9 pr-3 py-2 placeholder:text-white/30" 
+                className="w-full bg-[#223949] text-white text-sm rounded-lg border-none focus:ring-1 focus:ring-[#a855f7] pl-9 pr-3 py-2 placeholder:text-white/30" 
                 placeholder="Filter by mood, tag, title..." 
               />
             </div>
@@ -180,7 +180,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                   onClick={() => setActiveFilter(filter)}
                   className={`whitespace-nowrap px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
                     activeFilter === filter 
-                    ? 'bg-[#0d93f2] text-white border-[#0d93f2]' 
+                    ? 'sv-sunset text-white border-[#a855f7]' 
                     : 'bg-[#223949] hover:bg-white/10 text-[#90b2cb] border-transparent'
                   }`}
                 >
@@ -213,7 +213,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 className={`size-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                   recentlyAdded === song.id 
                   ? 'bg-green-500 text-white scale-110' 
-                  : 'text-[#0d93f2] hover:bg-[#0d93f2] hover:text-white'
+                  : 'text-[#ff6a00] hover:sv-sunset hover:text-white'
                 }`}
               >
                 {recentlyAdded === song.id ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}

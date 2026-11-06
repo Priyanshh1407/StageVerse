@@ -52,7 +52,7 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
    const groupList = Object.values(groups);
 
    const colorMap = {
-      blue: { bg: 'bg-blue-900/40', text: 'text-blue-400', border: 'border-blue-500/30', dot: 'bg-blue-500', iconHover: 'group-hover:text-blue-500' },
+      blue: { bg: 'bg-orange-900/40', text: 'text-orange-400', border: 'border-purple-500/30', dot: 'sv-sunset', iconHover: 'group-hover:text-orange-500' },
       orange: { bg: 'bg-orange-900/40', text: 'text-orange-400', border: 'border-orange-500/30', dot: 'bg-orange-500', iconHover: 'group-hover:text-orange-500' },
       red: { bg: 'bg-red-900/40', text: 'text-red-400', border: 'border-red-500/30', dot: 'bg-red-500', iconHover: 'group-hover:text-red-500' },
    };

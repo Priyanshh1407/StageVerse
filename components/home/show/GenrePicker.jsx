@@ -20,19 +20,19 @@ export default function GenrePicker({ value, onChange, counts = {} }) {
             <div role="radiogroup" aria-label="Genre" className="grid grid-cols-2 gap-2">
                 {GENRE_KEYS.map((key) => (
                     <button key={key} type="button" role="radio" aria-checked={value === key} onClick={() => onChange(key)}
-                        className="group text-left rounded-xl border border-white/15 bg-white/5 px-3.5 py-3 hover:border-cyan-300 hover:bg-white/10 transition-colors">
+                        className="group text-left rounded-xl border border-white/15 bg-white/5 px-3.5 py-3 hover:border-purple-300 hover:bg-white/10 transition-colors">
                         <span className="flex items-center justify-between font-bold">
                             {GENRES[key].label}
-                            <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-cyan-300" aria-hidden />
+                            <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-amber-300" aria-hidden />
                         </span>
                         <span className="block mt-0.5 text-[11px] leading-snug text-gray-400">{GENRE_HINTS[key]}</span>
-                        {counts[key] ? <span className="block mt-1 text-[10px] font-mono tracking-wider text-cyan-300/80">{counts[key]} DEMO SONG{counts[key] > 1 ? 'S' : ''}</span> : null}
+                        {counts[key] ? <span className="block mt-1 text-[10px] font-mono tracking-wider text-amber-300/80">{counts[key]} DEMO SONG{counts[key] > 1 ? 'S' : ''}</span> : null}
                     </button>
                 ))}
             </div>
 
             <button type="button" onClick={() => setHelp((h) => !h)} aria-expanded={help} aria-controls="genre-help"
-                className="mt-2 flex items-center gap-1.5 text-xs text-gray-400 hover:text-cyan-300">
+                className="mt-2 flex items-center gap-1.5 text-xs text-gray-400 hover:text-amber-300">
                 <CircleHelp className="w-3.5 h-3.5" aria-hidden /> Which genre is my song?
             </button>
             {help && (
@@ -48,7 +48,7 @@ export default function GenrePicker({ value, onChange, counts = {} }) {
                                 <li key={artist}>
                                     <button type="button" onClick={() => onChange(genre)}
                                         className="w-full flex justify-between gap-2 rounded-md px-2 py-1 hover:bg-white/10 text-left">
-                                        <span>{artist}</span><span className="font-bold text-cyan-300">{GENRES[genre].label}</span>
+                                        <span>{artist}</span><span className="font-bold text-amber-300">{GENRES[genre].label}</span>
                                     </button>
                                 </li>
                             )) : <li className="text-gray-400 px-2">Not in the list. Pick the closest genre from the descriptions above.</li>}

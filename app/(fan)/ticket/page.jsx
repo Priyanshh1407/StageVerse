@@ -55,7 +55,7 @@ export default function TicketsPage() {
     if (loading) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-[#f5f7f8] dark:bg-[#101b22]">
-                <Loader2 className="w-10 h-10 text-[#0d93f2] animate-spin" />
+                <Loader2 className="w-10 h-10 text-[#ff6a00] animate-spin" />
             </div>
         );
     }
@@ -63,7 +63,7 @@ export default function TicketsPage() {
     const secondaryTicket = tickets.upcoming[1];
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#0d93f2]/30">
+        <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#ffb000]/30">
 
             <FanSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -105,7 +105,7 @@ export default function TicketsPage() {
                                         {}
                                         {primaryTicket && (
                                             <div className="flex flex-col lg:flex-row bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-md group relative">
-                                                <div className="absolute top-0 left-0 w-1 h-full bg-[#0d93f2] z-20"></div>
+                                                <div className="absolute top-0 left-0 w-1 h-full sv-sunset z-20"></div>
                                                 <div className="relative lg:w-72 h-48 lg:h-auto shrink-0 bg-slate-900">
                                                     <Image src={primaryTicket.bgImage} alt={primaryTicket.artist} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent lg:hidden"></div>
@@ -140,14 +140,14 @@ export default function TicketsPage() {
 
                                                 <div className="w-full lg:w-80 bg-slate-50 dark:bg-[#151f28] p-8 flex flex-col items-center justify-center gap-6 relative">
                                                     <div className="bg-white p-4 rounded-xl shadow-sm w-48 mx-auto">
-                                                        <div className="aspect-square bg-slate-900 rounded-lg flex items-center justify-center relative overflow-hidden group-hover:shadow-[0_0_20px_rgba(13,147,242,0.3)] transition-shadow duration-500">
+                                                        <div className="aspect-square bg-slate-900 rounded-lg flex items-center justify-center relative overflow-hidden group-hover:shadow-[0_0_20px_rgba(255,106,0,0.3)] transition-shadow duration-500">
                                                             <QrCode className="text-white w-24 h-24" />
                                                         </div>
                                                         <p className="text-center text-[10px] font-mono mt-3 text-slate-400 font-bold tracking-wider truncate px-2">{primaryTicket.qrCode}</p>
                                                     </div>
                                                     <button
                                                         onClick={() => handleOpenTicket(primaryTicket)}
-                                                        className="w-full py-3 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white font-bold rounded-xl shadow-lg shadow-[#0d93f2]/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                                                        className="w-full py-3 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white font-bold rounded-xl shadow-lg shadow-[#ff6a00]/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
                                                     >
                                                         <Info className="w-4 h-4" /> View Ticket Details
                                                     </button>
@@ -157,16 +157,16 @@ export default function TicketsPage() {
 
                                         {}
                                         {secondaryTicket && (
-                                            <div className="flex flex-col md:flex-row bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:border-[#0d93f2]/50 transition-colors cursor-pointer group">
+                                            <div className="flex flex-col md:flex-row bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:border-[#a855f7]/50 transition-colors cursor-pointer group">
                                                 <div className="w-full md:w-32 h-32 relative bg-slate-800 shrink-0">
                                                     <Image src={secondaryTicket.bgImage} alt={secondaryTicket.artist} fill className="object-cover" />
                                                 </div>
                                                 <div className="flex-1 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                                     <div className="flex flex-col gap-1">
-                                                        <div className="flex items-center gap-2 text-xs font-bold text-[#0d93f2] uppercase tracking-wider mb-1">
+                                                        <div className="flex items-center gap-2 text-xs font-bold text-[#ff6a00] uppercase tracking-wider mb-1">
                                                             <Calendar className="w-3 h-3" /> {secondaryTicket.dateDisplay} • {secondaryTicket.time}
                                                         </div>
-                                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-[#0d93f2] transition-colors">{secondaryTicket.artist}</h3>
+                                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-[#ff6a00] transition-colors">{secondaryTicket.artist}</h3>
                                                         <p className="text-slate-500 text-sm">{secondaryTicket.venue}</p>
                                                     </div>
                                                     <div className="flex items-center gap-4 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-4 md:pt-0 md:pl-6 shrink-0">
@@ -207,7 +207,7 @@ export default function TicketsPage() {
                                             </div>
                                             <button
                                                 onClick={() => handleOpenTicket(ticket)}
-                                                className="text-slate-400 hover:text-[#0d93f2] p-2 transition-colors"
+                                                className="text-slate-400 hover:text-[#ff6a00] p-2 transition-colors"
                                             >
                                                 <FileText className="w-5 h-5" />
                                             </button>
@@ -219,7 +219,7 @@ export default function TicketsPage() {
                             {tickets.past.length > 0 && (
                                 <button
                                     onClick={() => setIsHistoryModalOpen(true)}
-                                    className="self-center mt-4 text-sm font-medium text-[#0d93f2] hover:underline"
+                                    className="self-center mt-4 text-sm font-medium text-[#ff6a00] hover:underline"
                                 >
                                     View full history
                                 </button>
@@ -254,7 +254,7 @@ export default function TicketsPage() {
 function InfoItem({ icon: Icon, label, value }) {
     return (
         <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-[#0d93f2]">
+            <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-[#ff6a00]">
                 <Icon className="w-5 h-5" />
             </div>
             <div className="flex flex-col">

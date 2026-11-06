@@ -149,7 +149,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#0d93f2]/30">
+    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-white overflow-hidden selection:bg-[#ffb000]/30">
 
       {}
       <OrganizerSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -223,10 +223,10 @@ function Header({ onMenuClick }) {
         </div>
         <button className="relative p-2 text-[#90b2cb] hover:text-white">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#0d93f2] rounded-full"></span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 sv-sunset rounded-full"></span>
         </button>
         <div className="flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffb000] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
             <div className="w-full h-full rounded-full bg-[#101b22] relative overflow-hidden">
               <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
             </div>
@@ -251,7 +251,7 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-[#101b22] border border-[#2c3b47] text-white text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] appearance-none cursor-pointer"
+                className="w-full bg-[#101b22] border border-[#2c3b47] text-white text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] appearance-none cursor-pointer"
               >
                 <option>Financial Overview</option>
                 <option>Ticket Sales Trends</option>
@@ -269,7 +269,7 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
               <select
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
-                className="w-full bg-[#101b22] border border-[#2c3b47] text-white text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] appearance-none cursor-pointer"
+                className="w-full bg-[#101b22] border border-[#2c3b47] text-white text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] appearance-none cursor-pointer"
               >
                 <option>All Events</option>
                 {eventsList && eventsList.map((event) => (
@@ -290,7 +290,7 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
           <button
             onClick={onGenerate}
             disabled={isGenerating}
-            className={`flex-1 lg:flex-none flex items-center justify-center gap-2 bg-[#0d93f2] hover:bg-[#0b84db] text-white font-medium px-5 py-2.5 rounded-lg transition-all shadow-[0_0_15px_rgba(13,147,242,0.3)] ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
+            className={`flex-1 lg:flex-none flex items-center justify-center gap-2 sv-sunset hover:sv-sunset text-white font-medium px-5 py-2.5 rounded-lg transition-all shadow-[0_0_15px_rgba(255,106,0,0.3)] ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
           >
             <RefreshCw className={`w-5 h-5 ${isGenerating ? 'animate-spin' : ''}`} />
             {isGenerating ? 'Generating...' : 'Generate'}
@@ -339,7 +339,7 @@ function StatCard({ data }) {
   else displayValue = formatNumber(data.value);
 
   return (
-    <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] hover:border-[#0d93f2]/30 transition-colors">
+    <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] hover:border-[#a855f7]/30 transition-colors">
       <p className="text-[#90b2cb] text-xs font-semibold uppercase mb-1">{data.label}</p>
       <div className="flex items-end justify-between">
         <h3 className="text-2xl font-bold text-white">{displayValue}</h3>
@@ -374,7 +374,7 @@ function SalesChart({ data }) {
         </div>
         <div className="flex gap-2">
           <span className="flex items-center gap-1.5 text-xs text-white bg-[#101b22] border border-[#2c3b47] px-2 py-1 rounded">
-            <span className="w-2 h-2 rounded-full bg-[#0d93f2]"></span> Revenue
+            <span className="w-2 h-2 rounded-full sv-sunset"></span> Revenue
           </span>
         </div>
       </div>
@@ -384,8 +384,8 @@ function SalesChart({ data }) {
           <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0d93f2" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#0d93f2" stopOpacity={0} />
+                <stop offset="5%" stopColor="#ff6a00" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#ff6a00" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c3b47" />
@@ -407,7 +407,7 @@ function SalesChart({ data }) {
             <Area
               type="monotone"
               dataKey="value"
-              stroke="#0d93f2"
+              stroke="#ff6a00"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorVal)"
@@ -422,7 +422,7 @@ function SalesChart({ data }) {
 function RevenueByType({ data }) {
   const [activeMenu, setActiveMenu] = useState(false);
   const items = data && data.length > 0 ? data : [];
-  const colors = ["bg-[#0d93f2]", "bg-[#3b82f6]", "bg-[#60a5fa]", "bg-[#93c5fd]"];
+  const colors = ["sv-sunset", "sv-sunset", "sv-sunset", "sv-sunset"];
 
   return (
     <div className="lg:col-span-1 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col h-[350px]">
@@ -444,7 +444,7 @@ function RevenueByType({ data }) {
         {items.map((type, i) => (
           <div key={i} className="group cursor-default">
             <div className="flex justify-between text-xs mb-2">
-              <span className="text-white font-medium group-hover:text-[#0d93f2] transition-colors">{type.label}</span>
+              <span className="text-white font-medium group-hover:text-[#ff6a00] transition-colors">{type.label}</span>
               <span className="text-white font-bold">${type.value.toLocaleString()} <span className="text-[#90b2cb] font-normal">({type.percent}%)</span></span>
             </div>
             <div className="w-full bg-[#101b22] h-2.5 rounded-full overflow-hidden">
@@ -473,13 +473,13 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
                 onSearch(e.target.value);
                 onPageChange(1);
               }}
-              className="bg-[#101b22] border border-[#2c3b47] text-white text-xs rounded px-3 py-2 pl-9 focus:outline-none focus:border-[#0d93f2] w-full placeholder-[#90b2cb]/50"
+              className="bg-[#101b22] border border-[#2c3b47] text-white text-xs rounded px-3 py-2 pl-9 focus:outline-none focus:border-[#a855f7] w-full placeholder-[#90b2cb]/50"
               placeholder="Search ID or Customer..."
               type="text"
             />
             <Search className="absolute left-2.5 top-2 w-4 h-4 text-[#90b2cb]" />
           </div>
-          <button className="text-[#90b2cb] hover:text-white px-2 bg-[#101b22] border border-[#2c3b47] rounded hover:border-[#0d93f2] transition-colors">
+          <button className="text-[#90b2cb] hover:text-white px-2 bg-[#101b22] border border-[#2c3b47] rounded hover:border-[#a855f7] transition-colors">
             <Filter className="w-4 h-4" />
           </button>
         </div>
@@ -502,7 +502,7 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
             {data.length > 0 ? (
               data.map((trx, i) => (
                 <tr key={i} className="hover:bg-[#2c3b47]/30 transition-colors group">
-                  <td className="px-6 py-3 font-mono text-xs text-[#90b2cb] group-hover:text-[#0d93f2] transition-colors">{trx.id}</td>
+                  <td className="px-6 py-3 font-mono text-xs text-[#90b2cb] group-hover:text-[#ff6a00] transition-colors">{trx.id}</td>
                   <td className="px-6 py-3">{trx.date}</td>
                   <td className="px-6 py-3 text-white font-medium">{trx.customer}</td>
                   <td className="px-6 py-3">{trx.type}</td>
@@ -548,7 +548,7 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
               <button
                 key={p}
                 onClick={() => onPageChange(p)}
-                className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${page === p ? 'bg-[#0d93f2] text-white font-bold' : 'hover:bg-[#2c3b47]'}`}
+                className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${page === p ? 'sv-sunset text-white font-bold' : 'hover:bg-[#2c3b47]'}`}
               >
                 {p}
               </button>

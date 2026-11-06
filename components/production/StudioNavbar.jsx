@@ -204,7 +204,7 @@ export default function StudioNavbar({ projectId }) {
               onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#2c3e50] bg-[#0b1219] hover:bg-[#182234] hover:border-gray-500 transition-all group"
             >
-              <Folder className={`w-4 h-4 ${currentId ? 'text-[#00d4ff]' : 'text-gray-500'}`} />
+              <Folder className={`w-4 h-4 ${currentId ? 'text-[#ffb000]' : 'text-gray-500'}`} />
               <span className={`text-sm font-bold max-w-[140px] truncate ${currentId ? 'text-white' : 'text-gray-400'}`}>
                 {projectTitle}
               </span>
@@ -223,7 +223,7 @@ export default function StudioNavbar({ projectId }) {
                       onClick={() => handleProjectSelect(p)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-1
                                 ${((p.id || p.eventId) == currentId)
-                          ? 'bg-[#00d4ff]/10 text-[#00d4ff]'
+                          ? 'bg-[#ff6a00]/10 text-[#ffb000]'
                           : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
                     >
                       <span className="truncate">{p.title}</span>
@@ -253,7 +253,7 @@ export default function StudioNavbar({ projectId }) {
                   onClick={item.onClick}
                   className={`h-full flex items-center px-4 text-[11px] font-bold uppercase tracking-wider transition-colors border-b-[3px] 
                   ${active
-                      ? 'text-white bg-white/5 border-[#00d4ff] shadow-[inset_0_-2px_6px_rgba(0,212,255,0.15)]'
+                      ? 'text-white bg-white/5 border-[#a855f7] shadow-[inset_0_-2px_6px_rgba(255,106,0,0.15)]'
                       : 'text-[#90b2cb] border-transparent hover:text-white hover:border-white/20 hover:bg-white/5'
                     }`}
                 >
@@ -272,7 +272,7 @@ export default function StudioNavbar({ projectId }) {
             onClick={() => setIsSearchOpen(true)}
             className="hidden md:flex items-center bg-[#0b1219] border border-[#2c3e50] rounded-full px-3 py-1.5 gap-2 group cursor-pointer hover:border-gray-500 transition-colors"
           >
-            <Search className="w-4 h-4 text-[#90b2cb] group-hover:text-[#00d4ff] transition-colors" />
+            <Search className="w-4 h-4 text-[#90b2cb] group-hover:text-[#ffb000] transition-colors" />
             <span className="text-[10px] text-[#90b2cb] font-mono group-hover:text-white uppercase">Search (Ctrl+K)</span>
           </div>
 
@@ -283,7 +283,7 @@ export default function StudioNavbar({ projectId }) {
             {}
             <button
               onClick={() => setIsMsgModalOpen(true)}
-              className="text-[#90b2cb] hover:text-[#00d4ff] transition-colors p-1"
+              className="text-[#90b2cb] hover:text-[#ffb000] transition-colors p-1"
               title="Message Artist"
             >
               <MessageSquare className="w-5 h-5" />
@@ -304,7 +304,7 @@ export default function StudioNavbar({ projectId }) {
                 <div className="absolute right-0 top-12 w-80 bg-[#18181B] border border-[#2c3e50] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right z-50">
                   <div className="p-3 border-b border-[#2c3e50] bg-[#1d2b36] flex justify-between items-center">
                     <span className="text-white font-bold text-sm">Notifications</span>
-                    <span className="text-xs text-[#00d4ff]">{notifications.length} New</span>
+                    <span className="text-xs text-[#ffb000]">{notifications.length} New</span>
                   </div>
                   <div className="max-h-[300px] overflow-y-auto">
                     {notifications.length === 0 ? (
@@ -335,10 +335,10 @@ export default function StudioNavbar({ projectId }) {
                 className="flex items-center gap-3 focus:outline-none group"
               >
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-bold leading-none text-white group-hover:text-[#00d4ff] transition-colors">Alex M.</p>
+                  <p className="text-sm font-bold leading-none text-white group-hover:text-[#ffb000] transition-colors">Alex M.</p>
                   <p className="text-[10px] text-[#90b2cb] leading-none mt-1">Lighting Designer</p>
                 </div>
-                <div className={`w-9 h-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 border flex items-center justify-center text-xs font-bold text-white shadow-lg transition-all ${isProfileOpen ? 'border-[#00d4ff] ring-2 ring-[#00d4ff]/20' : 'border-gray-500 group-hover:border-[#00d4ff]'}`}>
+                <div className={`w-9 h-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 border flex items-center justify-center text-xs font-bold text-white shadow-lg transition-all ${isProfileOpen ? 'border-[#a855f7] ring-2 ring-[#a855f7]/20' : 'border-gray-500 group-hover:border-[#a855f7]'}`}>
                   AM
                 </div>
                 <ChevronDown className={`hidden sm:block w-3 h-3 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180 text-white' : ''}`} />
@@ -415,7 +415,7 @@ export default function StudioNavbar({ projectId }) {
                     }}
                     className={`flex items-center px-4 py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors
                     ${active
-                        ? 'text-white bg-[#00d4ff]/10 text-[#00d4ff]'
+                        ? 'text-white bg-[#ff6a00]/10 text-[#ffb000]'
                         : 'text-[#90b2cb] hover:text-white hover:bg-white/5'
                       }`}
                   >
@@ -434,21 +434,21 @@ export default function StudioNavbar({ projectId }) {
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsMsgModalOpen(false)}>
             <div className="bg-[#18181B] border border-[#2c3e50] rounded-xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-[#00d4ff]" />
+                <MessageSquare className="w-5 h-5 text-[#ffb000]" />
                 Message to Artist
               </h3>
               <textarea
                 value={msgContent}
                 onChange={(e) => setMsgContent(e.target.value)}
                 placeholder="Enter urgent message for the artist..."
-                className="w-full h-32 bg-[#0d131a] border border-[#2c3e50] rounded-lg p-3 text-white focus:border-[#00d4ff] focus:outline-none resize-none mb-4"
+                className="w-full h-32 bg-[#0d131a] border border-[#2c3e50] rounded-lg p-3 text-white focus:border-[#a855f7] focus:outline-none resize-none mb-4"
               />
               <div className="flex justify-end gap-3">
                 <button onClick={() => setIsMsgModalOpen(false)} className="px-4 py-2 text-gray-400 hover:text-white text-sm font-bold">Cancel</button>
                 <button
                   onClick={handleSendMessage}
                   disabled={msgStatus === 'sending' || !msgContent.trim()}
-                  className="px-6 py-2 bg-[#00d4ff] hover:bg-[#00d4ff]/80 disabled:opacity-50 text-black font-bold rounded-lg text-sm transition-colors"
+                  className="px-6 py-2 sv-sunset hover:bg-[#ff6a00]/80 hover:bg-none disabled:opacity-50 text-black font-bold rounded-lg text-sm transition-colors"
                 >
                   {msgStatus === 'sending' ? 'Sending...' : msgStatus === 'success' ? 'Sent!' : 'Send Message'}
                 </button>

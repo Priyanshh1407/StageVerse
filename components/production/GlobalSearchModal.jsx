@@ -145,18 +145,18 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                                                 href={`/patch-sheet/${event.eventId || event._id}`}
                                                 onClick={onClose}
                                                 className={`flex items-center gap-3 p-3 rounded-lg group transition-colors cursor-pointer
-                                                    ${isSelected ? 'bg-[#00d4ff]/10 border border-[#00d4ff]/30' : 'hover:bg-white/5 border border-transparent'}
+                                                    ${isSelected ? 'bg-[#ff6a00]/10 border border-[#a855f7]/30' : 'hover:bg-white/5 border border-transparent'}
                                                 `}
                                                 onMouseEnter={() => setSelectedIndex(absIndex)}
                                             >
-                                                <div className="w-8 h-8 rounded bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/10 group-hover:border-[#00d4ff]/30">
+                                                <div className="w-8 h-8 rounded bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-white/10 group-hover:border-[#a855f7]/30">
                                                     <Calendar className="w-4 h-4 text-purple-400" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#00d4ff]' : 'text-white'}`}>{event.title}</div>
+                                                    <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#ffb000]' : 'text-white'}`}>{event.title}</div>
                                                     <div className="text-[11px] text-gray-500 truncate">{event.artist} • {event.city}</div>
                                                 </div>
-                                                {isSelected && <ArrowRight className="w-4 h-4 text-[#00d4ff]" />}
+                                                {isSelected && <ArrowRight className="w-4 h-4 text-[#ffb000]" />}
                                             </Link>
                                         );
                                     })}
@@ -177,18 +177,18 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                                                 href={`/logistics/${task.eventId?._id || '101'}`}
                                                 onClick={onClose}
                                                 className={`flex items-center gap-3 p-3 rounded-lg group transition-colors cursor-pointer
-                                                    ${isSelected ? 'bg-[#00d4ff]/10 border border-[#00d4ff]/30' : 'hover:bg-white/5 border border-transparent'}
+                                                    ${isSelected ? 'bg-[#ff6a00]/10 border border-[#a855f7]/30' : 'hover:bg-white/5 border border-transparent'}
                                                 `}
                                                 onMouseEnter={() => setSelectedIndex(absIndex)}
                                             >
-                                                <div className="w-8 h-8 rounded bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-white/10 group-hover:border-[#00d4ff]/30">
+                                                <div className="w-8 h-8 rounded bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-white/10 group-hover:border-[#a855f7]/30">
                                                     <Calculator className="w-4 h-4 text-amber-400" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#00d4ff]' : 'text-white'}`}>{task.title}</div>
+                                                    <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#ffb000]' : 'text-white'}`}>{task.title}</div>
                                                     <div className="text-[11px] text-gray-500 truncate">{task.assignee || 'Unassigned'} • Due {task.dueDate || 'Soon'}</div>
                                                 </div>
-                                                {isSelected && <ArrowRight className="w-4 h-4 text-[#00d4ff]" />}
+                                                {isSelected && <ArrowRight className="w-4 h-4 text-[#ffb000]" />}
                                             </Link>
                                         );
                                     })}
@@ -209,18 +209,18 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                                                 href={`/patch-studio/${patch.eventId}`}
                                                 onClick={onClose}
                                                 className={`flex items-center gap-3 p-3 rounded-lg group transition-colors cursor-pointer
-                                                    ${isSelected ? 'bg-[#00d4ff]/10 border border-[#00d4ff]/30' : 'hover:bg-white/5 border border-transparent'}
+                                                    ${isSelected ? 'bg-[#ff6a00]/10 border border-[#a855f7]/30' : 'hover:bg-white/5 border border-transparent'}
                                                 `}
                                                 onMouseEnter={() => setSelectedIndex(absIndex)}
                                             >
-                                                <div className="w-8 h-8 rounded bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center border border-white/10 group-hover:border-[#00d4ff]/30">
+                                                <div className="w-8 h-8 rounded bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center border border-white/10 group-hover:border-[#a855f7]/30">
                                                     <Zap className="w-4 h-4 text-green-400" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#00d4ff]' : 'text-white'}`}>{patch.showName}</div>
+                                                    <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#ffb000]' : 'text-white'}`}>{patch.showName}</div>
                                                     <div className="text-[11px] text-gray-500 truncate">Version {patch.version}</div>
                                                 </div>
-                                                {isSelected && <ArrowRight className="w-4 h-4 text-[#00d4ff]" />}
+                                                {isSelected && <ArrowRight className="w-4 h-4 text-[#ffb000]" />}
                                             </Link>
                                         );
                                     })}

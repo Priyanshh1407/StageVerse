@@ -61,7 +61,7 @@ export default function TicketingSelectionPage() {
               <p className="text-[#90b2cb] text-sm">Select an event to manage sales & inventory.</p>
             </div>
           </div>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0d93f2] to-purple-500 p-[1px]">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffb000] to-purple-500 p-[1px]">
              <div className="w-full h-full rounded-full bg-[#101b22] overflow-hidden relative">
                 <Image src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop" alt="Profile" fill className="object-cover" />
              </div>
@@ -79,7 +79,7 @@ export default function TicketingSelectionPage() {
                 <input 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-white focus:border-[#0d93f2] outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-white focus:border-[#a855f7] outline-none transition-colors"
                   placeholder="Find an event..." 
                 />
               </div>
@@ -87,7 +87,7 @@ export default function TicketingSelectionPage() {
                  <select 
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="h-full px-4 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-[#90b2cb] focus:border-[#0d93f2] outline-none appearance-none cursor-pointer min-w-[150px]"
+                    className="h-full px-4 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-[#90b2cb] focus:border-[#a855f7] outline-none appearance-none cursor-pointer min-w-[150px]"
                  >
                     <option value="All">All Statuses</option>
                     <option value="Live">Live</option>
@@ -102,7 +102,7 @@ export default function TicketingSelectionPage() {
             <div className="flex flex-col gap-3">
               {isLoading ? (
                 <div className="py-20 flex flex-col items-center text-[#90b2cb]">
-                   <Loader2 className="w-8 h-8 animate-spin mb-2 text-[#0d93f2]" />
+                   <Loader2 className="w-8 h-8 animate-spin mb-2 text-[#ff6a00]" />
                    <p>Loading your events...</p>
                 </div>
               ) : filteredEvents.length > 0 ? (
@@ -110,18 +110,18 @@ export default function TicketingSelectionPage() {
                   <div 
                     key={event._id} 
                     onClick={() => handleSelectEvent(event)}
-                    className="group bg-[#192734] hover:bg-[#1f2f3f] border border-[#2c3b47] hover:border-[#0d93f2]/50 rounded-xl p-5 flex items-center justify-between cursor-pointer transition-all duration-200"
+                    className="group bg-[#192734] hover:bg-[#1f2f3f] border border-[#2c3b47] hover:border-[#a855f7]/50 rounded-xl p-5 flex items-center justify-between cursor-pointer transition-all duration-200"
                   >
                     <div className="flex items-center gap-5">
                       {}
-                      <div className="hidden sm:flex flex-col items-center justify-center w-16 h-16 bg-[#101b22] rounded-lg border border-[#2c3b47] text-[#90b2cb] group-hover:text-white group-hover:border-[#0d93f2] transition-colors">
+                      <div className="hidden sm:flex flex-col items-center justify-center w-16 h-16 bg-[#101b22] rounded-lg border border-[#2c3b47] text-[#90b2cb] group-hover:text-white group-hover:border-[#a855f7] transition-colors">
                          <span className="text-xs font-bold uppercase">{new Date(event.date).toLocaleString('default', { month: 'short' })}</span>
                          <span className="text-xl font-bold">{new Date(event.date).getDate()}</span>
                       </div>
                       
                       {}
                       <div>
-                        <h3 className="text-lg font-bold text-white group-hover:text-[#0d93f2] transition-colors">{event.title}</h3>
+                        <h3 className="text-lg font-bold text-white group-hover:text-[#ff6a00] transition-colors">{event.title}</h3>
                         <div className="flex items-center gap-3 text-sm text-[#90b2cb] mt-1">
                            <span className="flex items-center gap-1"><Ticket className="w-3 h-3" /> {event.ticketTiers?.length || 0} Tiers</span>
                            <span>•</span>
@@ -141,7 +141,7 @@ export default function TicketingSelectionPage() {
                     {}
                     <div className="flex items-center gap-3">
                        <span className="hidden sm:block text-sm font-medium text-[#90b2cb] group-hover:text-white transition-colors">Manage Tickets</span>
-                       <div className="w-8 h-8 rounded-full bg-[#101b22] flex items-center justify-center text-[#90b2cb] group-hover:bg-[#0d93f2] group-hover:text-white transition-all">
+                       <div className="w-8 h-8 rounded-full bg-[#101b22] flex items-center justify-center text-[#90b2cb] group-hover:sv-sunset group-hover:text-white transition-all">
                           <ArrowRight className="w-4 h-4" />
                        </div>
                     </div>

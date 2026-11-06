@@ -108,7 +108,7 @@ export default function ArtistNavbar() {
               <div className="absolute right-0 top-12 w-80 bg-white dark:bg-[#1e2e38] border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right z-50">
                 <div className="p-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#18242e] flex justify-between items-center">
                   <span className="text-slate-900 dark:text-white font-bold text-sm">Crew Messages</span>
-                  <span className="text-xs text-[#0d93f2] font-bold">{notifications.length} New</span>
+                  <span className="text-xs text-[#ff6a00] font-bold">{notifications.length} New</span>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto">
                   {notifications.length === 0 ? (
@@ -117,7 +117,7 @@ export default function ArtistNavbar() {
                     notifications.map(note => (
                       <div key={note._id} className="p-3 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex justify-between items-start">
                         <div className="flex items-start gap-3">
-                          <div className="mt-1.5 w-2 h-2 rounded-full bg-[#0d93f2] flex-shrink-0"></div>
+                          <div className="mt-1.5 w-2 h-2 rounded-full sv-sunset flex-shrink-0"></div>
                           <div>
                             <p className="text-slate-800 dark:text-white text-sm font-medium leading-tight">{note.title.replace('Crew Message: ', '')}</p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
@@ -167,7 +167,7 @@ export default function ArtistNavbar() {
               href={item.href}
               onClick={() => setIsMobileMenuOpen(false)} // Close menu on click
               className={`px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive(item.href)
-                ? 'font-bold text-[#0d93f2] bg-[#0d93f2]/10'
+                ? 'font-bold text-[#ff6a00] bg-[#ff6a00]/10'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#223949]'
                 }`}
             >
@@ -193,7 +193,7 @@ function NavLink({ href, children, active }) {
     <Link
       href={href}
       className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${active
-        ? 'font-bold text-[#0d93f2] bg-[#0d93f2]/10'
+        ? 'font-bold text-[#ff6a00] bg-[#ff6a00]/10'
         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#223949]'
         }`}
     >

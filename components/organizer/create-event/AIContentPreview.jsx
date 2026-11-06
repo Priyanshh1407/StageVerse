@@ -49,7 +49,7 @@ export default function AIContentPreview({ content, onRequestAI }) {
         {}
         <div className="flex-1 bg-white dark:bg-[#192734] rounded-xl border border-slate-200 dark:border-[#2c3b47] flex items-center justify-center text-slate-500">
           <div className="text-center p-8">
-            <RefreshCw className="w-12 h-12 mx-auto mb-4 text-[#0d93f2] animate-pulse" />
+            <RefreshCw className="w-12 h-12 mx-auto mb-4 text-[#ff6a00] animate-pulse" />
             <h3 className="text-lg font-bold text-white">Ready to Dream?</h3>
             <p className="max-w-xs mx-auto mt-2">Fill the form and hit &quot;Generate AI&quot; to see the magic here.</p>
           </div>

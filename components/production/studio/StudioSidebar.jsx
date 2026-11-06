@@ -169,7 +169,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
          <div className="p-5 flex flex-col gap-6 h-full">
 
             <div className="flex items-center gap-2 pb-2 border-b border-[#27272A]">
-               <PlusCircle className="text-blue-500 w-5 h-5" />
+               <PlusCircle className="text-orange-500 w-5 h-5" />
                <h2 className="text-white font-bold text-lg tracking-tight">Add New Group</h2>
             </div>
 
@@ -181,7 +181,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                         <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Fixture Profile</label>
                         <button
                            onClick={() => setShowModal(true)}
-                           className="text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-1 font-bold uppercase tracking-wider"
+                           className="text-[10px] text-orange-400 hover:text-orange-300 flex items-center gap-1 font-bold uppercase tracking-wider"
                         >
                            <PlusCircle className="w-3 h-3" /> New
                         </button>
@@ -191,7 +191,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                            value={selectedProfileId}
                            onChange={(e) => setSelectedProfileId(e.target.value)}
                            disabled={isLoadingProfiles}
-                           className="w-full bg-[#18181B] border border-[#2c3e50] text-white text-sm rounded-lg focus:ring-1 focus:ring-blue-500 block p-2.5 appearance-none cursor-pointer hover:border-[#3F3F46] transition-colors disabled:opacity-50"
+                           className="w-full bg-[#18181B] border border-[#2c3e50] text-white text-sm rounded-lg focus:ring-1 focus:ring-purple-500 block p-2.5 appearance-none cursor-pointer hover:border-[#3F3F46] transition-colors disabled:opacity-50"
                         >
                            {isLoadingProfiles ? <option>Loading...</option> : (
                               profiles.length > 0 ? (
@@ -214,7 +214,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      <input
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
-                        className="bg-[#18181B] border border-[#27272A] text-white text-sm rounded-lg focus:ring-1 focus:ring-blue-500 block w-full p-2.5 outline-none hover:border-[#3F3F46] transition-colors"
+                        className="bg-[#18181B] border border-[#27272A] text-white text-sm rounded-lg focus:ring-1 focus:ring-purple-500 block w-full p-2.5 outline-none hover:border-[#3F3F46] transition-colors"
                         type="number"
                         min="1"
                         max="512"
@@ -228,7 +228,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      <select
                         value={role}
                         onChange={(e) => setRole(e.target.value)}
-                        className="w-full bg-[#18181B] border border-[#27272A] text-white text-sm rounded-lg focus:ring-1 focus:ring-blue-500 block p-2.5 appearance-none cursor-pointer hover:border-[#3F3F46] transition-colors"
+                        className="w-full bg-[#18181B] border border-[#27272A] text-white text-sm rounded-lg focus:ring-1 focus:ring-purple-500 block p-2.5 appearance-none cursor-pointer hover:border-[#3F3F46] transition-colors"
                      >
                         <option value="Intro Sequence">Intro Sequence</option>
                         <option value="Drum Solo">Drum Solo</option>
@@ -246,7 +246,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      <button
                         onClick={handleAiPatch}
                         disabled={isGenerating}
-                        className="text-[10px] text-blue-500 hover:text-white hover:bg-blue-500 transition-colors flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-[10px] text-orange-500 hover:text-white hover:sv-sunset transition-colors flex items-center gap-1 bg-orange-500/10 px-2 py-0.5 rounded border border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                      >
                         {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
                         {isGenerating ? 'Thinking...' : 'AI Assist'}
@@ -255,14 +255,14 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                   <textarea
                      value={logic}
                      onChange={(e) => setLogic(e.target.value)}
-                     className="flex-1 bg-[#18181B] border border-[#27272A] text-gray-300 text-sm rounded-lg focus:ring-1 focus:ring-blue-500 block w-full p-3 resize-none placeholder:text-gray-600 font-mono leading-relaxed outline-none hover:border-[#3F3F46] transition-colors"
+                     className="flex-1 bg-[#18181B] border border-[#27272A] text-gray-300 text-sm rounded-lg focus:ring-1 focus:ring-purple-500 block w-full p-3 resize-none placeholder:text-gray-600 font-mono leading-relaxed outline-none hover:border-[#3F3F46] transition-colors"
                      placeholder="Patch these sequentially starting from Universe 2..."
                   ></textarea>
                </div>
 
                <button
                   onClick={handleSubmit}
-                  className="bg-blue-600 hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.3)] w-full text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]"
+                  className="sv-sunset hover:brightness-110 shadow-[0_0_15px_rgba(255,106,0,0.3)] w-full text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]"
                >
                   <PlusCircle className="w-5 h-5" />
                   Add To Patch
@@ -289,7 +289,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      <div>
                         <label className="block text-xs font-bold text-gray-400 mb-1">Manufacturer</label>
                         <input
-                           className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                           className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                            placeholder="e.g. Clay Paky"
                            value={newManufacturer}
                            onChange={e => setNewManufacturer(e.target.value)}
@@ -299,7 +299,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      <div>
                         <label className="block text-xs font-bold text-gray-400 mb-1">Model Name</label>
                         <input
-                           className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                           className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                            placeholder="e.g. Sharpy"
                            value={newModel}
                            onChange={e => setNewModel(e.target.value)}
@@ -310,7 +310,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                         <div>
                            <label className="block text-xs font-bold text-gray-400 mb-1">Mode Name</label>
                            <input
-                              className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                              className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                               value={newModeName}
                               onChange={e => setNewModeName(e.target.value)}
                               required
@@ -320,7 +320,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                            <label className="block text-xs font-bold text-gray-400 mb-1">Channels</label>
                            <input
                               type="number"
-                              className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                              className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                               value={newChannels}
                               onChange={e => setNewChannels(e.target.value)}
                               min={1}
@@ -332,7 +332,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      <button
                         type="submit"
                         disabled={isCreating}
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
+                        className="w-full sv-sunset hover:brightness-110 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
                      >
                         {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
                         Create Profile

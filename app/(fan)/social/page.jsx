@@ -16,7 +16,7 @@ function Avatar({ name, src, size = 48 }) {
     );
   }
   return (
-    <div className="shrink-0 rounded-full bg-[#0d93f2]/20 text-[#0d93f2] font-bold flex items-center justify-center" style={{ width: size, height: size }}>
+    <div className="shrink-0 rounded-full bg-[#ff6a00]/20 text-[#ff6a00] font-bold flex items-center justify-center" style={{ width: size, height: size }}>
       {name.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()}
     </div>
   );
@@ -103,18 +103,18 @@ export default function SocialPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search friends..."
-                  className="w-full bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-lg py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#0d93f2]"
+                  className="w-full bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-lg py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#a855f7]"
                 />
               </div>
             </div>
 
             {isLoading ? (
-              <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-[#0d93f2]" /></div>
+              <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-[#ff6a00]" /></div>
             ) : (
               <>
                 {goingWith.length > 0 && (
                   <section>
-                    <h3 className="text-lg font-bold flex items-center gap-2 mb-4"><Ticket className="w-5 h-5 text-[#0d93f2]" />Shows your friends are going to</h3>
+                    <h3 className="text-lg font-bold flex items-center gap-2 mb-4"><Ticket className="w-5 h-5 text-[#ff6a00]" />Shows your friends are going to</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {goingWith.map((event) => (
                         <div key={event.id} className="flex gap-4 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
@@ -148,7 +148,7 @@ export default function SocialPage() {
                 )}
 
                 <section>
-                  <h3 className="text-lg font-bold flex items-center gap-2 mb-4"><Users className="w-5 h-5 text-[#0d93f2]" />Following ({following.length})</h3>
+                  <h3 className="text-lg font-bold flex items-center gap-2 mb-4"><Users className="w-5 h-5 text-[#ff6a00]" />Following ({following.length})</h3>
                   {shownFollowing.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {shownFollowing.map((f) => (
@@ -164,7 +164,7 @@ export default function SocialPage() {
                             {f.sharedShows > 0 ? `${f.sharedShows} show${f.sharedShows > 1 ? 's' : ''} together` : 'No shows together yet'}
                           </p>
                           {f.nextShow && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Next: <span className="text-[#0d93f2] font-medium">{f.nextShow.title}</span>, {showDate(f.nextShow.date)}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Next: <span className="text-[#ff6a00] font-medium">{f.nextShow.title}</span>, {showDate(f.nextShow.date)}</p>
                           )}
                           <button
                             onClick={() => setFollow(f, false)}
@@ -179,14 +179,14 @@ export default function SocialPage() {
                   ) : (
                     <div className="py-10 text-center text-slate-500 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl">
                       {q ? 'No friends match your search.' : 'You are not following anyone yet. Start with the people below, or find shows on '}
-                      {!q && <Link href="/discover" className="text-[#0d93f2] font-medium">Discover</Link>}
+                      {!q && <Link href="/discover" className="text-[#ff6a00] font-medium">Discover</Link>}
                     </div>
                   )}
                 </section>
 
                 {suggestions.length > 0 && (
                   <section>
-                    <h3 className="text-lg font-bold flex items-center gap-2 mb-4"><UserPlus className="w-5 h-5 text-[#0d93f2]" />People going to your shows</h3>
+                    <h3 className="text-lg font-bold flex items-center gap-2 mb-4"><UserPlus className="w-5 h-5 text-[#ff6a00]" />People going to your shows</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {suggestions.map((p) => (
                         <div key={p.id} className="bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-3">
@@ -198,7 +198,7 @@ export default function SocialPage() {
                           <button
                             onClick={() => setFollow(p, true)}
                             disabled={busy === p.id}
-                            className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white disabled:opacity-50"
+                            className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white disabled:opacity-50"
                           >
                             <UserPlus className="w-4 h-4" /> Follow
                           </button>

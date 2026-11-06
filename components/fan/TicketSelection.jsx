@@ -72,7 +72,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
           </button>
         )}
         <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          {step === 1 ? <><Ticket className="w-5 h-5 text-[#0d93f2]" /> Select Tickets</> : 'Confirm Details'}
+          {step === 1 ? <><Ticket className="w-5 h-5 text-[#ff6a00]" /> Select Tickets</> : 'Confirm Details'}
         </h3>
       </div>
 
@@ -93,8 +93,8 @@ export default function TicketSelection({ eventId, tiers = [] }) {
                     ${isSoldOut
                       ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-[#101b22] border-slate-200 dark:border-[#2c3b47]'
                       : isSelected
-                        ? 'border-[#0d93f2] bg-[#0d93f2]/10 ring-1 ring-[#0d93f2]'
-                        : 'border-slate-200 dark:border-[#2c3b47] bg-white dark:bg-[#101b22] hover:border-[#0d93f2]/50'}
+                        ? 'border-[#a855f7] bg-[#ff6a00]/10 ring-1 ring-[#a855f7]'
+                        : 'border-slate-200 dark:border-[#2c3b47] bg-white dark:bg-[#101b22] hover:border-[#a855f7]/50'}
                   `}
                 >
                   <div>
@@ -105,7 +105,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-slate-900 dark:text-white">${tier.price}</p>
-                    {isSelected && <CheckCircle className="w-4 h-4 text-[#0d93f2] absolute top-2 right-2" />}
+                    {isSelected && <CheckCircle className="w-4 h-4 text-[#ff6a00] absolute top-2 right-2" />}
                   </div>
                 </div>
               );
@@ -131,7 +131,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
           <button
             onClick={handleProceed}
             disabled={!selectedTierId}
-            className="w-full py-3.5 rounded-xl font-bold text-white bg-[#0d93f2] hover:bg-[#0b84db] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full py-3.5 rounded-xl font-bold text-white sv-sunset hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             Continue
           </button>
@@ -151,7 +151,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
             <div className="h-px bg-slate-200 dark:bg-[#2c3b47] my-3"></div>
             <div className="flex justify-between items-center">
               <span className="text-slate-900 dark:text-white font-bold text-sm">Total Due</span>
-              <span className="text-xl font-black text-[#0d93f2]">${totalPrice}</span>
+              <span className="text-xl font-black text-[#ff6a00]">${totalPrice}</span>
             </div>
           </div>
 
@@ -164,7 +164,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
                 <input
                   value={buyerName}
                   onChange={(e) => setBuyerName(e.target.value)}
-                  className="w-full pl-10 p-2.5 bg-slate-50 dark:bg-[#101b22] border border-slate-200 dark:border-[#2c3b47] rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#0d93f2]"
+                  className="w-full pl-10 p-2.5 bg-slate-50 dark:bg-[#101b22] border border-slate-200 dark:border-[#2c3b47] rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#a855f7]"
                   placeholder="Who is this ticket for?"
                 />
               </div>
@@ -184,7 +184,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
           <button
             onClick={handleBuy}
             disabled={isBuying || !buyerName}
-            className="w-full py-3.5 rounded-xl font-bold text-white bg-[#0d93f2] hover:bg-[#0b84db] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0d93f2]/20"
+            className="w-full py-3.5 rounded-xl font-bold text-white sv-sunset hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#ff6a00]/20"
           >
             {isBuying ? <Loader2 className="w-5 h-5 animate-spin" /> : `Pay $${totalPrice}`}
           </button>

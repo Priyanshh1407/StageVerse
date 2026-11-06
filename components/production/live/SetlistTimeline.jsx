@@ -22,7 +22,7 @@ export default function SetlistTimeline({ items = [] }) {
           <span className="text-slate-400 font-bold text-sm uppercase group-hover:text-white transition-colors">Manual Override</span>
           <div className="relative inline-flex items-center cursor-pointer">
             <input className="sr-only peer" type="checkbox" />
-            <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0d93f2]"></div>
+            <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:sv-sunset"></div>
           </div>
         </label>
       </div>
@@ -48,12 +48,12 @@ function TimelineItem({ item, index }) {
   if (item.status === 'live') {
     return (
       <div className="relative">
-        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#0d93f2] rounded-r"></div>
-        <div className="flex gap-4 p-3 rounded-lg bg-[#0d93f2]/10 border border-[#0d93f2]/30">
-          <span className="text-[#0d93f2] font-mono text-sm pt-1 animate-pulse">{displayId}</span>
+        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 sv-sunset rounded-r"></div>
+        <div className="flex gap-4 p-3 rounded-lg bg-[#ff6a00]/10 border border-[#a855f7]/30">
+          <span className="text-[#ff6a00] font-mono text-sm pt-1 animate-pulse">{displayId}</span>
           <div>
             <p className="text-white font-bold text-lg leading-tight">{item.title}</p>
-            <p className="text-[#0d93f2] text-xs font-bold uppercase mt-1">Live Now</p>
+            <p className="text-[#ff6a00] text-xs font-bold uppercase mt-1">Live Now</p>
           </div>
         </div>
       </div>
@@ -65,7 +65,7 @@ function TimelineItem({ item, index }) {
         <span className="text-slate-400 font-mono text-sm pt-1 group-hover:text-white">{displayId}</span>
         <div className="flex-1">
           <div className="flex justify-between items-start">
-            <p className="text-white font-bold text-lg leading-tight group-hover:text-[#0d93f2] transition-colors">{item.title}</p>
+            <p className="text-white font-bold text-lg leading-tight group-hover:text-[#ff6a00] transition-colors">{item.title}</p>
             {item.duration && <span className="text-xs font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">{item.duration}</span>}
           </div>
           <p className="text-slate-400 text-xs font-medium uppercase mt-1">{item.notes}</p>

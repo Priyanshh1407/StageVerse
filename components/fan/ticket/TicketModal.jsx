@@ -28,7 +28,7 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
       <div className="relative w-full max-w-sm bg-white dark:bg-[#1a2632] rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-[85vh] md:h-auto">
         
         {}
-        <div className="bg-[#0d93f2] p-6 text-white text-center relative shrink-0">
+        <div className="sv-sunset p-6 text-white text-center relative shrink-0">
           <h3 className="text-xl font-bold">{ticket.artist}</h3>
           <p className="text-sm opacity-90">{ticket.date} • {ticket.time}</p>
           <p className="text-xs opacity-75 mt-1">{ticket.venue}</p>
@@ -65,10 +65,10 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
             <QrCode className="text-white w-32 h-32 relative z-10" />
             
             {}
-            <div className="absolute top-0 left-0 w-full h-1 bg-[#0d93f2] shadow-[0_0_15px_rgba(13,147,242,0.8)] z-20 animate-scan"></div>
+            <div className="absolute top-0 left-0 w-full h-1 sv-sunset shadow-[0_0_15px_rgba(255,106,0,0.8)] z-20 animate-scan"></div>
             
             {}
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-purple-500/20 opacity-50"></div>
           </div>
 
           <p className="text-xs text-slate-400 mt-4 font-mono tracking-widest">
@@ -88,10 +88,10 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
           </button>
 
           <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 py-2.5 bg-[#0d93f2]/10 text-[#0d93f2] rounded-lg font-bold text-xs hover:bg-[#0d93f2]/20 transition-colors">
+            <button className="flex items-center justify-center gap-2 py-2.5 bg-[#ff6a00]/10 text-[#ff6a00] rounded-lg font-bold text-xs hover:bg-[#ff6a00]/20 transition-colors">
               <Share2 className="w-3.5 h-3.5" /> Transfer
             </button>
-            <button className="flex items-center justify-center gap-2 py-2.5 bg-[#0d93f2]/10 text-[#0d93f2] rounded-lg font-bold text-xs hover:bg-[#0d93f2]/20 transition-colors">
+            <button className="flex items-center justify-center gap-2 py-2.5 bg-[#ff6a00]/10 text-[#ff6a00] rounded-lg font-bold text-xs hover:bg-[#ff6a00]/20 transition-colors">
               <RefreshCw className="w-3.5 h-3.5" /> Sell
             </button>
           </div>

@@ -108,7 +108,7 @@ export default function MemoryVaultPage() {
   const years = useMemo(()=>['Any Date', ...new Set(memories.map(m => new Date(m.date).getFullYear().toString()))],[memories]);
 
   return (
-    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#0d93f2]/30 relative">
+    <div className="flex h-screen w-full bg-[#f5f7f8] dark:bg-[#101b22] font-sans text-slate-900 dark:text-white overflow-hidden selection:bg-[#ffb000]/30 relative">
       
       <FanSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -135,12 +135,12 @@ export default function MemoryVaultPage() {
               <div className="flex flex-col gap-2">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Your Memory Vault</h2>
                 <p className="text-slate-500 dark:text-slate-400 text-base max-w-2xl">
-                  Browse and relive your past concert experiences. You&apos;ve captured <span className="text-[#0d93f2] font-bold">1,204 photos</span> and <span className="text-[#0d93f2] font-bold">86 videos</span> across 42 shows.
+                  Browse and relive your past concert experiences. You&apos;ve captured <span className="text-[#ff6a00] font-bold">1,204 photos</span> and <span className="text-[#ff6a00] font-bold">86 videos</span> across 42 shows.
                 </p>
               </div>
               <button 
                 onClick={() => setIsUploadModalOpen(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white rounded-xl text-sm font-bold shadow-lg shadow-[#0d93f2]/20 transition-all hover:-translate-y-0.5"
+                className="flex items-center justify-center gap-2 px-6 py-3 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white rounded-xl text-sm font-bold shadow-lg shadow-[#ff6a00]/20 transition-all hover:-translate-y-0.5"
               >
                 <Plus className="w-5 h-5" />
                 Upload New Memories
@@ -155,7 +155,7 @@ export default function MemoryVaultPage() {
                 {}
                 <div className="relative group min-w-[140px]">
                   <select 
-                    className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
+                    className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#a855f7] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
                     value={selectedArtist}
                     onChange={(e) => setSelectedArtist(e.target.value)}
                   >
@@ -167,7 +167,7 @@ export default function MemoryVaultPage() {
                 {}
                 <div className="relative group min-w-[140px]">
                   <select 
-                    className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
+                    className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#a855f7] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
                     value={selectedVenue}
                     onChange={(e) => setSelectedVenue(e.target.value)}
                   >
@@ -179,7 +179,7 @@ export default function MemoryVaultPage() {
                 {}
                 <div className="relative group min-w-[140px]">
                   <select 
-                    className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#0d93f2] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
+                    className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm font-medium rounded-lg py-2 pl-3 pr-10 focus:ring-2 focus:ring-[#a855f7] cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e2a35] transition-colors appearance-none outline-none"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
                   >
@@ -193,7 +193,7 @@ export default function MemoryVaultPage() {
                 <div className="relative flex-1 md:w-64">
                   <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
                   <input 
-                    className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm rounded-lg py-2 pl-10 pr-4 placeholder-slate-500 focus:ring-2 focus:ring-[#0d93f2] outline-none" 
+                    className="w-full bg-slate-50 dark:bg-[#151f28] border-none text-slate-900 dark:text-white text-sm rounded-lg py-2 pl-10 pr-4 placeholder-slate-500 focus:ring-2 focus:ring-[#a855f7] outline-none" 
                     placeholder="Search memories..." 
                     type="text"
                     value={searchQuery}
@@ -264,7 +264,7 @@ export default function MemoryVaultPage() {
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 p-3 bg-[#0d93f2] text-white rounded-full shadow-lg hover:bg-[#0d93f2]/90 transition-all z-50 animate-in fade-in slide-in-from-bottom-4"
+          className="fixed bottom-8 right-8 p-3 sv-sunset text-white rounded-full shadow-lg hover:bg-[#ff6a00]/90 hover:bg-none transition-all z-50 animate-in fade-in slide-in-from-bottom-4"
           aria-label="Scroll to top"
         >
           <ArrowUp className="w-6 h-6" />
@@ -326,7 +326,7 @@ function MemoryCard({ item, onOpen }) {
           </div>
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-1 rounded bg-[#0d93f2] text-white text-xs font-bold uppercase">Video</span>
+              <span className="px-2 py-1 rounded sv-sunset text-white text-xs font-bold uppercase">Video</span>
               <span className="text-slate-200 text-xs font-medium">{item.duration}</span>
             </div>
             <h3 className="text-white font-bold text-2xl leading-tight">{item.title}</h3>
@@ -347,8 +347,8 @@ function MemoryCard({ item, onOpen }) {
     return (
       <div onClick={onOpen} className="group relative rounded-2xl overflow-hidden cursor-pointer bg-[#223949] border border-slate-700/50 border-dashed flex flex-col shadow-sm">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center relative z-10">
-          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:bg-[#0d93f2]/20 group-hover:scale-110 transition-all duration-300">
-            <Ticket className="text-slate-400 w-8 h-8 group-hover:text-[#0d93f2] transition-colors" />
+          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 group-hover:bg-[#ff6a00]/20 group-hover:scale-110 transition-all duration-300">
+            <Ticket className="text-slate-400 w-8 h-8 group-hover:text-[#ff6a00] transition-colors" />
           </div>
           <p className="text-slate-400 text-xs font-mono tracking-widest uppercase mb-1">Digital Stub</p>
           <h3 className="text-white font-bold text-xl">{item.title}</h3>
@@ -367,8 +367,8 @@ function MemoryCard({ item, onOpen }) {
            <Image src={item.image} alt={item.title} fill className="object-cover opacity-60 transition-transform duration-500 group-hover:scale-110" />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-          <div className="w-12 h-12 rounded-full bg-[#0d93f2]/20 flex items-center justify-center mb-2">
-            <MapPin className="text-[#0d93f2] w-6 h-6" />
+          <div className="w-12 h-12 rounded-full bg-[#ff6a00]/20 flex items-center justify-center mb-2">
+            <MapPin className="text-[#ff6a00] w-6 h-6" />
           </div>
           <h3 className="text-white font-bold text-lg text-center relative z-10">{item.title}</h3>
           <p className="text-slate-300 text-xs text-center relative z-10">{item.subtitle}</p>

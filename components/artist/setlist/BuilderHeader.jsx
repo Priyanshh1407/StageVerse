@@ -32,7 +32,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
               className="flex items-center gap-2 text-[#90b2cb] hover:text-white transition-colors group"
             >
               <span className="text-base font-normal">Building set for:</span>
-              <span className="text-white font-bold flex items-center gap-2 bg-[#223949]/50 hover:bg-[#223949] px-3 py-1 rounded-full border border-transparent hover:border-[#0d93f2]/30 transition-all">
+              <span className="text-white font-bold flex items-center gap-2 bg-[#223949]/50 hover:bg-[#223949] px-3 py-1 rounded-full border border-transparent hover:border-[#a855f7]/30 transition-all">
                 {event.venue?.name || event.city}
                 {allEvents.length > 1 && <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />}
               </span>
@@ -50,7 +50,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
                         onSwitchEvent(evt._id);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-[#223949] transition-colors text-left ${event._id === evt._id ? 'bg-[#0d93f2]/10 text-[#0d93f2] font-bold' : 'text-slate-300'}`}
+                      className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-[#223949] transition-colors text-left ${event._id === evt._id ? 'bg-[#ff6a00]/10 text-[#ff6a00] font-bold' : 'text-slate-300'}`}
                     >
                       <div className="flex flex-col">
                         <span className="text-sm truncate">{evt.venue?.name || evt.city}</span>
@@ -79,7 +79,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
         <button
           onClick={onSave}
           disabled={!event}
-          className="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-[#0d93f2] hover:bg-[#0d93f2]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold tracking-[0.015em] transition-colors shadow-lg shadow-[#0d93f2]/20"
+          className="flex items-center justify-center gap-2 rounded-lg h-10 px-6 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold tracking-[0.015em] transition-colors shadow-lg shadow-[#ff6a00]/20"
         >
           <Save className="w-4 h-4" />
           Save Setlist

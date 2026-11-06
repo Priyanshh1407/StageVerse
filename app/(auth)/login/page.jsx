@@ -65,7 +65,7 @@ const LoginPage = () => {
       {}
       <Link
         href="/"
-        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/70 hover:text-white hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300 group"
+        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/70 hover:text-white hover:bg-white/10 hover:border-purple-500/30 transition-all duration-300 group"
       >
         <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
         <span className="text-sm font-medium hidden sm:inline">Home</span>
@@ -76,7 +76,7 @@ const LoginPage = () => {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50" />
         <div className="absolute inset-0 bg-black/60" />
         <div className="absolute top-[-20%] left-[-20%] w-[500px] h-[500px] bg-pink-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
-        <div className="absolute bottom-[-20%] right-[-20%] w-[500px] h-[500px] bg-cyan-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-20%] w-[500px] h-[500px] bg-amber-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
       </div>
 
       {}
@@ -87,9 +87,9 @@ const LoginPage = () => {
         className="relative z-10 w-[90%] max-w-lg flex flex-col items-center justify-center p-6 sm:p-12 md:p-16"
       >
         <div
-          className="absolute inset-0 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-cyan-500/50"
+          className="absolute inset-0 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-purple-500/50"
           style={{
-            boxShadow: '0 0 50px 10px rgba(6,182,212, 0.2), inset 0 0 20px rgba(6,182,212, 0.1)'
+            boxShadow: '0 0 50px 10px rgba(255,106,0, 0.2), inset 0 0 20px rgba(255,106,0, 0.1)'
           }}
         />
 
@@ -147,9 +147,9 @@ const LoginPage = () => {
               type="submit"
               disabled={isLoading}
               className="w-full py-3 sm:py-4 rounded-xl text-white font-bold text-lg sm:text-xl tracking-wider uppercase transition-all duration-300 
-                         bg-gradient-to-r from-cyan-500 to-blue-600 
-                         hover:from-cyan-400 hover:to-blue-500
-                         hover:shadow-[0_0_30px_rgba(6,182,212,0.6)]
+                         bg-gradient-to-r from-amber-500 to-pink-600 
+                         hover:from-amber-400 hover:to-pink-500
+                         hover:shadow-[0_0_30px_rgba(255,106,0,0.6)]
                          active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? 'Verifying...' : 'Login'}
@@ -165,8 +165,8 @@ const LoginPage = () => {
               type="button"
               className="w-full py-3 sm:py-4 rounded-xl text-white font-medium flex items-center justify-center gap-3 transition-all duration-300
                          bg-white/5 border border-white/10 backdrop-blur-md
-                         hover:bg-white/10 hover:border-cyan-500/30
-                         hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+                         hover:bg-white/10 hover:border-purple-500/30
+                         hover:shadow-[0_0_20px_rgba(255,106,0,0.2)]"
             >
               <Chrome className="w-5 h-5" />
               <span>Continue with Google</span>
@@ -175,7 +175,7 @@ const LoginPage = () => {
 
           <p className="mt-6 sm:mt-8 text-gray-400 text-sm">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors">
+            <Link href="/signup" className="text-amber-400 font-semibold hover:text-amber-300 transition-colors">
               Signup
             </Link>
           </p>
@@ -188,13 +188,13 @@ const LoginPage = () => {
 const InputField = ({ type, placeholder, icon: Icon, value, onChange }) => (
   <div className="relative group">
     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-      <Icon className="h-6 w-6 text-gray-500 group-focus-within:text-cyan-400 transition-colors" />
+      <Icon className="h-6 w-6 text-gray-500 group-focus-within:text-amber-400 transition-colors" />
     </div>
     <input
       type={type}
       className="block w-full pl-12 pr-4 py-3 sm:py-4 bg-black/50 border border-white/10 rounded-xl 
                text-white text-lg placeholder-gray-500 backdrop-blur-sm
-               focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50
+               focus:outline-none focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50
                transition-all duration-300"
       placeholder={placeholder}
       value={value}

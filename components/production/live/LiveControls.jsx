@@ -66,7 +66,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
       <div className="flex flex-col gap-2 shrink-0">
         <div className="flex flex-wrap justify-between items-end gap-3">
           <div className="flex flex-col">
-            <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded bg-[#0d93f2]/20 text-[#0d93f2] w-fit mb-1">
+            <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded bg-[#ff6a00]/20 text-[#ff6a00] w-fit mb-1">
               <PlayCircle className="w-3 h-3" />
               <span className="text-[10px] font-bold tracking-wider uppercase">Now Playing</span>
             </div>
@@ -79,12 +79,12 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
         {}
         <div className="flex flex-col gap-1.5 pt-1">
           <div className="flex gap-6 justify-between items-end">
-            <p className="text-[#0d93f2] text-xs font-bold tracking-widest uppercase">{currentSong.section}</p>
+            <p className="text-[#ff6a00] text-xs font-bold tracking-widest uppercase">{currentSong.section}</p>
             <p className="text-slate-400 font-mono text-xs">{currentSong.timeElapsed} <span className="text-slate-600">/</span> {currentSong.duration}</p>
           </div>
           <div className="rounded-full bg-[#16222b] border border-[#223949] h-2.5 overflow-hidden relative">
             <div
-              className="absolute h-full bg-[#0d93f2] transition-all duration-300 ease-linear"
+              className="absolute h-full sv-sunset transition-all duration-300 ease-linear"
               style={{ width: `${currentSong.progress}%` }}
             ></div>
           </div>
@@ -92,7 +92,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
       </div>
 
       {}
-      <div className="flex-1 min-h-[220px] flex flex-col relative rounded-xl overflow-hidden border-2 border-[#0d93f2]/50 shadow-[0_0_20px_rgba(13,147,242,0.1)] group">
+      <div className="flex-1 min-h-[220px] flex flex-col relative rounded-xl overflow-hidden border-2 border-[#a855f7]/50 shadow-[0_0_20px_rgba(255,106,0,0.1)] group">
         <div className="absolute inset-0 z-0">
           <div
             className="w-full h-full bg-cover bg-center opacity-40 mix-blend-luminosity group-hover:opacity-50 transition-opacity duration-500"
@@ -111,9 +111,9 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
           <div className="flex flex-col gap-1 max-w-4xl">
             <h2 className="text-white text-3xl md:text-4xl font-black leading-tight tracking-tight drop-shadow-xl uppercase">
               {currentCue.title} <br />
-              <span className="text-[#0d93f2]">{currentCue.action}</span>
+              <span className="text-[#ff6a00]">{currentCue.action}</span>
             </h2>
-            <p className="text-slate-300 text-base md:text-lg font-medium mt-1 border-l-4 border-[#0d93f2] pl-3">
+            <p className="text-slate-300 text-base md:text-lg font-medium mt-1 border-l-4 border-[#a855f7] pl-3">
               {currentCue.notes}
             </p>
           </div>
@@ -166,7 +166,7 @@ function PollMonitor({ poll, onReveal }) {
       {}
       <div className="md:col-span-8 bg-[#16222b] border border-[#223949] rounded-xl p-4 shadow-lg">
         <div className="flex items-center gap-2 mb-3">
-          <BarChart3 className="w-4 h-4 text-[#0d93f2]" />
+          <BarChart3 className="w-4 h-4 text-[#ff6a00]" />
           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{poll.title}</span>
           <span className="ml-auto text-xs text-slate-500">{totalVotes} votes</span>
         </div>
@@ -177,17 +177,17 @@ function PollMonitor({ poll, onReveal }) {
             return (
               <div key={opt.id || opt._id || idx} className="relative">
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-sm font-bold ${isWinning ? 'text-[#0d93f2]' : 'text-white'}`}>
+                  <span className={`text-sm font-bold ${isWinning ? 'text-[#ff6a00]' : 'text-white'}`}>
                     {isWinning && <span className="mr-1">👑</span>}
                     {opt.title || opt.text}
                   </span>
-                  <span className={`font-mono text-sm font-bold ${isWinning ? 'text-[#0d93f2]' : 'text-slate-400'}`}>
+                  <span className={`font-mono text-sm font-bold ${isWinning ? 'text-[#ff6a00]' : 'text-slate-400'}`}>
                     {opt.percent}%
                   </span>
                 </div>
                 <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-500 ${isWinning ? 'bg-[#0d93f2]' : 'bg-slate-600'}`}
+                    className={`h-full transition-all duration-500 ${isWinning ? 'sv-sunset' : 'bg-slate-600'}`}
                     style={{ width: `${opt.percent}%` }}
                   />
                 </div>
@@ -206,7 +206,7 @@ function PollMonitor({ poll, onReveal }) {
             ? 'bg-slate-900 border-slate-700 cursor-default opacity-90'
             : totalVotes === 0
               ? 'bg-slate-800 border-slate-700 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 border-blue-500/50 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)]'
+              : 'sv-sunset hover:brightness-110 active:brightness-110 border-purple-500/50 hover:shadow-[0_0_30px_rgba(255,106,0,0.5)]'
           }
         `}
       >
@@ -230,10 +230,10 @@ function PollMonitor({ poll, onReveal }) {
 }
 function InfoCard({ icon: Icon, title, value, sub, accent }) {
   return (
-    <div className={`bg-[#16222b] border border-[#223949] rounded-lg p-3 flex flex-col justify-center group transition-colors hover:border-[#0d93f2]/30 ${accent ? 'bg-[#0d93f2]/5 border-[#0d93f2]/20' : ''}`}>
+    <div className={`bg-[#16222b] border border-[#223949] rounded-lg p-3 flex flex-col justify-center group transition-colors hover:border-[#a855f7]/30 ${accent ? 'bg-[#ff6a00]/5 border-[#a855f7]/20' : ''}`}>
       <div className="flex items-center gap-2 mb-1">
-        <Icon className={`w-3.5 h-3.5 ${accent ? 'text-[#0d93f2]' : 'text-slate-500 group-hover:text-slate-300'}`} />
-        <span className={`text-[10px] font-bold uppercase tracking-wide ${accent ? 'text-[#0d93f2]' : 'text-slate-500 group-hover:text-slate-300'}`}>{title}</span>
+        <Icon className={`w-3.5 h-3.5 ${accent ? 'text-[#ff6a00]' : 'text-slate-500 group-hover:text-slate-300'}`} />
+        <span className={`text-[10px] font-bold uppercase tracking-wide ${accent ? 'text-[#ff6a00]' : 'text-slate-500 group-hover:text-slate-300'}`}>{title}</span>
       </div>
       <div className="text-white font-bold text-base leading-tight truncate">{value}</div>
       <div className="text-slate-400 text-[10px] mt-0.5 font-mono truncate">{sub}</div>

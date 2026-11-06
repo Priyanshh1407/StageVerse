@@ -85,7 +85,7 @@ export default function ArtistDashboard() {
     return (
       <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-[#0d93f2] border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-[#a855f7] border-t-transparent rounded-full animate-spin"></div>
           <div className="text-slate-500 dark:text-slate-400 font-medium">Loading Tour Data...</div>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default function ArtistDashboard() {
                     <p className="font-bold text-slate-900 dark:text-white">{item.city}</p>
                     <p className="text-xs text-slate-500">{new Date(item.date).toLocaleDateString()}</p>
                   </div>
-                  <p className="font-mono font-bold text-[#0d93f2]">${(item.revenue / 1000).toFixed(1)}k</p>
+                  <p className="font-mono font-bold text-[#ff6a00]">${(item.revenue / 1000).toFixed(1)}k</p>
                 </div>
               ))}
             </div>
@@ -215,7 +215,7 @@ export default function ArtistDashboard() {
               <span className="hidden md:inline">Guests</span>
             </a>
 
-            <a href="/setlist-builder" className="group flex items-center gap-2 px-3 py-2 bg-[#0d93f2] hover:bg-[#0b84db] text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 transition-all ml-1">
+            <a href="/setlist-builder" className="group flex items-center gap-2 px-3 py-2 sv-sunset hover:brightness-110 text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/20 transition-all ml-1">
               <Music className="w-4 h-4" />
               <span>Setlist Builder</span>
             </a>

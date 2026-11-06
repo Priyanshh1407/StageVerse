@@ -13,7 +13,7 @@ const COLORS = [
     { value: '#00ff3c', label: 'Green' },
     { value: '#00ffc8', label: 'Teal' },
     { value: '#19d9ff', label: 'Cyan' },
-    { value: '#0066ff', label: 'Blue' },
+    { value: '#ff6a00', label: 'Blue' },
     { value: '#3b2bff', label: 'Deep blue' },
     { value: '#a855f7', label: 'Purple' },
     { value: '#ff3df2', label: 'Magenta' },
@@ -38,10 +38,10 @@ const dmx = (v, max = 1) => Math.round(Math.max(0, Math.min(1, (v ?? 0) / max)) 
 /** A vertical channel fader with its DMX value on top and a flash (bump) button below. */
 const Fader = ({ label, value, max = 1, onChange, onFlash, onRelease, accent = 'cyan' }) => (
     <div className="flex flex-col items-center gap-1.5 w-12 shrink-0">
-        <span className={`font-mono text-[10px] tabular-nums ${accent === 'red' ? 'text-red-300' : 'text-cyan-300'}`}>{dmx(value, max)}</span>
+        <span className={`font-mono text-[10px] tabular-nums ${accent === 'red' ? 'text-red-300' : 'text-amber-300'}`}>{dmx(value, max)}</span>
         <input type="range" min={0} max={max} step={max / 255} value={value ?? 0} aria-label={`${label} level`} aria-valuetext={`${dmx(value, max)} of 255`}
             onChange={(e) => onChange(Number(e.target.value))}
-            className={`h-28 w-6 cursor-pointer [writing-mode:vertical-lr] [direction:rtl] ${accent === 'red' ? 'accent-red-400' : 'accent-cyan-400'}`} />
+            className={`h-28 w-6 cursor-pointer [writing-mode:vertical-lr] [direction:rtl] ${accent === 'red' ? 'accent-red-400' : 'accent-orange-400'}`} />
         {onFlash ? (
             <button onPointerDown={onFlash} onPointerUp={onRelease} onPointerLeave={onRelease} aria-label={`Flash ${label}`}
                 className="w-full py-1 rounded bg-white/10 hover:bg-white/20 active:bg-yellow-300 active:text-black text-[9px] font-black tracking-wider select-none touch-none">
@@ -57,7 +57,7 @@ const Fader = ({ label, value, max = 1, onChange, onFlash, onRelease, accent = '
 const Channel = ({ label, on, onToggle, onFlash, onRelease }) => (
     <div className="flex flex-col gap-1 min-w-0">
         <button onClick={onToggle} aria-pressed={on} aria-label={`${label} ${on ? 'on' : 'off'}`}
-            className={`rounded py-2 text-[10px] font-black tracking-wider transition-colors ${on ? 'bg-cyan-400 text-black shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-white/10 text-gray-400 hover:bg-white/15'}`}>
+            className={`rounded py-2 text-[10px] font-black tracking-wider transition-colors ${on ? 'sv-sunset text-black shadow-[0_0_10px_rgba(255,176,0,0.5)]' : 'bg-white/10 text-gray-400 hover:bg-white/15'}`}>
             {on ? 'ON' : 'OFF'}
         </button>
         <button onPointerDown={onFlash} onPointerUp={onRelease} onPointerLeave={onRelease} aria-label={`Flash ${label}`}
@@ -70,8 +70,8 @@ const Channel = ({ label, on, onToggle, onFlash, onRelease }) => (
 
 const Encoder = ({ label, hint, value, min, max, step = 0.01, onChange }) => (
     <label className="block text-[10px] text-gray-400">
-        <span className="flex justify-between gap-2"><span>{label}{hint && <span className="text-gray-500"> · {hint}</span>}</span><span className="font-mono text-cyan-300">{Number(value ?? 0).toFixed(step < 1 ? 2 : 0)}</span></span>
-        <input type="range" min={min} max={max} step={step} value={value ?? 0} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-cyan-400" />
+        <span className="flex justify-between gap-2"><span>{label}{hint && <span className="text-gray-500"> · {hint}</span>}</span><span className="font-mono text-amber-300">{Number(value ?? 0).toFixed(step < 1 ? 2 : 0)}</span></span>
+        <input type="range" min={min} max={max} step={step} value={value ?? 0} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-orange-400" />
     </label>
 );
 
@@ -103,7 +103,7 @@ const Panel = ({ title, children, className = '' }) => (
 const Key = ({ on, onClick, children, danger }) => (
     <button onClick={onClick} aria-pressed={on}
         className={`px-2 py-1.5 rounded text-[10px] font-bold tracking-wide transition-colors ${on
-            ? danger ? 'bg-red-500 text-white' : 'bg-cyan-400 text-black'
+            ? danger ? 'bg-red-500 text-white' : 'sv-sunset text-black'
             : 'bg-white/10 text-gray-300 hover:bg-white/15'}`}>
         {children}
     </button>
@@ -148,7 +148,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
     if (!open) {
         return (
             <button onClick={() => onOpenChange(true)}
-                className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/80 border border-white/15 text-white text-sm font-bold hover:border-cyan-400 hover:text-cyan-300 transition-colors">
+                className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/80 border border-white/15 text-white text-sm font-bold hover:border-purple-400 hover:text-amber-300 transition-colors">
                 <Settings2 className="w-4 h-4" /> Lighting desk
             </button>
         );
@@ -163,12 +163,12 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
             {/* Console header, pinned: Resume is always in reach */}
             <div className="sticky top-0 z-10 -mx-3 px-3 pt-3 pb-2.5 mb-0.5 bg-[#07090d] flex items-center justify-between gap-3">
                 <div>
-                    <div className="font-mono text-xs font-black tracking-[0.3em] text-cyan-300">STAGEVERSE CONSOLE</div>
+                    <div className="font-mono text-xs font-black tracking-[0.3em] text-amber-300">STAGEVERSE CONSOLE</div>
                     <div className="font-mono text-[10px] text-gray-500">DMX UNIVERSE 1 · {manual ? 'DESK LIVE' : 'SHOW RUNNING · touch any control to take over'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                     {manual && (
-                        <button onClick={onResume} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-cyan-400 text-black text-[10px] font-bold">
+                        <button onClick={onResume} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded sv-sunset text-black text-[10px] font-bold">
                             <RotateCcw className="w-3 h-3" /> Resume show
                         </button>
                     )}
@@ -285,7 +285,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                             onPointerUp={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
                             onPointerLeave={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
                             onPointerCancel={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
-                            className="py-2.5 rounded bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-amber-300 active:from-white active:to-white text-black text-[11px] font-black tracking-widest select-none touch-none">
+                            className="py-2.5 rounded bg-gradient-to-r from-amber-300 via-fuchsia-300 to-amber-300 active:from-white active:to-white text-black text-[11px] font-black tracking-widest select-none touch-none">
                             ALL EFFECTS <span className="block text-[9px] font-normal text-black/60">hold</span>
                         </button>
                         <button onClick={() => ALL_EFFECTS.forEach((k) => onEffect(k, 'burst'))}
@@ -297,9 +297,9 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 </div>
                 {/* Special effects: hold to keep every unit firing, or a pattern across the units */}
                 {[
-                    { kind: 'co2', title: 'CO2 JETS', hold: 'CO2 BLAST', name: 'CO2', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
-                    { kind: 'co2Truss', title: 'CO2 ON THE TRUSS', hold: 'TRUSS BLAST', name: 'TRUSS', className: 'from-sky-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
-                    { kind: 'confetti', title: 'CONFETTI', hold: 'CONFETTI', name: 'CONFETTI', patterns: CANNON_PATTERNS, holdHint: 'hold: keeps pouring', className: 'from-fuchsia-300 to-cyan-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
+                    { kind: 'co2', title: 'CO2 JETS', hold: 'CO2 BLAST', name: 'CO2', className: 'from-amber-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
+                    { kind: 'co2Truss', title: 'CO2 ON THE TRUSS', hold: 'TRUSS BLAST', name: 'TRUSS', className: 'from-amber-200/90 to-slate-400/90 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
+                    { kind: 'confetti', title: 'CONFETTI', hold: 'CONFETTI', name: 'CONFETTI', patterns: CANNON_PATTERNS, holdHint: 'hold: keeps pouring', className: 'from-fuchsia-300 to-pink-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                     { kind: 'streamers', title: 'STREAMERS', hold: 'STREAMERS', name: 'STREAMERS', patterns: CANNON_PATTERNS, holdHint: 'hold for more', className: 'from-amber-200 to-slate-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                 ].map((fx) => (
                     <div key={fx.kind} className="mt-2 pt-2 border-t border-white/10">
@@ -348,7 +348,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     ))}
                 </div>
                 <button onClick={onFinale}
-                    className="mt-2 w-full py-2.5 rounded bg-gradient-to-r from-amber-400 via-fuchsia-500 to-cyan-400 hover:brightness-110 text-black text-[12px] font-black tracking-[0.3em]">
+                    className="mt-2 w-full py-2.5 rounded bg-gradient-to-r from-amber-400 via-fuchsia-500 to-pink-400 hover:brightness-110 text-black text-[12px] font-black tracking-[0.3em]">
                     FINALE <span className="block text-[9px] font-normal tracking-normal text-black/70">a barrage building to one big closing volley</span>
                 </button>
                 <div className="flex items-center justify-between gap-2 mt-2">

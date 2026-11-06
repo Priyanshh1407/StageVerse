@@ -72,7 +72,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                         <input
                             required
                             type="text"
-                            className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                            className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                             placeholder="e.g. Update Patch Sheet"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -86,7 +86,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                             <div className="text-xs text-gray-500 flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin" /> Loading events...</div>
                         ) : (
                             <select
-                                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                                 value={formData.eventId} // Use eventId
                                 onChange={(e) => setFormData({ ...formData, eventId: e.target.value })}
                                 disabled={!!showId} // Lock if we are on a specific page? User request implies they want to see/select. Let's unlock if that's the request, BUT parent overrides it.
@@ -112,7 +112,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Priority</label>
                             <select
-                                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                                 value={formData.priority}
                                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                             >
@@ -125,7 +125,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Due Date</label>
                             <input
                                 type="text"
-                                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                                 placeholder="e.g. Tomorrow"
                                 value={formData.dueDate}
                                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
@@ -138,7 +138,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Tag</label>
                             <select
-                                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                                 value={formData.tag}
                                 onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
                             >
@@ -173,7 +173,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                         </button>
                         <button
                             type="submit"
-                            className="px-6 py-2 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all"
+                            className="px-6 py-2 rounded-lg text-sm font-bold sv-sunset hover:brightness-110 text-white shadow-lg shadow-orange-600/20 transition-all"
                         >
                             {task ? 'Save Changes' : 'Create Task'}
                         </button>

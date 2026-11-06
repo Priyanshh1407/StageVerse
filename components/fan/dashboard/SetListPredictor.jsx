@@ -132,13 +132,13 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                         setSelectedEventId(item.event._id);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#223949] transition-colors ${selectedEventId === item.event._id ? 'bg-[#0d93f2]/10 border-l-2 border-[#0d93f2]' : 'border-l-2 border-transparent'}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#223949] transition-colors ${selectedEventId === item.event._id ? 'bg-[#ff6a00]/10 border-l-2 border-[#a855f7]' : 'border-l-2 border-transparent'}`}
                     >
                       <div className="relative w-8 h-8 rounded overflow-hidden bg-black shrink-0">
                         <Image src={item.event.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"} alt={item.event.artist} fill className="object-cover" />
                       </div>
                       <div className="text-left min-w-0">
-                        <p className={`text-sm font-bold truncate ${selectedEventId === item.event._id ? 'text-[#0d93f2]' : 'text-slate-200'}`}>{item.event.artist}</p>
+                        <p className={`text-sm font-bold truncate ${selectedEventId === item.event._id ? 'text-[#ff6a00]' : 'text-slate-200'}`}>{item.event.artist}</p>
                         <p className="text-[#90b2cb] text-[10px] truncate flex items-center gap-1">
                           {new Date(item.event.date).toLocaleDateString()} • {item.event.venue}
                         </p>
@@ -168,7 +168,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
           <p className="text-[#90b2cb] max-w-md mx-auto mb-8">The artist has declared the official setlist for {event.venue}. Check your scorecard to see how many points you scored.</p>
           <button
             onClick={() => setShowScorecard(true)}
-            className="px-8 py-4 bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold rounded-xl shadow-xl shadow-[#0d93f2]/20 transition-transform hover:scale-105 active:scale-95"
+            className="px-8 py-4 sv-sunset hover:brightness-110 text-white font-bold rounded-xl shadow-xl shadow-[#ff6a00]/20 transition-transform hover:scale-105 active:scale-95"
           >
             View Scorecard
           </button>
@@ -187,7 +187,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                   placeholder="Search songs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#182934] border border-[#315168] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#0d93f2]"
+                  className="w-full bg-[#182934] border border-[#315168] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#a855f7]"
                 />
               </div>
             </div>
@@ -205,7 +205,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                       <p className="text-white text-sm font-medium truncate">{song.title}</p>
                       <p className="text-[#90b2cb] text-xs truncate">{song.album || "Single"}</p>
                     </div>
-                    <div className="bg-[#223949] p-1.5 rounded-full text-[#0d93f2] group-hover:bg-[#0d93f2] group-hover:text-white transition-colors shrink-0">
+                    <div className="bg-[#223949] p-1.5 rounded-full text-[#ff6a00] group-hover:sv-sunset group-hover:text-white transition-colors shrink-0">
                       <Plus className="w-4 h-4" />
                     </div>
                   </button>
@@ -220,7 +220,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
           <div className="flex-1 flex flex-col bg-[#101b23] h-1/2 md:h-auto">
             <div className="p-4 border-b border-[#315168] flex justify-between items-center bg-[#142029]">
               <h3 className="text-white font-bold flex items-center gap-2">
-                Your Draft <span className="px-2 py-0.5 rounded-full bg-[#0d93f2]/20 text-[#0d93f2] text-xs font-mono">{prediction.length}/10</span>
+                Your Draft <span className="px-2 py-0.5 rounded-full bg-[#ff6a00]/20 text-[#ff6a00] text-xs font-mono">{prediction.length}/10</span>
               </h3>
             </div>
 
@@ -229,7 +229,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                 <div className="space-y-2">
                   {prediction.map((song, index) => (
                     <div key={song.id} className="flex items-center gap-3 bg-[#182934] p-3 rounded-lg border border-[#315168] group transition-all">
-                      <div className="flex-none w-8 h-8 rounded-full bg-[#0d93f2]/10 text-[#0d93f2] flex items-center justify-center text-sm font-bold border border-[#0d93f2]/20">
+                      <div className="flex-none w-8 h-8 rounded-full bg-[#ff6a00]/10 text-[#ff6a00] flex items-center justify-center text-sm font-bold border border-[#a855f7]/20">
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -279,7 +279,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
               <button
                 onClick={handleSave}
                 disabled={prediction.length === 0 || isSubmitting || isGraded}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[#0d93f2] hover:bg-[#0b84db] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold shadow-lg shadow-[#0d93f2]/20 transition-all active:scale-95"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 sv-sunset hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold shadow-lg shadow-[#ff6a00]/20 transition-all active:scale-95"
               >
                 <Save className="w-4 h-4" />
                 {isSubmitting ? "Saving..." : (isGraded ? "Prediction Locked" : "Lock In Prediction")}

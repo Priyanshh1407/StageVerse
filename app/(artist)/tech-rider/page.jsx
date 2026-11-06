@@ -228,7 +228,7 @@ export default function TechRiderPage() {
 
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[#223949] rounded-xl bg-[#1a2632]/50">
-              <Loader2 className="w-10 h-10 text-[#0d93f2] animate-spin mb-4" />
+              <Loader2 className="w-10 h-10 text-[#ff6a00] animate-spin mb-4" />
               <p className="text-white/50">Loading current gear config...</p>
             </div>
           ) : (
@@ -240,12 +240,12 @@ export default function TechRiderPage() {
                 <section>
                   <div className="flex justify-between items-end mb-4 px-1">
                     <h2 className="text-white text-xl font-bold leading-tight flex items-center gap-2">
-                      <Grid className="text-[#0d93f2] w-6 h-6" />
+                      <Grid className="text-[#ff6a00] w-6 h-6" />
                       Gear Grid Component
                     </h2>
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="text-xs text-[#0d93f2] font-bold uppercase tracking-wider hover:text-white transition-colors flex items-center gap-1"
+                      className="text-xs text-[#ff6a00] font-bold uppercase tracking-wider hover:text-white transition-colors flex items-center gap-1"
                     >
                       <PlusCircle className="w-4 h-4" /> Add Custom Fixture
                     </button>
@@ -264,9 +264,9 @@ export default function TechRiderPage() {
                     {}
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="border border-dashed border-[#223949] rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-[#0d93f2]/50 hover:bg-[#0d93f2]/5 transition-all group min-h-[140px]"
+                      className="border border-dashed border-[#223949] rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-[#a855f7]/50 hover:bg-[#ff6a00]/5 transition-all group min-h-[140px]"
                     >
-                      <div className="p-3 rounded-full bg-[#1a2632] group-hover:bg-[#0d93f2] transition-colors text-white/50 group-hover:text-white">
+                      <div className="p-3 rounded-full bg-[#1a2632] group-hover:sv-sunset transition-colors text-white/50 group-hover:text-white">
                         <PlusCircle className="w-6 h-6" />
                       </div>
                       <span className="text-sm font-bold text-white/50 group-hover:text-white">Add New Fixture</span>

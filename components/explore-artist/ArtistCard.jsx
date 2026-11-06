@@ -7,7 +7,7 @@ export default function ArtistCard({ artist }) {
   return (
     <Link
       href={`/artist/${artist.id}`}
-      className="group relative bg-[#18181B] rounded-2xl overflow-hidden shadow-lg border border-gray-800 hover:border-[#00C2FF]/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,194,255,0.15)] hover:-translate-y-1 block"
+      className="group relative bg-[#18181B] rounded-2xl overflow-hidden shadow-lg border border-gray-800 hover:border-[#a855f7]/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,194,255,0.15)] hover:-translate-y-1 block"
     >
       {}
       <div className="relative h-64 overflow-hidden">
@@ -26,12 +26,12 @@ export default function ArtistCard({ artist }) {
 
       {}
       <div className="absolute bottom-0 left-0 right-0 p-5">
-        <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-[#00C2FF] transition-colors">
+        <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-[#ffb000] transition-colors">
           {artist.name}
         </h3>
 
         <p className="text-gray-400 text-sm mb-4 flex items-center gap-2">
-          <MapPin className="w-3 h-3 text-[#00C2FF]" />
+          <MapPin className="w-3 h-3 text-[#ffb000]" />
           {artist.location}
         </p>
 
@@ -42,7 +42,7 @@ export default function ArtistCard({ artist }) {
             <span className="text-sm font-bold text-white">{artist.upcomingEvents} Events</span>
           </div>
 
-          <div className="bg-[#00C2FF] text-black px-4 py-2 rounded-lg text-sm font-bold transition-all hover:bg-white flex items-center gap-2 group/btn">
+          <div className="sv-sunset text-black px-4 py-2 rounded-lg text-sm font-bold transition-all hover:bg-white hover:bg-none flex items-center gap-2 group/btn">
             View Profile
           </div>
         </div>

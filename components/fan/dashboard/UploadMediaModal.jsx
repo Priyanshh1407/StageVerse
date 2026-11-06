@@ -142,7 +142,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
           <div
             onClick={triggerFileSelect}
             className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-colors cursor-pointer group
-            ${files.length > 0 ? 'border-[#0d93f2] bg-[#0d93f2]/5' : 'border-slate-300 dark:border-slate-600 hover:border-[#0d93f2] hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+            ${files.length > 0 ? 'border-[#a855f7] bg-[#ff6a00]/5' : 'border-slate-300 dark:border-slate-600 hover:border-[#a855f7] hover:bg-slate-50 dark:hover:bg-slate-800'}`}
           >
             <input
               type="file"
@@ -152,7 +152,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
               accept="image/*,video/*"
               onChange={handleFileChange}
             />
-            <UploadCloud className={`w-12 h-12 mb-4 transition-colors ${files.length > 0 ? 'text-[#0d93f2]' : 'text-slate-400 group-hover:text-[#0d93f2]'}`} />
+            <UploadCloud className={`w-12 h-12 mb-4 transition-colors ${files.length > 0 ? 'text-[#ff6a00]' : 'text-slate-400 group-hover:text-[#ff6a00]'}`} />
             {files.length > 0 ? (
               <div className="flex flex-col gap-1">
                 <span className="font-bold text-slate-900 dark:text-white text-lg">{files.length} files selected</span>
@@ -173,7 +173,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
               <div className="relative">
                 <Ticket className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
                 <input
-                  className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#0d93f2]"
+                  className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#a855f7]"
                   placeholder="Search event..."
                   value={eventQuery}
                   onChange={(e) => { setEventQuery(e.target.value); setShowEventDropdown(true); }}
@@ -198,7 +198,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
                 <Calendar className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
                 <input
                   type="date"
-                  className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#0d93f2] dark:[color-scheme:dark]"
+                  className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#a855f7] dark:[color-scheme:dark]"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                 />
@@ -209,7 +209,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Notes / Caption</label>
             <textarea
-              className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#0d93f2] resize-none"
+              className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#a855f7] resize-none"
               rows="3"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -230,7 +230,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
           <button
             onClick={handleUpload}
             disabled={isUploading || files.length === 0}
-            className="px-6 py-2.5 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white font-bold rounded-lg shadow-lg shadow-[#0d93f2]/25 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2.5 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white font-bold rounded-lg shadow-lg shadow-[#ff6a00]/25 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? (
               <>

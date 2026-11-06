@@ -63,7 +63,7 @@ export default function AllReleasesModal({ isOpen, onClose, releases }) {
                             </div>
 
                             {}
-                            <div className="p-2 text-slate-300 group-hover:text-[#0d93f2] transition-colors">
+                            <div className="p-2 text-slate-300 group-hover:text-[#ff6a00] transition-colors">
                                 <ArrowRight className="w-5 h-5" />
                             </div>
                         </Link>

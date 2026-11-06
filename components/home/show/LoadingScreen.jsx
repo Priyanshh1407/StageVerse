@@ -64,7 +64,7 @@ export default function LoadingScreen() {
         >
             {/* Two beams sweeping across from the top corners, like a rig warming up */}
             <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="sv-loader-beam absolute -top-1/4 left-[18%] h-[130%] w-40 origin-top bg-gradient-to-b from-[#00d4ff]/25 via-[#00d4ff]/5 to-transparent blur-2xl" />
+                <div className="sv-loader-beam absolute -top-1/4 left-[18%] h-[130%] w-40 origin-top bg-gradient-to-b from-[#ffb000]/25 via-[#ff6a00]/5 to-transparent blur-2xl" />
                 <div className="sv-loader-beam sv-loader-beam-2 absolute -top-1/4 right-[18%] h-[130%] w-40 origin-top bg-gradient-to-b from-[#ff3df2]/25 via-[#ff3df2]/5 to-transparent blur-2xl" />
             </div>
 
@@ -73,7 +73,7 @@ export default function LoadingScreen() {
                 <div className="w-64 max-w-[70vw]">
                     <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#00d4ff] to-[#ff3df2] transition-[width] duration-500 ease-out"
+                            className="h-full rounded-full bg-gradient-to-r from-[#ffb000] to-[#ff3df2] transition-[width] duration-500 ease-out"
                             style={{ width: `${Math.max(6, share * 100)}%` }}
                         />
                     </div>

@@ -36,7 +36,7 @@ export default function CreateAlertModal({ isOpen, onClose }) {
                 {}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-[#0d93f2]/10 rounded-lg text-[#0d93f2]">
+                        <div className="p-2 bg-[#ff6a00]/10 rounded-lg text-[#ff6a00]">
                             <Bell className="w-5 h-5" />
                         </div>
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Alert</h2>
@@ -63,12 +63,12 @@ export default function CreateAlertModal({ isOpen, onClose }) {
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-slate-900 dark:text-white">Notify me about:</label>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <label className="flex items-center gap-2 p-3 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-[#0d93f2] transition-colors">
-                                        <input type="checkbox" className="accent-[#0d93f2]" defaultChecked />
+                                    <label className="flex items-center gap-2 p-3 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-[#a855f7] transition-colors">
+                                        <input type="checkbox" className="accent-[#ff6a00]" defaultChecked />
                                         <span className="text-sm text-slate-600 dark:text-slate-300">Tour Dates</span>
                                     </label>
-                                    <label className="flex items-center gap-2 p-3 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-[#0d93f2] transition-colors">
-                                        <input type="checkbox" className="accent-[#0d93f2]" defaultChecked />
+                                    <label className="flex items-center gap-2 p-3 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-[#a855f7] transition-colors">
+                                        <input type="checkbox" className="accent-[#ff6a00]" defaultChecked />
                                         <span className="text-sm text-slate-600 dark:text-slate-300">New Music</span>
                                     </label>
                                 </div>
@@ -83,19 +83,19 @@ export default function CreateAlertModal({ isOpen, onClose }) {
                                             <Mail className="w-5 h-5 text-slate-400" />
                                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Email</span>
                                         </div>
-                                        <input type="checkbox" className="toggle accent-[#0d93f2]" defaultChecked />
+                                        <input type="checkbox" className="toggle accent-[#ff6a00]" defaultChecked />
                                     </div>
                                     <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#151f28] rounded-xl">
                                         <div className="flex items-center gap-3">
                                             <Smartphone className="w-5 h-5 text-slate-400" />
                                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Push Notification</span>
                                         </div>
-                                        <input type="checkbox" className="toggle accent-[#0d93f2]" />
+                                        <input type="checkbox" className="toggle accent-[#ff6a00]" />
                                     </div>
                                 </div>
                             </div>
 
-                            <button type="submit" className="w-full py-3 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white font-bold rounded-xl shadow-lg shadow-[#0d93f2]/20 transition-all">
+                            <button type="submit" className="w-full py-3 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white font-bold rounded-xl shadow-lg shadow-[#ff6a00]/20 transition-all">
                                 Save Alert
                             </button>
                         </form>

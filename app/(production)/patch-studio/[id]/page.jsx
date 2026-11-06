@@ -209,7 +209,7 @@ export default function PatchStudioPage(props) {
    });
 
    return (
-      <div className="flex flex-col h-screen w-full overflow-hidden bg-[#0F0F10] text-slate-300 selection:bg-blue-500 selection:text-white font-sans">
+      <div className="flex flex-col h-screen w-full overflow-hidden bg-[#0F0F10] text-slate-300 selection:bg-[#ffb000] selection:text-white font-sans">
 
          {}
          <StudioNavbar projectId={showId} />
@@ -226,7 +226,7 @@ export default function PatchStudioPage(props) {
 
             <div className="flex items-center gap-4">
                {}
-               <div className="hidden md:flex items-center bg-[#18181B] border border-[#27272A] rounded-lg h-9 w-72 px-3 focus-within:border-blue-500/50 transition-all">
+               <div className="hidden md:flex items-center bg-[#18181B] border border-[#27272A] rounded-lg h-9 w-72 px-3 focus-within:border-purple-500/50 transition-all">
                   <Search className="w-4 h-4 text-gray-500 mr-2" />
                   <input
                      value={searchQuery}
@@ -251,7 +251,7 @@ export default function PatchStudioPage(props) {
                <button
                   onClick={handleSavePatch}
                   disabled={isSaving}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-2 sv-sunset hover:brightness-110 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-orange-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                >
                   {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                   Save
@@ -274,7 +274,7 @@ export default function PatchStudioPage(props) {
                {}
                <div className="flex flex-col md:flex-row items-center justify-between p-6 pb-4 gap-4 z-10 border-b border-[#27272A] bg-[#0F0F10]/95 backdrop-blur-sm sticky top-0">
                   <div className="flex flex-col">
-                     <h2 className="text-white text-xl font-bold tracking-tight">Show Rig: <span className="text-blue-500 font-normal">Neon Nights Tour</span></h2>
+                     <h2 className="text-white text-xl font-bold tracking-tight">Show Rig: <span className="text-orange-500 font-normal">Neon Nights Tour</span></h2>
                      <p className="text-xs text-gray-500 mt-1">
                         {viewMode === 'creative'
                            ? `Creative Mode • ${new Set(filteredFixtures.map(f => f.cue)).size} Groups Defined`

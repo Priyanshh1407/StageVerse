@@ -7,7 +7,7 @@ export default function EventCard({ event }) {
   return (
     <Link 
       href={`/events/${event.id}`}
-      className="group relative block overflow-hidden rounded-xl bg-[#121212] ring-1 ring-white/5 transition-all hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(0,212,255,0.3)] hover:ring-[#00d4ff]/50"
+      className="group relative block overflow-hidden rounded-xl bg-[#121212] ring-1 ring-white/5 transition-all hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(255,106,0,0.3)] hover:ring-[#a855f7]/50"
     >
       
       {}
@@ -23,7 +23,7 @@ export default function EventCard({ event }) {
         
         {}
         <div className="absolute bottom-0 left-0 w-full p-5">
-          <div className="mb-1 text-xs font-bold text-[#00d4ff] tracking-wider uppercase">
+          <div className="mb-1 text-xs font-bold text-[#ffb000] tracking-wider uppercase">
             {event.displayDate} • {event.time}
           </div>
           
@@ -41,7 +41,7 @@ export default function EventCard({ event }) {
               {event.priceDisplay}
             </span>
             {}
-            <div className="rounded-full bg-white/10 p-2 text-white group-hover:bg-[#00d4ff] group-hover:text-black transition-colors">
+            <div className="rounded-full bg-white/10 p-2 text-white group-hover:sv-sunset group-hover:text-black transition-colors">
               <ArrowRight className="w-5 h-5" />
             </div>
           </div>

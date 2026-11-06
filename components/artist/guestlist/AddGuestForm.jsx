@@ -51,7 +51,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
         relative md:sticky md:top-24
         bg-white dark:bg-[#182934]
         rounded-xl border shadow-sm overflow-hidden transition-colors
-        ${editingGuest ? 'border-[#0d93f2] ring-1 ring-[#0d93f2]' : 'border-slate-200 dark:border-[#315168]'}
+        ${editingGuest ? 'border-[#a855f7] ring-1 ring-[#a855f7]' : 'border-slate-200 dark:border-[#315168]'}
       `}>
 
         {}
@@ -84,7 +84,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full h-10 md:h-11 px-3 rounded-lg bg-slate-50 dark:bg-[#101b23] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] outline-none transition-all text-sm"
+              className="w-full h-10 md:h-11 px-3 rounded-lg bg-slate-50 dark:bg-[#101b23] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none transition-all text-sm"
               placeholder="Full Name"
               type="text"
             />
@@ -95,7 +95,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-10 md:h-11 px-3 rounded-lg bg-slate-50 dark:bg-[#101b23] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] outline-none transition-all text-sm"
+              className="w-full h-10 md:h-11 px-3 rounded-lg bg-slate-50 dark:bg-[#101b23] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none transition-all text-sm"
               placeholder="guest@example.com"
               type="email"
             />
@@ -143,7 +143,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
             <button
               onClick={handleSubmit}
               disabled={!name}
-              className={`w-full sm:flex-1 h-10 md:h-11 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-sm md:text-base ${isSuccess ? 'bg-green-500 text-white' : 'bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed'} ${editingGuest ? 'w-full' : ''}`}
+              className={`w-full sm:flex-1 h-10 md:h-11 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-sm md:text-base ${isSuccess ? 'bg-green-500 text-white' : 'sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white disabled:opacity-50 disabled:cursor-not-allowed'} ${editingGuest ? 'w-full' : ''}`}
             >
               {isSuccess ? (
                   <><CheckCircle2 className="w-4 h-4 md:w-5 md:h-5" /> {editingGuest ? 'Updated' : 'Added'}</>
@@ -170,9 +170,9 @@ function TierOption({ label, sub, badge, color, current, set }) {
   return (
     <div
       onClick={() => set(label)}
-      className={`relative flex items-center p-2.5 md:p-3 rounded-lg border cursor-pointer transition-all ${isSelected ? 'border-[#0d93f2] bg-[#0d93f2]/5 dark:bg-[#0d93f2]/10' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-[#223949]'}`}
+      className={`relative flex items-center p-2.5 md:p-3 rounded-lg border cursor-pointer transition-all ${isSelected ? 'border-[#a855f7] bg-[#ff6a00]/5 dark:bg-[#ff6a00]/10' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-[#223949]'}`}
     >
-      <div className={`w-4 h-4 rounded-full border mr-3 flex items-center justify-center shrink-0 ${isSelected ? 'border-[#0d93f2] bg-[#0d93f2]' : 'border-slate-400'}`}>
+      <div className={`w-4 h-4 rounded-full border mr-3 flex items-center justify-center shrink-0 ${isSelected ? 'border-[#a855f7] sv-sunset' : 'border-slate-400'}`}>
         {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
       </div>
       <div className="flex-1 min-w-0">

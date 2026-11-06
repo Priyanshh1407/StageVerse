@@ -35,10 +35,10 @@ export default function HypeChart({ data = DEFAULT_DATA, period = "Last 30 Days"
         {}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[#0d93f2]"></span>
+            <span className="w-3 h-3 rounded-full sv-sunset"></span>
             <span className="text-xs text-white">Velocity</span>
           </div>
-          <select className="bg-[#101b22] border border-[#2c3b47] text-white text-xs rounded-md px-2 py-1 focus:outline-none focus:border-[#0d93f2]">
+          <select className="bg-[#101b22] border border-[#2c3b47] text-white text-xs rounded-md px-2 py-1 focus:outline-none focus:border-[#a855f7]">
             <option>{period}</option>
             <option>Last 7 Days</option>
             <option>Last 24 Hours</option>
@@ -53,8 +53,8 @@ export default function HypeChart({ data = DEFAULT_DATA, period = "Last 30 Days"
             <defs>
               {}
               <linearGradient id="colorVelocity" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0d93f2" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#0d93f2" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#ff6a00" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#ff6a00" stopOpacity={0}/>
               </linearGradient>
             </defs>
             
@@ -81,7 +81,7 @@ export default function HypeChart({ data = DEFAULT_DATA, period = "Last 30 Days"
                 borderRadius: '8px',
                 color: '#fff'
               }}
-              itemStyle={{ color: '#0d93f2', fontWeight: 'bold' }}
+              itemStyle={{ color: '#ff6a00', fontWeight: 'bold' }}
               labelStyle={{ color: '#90b2cb', marginBottom: '4px' }}
               cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1, strokeDasharray: '4 4' }}
             />
@@ -89,7 +89,7 @@ export default function HypeChart({ data = DEFAULT_DATA, period = "Last 30 Days"
             <Area 
               type="monotone" 
               dataKey="velocity" 
-              stroke="#0d93f2" 
+              stroke="#ff6a00" 
               strokeWidth={3}
               fillOpacity={1} 
               fill="url(#colorVelocity)" 

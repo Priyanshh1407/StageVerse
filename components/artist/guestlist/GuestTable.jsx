@@ -32,7 +32,7 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
           <input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-11 pl-10 pr-4 rounded-lg bg-white dark:bg-[#182934] border border-slate-200 dark:border-[#315168] text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] outline-none transition-all"
+            className="w-full h-11 pl-10 pr-4 rounded-lg bg-white dark:bg-[#182934] border border-slate-200 dark:border-[#315168] text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none transition-all"
             placeholder="Search by name or email..."
             type="text"
           />
@@ -40,7 +40,7 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
         <select
           value={filterTier}
           onChange={(e) => setFilterTier(e.target.value)}
-          className="h-11 px-3 rounded-lg bg-white dark:bg-[#182934] border border-slate-200 dark:border-[#315168] text-slate-700 dark:text-white outline-none focus:border-[#0d93f2] cursor-pointer w-full sm:w-auto min-w-[140px]"
+          className="h-11 px-3 rounded-lg bg-white dark:bg-[#182934] border border-slate-200 dark:border-[#315168] text-slate-700 dark:text-white outline-none focus:border-[#a855f7] cursor-pointer w-full sm:w-auto min-w-[140px]"
         >
           <option>All Tiers</option>
           <option>All Access</option>
@@ -113,7 +113,7 @@ function GuestRow({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
     indigo: 'bg-indigo-500/20 text-indigo-500',
     purple: 'bg-purple-500/20 text-purple-500',
     pink: 'bg-pink-500/20 text-pink-500',
-    blue: 'bg-blue-500/20 text-blue-500',
+    blue: 'bg-orange-500/20 text-orange-500',
     orange: 'bg-orange-500/20 text-orange-500',
   };
 
@@ -153,7 +153,7 @@ function GuestRow({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
           >
             <CheckCircle className="w-4 h-4" />
           </button>
-          <button onClick={() => onEdit(guest)} className="text-slate-400 hover:text-[#0d93f2] p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#223949] transition-colors"><Edit2 className="w-4 h-4" /></button>
+          <button onClick={() => onEdit(guest)} className="text-slate-400 hover:text-[#ff6a00] p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#223949] transition-colors"><Edit2 className="w-4 h-4" /></button>
           <button onClick={() => onDelete(guest.id)} className="text-slate-400 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><Trash2 className="w-4 h-4" /></button>
         </div>
       </td>
@@ -171,7 +171,7 @@ function MobileGuestCard({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
     indigo: 'bg-indigo-500/20 text-indigo-500',
     purple: 'bg-purple-500/20 text-purple-500',
     pink: 'bg-pink-500/20 text-pink-500',
-    blue: 'bg-blue-500/20 text-blue-500',
+    blue: 'bg-orange-500/20 text-orange-500',
     orange: 'bg-orange-500/20 text-orange-500',
   };
 
@@ -194,7 +194,7 @@ function MobileGuestCard({ guest, timeAgo, onDelete, onEdit, onCheckIn }) {
           >
             <CheckCircle className="w-4 h-4" />
           </button>
-          <button onClick={() => onEdit(guest)} className="p-2 text-slate-400 hover:text-[#0d93f2] bg-slate-50 dark:bg-[#223949] rounded-lg"><Edit2 className="w-4 h-4" /></button>
+          <button onClick={() => onEdit(guest)} className="p-2 text-slate-400 hover:text-[#ff6a00] bg-slate-50 dark:bg-[#223949] rounded-lg"><Edit2 className="w-4 h-4" /></button>
           <button onClick={() => onDelete(guest.id)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-[#223949] rounded-lg"><Trash2 className="w-4 h-4" /></button>
         </div>
       </div>

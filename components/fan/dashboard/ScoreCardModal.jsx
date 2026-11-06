@@ -52,14 +52,14 @@ export default function ScorecardModal({ isOpen, onClose, artistName = "Artist",
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: ['#0d93f2', '#ffffff']
+          colors: ['#ff6a00', '#ffffff']
         });
         confetti({
           particleCount: 2,
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: ['#0d93f2', '#ffffff']
+          colors: ['#ff6a00', '#ffffff']
         });
 
         if (Date.now() < end) {
@@ -100,17 +100,17 @@ export default function ScorecardModal({ isOpen, onClose, artistName = "Artist",
       <div className="relative w-full max-w-2xl bg-[#101b23] rounded-2xl border border-[#315168] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 flex flex-col max-h-[90vh]">
 
         {}
-        <div className="bg-gradient-to-r from-[#0d93f2] to-blue-700 p-8 text-center relative overflow-hidden flex-none">
+        <div className="bg-gradient-to-r from-[#ffb000] to-pink-700 p-8 text-center relative overflow-hidden flex-none">
           <div className="relative z-10">
             <div className="inline-flex p-3 bg-white/10 rounded-full mb-3 backdrop-blur-md border border-white/20">
               <Trophy className="w-8 h-8 text-yellow-300" />
             </div>
             <h2 className="text-white text-3xl font-bold tracking-tight mb-1">Prediction Results</h2>
-            <p className="text-blue-100 text-sm font-medium uppercase tracking-widest">{artistName}</p>
+            <p className="text-orange-100 text-sm font-medium uppercase tracking-widest">{artistName}</p>
 
             <div className="mt-6 inline-block">
               <span className="text-5xl font-black text-white drop-shadow-md">+{totalScore}</span>
-              <span className="text-blue-200 text-lg ml-2">PTS</span>
+              <span className="text-orange-200 text-lg ml-2">PTS</span>
             </div>
           </div>
 
@@ -138,7 +138,7 @@ export default function ScorecardModal({ isOpen, onClose, artistName = "Artist",
                 <div className="col-span-1 text-center text-[#90b2cb] font-mono">{row.position}</div>
 
                 {}
-                <div className={`col-span-10 sm:col-span-5 font-medium ${row.status === 'correct' ? 'text-[#0d93f2]' : 'text-slate-400'}`}>
+                <div className={`col-span-10 sm:col-span-5 font-medium ${row.status === 'correct' ? 'text-[#ff6a00]' : 'text-slate-400'}`}>
                   {row.guess}
                   {}
                   <div className="sm:hidden text-xs text-slate-500 mt-1 block">

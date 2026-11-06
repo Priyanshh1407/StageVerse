@@ -179,7 +179,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
       <div className="flex-none p-6 border-b border-[#2c3e50] bg-[#16202a]">
         <h1 className="text-white font-bold text-xl tracking-tight leading-none">Intelligent Patch Studio</h1>
         <div className="flex items-center gap-2 mt-2">
-          <span className="w-2 h-2 rounded-full bg-[#00d4ff] animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full sv-sunset animate-pulse"></span>
           <p className="text-xs text-[#90b2cb] font-mono uppercase tracking-wide truncate">
             {showName || 'Active Show'}
           </p>
@@ -199,7 +199,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                 <label className="block text-[10px] font-bold text-[#90b2cb] uppercase tracking-wide">Fixture Profile</label>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-1 font-bold uppercase tracking-wider"
+                  className="text-[10px] text-orange-400 hover:text-orange-300 flex items-center gap-1 font-bold uppercase tracking-wider"
                 >
                   <PlusCircle className="w-3 h-3" /> New Profile
                 </button>
@@ -210,7 +210,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                   value={selectedProfileId}
                   onChange={(e) => setSelectedProfileId(e.target.value)}
                   disabled={isLoadingProfiles}
-                  className="w-full bg-[#0b1219] border border-[#2c3e50] text-white rounded-lg pl-4 pr-10 py-3 appearance-none focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] text-sm font-medium transition-all hover:border-[#4a6f8a] cursor-pointer disabled:opacity-50"
+                  className="w-full bg-[#0b1219] border border-[#2c3e50] text-white rounded-lg pl-4 pr-10 py-3 appearance-none focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] text-sm font-medium transition-all hover:border-[#4a6f8a] cursor-pointer disabled:opacity-50"
                 >
                   {isLoadingProfiles ? <option>Loading...</option> : (
                     profiles.length > 0 ? (
@@ -237,14 +237,14 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
           </div>
 
           <div>
-            <label className="block text-[10px] font-bold text-[#00d4ff] mb-2 uppercase tracking-wide flex items-center gap-1.5">
+            <label className="block text-[10px] font-bold text-[#ffb000] mb-2 uppercase tracking-wide flex items-center gap-1.5">
               <Wand2 className="w-4 h-4" /> AI Logic / Constraints
             </label>
             <div className="relative">
               <textarea
                 value={logic}
                 onChange={(e) => setLogic(e.target.value)}
-                className="w-full h-40 bg-[#0b1219] border border-[#2c3e50] rounded-lg p-4 text-sm text-gray-300 focus:outline-none focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] placeholder:text-gray-600 resize-none font-mono leading-relaxed shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                className="w-full h-40 bg-[#0b1219] border border-[#2c3e50] rounded-lg p-4 text-sm text-gray-300 focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] placeholder:text-gray-600 resize-none font-mono leading-relaxed shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
                 placeholder="Patch these fixtures sequentially, but skip channels 50-60 due to a bad dimmer."
               ></textarea>
               <div className="absolute bottom-3 right-3 text-[10px] text-gray-600 font-mono">AI-ENABLED</div>
@@ -258,7 +258,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
         <button
           onClick={handleCalculate}
           disabled={isGenerating}
-          className="w-full py-4 bg-gradient-to-r from-[#1e40af] to-[#1d4ed8] hover:from-[#2563eb] hover:to-[#3b82f6] text-white font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-blue-900/20 transition-all flex items-center justify-center gap-2 text-sm transform active:scale-[0.98] border border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 bg-gradient-to-r from-[#ffb000] to-[#ff3d7a] hover:from-[#ffb000] hover:to-[#ff3d7a] text-white font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2 text-sm transform active:scale-[0.98] border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5 fill-none" />}
           {isGenerating ? 'Thinking...' : 'Calculate & Append'}
@@ -277,7 +277,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">Manufacturer</label>
                 <input
-                  className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                  className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                   placeholder="e.g. Clay Paky"
                   value={newManufacturer}
                   onChange={e => setNewManufacturer(e.target.value)}
@@ -287,7 +287,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">Model Name</label>
                 <input
-                  className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                  className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                   placeholder="e.g. Sharpy"
                   value={newModel}
                   onChange={e => setNewModel(e.target.value)}
@@ -298,7 +298,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                 <div>
                   <label className="block text-xs font-bold text-gray-400 mb-1">Mode Name</label>
                   <input
-                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                     value={newModeName}
                     onChange={e => setNewModeName(e.target.value)}
                     required
@@ -308,7 +308,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                   <label className="block text-xs font-bold text-gray-400 mb-1">Channels</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                     value={newChannels}
                     onChange={e => setNewChannels(e.target.value)}
                     min={1}
@@ -320,7 +320,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
               <button
                 type="submit"
                 disabled={isCreating}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
+                className="w-full sv-sunset hover:brightness-110 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
               >
                 {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
                 Create Profile
@@ -344,7 +344,7 @@ function NumberControl({ label, value, onChange, max }) {
   return (
     <div>
       <label className="block text-[10px] font-bold text-[#90b2cb] mb-1.5 uppercase tracking-wide">{label}</label>
-      <div className="flex items-center w-full bg-[#0b1219] border border-[#2c3e50] rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-[#00d4ff] focus-within:border-[#00d4ff] hover:border-[#4a6f8a] transition-all h-11">
+      <div className="flex items-center w-full bg-[#0b1219] border border-[#2c3e50] rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-[#a855f7] focus-within:border-[#a855f7] hover:border-[#4a6f8a] transition-all h-11">
         <button
           type="button"
           onClick={handleDec}

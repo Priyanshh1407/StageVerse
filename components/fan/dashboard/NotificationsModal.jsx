@@ -42,7 +42,7 @@ export default function NotificationsModal({ isOpen, onClose }) {
                 { }
                 <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-[#1a2632] z-10">
                     <h2 className="text-lg font-bold flex items-center gap-2">
-                        <Bell className="w-5 h-5 text-[#0d93f2]" />
+                        <Bell className="w-5 h-5 text-[#ff6a00]" />
                         Notifications
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
@@ -57,9 +57,9 @@ export default function NotificationsModal({ isOpen, onClose }) {
                     ) : notifications.length > 0 ? (
                         <div className="divide-y divide-slate-200 dark:divide-slate-800">
                             {notifications.map((note) => (
-                                <div key={note._id} className={`p-4 hover:bg-white dark:hover:bg-[#1a2632] transition-colors ${!note.read ? 'bg-blue-50/50 dark:bg-[#0d93f2]/5' : ''}`}>
+                                <div key={note._id} className={`p-4 hover:bg-white dark:hover:bg-[#1a2632] transition-colors ${!note.read ? 'bg-orange-50/50 dark:bg-[#ff6a00]/5' : ''}`}>
                                     <div className="flex gap-3">
-                                        <div className={`mt-1 flex-none w-2 h-2 rounded-full ${!note.read ? 'bg-[#0d93f2]' : 'bg-transparent'}`} />
+                                        <div className={`mt-1 flex-none w-2 h-2 rounded-full ${!note.read ? 'sv-sunset' : 'bg-transparent'}`} />
                                         <div className="flex-1 space-y-1">
                                             <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{note.title}</p>
                                             <p className="text-sm text-slate-600 dark:text-slate-400">{note.message}</p>
@@ -69,7 +69,7 @@ export default function NotificationsModal({ isOpen, onClose }) {
                                             </p>
 
                                             {note.link && (
-                                                <Link href={note.link} onClick={onClose} className="inline-flex items-center gap-1 text-xs font-bold text-[#0d93f2] hover:underline mt-2">
+                                                <Link href={note.link} onClick={onClose} className="inline-flex items-center gap-1 text-xs font-bold text-[#ff6a00] hover:underline mt-2">
                                                     View Details <ExternalLink className="w-3 h-3" />
                                                 </Link>
                                             )}

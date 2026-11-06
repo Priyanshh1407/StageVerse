@@ -49,14 +49,14 @@ export default function MemoryVault() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
           <h3 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-2 text-slate-900 dark:text-white">
-            <ImageIcon className="w-6 h-6 text-blue-500" />
+            <ImageIcon className="w-6 h-6 text-orange-500" />
             Memory Vault
           </h3>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             Your curated collection of moments.
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-bold transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2 sv-sunset hover:brightness-110 text-white rounded-lg text-sm font-bold transition-colors">
           <Camera className="w-4 h-4" />
           Upload Media
         </button>
@@ -72,7 +72,7 @@ export default function MemoryVault() {
 
       {}
       <div className="flex justify-center mt-2">
-        <button className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-blue-500 transition-colors flex items-center gap-1">
+        <button className="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-orange-500 transition-colors flex items-center gap-1">
           View All Memories
           <ArrowRight className="w-4 h-4 rotate-90" />
         </button>
@@ -115,7 +115,7 @@ function MemoryCard({ memory }) {
           {memory.title && (
             <>
               <p className="text-white font-bold text-lg leading-tight">{memory.title}</p>
-              {memory.date && <p className="text-blue-400 text-sm font-medium mt-1">{memory.date}</p>}
+              {memory.date && <p className="text-orange-400 text-sm font-medium mt-1">{memory.date}</p>}
             </>
           )}
         </div>

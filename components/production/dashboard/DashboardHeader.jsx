@@ -14,7 +14,7 @@ export default function DashboardHeader({ user, stats }) {
           <div className="flex items-center gap-2 text-gray-400">
             <HardHat className="w-5 h-5 text-gray-500" />
             <p className="text-base font-normal">
-              Currently Working On: <span className="text-blue-500 font-bold">{user.currentProject}</span>
+              Currently Working On: <span className="text-orange-500 font-bold">{user.currentProject}</span>
             </p>
           </div>
         </div>
@@ -40,8 +40,8 @@ export default function DashboardHeader({ user, stats }) {
           icon={CheckSquare} 
           label="Upcoming Tasks" 
           value={stats.tasks} 
-          color="text-blue-500" 
-          bg="bg-blue-500/10" 
+          color="text-orange-500" 
+          bg="bg-orange-500/10" 
         />
       </div>
     </div>

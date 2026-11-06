@@ -35,21 +35,21 @@ export default function PromoSection() {
           <div className="lg:w-1/2 w-full space-y-6">
             <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
               Manage Your Event. <br/>
-              <span className="text-[#00d4ff]">Seamlessly.</span>
+              <span className="text-[#ffb000]">Seamlessly.</span>
             </h2>
             
             <div className="flex items-start gap-3 text-slate-300">
-              <Sparkles className="w-6 h-6 text-[#00d4ff] mt-1 shrink-0" />
+              <Sparkles className="w-6 h-6 text-[#ffb000] mt-1 shrink-0" />
               <p className="text-lg">Use our AI powered assistant to write compelling event descriptions in seconds and automate your workflows.</p>
             </div>
             
             <div className="flex items-start gap-3 text-slate-300">
-              <DollarSign className="w-6 h-6 text-[#00d4ff] mt-1 shrink-0" />
+              <DollarSign className="w-6 h-6 text-[#ffb000] mt-1 shrink-0" />
               <p className="text-lg">Transparent ticketing with instant payouts and comprehensive analytics.</p>
             </div>
             
             <div className="pt-4">
-              <button className="px-8 py-3 rounded-lg border border-[#00d4ff]/50 text-[#00d4ff] font-bold hover:bg-[#00d4ff] hover:text-black transition-all uppercase tracking-wide">
+              <button className="px-8 py-3 rounded-lg border border-[#a855f7]/50 text-[#ffb000] font-bold hover:sv-sunset hover:text-black transition-all uppercase tracking-wide">
                 Become a Partner
               </button>
             </div>

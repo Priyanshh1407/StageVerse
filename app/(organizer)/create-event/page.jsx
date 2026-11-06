@@ -10,7 +10,7 @@ import CreateVenueModal from '@/components/organizer/create-event/CreateVenueMod
 function FormLoading() {
   return (
     <div className="flex flex-col items-center justify-center h-96 bg-[#101622] rounded-xl border border-[#314368] text-[#90a4cb] gap-3">
-      <RefreshCw className="w-8 h-8 animate-spin text-[#0d93f2]" />
+      <RefreshCw className="w-8 h-8 animate-spin text-[#ff6a00]" />
       <p>Loading Editor...</p>
     </div>
   );
@@ -49,7 +49,7 @@ export default function CreateEventPage() {
           border-radius: 4px;
           border: 2px solid #101b22;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #0d93f2; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #ff6a00; }
       `}</style>
 
       {}
@@ -63,7 +63,7 @@ export default function CreateEventPage() {
           <div className="flex flex-col gap-2">
             <Link
               href="/manage/dashboard"
-              className="flex items-center gap-2 text-[#90b2cb] hover:text-[#0d93f2] transition-colors text-sm font-medium mb-1"
+              className="flex items-center gap-2 text-[#90b2cb] hover:text-[#ff6a00] transition-colors text-sm font-medium mb-1"
             >
               <ArrowLeft className="w-4 h-4" /> Dashboard
             </Link>
@@ -72,7 +72,7 @@ export default function CreateEventPage() {
             </h1>
             <div className="flex items-center gap-2">
               <span className="text-[#90b2cb] text-base font-medium">Powered by Gemini</span>
-              <Zap className="text-[#0d93f2] w-4 h-4 fill-current" />
+              <Zap className="text-[#ff6a00] w-4 h-4 fill-current" />
             </div>
           </div>
 

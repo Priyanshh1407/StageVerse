@@ -10,7 +10,7 @@ import CTASection from '@/components/about/CtaSection';
 
 export default function AboutPage() {
   return (
-    <div className="bg-[#0F0F10] text-gray-200 font-sans antialiased selection:bg-[#00E5FF] selection:text-white min-h-screen flex flex-col">
+    <div className="bg-[#0F0F10] text-gray-200 font-sans antialiased selection:bg-[#ffb000] selection:text-white min-h-screen flex flex-col">
       
       <Navbar />
 

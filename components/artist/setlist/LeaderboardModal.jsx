@@ -51,8 +51,8 @@ export default function LeaderboardModal({
                     {}
                     {guestlistUser ? (
                         <div className="bg-[#182934] p-6 rounded-xl border border-[#315168] text-center animate-in fade-in zoom-in-95">
-                            <div className="w-16 h-16 bg-[#0d93f2]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#0d93f2]/20">
-                                <Medal className="w-8 h-8 text-[#0d93f2]" />
+                            <div className="w-16 h-16 bg-[#ff6a00]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#a855f7]/20">
+                                <Medal className="w-8 h-8 text-[#ff6a00]" />
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Add {guestlistUser.name} to Guestlist?</h3>
 
@@ -84,7 +84,7 @@ export default function LeaderboardModal({
                                 <button
                                     onClick={onConfirmGuestlist}
                                     disabled={guestlistLoading}
-                                    className="flex-1 py-3 px-4 rounded-lg bg-[#0d93f2] hover:bg-[#0b84db] text-white font-bold transition-colors disabled:opacity-50"
+                                    className="flex-1 py-3 px-4 rounded-lg sv-sunset hover:brightness-110 text-white font-bold transition-colors disabled:opacity-50"
                                 >
                                     {guestlistLoading ? "Adding..." : "Confirm Add"}
                                 </button>
@@ -94,7 +94,7 @@ export default function LeaderboardModal({
                         
                         loading ? (
                             <div className="text-center py-8 text-[#90b2cb]">
-                                <div className="animate-spin w-8 h-8 border-2 border-[#0d93f2] border-t-transparent rounded-full mx-auto mb-2" />
+                                <div className="animate-spin w-8 h-8 border-2 border-[#a855f7] border-t-transparent rounded-full mx-auto mb-2" />
                                 Calculating Scores...
                             </div>
                         ) : winners.length > 0 ? (
@@ -117,14 +117,14 @@ export default function LeaderboardModal({
 
                                         {}
                                         <div className="text-right">
-                                            <p className="text-[#0d93f2] font-black text-xl">{winner.score}</p>
+                                            <p className="text-[#ff6a00] font-black text-xl">{winner.score}</p>
                                             <p className="text-[#90b2cb] text-[10px] uppercase font-bold tracking-wider">PTS</p>
                                         </div>
 
                                         {}
                                         <button
                                             onClick={() => onAddToGuestlist && onAddToGuestlist(winner.userId)}
-                                            className="ml-2 p-2 bg-[#0d93f2]/10 hover:bg-[#0d93f2] text-[#0d93f2] hover:text-white rounded-lg transition-colors"
+                                            className="ml-2 p-2 bg-[#ff6a00]/10 hover:sv-sunset text-[#ff6a00] hover:text-white rounded-lg transition-colors"
                                             title="Add to Guestlist"
                                         >
                                             <Medal className="w-5 h-5" />

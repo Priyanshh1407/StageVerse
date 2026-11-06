@@ -10,8 +10,8 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
       className={`
         bg-[#1a2632] border rounded-xl p-4 flex flex-col gap-4 transition-all duration-200 cursor-pointer group shadow-sm
         ${isSelected
-          ? 'border-[#0d93f2]/30 opacity-100 ring-1 ring-[#0d93f2]/10'
-          : 'border-[#223949] opacity-80 hover:opacity-100 hover:border-[#0d93f2]/30'}
+          ? 'border-[#a855f7]/30 opacity-100 ring-1 ring-[#a855f7]/10'
+          : 'border-[#223949] opacity-80 hover:opacity-100 hover:border-[#a855f7]/30'}
       `}
     >
       <div className="flex items-start justify-between">
@@ -20,8 +20,8 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
             className={`
               p-2.5 rounded-lg transition-colors
               ${isSelected
-                ? 'bg-[#0d93f2] text-white'
-                : 'bg-[#0d93f2]/10 text-[#0d93f2] group-hover:bg-[#0d93f2] group-hover:text-white'}
+                ? 'sv-sunset text-white'
+                : 'bg-[#ff6a00]/10 text-[#ff6a00] group-hover:sv-sunset group-hover:text-white'}
             `}
           >
             <item.icon className="w-6 h-6" />
@@ -39,7 +39,7 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
           className={`
             w-8 h-8 rounded flex items-center justify-center transition-colors
             ${isSelected
-              ? 'bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white shadow-lg shadow-[#0d93f2]/20'
+              ? 'sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white shadow-lg shadow-[#ff6a00]/20'
               : 'bg-white/10 hover:bg-white/20 text-white'}
           `}>
           <Minus className="w-4 h-4" />
@@ -54,7 +54,7 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
           className={`
             w-8 h-8 rounded flex items-center justify-center transition-colors
             ${isSelected
-              ? 'bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white shadow-lg shadow-[#0d93f2]/20'
+              ? 'sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white shadow-lg shadow-[#ff6a00]/20'
               : 'bg-white/10 hover:bg-white/20 text-white'}
           `}
         >

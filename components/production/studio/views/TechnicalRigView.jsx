@@ -97,7 +97,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-[#2c3e50] bg-[#111]">
-              <h3 className="text-white font-bold flex items-center gap-2"><Pencil className="w-4 h-4 text-blue-500" /> Edit Fixture {editingFixture.fixtureId}</h3>
+              <h3 className="text-white font-bold flex items-center gap-2"><Pencil className="w-4 h-4 text-orange-500" /> Edit Fixture {editingFixture.fixtureId}</h3>
               <button onClick={() => setEditingFixture(null)} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
@@ -107,7 +107,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                   <label className="block text-xs font-bold text-gray-400 mb-1">Universe</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                     value={editingFixture.universe}
                     onChange={e => setEditingFixture({ ...editingFixture, universe: parseInt(e.target.value) })}
                     min={1}
@@ -118,7 +118,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                   <label className="block text-xs font-bold text-gray-400 mb-1">Address</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                    className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                     value={editingFixture.address}
                     onChange={e => setEditingFixture({ ...editingFixture, address: parseInt(e.target.value) })}
                     min={1}
@@ -136,7 +136,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                     const colors = { "Intro Sequence": "blue", "Drum Solo": "red", "Main Wash": "orange", "Audience Blinders": "orange", "Specials": "blue" };
                     setEditingFixture({ ...editingFixture, cue: e.target.value, cueColor: colors[e.target.value] || 'blue' })
                   }}
-                  className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                  className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                 >
                   <option value="Intro Sequence">Intro Sequence</option>
                   <option value="Drum Solo">Drum Solo</option>
@@ -148,7 +148,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
+                className="w-full sv-sunset hover:brightness-110 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
               >
                 <Save className="w-4 h-4" />
                 Save Changes
@@ -163,7 +163,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-[#2c3e50] bg-[#111]">
-              <h3 className="text-white font-bold flex items-center gap-2"><Info className="w-4 h-4 text-blue-500" /> Fixture Details</h3>
+              <h3 className="text-white font-bold flex items-center gap-2"><Info className="w-4 h-4 text-orange-500" /> Fixture Details</h3>
               <button onClick={() => setViewingFixture(null)} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
@@ -189,11 +189,11 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#2c3e50] mt-2">
                   <div>
                     <label className="text-[10px] uppercase font-bold text-gray-500">Universe</label>
-                    <div className="text-blue-400 font-mono text-lg">{viewingFixture.universe}</div>
+                    <div className="text-orange-400 font-mono text-lg">{viewingFixture.universe}</div>
                   </div>
                   <div>
                     <label className="text-[10px] uppercase font-bold text-gray-500">Address</label>
-                    <div className="text-blue-400 font-mono text-lg">{viewingFixture.address}</div>
+                    <div className="text-orange-400 font-mono text-lg">{viewingFixture.address}</div>
                   </div>
                 </div>
 
@@ -223,7 +223,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
 function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConflict, isOpen, onToggle, onDelete, onEdit, onView }) {
   const getCueColors = (color) => {
     const map = {
-      blue: { bg: 'bg-blue-900/20', text: 'text-blue-400', border: 'border-blue-500/20', dot: 'bg-blue-500' },
+      blue: { bg: 'bg-orange-900/20', text: 'text-orange-400', border: 'border-purple-500/20', dot: 'sv-sunset' },
       orange: { bg: 'bg-orange-900/20', text: 'text-orange-400', border: 'border-orange-500/20', dot: 'bg-orange-500' },
       red: { bg: 'bg-red-900/20', text: 'text-red-400', border: 'border-red-500/20', dot: 'bg-red-500' },
     };
@@ -291,7 +291,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
 
               <button
                 onClick={() => { onEdit(); onToggle(); }}
-                className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:bg-blue-600 transition-colors w-full text-left group/item"
+                className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:sv-sunset transition-colors w-full text-left group/item"
               >
                 <Pencil className="w-3.5 h-3.5 text-gray-500 group-hover/item:text-white" />
                 Edit Fixture
@@ -299,7 +299,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
 
               <button
                 onClick={() => { onView(); onToggle(); }}
-                className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:bg-blue-600 transition-colors w-full text-left group/item"
+                className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:sv-sunset transition-colors w-full text-left group/item"
               >
                 <Info className="w-3.5 h-3.5 text-gray-500 group-hover/item:text-white" />
                 View Details

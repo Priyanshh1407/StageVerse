@@ -45,7 +45,7 @@ export default function ShowHeader({ city, venue, date }) {
             <h1 className="text-3xl md:text-5xl font-black leading-tight tracking-tighter uppercase text-slate-900 dark:text-white">
               {city}
             </h1>
-            <span className="px-3 py-1 rounded-full bg-[#0d93f2]/20 text-[#0d93f2] text-xs font-bold uppercase tracking-wider border border-[#0d93f2]/30 animate-pulse">
+            <span className="px-3 py-1 rounded-full bg-[#ff6a00]/20 text-[#ff6a00] text-xs font-bold uppercase tracking-wider border border-[#a855f7]/30 animate-pulse">
               Live Sync
             </span>
           </div>
@@ -110,7 +110,7 @@ export default function ShowHeader({ city, venue, date }) {
                     {eventOnDay ? (
                       <Link
                         href={`/day-sheet/${eventOnDay._id || eventOnDay.eventId}`} // Use correct ID
-                        className="w-full h-full flex items-center justify-center rounded-full bg-[#0d93f2] text-white font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer"
+                        className="w-full h-full flex items-center justify-center rounded-full sv-sunset text-white font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer"
                       >
                         {dayNum}
                       </Link>
@@ -123,7 +123,7 @@ export default function ShowHeader({ city, venue, date }) {
             </div>
 
             <div className="mt-6 flex items-center gap-2 text-xs text-slate-400">
-              <div className="w-3 h-3 rounded-full bg-[#0d93f2]"></div>
+              <div className="w-3 h-3 rounded-full sv-sunset"></div>
               <span>Show Day</span>
             </div>
 

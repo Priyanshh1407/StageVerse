@@ -47,14 +47,14 @@ export default function EventSelectionPage({ role = 'artist' }) {
                     </header>
 
                     {loading ? (
-                        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-500 w-10 h-10" /></div>
+                        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-orange-500 w-10 h-10" /></div>
                     ) : (
                         <div className="grid grid-cols-1 gap-6">
                             {events.map(event => (
                                 <Link
                                     key={event._id}
                                     href={`${linkPrefix}/${event._id}`}
-                                    className="group relative flex flex-col md:flex-row w-full bg-[#0d131a]/80 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:border-[#00d4ff]/50 transition-all duration-300 hover:shadow-[0_0_40px_-10px_rgba(0,212,255,0.2)]"
+                                    className="group relative flex flex-col md:flex-row w-full bg-[#0d131a]/80 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:border-[#a855f7]/50 transition-all duration-300 hover:shadow-[0_0_40px_-10px_rgba(255,106,0,0.2)]"
                                 >
                                     {}
                                     <div className="flex-1 p-6 flex gap-6 relative">
@@ -71,11 +71,11 @@ export default function EventSelectionPage({ role = 'artist' }) {
 
                                         {}
                                         <div className="flex flex-col justify-center space-y-2 z-10">
-                                            <h3 className="text-2xl md:text-3xl font-bold text-white group-hover:text-[#00d4ff] transition-colors">
+                                            <h3 className="text-2xl md:text-3xl font-bold text-white group-hover:text-[#ffb000] transition-colors">
                                                 {event.title}
                                             </h3>
                                             <div className="flex items-center gap-4 text-sm font-medium text-slate-400">
-                                                <span className="text-[#00d4ff]">
+                                                <span className="text-[#ffb000]">
                                                     {new Date(event.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()}
                                                 </span>
                                                 <span className="w-1 h-1 rounded-full bg-slate-600"></span>
@@ -90,7 +90,7 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                         </div>
 
                                         {}
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                                     </div>
 
                                     {}
@@ -114,7 +114,7 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                             <p className="text-[10px] font-bold tracking-[0.2em] text-slate-500 uppercase">
                                                 {role === 'artist' ? 'Artist Access' : 'Crew Access'}
                                             </p>
-                                            <div className="px-4 py-2 bg-[#00d4ff] text-[#050505] text-sm font-bold rounded shadow-[0_0_15px_rgba(0,212,255,0.4)] group-hover:scale-105 transition-transform flex items-center gap-2">
+                                            <div className="px-4 py-2 sv-sunset text-[#050505] text-sm font-bold rounded shadow-[0_0_15px_rgba(255,106,0,0.4)] group-hover:scale-105 transition-transform flex items-center gap-2">
                                                 {role === 'artist' ? 'LAUNCH SHOW' : 'OPEN CONSOLE'} <ArrowRight className="w-4 h-4" />
                                             </div>
                                         </div>

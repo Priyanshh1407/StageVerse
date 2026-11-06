@@ -14,7 +14,7 @@ export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
         <div className="bg-[#1a2632] rounded-xl border border-[#223949] p-0 shadow-lg overflow-hidden">
           <div className="p-5 border-b border-[#223949] bg-black/20">
             <h3 className="text-white text-lg font-bold flex items-center gap-2">
-              <ScrollText className="text-[#0d93f2] w-5 h-5" />
+              <ScrollText className="text-[#ff6a00] w-5 h-5" />
               Request Manifest
             </h3>
             <p className="text-xs text-white/50 mt-1">Current selection for JSON export.</p>
@@ -39,7 +39,7 @@ export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
                 {activeGear.map(item => (
                   <tr key={item.id}>
                     <td className="px-4 py-3 text-white font-medium">{item.name}</td>
-                    <td className="px-4 py-3 text-right text-[#0d93f2] font-bold font-mono">{item.count}</td>
+                    <td className="px-4 py-3 text-right text-[#ff6a00] font-bold font-mono">{item.count}</td>
                   </tr>
                 ))}
 

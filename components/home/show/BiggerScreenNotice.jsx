@@ -35,7 +35,7 @@ export default function BiggerScreenNotice({ open, onClose }) {
             onClick={onClose}>
             <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-[#0b0d1a]/95 p-6 text-center text-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-                    <Monitor className="h-6 w-6 text-cyan-300" aria-hidden />
+                    <Monitor className="h-6 w-6 text-amber-300" aria-hidden />
                 </div>
                 <h2 id="bigger-screen-title" className="text-lg font-bold mb-2">Best enjoyed on a bigger screen</h2>
                 <p className="text-sm text-gray-300 leading-relaxed mb-5">
@@ -43,7 +43,7 @@ export default function BiggerScreenNotice({ open, onClose }) {
                     bigger screen, with the sound on, to run the show yourself.
                 </p>
                 <button onClick={copyLink}
-                    className="w-full flex items-center justify-center gap-2 rounded-full bg-white text-black py-2.5 text-sm font-bold hover:bg-cyan-300 transition-colors">
+                    className="w-full flex items-center justify-center gap-2 rounded-full bg-white text-black py-2.5 text-sm font-bold hover:bg-amber-300 transition-colors">
                     {copied ? <><Check className="h-4 w-4" aria-hidden /> Link copied</> : <><Link2 className="h-4 w-4" aria-hidden /> Copy link for later</>}
                 </button>
                 <button onClick={onClose} className="mt-3 w-full py-2 text-sm text-gray-300 hover:text-white">Got it</button>

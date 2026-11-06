@@ -6,18 +6,18 @@ export default function OurStory() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
           <div className="relative mb-12 lg:mb-0">
-            <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-[#00E5FF] opacity-50"></div>
+            <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-[#a855f7] opacity-50"></div>
             <img 
               alt="Backstage view of a concert" 
               className="rounded-lg shadow-2xl w-full object-cover h-[500px] grayscale hover:grayscale-0 transition-all duration-500" 
               src="https://images.unsplash.com/photo-1501612780327-45045538702b?q=80&w=2070&auto=format&fit=crop"
             />
-            <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-[#00E5FF] opacity-50"></div>
+            <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-[#a855f7] opacity-50"></div>
           </div>
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="h-px w-8 bg-[#00E5FF]"></span>
-              <span className="text-[#00E5FF] font-bold uppercase tracking-widest text-sm">Our Story</span>
+              <span className="h-px w-8 sv-sunset"></span>
+              <span className="text-[#ffb000] font-bold uppercase tracking-widest text-sm">Our Story</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">From Garage Gigs to Global Stages</h2>
             <div className="prose prose-lg prose-invert text-gray-400">

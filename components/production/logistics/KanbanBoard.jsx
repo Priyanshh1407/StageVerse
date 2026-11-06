@@ -93,7 +93,7 @@ function KanbanCard({ card, index, onEdit, onDelete }) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           style={{ ...provided.draggableProps.style }}
-          className={`bg-[#18181B] p-3 rounded-lg border border-[#27272A] shadow-sm group hover:border-blue-500/50 transition-colors ${card.urgent ? 'border-l-4 border-l-red-500' : ''} ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-blue-500/50 rotate-2' : ''}`}
+          className={`bg-[#18181B] p-3 rounded-lg border border-[#27272A] shadow-sm group hover:border-purple-500/50 transition-colors ${card.urgent ? 'border-l-4 border-l-red-500' : ''} ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-purple-500/50 rotate-2' : ''}`}
         >
 
           <div className="flex justify-between items-start mb-2 relative">

@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
         const columns = [
             { id: 'preprod', title: 'Pre-Production', dotColor: 'bg-slate-400', cards: [] },
             { id: 'loadin', title: 'Load-In', dotColor: 'bg-amber-400', cards: [] },
-            { id: 'show', title: 'Show', dotColor: 'bg-blue-500', cards: [] }, // "Focus" in mock? Let's use Show
+            { id: 'show', title: 'Show', dotColor: 'sv-sunset', cards: [] }, // "Focus" in mock? Let's use Show
             { id: 'loadout', title: 'Load-Out', dotColor: 'bg-red-400', cards: [], isGhost: true },
             { id: 'other', title: 'Other / Backlog', dotColor: 'bg-gray-500', cards: [] }
         ];

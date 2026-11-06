@@ -82,11 +82,11 @@ export default function LDSelector({ selectedLD, onSelect }) {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Assign to Lighting Designer..."
-                    className="w-full bg-[#1a2632] border border-[#223949] text-white text-sm rounded-lg pl-9 pr-4 py-2.5 focus:outline-none focus:border-[#0d93f2] focus:ring-1 focus:ring-[#0d93f2] transition-all"
+                    className="w-full bg-[#1a2632] border border-[#223949] text-white text-sm rounded-lg pl-9 pr-4 py-2.5 focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] transition-all"
                 />
                 {isLoading && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <Loader2 className="w-4 h-4 text-[#0d93f2] animate-spin" />
+                        <Loader2 className="w-4 h-4 text-[#ff6a00] animate-spin" />
                     </div>
                 )}
             </div>
@@ -100,7 +100,7 @@ export default function LDSelector({ selectedLD, onSelect }) {
                             onClick={() => handleSelect(user)}
                             className="w-full text-left px-4 py-3 hover:bg-[#223949] transition-colors flex items-center gap-3 group"
                         >
-                            <div className="w-8 h-8 rounded-full bg-[#223949] group-hover:bg-[#0d93f2] flex items-center justify-center text-white/70 group-hover:text-white font-bold text-xs transition-colors">
+                            <div className="w-8 h-8 rounded-full bg-[#223949] group-hover:sv-sunset flex items-center justify-center text-white/70 group-hover:text-white font-bold text-xs transition-colors">
                                 {user.name.charAt(0)}
                             </div>
                             <div className="flex flex-col">

@@ -111,7 +111,7 @@ export default function GlobalTasksPage() {
             <div className='mb-2'>
               <Link
                 href="/prod-dashboard"
-                className='inline-flex items-center gap-2 text-sm text-gray-500 hover:text-blue-500 transition-colors'
+                className='inline-flex items-center gap-2 text-sm text-gray-500 hover:text-orange-500 transition-colors'
               >
                 <ArrowLeft className='w-4 h-4' />
                 Back to Dashboard
@@ -124,7 +124,7 @@ export default function GlobalTasksPage() {
               </div>
               <button
                 onClick={openCreateModal}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-blue-600/20"
+                className="flex items-center gap-2 sv-sunset hover:brightness-110 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-orange-600/20"
               >
                 <Plus className="w-4 h-4" />
                 Create Task
@@ -153,7 +153,7 @@ export default function GlobalTasksPage() {
                     placeholder="Search tasks or shows..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#18181B] border border-[#27272A] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-600 outline-none"
+                    className="w-full bg-[#18181B] border border-[#27272A] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-600 outline-none"
                   />
                 </div>
               </div>
@@ -165,7 +165,7 @@ export default function GlobalTasksPage() {
             <div className="max-w-5xl mx-auto space-y-3">
               {loading ? (
                 <div className="flex justify-center py-20">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                  <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
                 </div>
               ) : (
                 <>
@@ -221,16 +221,16 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
   const getPriorityColor = (p) => {
     if (p === 'High') return 'text-red-400 bg-red-400/10 border-red-400/20';
     if (p === 'Medium') return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
-    return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
+    return 'text-orange-400 bg-orange-400/10 border-purple-400/20';
   };
 
   return (
-    <div className="group flex items-center gap-4 bg-[#18181B] border border-[#27272A] p-4 rounded-xl hover:border-blue-500/30 transition-all shadow-sm relative">
+    <div className="group flex items-center gap-4 bg-[#18181B] border border-[#27272A] p-4 rounded-xl hover:border-purple-500/30 transition-all shadow-sm relative">
 
       {}
       <button
         onClick={onToggle}
-        className={`shrink-0 transition-colors ${task.status === 'completed' ? 'text-green-500' : 'text-gray-600 hover:text-blue-500'}`}
+        className={`shrink-0 transition-colors ${task.status === 'completed' ? 'text-green-500' : 'text-gray-600 hover:text-orange-500'}`}
       >
         {task.status === 'completed' ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
       </button>
@@ -333,7 +333,7 @@ function TaskModal({ task, onClose, onSave }) {
             <input
               required
               type="text"
-              className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+              className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
               placeholder="e.g. Update Patch Sheet"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -344,7 +344,7 @@ function TaskModal({ task, onClose, onSave }) {
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Show / Project</label>
               <select
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                 value={formData.show}
                 onChange={(e) => setFormData({ ...formData, show: e.target.value })}
               >
@@ -358,7 +358,7 @@ function TaskModal({ task, onClose, onSave }) {
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Venue</label>
               <input
                 type="text"
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                 placeholder="Optional"
                 value={formData.venue}
                 onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
@@ -370,7 +370,7 @@ function TaskModal({ task, onClose, onSave }) {
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Priority</label>
               <select
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
               >
@@ -383,7 +383,7 @@ function TaskModal({ task, onClose, onSave }) {
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Due Date</label>
               <input
                 type="text"
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                 placeholder="e.g. Tomorrow"
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
@@ -401,7 +401,7 @@ function TaskModal({ task, onClose, onSave }) {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all"
+              className="px-6 py-2 rounded-lg text-sm font-bold sv-sunset hover:brightness-110 text-white shadow-lg shadow-orange-600/20 transition-all"
             >
               {task ? 'Save Changes' : 'Create Task'}
             </button>

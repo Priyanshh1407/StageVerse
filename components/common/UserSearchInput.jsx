@@ -93,14 +93,14 @@ export default function UserSearchInput({
                     value={searchTerm}
                     onChange={handleChange}
                     onFocus={() => searchTerm.length >= 2 && !selectedUser && setShowDropdown(true)}
-                    className={`w-full h-12 bg-[#182234] border ${selectedUser ? 'border-green-500/50' : 'border-[#314368]'} rounded-lg pl-10 pr-10 text-white focus:border-[#0d93f2] outline-none placeholder-[#314368] transition-colors`}
+                    className={`w-full h-12 bg-[#182234] border ${selectedUser ? 'border-green-500/50' : 'border-[#314368]'} rounded-lg pl-10 pr-10 text-white focus:border-[#a855f7] outline-none placeholder-[#314368] transition-colors`}
                     placeholder={placeholder}
                 />
 
                 <Search className="absolute left-3 top-3.5 text-[#90a4cb] w-5 h-5" />
 
                 {isLoading ? (
-                    <Loader2 className="absolute right-3 top-3.5 text-[#0d93f2] w-5 h-5 animate-spin" />
+                    <Loader2 className="absolute right-3 top-3.5 text-[#ff6a00] w-5 h-5 animate-spin" />
                 ) : selectedUser ? (
                     <button onClick={handleClear} className="absolute right-3 top-3.5 text-green-500 hover:text-red-400 transition-colors">
                         <X className="w-5 h-5" />

@@ -63,7 +63,7 @@ export default function ContactPage() {
         }
       `}</style>
 
-      <div className="bg-[#0F0F10] text-gray-200 min-h-screen flex flex-col font-sans antialiased selection:bg-[#00d4ff] selection:text-black">
+      <div className="bg-[#0F0F10] text-gray-200 min-h-screen flex flex-col font-sans antialiased selection:bg-[#ffb000] selection:text-black">
 
         <Navbar />
 
@@ -91,26 +91,26 @@ export default function ContactPage() {
                 {}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {}
-                  <div className="bg-[#18181B] p-6 rounded-2xl border border-white/5 shadow-sm hover:border-[#00d4ff]/50 transition-colors group">
-                    <div className="w-12 h-12 rounded-full bg-[#00d4ff]/10 flex items-center justify-center mb-4 group-hover:bg-[#00d4ff]/20 transition-colors">
-                      <Mail className="w-6 h-6 text-[#00d4ff]" />
+                  <div className="bg-[#18181B] p-6 rounded-2xl border border-white/5 shadow-sm hover:border-[#a855f7]/50 transition-colors group">
+                    <div className="w-12 h-12 rounded-full bg-[#ff6a00]/10 flex items-center justify-center mb-4 group-hover:bg-[#ff6a00]/20 transition-colors">
+                      <Mail className="w-6 h-6 text-[#ffb000]" />
                     </div>
                     <h3 className="text-lg font-semibold text-white mb-2">Email Us</h3>
                     <p className="text-gray-400 text-sm mb-4">For general inquiries and support.</p>
-                    <a href="mailto:hello@stageverse.com" className="text-[#00d4ff] hover:text-cyan-300 font-medium text-sm inline-flex items-center gap-1">
+                    <a href="mailto:hello@stageverse.com" className="text-[#ffb000] hover:text-amber-300 font-medium text-sm inline-flex items-center gap-1">
                       hello@stageverse.com
                       <ArrowRight className="w-4 h-4" />
                     </a>
                   </div>
 
                   {}
-                  <div className="bg-[#18181B] p-6 rounded-2xl border border-white/5 shadow-sm hover:border-[#00d4ff]/50 transition-colors group">
-                    <div className="w-12 h-12 rounded-full bg-[#00d4ff]/10 flex items-center justify-center mb-4 group-hover:bg-[#00d4ff]/20 transition-colors">
-                      <LifeBuoy className="w-6 h-6 text-[#00d4ff]" />
+                  <div className="bg-[#18181B] p-6 rounded-2xl border border-white/5 shadow-sm hover:border-[#a855f7]/50 transition-colors group">
+                    <div className="w-12 h-12 rounded-full bg-[#ff6a00]/10 flex items-center justify-center mb-4 group-hover:bg-[#ff6a00]/20 transition-colors">
+                      <LifeBuoy className="w-6 h-6 text-[#ffb000]" />
                     </div>
                     <h3 className="text-lg font-semibold text-white mb-2">Support Center</h3>
                     <p className="text-gray-400 text-sm mb-4">Check our FAQs for quick answers.</p>
-                    <a href="#" className="text-[#00d4ff] hover:text-cyan-300 font-medium text-sm inline-flex items-center gap-1">
+                    <a href="#" className="text-[#ffb000] hover:text-amber-300 font-medium text-sm inline-flex items-center gap-1">
                       Visit Help Center
                       <ArrowRight className="w-4 h-4" />
                     </a>
@@ -126,7 +126,7 @@ export default function ContactPage() {
                   />
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="relative">
-                      <MapPin className="w-12 h-12 text-[#00d4ff] drop-shadow-lg" />
+                      <MapPin className="w-12 h-12 text-[#ffb000] drop-shadow-lg" />
                       <div className="w-8 h-2 bg-black/50 blur-sm rounded-full absolute bottom-1 left-1/2 -translate-x-1/2"></div>
                     </div>
                   </div>
@@ -136,7 +136,7 @@ export default function ContactPage() {
                       <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Headquarters</p>
                       <p className="text-sm text-white font-medium">1200 Music Row, Nashville, TN</p>
                     </div>
-                    <a href="#" className="w-8 h-8 rounded-full bg-[#00d4ff] text-black flex items-center justify-center hover:bg-cyan-300 transition-colors">
+                    <a href="#" className="w-8 h-8 rounded-full sv-sunset text-black flex items-center justify-center hover:bg-amber-300 hover:bg-none transition-colors">
                       <Navigation className="w-4 h-4" />
                     </a>
                   </div>
@@ -159,7 +159,7 @@ export default function ContactPage() {
                         onChange={handleChange}
                         placeholder="Your name"
                         required
-                        className="block w-full rounded-lg border border-white/10 bg-[#27272A] text-white shadow-sm focus:bg-[#27272A] focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] sm:text-sm py-3 px-4 placeholder-gray-500 transition-all outline-none"
+                        className="block w-full rounded-lg border border-white/10 bg-[#27272A] text-white shadow-sm focus:bg-[#27272A] focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] sm:text-sm py-3 px-4 placeholder-gray-500 transition-all outline-none"
                       />
                     </div>
                     <div className="space-y-2">
@@ -172,7 +172,7 @@ export default function ContactPage() {
                         onChange={handleChange}
                         placeholder="you@example.com"
                         required
-                        className="block w-full rounded-lg border border-white/10 bg-[#27272A] text-white shadow-sm focus:bg-[#27272A] focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] sm:text-sm py-3 px-4 placeholder-gray-500 transition-all outline-none"
+                        className="block w-full rounded-lg border border-white/10 bg-[#27272A] text-white shadow-sm focus:bg-[#27272A] focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] sm:text-sm py-3 px-4 placeholder-gray-500 transition-all outline-none"
                       />
                     </div>
                   </div>
@@ -184,7 +184,7 @@ export default function ContactPage() {
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
-                      className="block w-full rounded-lg border border-white/10 bg-[#27272A] text-white shadow-sm focus:bg-[#27272A] focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] sm:text-sm py-3 px-4 transition-all outline-none appearance-none"
+                      className="block w-full rounded-lg border border-white/10 bg-[#27272A] text-white shadow-sm focus:bg-[#27272A] focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] sm:text-sm py-3 px-4 transition-all outline-none appearance-none"
                     >
                       <option>General Inquiry</option>
                       <option>Ticket Support</option>
@@ -203,7 +203,7 @@ export default function ContactPage() {
                       onChange={handleChange}
                       placeholder="How can we help you?"
                       required
-                      className="block w-full rounded-lg border border-white/10 bg-[#27272A] text-white shadow-sm focus:bg-[#27272A] focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff] sm:text-sm py-3 px-4 placeholder-gray-500 transition-all outline-none resize-none"
+                      className="block w-full rounded-lg border border-white/10 bg-[#27272A] text-white shadow-sm focus:bg-[#27272A] focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] sm:text-sm py-3 px-4 placeholder-gray-500 transition-all outline-none resize-none"
                     ></textarea>
                   </div>
 
@@ -212,10 +212,10 @@ export default function ContactPage() {
                       type="submit"
                       disabled={status !== 'idle'}
                       className={`
-                        w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00d4ff] focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed
+                        w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a855f7] focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed
                         ${status === 'success'
                           ? 'bg-green-500 text-white hover:bg-green-600'
-                          : 'bg-[#00d4ff] text-black hover:bg-cyan-400'}
+                          : 'sv-sunset text-black hover:brightness-110'}
                       `}
                     >
                       {status === 'loading' ? (
@@ -235,7 +235,7 @@ export default function ContactPage() {
                   </div>
 
                   <p className="text-xs text-center text-gray-500 mt-4">
-                    By submitting this form, you agree to our <a href="#" className="underline hover:text-[#00d4ff]">Privacy Policy</a>.
+                    By submitting this form, you agree to our <a href="#" className="underline hover:text-[#ffb000]">Privacy Policy</a>.
                   </p>
 
                 </form>

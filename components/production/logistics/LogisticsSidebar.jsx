@@ -9,7 +9,7 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
       <div className="p-6 border-b border-[#27272A]">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-bold text-lg">Project Docs</h3>
-          <button className="text-blue-500 hover:text-white text-xs font-bold uppercase">View All</button>
+          <button className="text-orange-500 hover:text-white text-xs font-bold uppercase">View All</button>
         </div>
         <div className="flex flex-col gap-3">
           {docs.map((doc, i) => (
@@ -30,9 +30,9 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
           ))}
         </div>
 
-        <div className="mt-8 p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20">
+        <div className="mt-8 p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-transparent border border-purple-500/20">
           <div className="flex items-start gap-3">
-            <Lightbulb className="text-blue-500 w-6 h-6 shrink-0" />
+            <Lightbulb className="text-orange-500 w-6 h-6 shrink-0" />
             <div>
               <p className="text-white text-sm font-bold mb-1">Tip of the day</p>
               <p className="text-gray-500 text-xs leading-relaxed">Use &quot;Group Mode&quot; to assign tasks to multiple electricians at once during load-in.</p>
@@ -48,19 +48,19 @@ import { Lightbulb, Map, Grid, Box } from 'lucide-react';
 
 function DocItem({ title, type, url }) {
   let Icon = Box;
-  let color = "text-blue-400";
-  let bgColor = "bg-blue-500/10";
+  let color = "text-orange-400";
+  let bgColor = "bg-orange-500/10";
 
   if (type === 'Map') { Icon = Map; color = "text-purple-400"; bgColor = "bg-purple-500/10"; }
   if (type === 'Grid') { Icon = Grid; color = "text-green-400"; bgColor = "bg-green-500/10"; }
 
   return (
-    <a className="group flex items-center p-3 rounded-lg bg-[#18181B] border border-transparent hover:border-blue-500/50 transition-all" href={url || '#'}>
+    <a className="group flex items-center p-3 rounded-lg bg-[#18181B] border border-transparent hover:border-purple-500/50 transition-all" href={url || '#'}>
       <div className={`size-10 rounded ${bgColor} flex items-center justify-center ${color} mr-3 group-hover:text-white transition-colors`}>
         <Icon className="w-5 h-5" />
       </div>
       <div className="flex-1">
-        <p className="text-white text-sm font-bold group-hover:text-blue-400 transition-colors">{title}</p>
+        <p className="text-white text-sm font-bold group-hover:text-orange-400 transition-colors">{title}</p>
         <p className="text-gray-500 text-xs">{type}</p>
       </div>
     </a>

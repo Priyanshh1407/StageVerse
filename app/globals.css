@@ -3,6 +3,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* The site's palette follows the logo: the sunset of "Verse" (amber, orange, pink) for the main
+   buttons and fills, the logo's purple for outlines, rings and focus, white for labels.
+   sv-sunset: the main fill (a solid orange underneath, for anything that reads background-color). */
+@utility sv-sunset {
+  background-color: #ff6a00;
+  background-image: linear-gradient(90deg, #ffb000 0%, #ff6a00 55%, #ff3d7a 100%);
+}
+
 @theme inline {
   
   --color-background: var(--background);
@@ -70,8 +78,8 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222.2 84% 4.9%);
 
-  --primary: hsl(221.2 83.2% 53.3%);
-  --primary-foreground: hsl(210 40% 98%);
+  --primary: #ff6a00;                 /* the logo's orange (light theme) */
+  --primary-foreground: #ffffff;
 
   --secondary: hsl(210 40% 96.1%);
   --secondary-foreground: hsl(222.2 47.4% 11.2%);
@@ -87,7 +95,7 @@
 
   --border: hsl(214.3 31.8% 91.4%);
   --input: hsl(214.3 31.8% 91.4%);
-  --ring: hsl(221.2 83.2% 53.3%);
+  --ring: #a855f7;                    /* the logo's purple */
 
   
   --chart-1: oklch(0.646 0.222 41.116);
@@ -122,8 +130,8 @@
   --popover-foreground: hsl(210 40% 98%);
 
   
-  --primary: hsl(190 100% 50%);
-  --primary-foreground: hsl(222.2 47.4% 11.2%);
+  --primary: #ffb000;                 /* the logo's amber (dark theme) */
+  --primary-foreground: #1a0700;
 
   --secondary: hsl(217.2 32.6% 17.5%);
   --secondary-foreground: hsl(210 40% 98%);
@@ -141,7 +149,7 @@
   --input: hsl(217.2 32.6% 17.5%);
 
   
-  --ring: hsl(190 100% 50%);
+  --ring: #a855f7;
 
   
   --chart-1: oklch(0.488 0.243 264.376);

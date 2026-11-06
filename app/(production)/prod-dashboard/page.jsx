@@ -42,7 +42,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex h-screen w-full bg-[#0F0F10] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
       </div>
     );
   }
@@ -51,7 +51,7 @@ export default function DashboardPage() {
     return (
       <div className="flex h-screen w-full bg-[#0F0F10] items-center justify-center flex-col gap-4">
         <p className="text-red-500 font-bold">{error || "No data available"}</p>
-        <button onClick={() => window.location.reload()} className="text-blue-500 underline text-sm">Retry</button>
+        <button onClick={() => window.location.reload()} className="text-orange-500 underline text-sm">Retry</button>
       </div>
     );
   }

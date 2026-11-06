@@ -101,7 +101,7 @@ const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
                 href={item.href}
                 onClick={onClose} // Close sidebar on mobile when a link is clicked
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${isActive
-                  ? "bg-cyan-600 text-white shadow-lg shadow-cyan-600/25"
+                  ? "sv-sunset text-white shadow-lg shadow-orange-600/25"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >

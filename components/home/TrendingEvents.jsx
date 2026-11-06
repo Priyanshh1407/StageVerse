@@ -8,7 +8,7 @@ export default function TrendingEvents({ events, isLoading }) {
   return (
     <section className="py-20 bg-[#050505] relative overflow-hidden" id="trending">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-[#00d4ff]/5 rounded-full blur-[120px]"></div>
+        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-[#ff6a00]/5 rounded-full blur-[120px]"></div>
       </div>
 
       <div className="mx-auto max-w-[1440px] px-6 lg:px-12 relative z-10">
@@ -17,7 +17,7 @@ export default function TrendingEvents({ events, isLoading }) {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Trending Now</h2>
             <p className="text-slate-400">Events getting the most hype this week.</p>
           </div>
-          <a href="/explore" className="hidden md:flex items-center gap-1 text-[#00d4ff] hover:text-white font-medium transition-colors">
+          <a href="/explore" className="hidden md:flex items-center gap-1 text-[#ffb000] hover:text-white font-medium transition-colors">
             View all <ArrowRight className="w-4 h-4" />
           </a>
         </div>
@@ -25,7 +25,7 @@ export default function TrendingEvents({ events, isLoading }) {
         {}
         {isLoading ? (
           <div className="flex justify-center items-center h-64 w-full">
-            <Loader2 className="w-10 h-10 text-[#00d4ff] animate-spin" />
+            <Loader2 className="w-10 h-10 text-[#ffb000] animate-spin" />
           </div>
         ) : (
           <motion.div
@@ -51,11 +51,11 @@ export default function TrendingEvents({ events, isLoading }) {
               >
                 <Link
                   href={`/events/${event.id}`}
-                  className="group relative overflow-hidden rounded-2xl bg-[#0a0a0a] border border-white/5 transition-all hover:border-[#00d4ff]/30 hover:shadow-[0_0_40px_-10px_rgba(0,212,255,0.3)] cursor-pointer block h-full"
+                  className="group relative overflow-hidden rounded-2xl bg-[#0a0a0a] border border-white/5 transition-all hover:border-[#a855f7]/30 hover:shadow-[0_0_40px_-10px_rgba(255,106,0,0.3)] cursor-pointer block h-full"
                 >
 
                   <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md rounded-lg px-3 py-1.5 text-center border border-white/10">
-                    <div className="text-[10px] text-[#00d4ff] font-bold uppercase tracking-wider">{event.month}</div>
+                    <div className="text-[10px] text-[#ffb000] font-bold uppercase tracking-wider">{event.month}</div>
                     <div className="text-xl font-bold text-white leading-none">{event.date}</div>
                   </div>
 
@@ -70,13 +70,13 @@ export default function TrendingEvents({ events, isLoading }) {
                     </div>
 
                     <div className="absolute bottom-0 left-0 w-full p-5">
-                      <h3 className="text-xl font-bold text-white leading-tight mb-1 group-hover:text-[#00d4ff] transition-colors">{event.name}</h3>
+                      <h3 className="text-xl font-bold text-white leading-tight mb-1 group-hover:text-[#ffb000] transition-colors">{event.name}</h3>
                       <div className="flex items-center gap-1 text-slate-400 text-sm mb-4">
                         <MapPin className="w-4 h-4" />
                         {event.location}
                       </div>
                       {}
-                      <div className={`w-full rounded-lg py-3 text-sm font-bold transition-all text-center ${event.price ? 'bg-[#00d4ff] text-black group-hover:scale-105' : 'bg-white/10 border border-white/10 text-white group-hover:bg-white group-hover:text-black'}`}>
+                      <div className={`w-full rounded-lg py-3 text-sm font-bold transition-all text-center ${event.price ? 'sv-sunset text-black group-hover:scale-105' : 'bg-white/10 border border-white/10 text-white group-hover:bg-white group-hover:text-black'}`}>
                         {event.price ? `Get Tickets • $${event.price}` : 'Join Waitlist'}
                       </div>
                     </div>

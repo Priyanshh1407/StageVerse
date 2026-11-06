@@ -273,7 +273,7 @@ function SetlistBuilderContent() {
               <button
                 key={evt._id}
                 onClick={() => setSelectedEventId(evt._id)}
-                className="flex flex-col text-left bg-[#101b23] border border-[#315168] hover:border-[#0d93f2] hover:bg-[#182934] rounded-xl overflow-hidden transition-all group shadow-lg"
+                className="flex flex-col text-left bg-[#101b23] border border-[#315168] hover:border-[#a855f7] hover:bg-[#182934] rounded-xl overflow-hidden transition-all group shadow-lg"
               >
                 <div className="h-32 bg-slate-800 relative w-full">
                   {}
@@ -284,7 +284,7 @@ function SetlistBuilderContent() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg font-bold text-white group-hover:text-[#0d93f2] transition-colors">{evt.venue?.name || evt.city}</h3>
+                  <h3 className="text-lg font-bold text-white group-hover:text-[#ff6a00] transition-colors">{evt.venue?.name || evt.city}</h3>
                   <p className="text-sm text-[#90b2cb]">{evt.city}</p>
                 </div>
               </button>
@@ -322,7 +322,7 @@ function SetlistBuilderContent() {
           >
             Setlist Builder
             {viewMode === 'builder' && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#0d93f2] shadow-[0_0_10px_#0d93f2] rounded-t-full" />
+              <span className="absolute bottom-0 left-0 w-full h-0.5 sv-sunset shadow-[0_0_10px_#ff6a00] rounded-t-full" />
             )}
           </button>
           <button
@@ -331,7 +331,7 @@ function SetlistBuilderContent() {
           >
             Guestlist Manager
             {viewMode === 'guestlist' && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#0d93f2] shadow-[0_0_10px_#0d93f2] rounded-t-full" />
+              <span className="absolute bottom-0 left-0 w-full h-0.5 sv-sunset shadow-[0_0_10px_#ff6a00] rounded-t-full" />
             )}
           </button>
         </div>

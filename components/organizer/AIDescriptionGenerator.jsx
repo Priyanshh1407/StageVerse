@@ -33,7 +33,7 @@ export default function AIDescriptionGenerator() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="e.g. High energy, neon lights, rave..." 
-            className="flex-1 bg-[#101b22] border border-[#2c3b47] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#0d93f2]"
+            className="flex-1 bg-[#101b22] border border-[#2c3b47] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a855f7]"
           />
           <button 
             onClick={handleGenerate}

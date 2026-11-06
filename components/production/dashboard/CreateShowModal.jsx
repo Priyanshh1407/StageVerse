@@ -106,13 +106,13 @@ export default function CreateShowModal({ onClose, onSave }) {
 
           {}
           {pendingRequests.length > 0 && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-2">
-              <label className="block text-xs font-bold text-blue-400 uppercase mb-2">
+            <div className="bg-orange-500/10 border border-purple-500/20 rounded-lg p-4 mb-2">
+              <label className="block text-xs font-bold text-orange-400 uppercase mb-2">
                 Select Assigned Show ({pendingRequests.length})
               </label>
               <select
                 onChange={handleSelectRequest}
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-blue-500 outline-none appearance-none cursor-pointer text-sm"
+                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-purple-500 outline-none appearance-none cursor-pointer text-sm"
               >
                 <option value="">-- Start from Scratch --</option>
                 {pendingRequests.map(req => (
@@ -132,7 +132,7 @@ export default function CreateShowModal({ onClose, onSave }) {
               type="text"
               required
               placeholder="e.g. Neon Nights World Tour"
-              className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-3 text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder:text-gray-700 font-medium"
+              className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-3 text-white focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none placeholder:text-gray-700 font-medium"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
@@ -144,7 +144,7 @@ export default function CreateShowModal({ onClose, onSave }) {
               <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Production Type</label>
               <div className="relative">
                 <select
-                  className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-3 text-white focus:ring-1 focus:ring-blue-500 outline-none appearance-none cursor-pointer"
+                  className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-3 text-white focus:ring-1 focus:ring-purple-500 outline-none appearance-none cursor-pointer"
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 >
@@ -163,7 +163,7 @@ export default function CreateShowModal({ onClose, onSave }) {
               <div className="relative">
                 <input
                   type="date"
-                  className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-white focus:ring-1 focus:ring-blue-500 outline-none text-sm [color-scheme:dark]"
+                  className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-white focus:ring-1 focus:ring-purple-500 outline-none text-sm [color-scheme:dark]"
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   value={formData.date}
                 />
@@ -178,7 +178,7 @@ export default function CreateShowModal({ onClose, onSave }) {
               <input
                 type="text"
                 placeholder="e.g. Wembley Stadium"
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg pl-10 pr-4 py-3 text-white focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-gray-700"
+                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg pl-10 pr-4 py-3 text-white focus:ring-1 focus:ring-purple-500 outline-none placeholder:text-gray-700"
                 onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                 value={formData.venue}
               />
@@ -187,9 +187,9 @@ export default function CreateShowModal({ onClose, onSave }) {
           </div>
 
           {}
-          <div className="border-2 border-dashed border-[#27272A] rounded-lg p-6 flex flex-col items-center justify-center gap-2 hover:bg-[#0F0F10] hover:border-blue-500/50 transition-all cursor-pointer group">
-            <div className="size-10 rounded-full bg-[#0F0F10] flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-              <Upload className="w-5 h-5 text-gray-500 group-hover:text-blue-500" />
+          <div className="border-2 border-dashed border-[#27272A] rounded-lg p-6 flex flex-col items-center justify-center gap-2 hover:bg-[#0F0F10] hover:border-purple-500/50 transition-all cursor-pointer group">
+            <div className="size-10 rounded-full bg-[#0F0F10] flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
+              <Upload className="w-5 h-5 text-gray-500 group-hover:text-orange-500" />
             </div>
             <p className="text-sm text-gray-400 font-medium">Drop Technical Rider (PDF)</p>
             <p className="text-xs text-gray-600">Optional • Max 10MB</p>
@@ -208,7 +208,7 @@ export default function CreateShowModal({ onClose, onSave }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-3 rounded-lg font-bold text-sm bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-lg font-bold text-sm sv-sunset hover:brightness-110 text-white shadow-lg shadow-orange-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {isSubmitting ? 'Creating...' : 'Create Project'}

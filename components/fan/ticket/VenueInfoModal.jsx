@@ -39,7 +39,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
           <div className="absolute bottom-0 left-0 p-6 w-full">
             <h2 className="text-3xl font-bold text-white leading-tight">{venue.name}</h2>
             <div className="flex items-center gap-2 text-slate-300 mt-1 text-sm font-medium">
-              <MapPin className="w-4 h-4 text-[#0d93f2]" />
+              <MapPin className="w-4 h-4 text-[#ff6a00]" />
               {venue.address}
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
             <div className="lg:col-span-2 space-y-6">
               <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                  <Info className="w-5 h-5 text-[#0d93f2]" /> About the Venue
+                  <Info className="w-5 h-5 text-[#ff6a00]" /> About the Venue
                 </h3>
                 <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
                   {venue.description}
@@ -99,7 +99,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
                     className="object-cover opacity-60 group-hover:opacity-40 transition-opacity"
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <button className="px-4 py-2 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white text-xs font-bold rounded-lg shadow-lg transform transition-transform group-hover:scale-105">
+                    <button className="px-4 py-2 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white text-xs font-bold rounded-lg shadow-lg transform transition-transform group-hover:scale-105">
                       Get Directions
                     </button>
                   </div>
@@ -121,7 +121,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
           <button onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
             Close
           </button>
-          <button className="px-5 py-2.5 bg-[#0d93f2] hover:bg-[#0d93f2]/90 text-white text-sm font-bold rounded-lg shadow-lg shadow-[#0d93f2]/25 transition-all">
+          <button className="px-5 py-2.5 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white text-sm font-bold rounded-lg shadow-lg shadow-[#ff6a00]/25 transition-all">
             Visit Official Site
           </button>
         </div>
@@ -143,7 +143,7 @@ function StatItem({ icon: Icon, label, value }) {
 function AmenityBadge({ icon: Icon, label }) {
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300">
-      <Icon className="w-3.5 h-3.5 text-[#0d93f2]" />
+      <Icon className="w-3.5 h-3.5 text-[#ff6a00]" />
       {label}
     </div>
   );

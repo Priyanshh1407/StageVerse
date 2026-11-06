@@ -10,8 +10,8 @@ export default function ActionGrid({ status, onStartShow, onEncorePoll, onWarnin
             {}
             <ActionCard
                 icon={PlayCircle}
-                iconColor="text-[#0d93f2]"
-                bgIcon="bg-[#0d93f2]/10"
+                iconColor="text-[#ff6a00]"
+                bgIcon="bg-[#ff6a00]/10"
                 label="Master Control"
                 title="Start Show"
                 desc="Alerts production & lighting desk. Initiates Intro Sequence 01."
@@ -126,12 +126,12 @@ function SlideToConfirm({ onConfirm }) {
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-14 rounded-lg overflow-hidden border border-[#0d93f2]/30 bg-[#0d93f2]/5 select-none touch-none"
+            className="relative w-full h-14 rounded-lg overflow-hidden border border-[#a855f7]/30 bg-[#ff6a00]/5 select-none touch-none"
         >
             {}
             <div
                 style={{ width: `${sliderWidth}px` }}
-                className="absolute inset-y-0 left-0 bg-[#0d93f2] transition-all duration-75 ease-linear"
+                className="absolute inset-y-0 left-0 sv-sunset transition-all duration-75 ease-linear"
             ></div>
 
             {}
@@ -141,14 +141,14 @@ function SlideToConfirm({ onConfirm }) {
                 onPointerUp={handlePointerUp}
                 onPointerLeave={handlePointerUp} // Safety fallback
                 style={{ left: `${sliderWidth}px` }}
-                className="absolute inset-y-0 w-14 bg-[#0d93f2] flex items-center justify-center cursor-grab active:cursor-grabbing hover:brightness-110 shadow-xl z-10 transition-all duration-75 ease-linear"
+                className="absolute inset-y-0 w-14 sv-sunset flex items-center justify-center cursor-grab active:cursor-grabbing hover:brightness-110 shadow-xl z-10 transition-all duration-75 ease-linear"
             >
                 <ChevronsRight className="text-white w-6 h-6" />
             </div>
 
             {}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                <span className="pl-10 text-[#0d93f2] font-bold uppercase tracking-wider text-sm opacity-80">
+                <span className="pl-10 text-[#ff6a00] font-bold uppercase tracking-wider text-sm opacity-80">
                     Slide to Start
                 </span>
             </div>

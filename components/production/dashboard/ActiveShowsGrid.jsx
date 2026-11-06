@@ -50,7 +50,7 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
                             exit={{ opacity: 0, y: 10 }}
                             className="flex items-center gap-2"
                         >
-                            {view === 'active' && <Film className="w-5 h-5 text-blue-500" />}
+                            {view === 'active' && <Film className="w-5 h-5 text-orange-500" />}
                             {view === 'archived' && <Archive className="w-5 h-5 text-gray-500" />}
                             {view === 'requested' && <Inbox className="w-5 h-5 text-amber-500" />}
 
@@ -127,12 +127,12 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
                     <motion.button
                         variants={itemVariants}
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="group flex flex-col items-center justify-center rounded-xl bg-transparent border-2 border-dashed border-[#27272A] hover:border-blue-500 hover:bg-blue-500/5 transition-all min-h-[250px] gap-3"
+                        className="group flex flex-col items-center justify-center rounded-xl bg-transparent border-2 border-dashed border-[#27272A] hover:border-purple-500 hover:bg-orange-500/5 transition-all min-h-[250px] gap-3"
                     >
-                        <div className="size-12 rounded-full bg-[#18181B] group-hover:bg-blue-500/20 flex items-center justify-center text-gray-500 group-hover:text-blue-500 transition-colors">
+                        <div className="size-12 rounded-full bg-[#18181B] group-hover:bg-orange-500/20 flex items-center justify-center text-gray-500 group-hover:text-orange-500 transition-colors">
                             <Plus className="w-7 h-7" />
                         </div>
-                        <p className="text-gray-500 font-bold group-hover:text-blue-500 transition-colors">Create New Show</p>
+                        <p className="text-gray-500 font-bold group-hover:text-orange-500 transition-colors">Create New Show</p>
                     </motion.button>
                 )}
             </motion.div>
@@ -209,7 +209,7 @@ function ShowCard({ show, isRequested, variants }) {
             initial="hidden"
             animate="visible"
             exit={{ opacity: 0, scale: 0.95 }}
-            className={`group flex flex-col rounded-xl bg-[#18181B] border border-[#27272A] overflow-hidden transition-all shadow-sm ${isArchived ? 'opacity-75 hover:opacity-100' : 'hover:border-blue-500/50'}`}
+            className={`group flex flex-col rounded-xl bg-[#18181B] border border-[#27272A] overflow-hidden transition-all shadow-sm ${isArchived ? 'opacity-75 hover:opacity-100' : 'hover:border-purple-500/50'}`}
         >
             <div className="h-32 w-full bg-cover bg-center relative" style={{ backgroundImage: `url(${show.image})` }}>
                 <div className="absolute inset-0 bg-linear-to-t from-[#18181B] to-transparent opacity-90"></div>
@@ -260,7 +260,7 @@ function ShowCard({ show, isRequested, variants }) {
                             href={`/patch-studio/${show.eventId || show.id}`}
                             className={`flex-1 h-9 flex items-center justify-center gap-2 text-sm font-bold rounded transition-colors ${isArchived
                                 ? 'bg-[#27272A] text-gray-400 hover:text-white'
-                                : 'bg-blue-600 hover:bg-blue-500 text-white'
+                                : 'sv-sunset hover:brightness-110 text-white'
                                 }`}
                         >
                             <Settings2 className="w-4 h-4" />
