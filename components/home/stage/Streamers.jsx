@@ -101,7 +101,7 @@ const VERTEX = /* glsl */ `
         float speed = min(36.0, reach * ${DRAG.toFixed(2)} / cos(el));
         el = min(el, asin(min(1.0, 8.8 / speed)));
         vec3 aim = normalize(vec3(toSpot.x / reach * cos(el), sin(el), toSpot.y / reach * cos(el)));
-        float fall = 1.0 + 0.5 * fract(r1 * 11.3);     // paper ribbons sink at 1-1.5 m/s
+        float fall = 1.6 + 0.7 * fract(r1 * 11.3);     // ribbons sink at 1.6-2.3 m/s (they hung in the air too long)
         float ribbon = 5.0 + 3.0 * fract(r2 * 29.0);
         // Each ribbon lives until it has come all the way down: its highest point (the launcher plus
         // how far it climbs before the air stops it), plus its own length, at its sinking speed;

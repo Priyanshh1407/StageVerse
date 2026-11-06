@@ -15,7 +15,7 @@ export const MOVING_HEAD_URL = '/fixtures/moving-head.glb';
 // colours come from the look, and each job moves in its own way.
 export const ROLES = {
     // the aerial beams are the rig's centrepiece: denser and brighter than the rest, with more smoke in them
-    aerial: { level: 'beams', colors: ['colorA', 'colorB'], sweep: 1, speed: 1, converge: 1, spread: 1, opacity: 1.5, haze: 0.15 },
+    aerial: { level: 'beams', colors: ['colorA', 'colorB'], sweep: 1, speed: 1, converge: 1, spread: 1, opacity: 1.2, haze: 0.15 },
     // Side towers keep to their own aim (sidesAim), so wide or mirrored positions never throw them
     // outside the towers; they sweep only a little
     sides: { level: 'sides', colors: ['colorB', 'colorA'], sweep: 0.3, speed: 0.7, converge: 1, spread: 1.1, opacity: 1, ownAim: true },
