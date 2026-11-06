@@ -35,6 +35,12 @@ const DESK_EFFECTS = {
     confetti: { units: CONFETTI_UNITS, pattern: confettiPattern, minHold: 0.4 },
     streamers: { units: STREAMER_UNITS, pattern: streamerPattern, minHold: 0.4 },
 };
+// Live during a song's light show (the show carries on): the space bar fires the CO2 (floor and
+// truss), shift the confetti; each fires while held, at least a short burst
+const LIVE_FX = {
+    co2: { kinds: ['co2', 'co2Truss'], label: 'CO2', key: 'Space' },
+    confetti: { kinds: ['confetti'], label: 'Confetti', key: 'Shift' },
+};
 // The logo's two faces, for the LED wall and the gate sign (drawn into canvases, so passed by name)
 const LOGO_FONTS = { tag: logoTag.style.fontFamily, script: logoScript.style.fontFamily };
 
@@ -445,9 +451,69 @@ function ShowExperience({ events = [], isPhone = false }) {
         setCounts((n) => ({ ...n, beams: null }));
     };
 
+    // --- Live effects during a song (space bar: CO2, shift: confetti) ---------------------
+    // Only while a song's light show runs; the show isn't taken over (unlike the lighting desk)
+    const [liveOn, setLiveOn] = useState({ co2: false, confetti: false });
+    const liveHold = useCallback((which, down) => {
+        const c = control.current;
+        if (down && c.mode !== 'song') return;
+        const now = performance.now();
+        c.live = c.live || {};
+        let changed = false;
+        for (const kind of LIVE_FX[which].kinds) {
+            const fx = DESK_EFFECTS[kind];
+            const list = c.live[kind] || [];
+            const held = list.some((f) => f.len === null);
+            if (down && !held) {
+                const recent = list.filter((f) => now - f.at < (f.len + 20) * 1000);
+                c.live[kind] = [...recent, ...Array.from({ length: fx.units }, (_, unit) => ({ unit, at: now, len: null }))];
+                changed = true;
+            } else if (!down && held) {
+                // let go: every unit fires for as long as it was held, at least a short burst
+                c.live[kind] = list.map((f) => (f.len === null ? { ...f, len: Math.max(fx.minHold, (now - f.at) / 1000) } : f));
+                changed = true;
+            }
+        }
+        if (changed) setLiveOn((o) => ({ ...o, [which]: down }));
+    }, []);
+
+    // The keys, while a song's light show runs (not while typing in a field): held = firing
+    useEffect(() => {
+        if (mode !== 'song' || !song.playing) return undefined;
+        const which = (e) => (e.code === 'Space' ? 'co2' : e.key === 'Shift' ? 'confetti' : null);
+        const typing = (e) => {
+            const t = e.target;
+            return t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+        };
+        const down = (e) => {
+            const w = which(e);
+            if (!w || typing(e)) return;
+            e.preventDefault(); // the space bar mustn't scroll the page or press a focused button
+            if (!e.repeat) liveHold(w, true);
+        };
+        const up = (e) => {
+            const w = which(e);
+            if (!w) return;
+            if (!typing(e)) e.preventDefault();
+            liveHold(w, false);
+        };
+        const release = () => { liveHold('co2', false); liveHold('confetti', false); };
+        window.addEventListener('keydown', down);
+        window.addEventListener('keyup', up);
+        window.addEventListener('blur', release); // switching window mid-hold: let go
+        return () => {
+            window.removeEventListener('keydown', down);
+            window.removeEventListener('keyup', up);
+            window.removeEventListener('blur', release);
+            release();
+        };
+    }, [mode, song.playing, liveHold]);
+
     // --- Concert mode --------------------------------------------------------------------
     const stopSong = useCallback(() => {
         const c = control.current;
+        c.live = null; // anything still held stops with the song
+        setLiveOn({ co2: false, confetti: false });
         // effects still in the air carry on to their end (unless the song had already ended: then they already are)
         if (c.mode === 'song' && c.song && c.audio && !c.houseUpAt) c.linger = { song: c.song, t: songTime(c), at: performance.now() };
         clearTimeout(c.afterShow);
@@ -468,6 +534,7 @@ function ShowExperience({ events = [], isPhone = false }) {
         c.objectUrl = objectUrl;
         c.song = prepareSongShow(show);
         c.clock = null;
+        c.live = null;
         clearTimeout(c.afterShow);
         c.houseUpAt = null;
         const audio = new Audio(url);
@@ -770,6 +837,21 @@ function ShowExperience({ events = [], isPhone = false }) {
                             )}
                             <div className="absolute top-0 bottom-0 w-0.5 bg-white" style={{ left: `${(song.time / now.duration) * 100}%` }} />
                         </div>
+                        {/* Live effects on top of the show (it carries on): hold to fire, or hold the key */}
+                        {mode === 'song' && (
+                            <div className="mt-3 flex items-center gap-2">
+                                {Object.entries(LIVE_FX).map(([which, fx]) => (
+                                    <button key={which} type="button" aria-pressed={liveOn[which]} aria-keyshortcuts={fx.key === 'Space' ? 'Space' : 'Shift'}
+                                        onPointerDown={(e) => { e.currentTarget.setPointerCapture?.(e.pointerId); liveHold(which, true); }}
+                                        onPointerUp={() => liveHold(which, false)} onPointerCancel={() => liveHold(which, false)} onLostPointerCapture={() => liveHold(which, false)}
+                                        onContextMenu={(e) => e.preventDefault()}
+                                        className={`flex-1 select-none touch-none py-2 rounded-lg border text-xs font-black tracking-widest transition-colors ${liveOn[which] ? 'bg-cyan-400 text-black border-cyan-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
+                                        {fx.label} <kbd className={`ml-1 px-1.5 py-0.5 rounded font-mono text-[10px] font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
+                                    </button>
+                                ))}
+                                <span className="hidden sm:block text-[10px] leading-tight text-gray-400 w-28">Hold to fire. The show carries on.</span>
+                            </div>
+                        )}
                     </div>
                 )}
 

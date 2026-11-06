@@ -4,6 +4,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { easing } from 'maath';
 import { createBeamGeometry, createBeamMaterial, createGlowMaterial, createPartMaterial, createRoleUniforms } from './fixtureShader';
 import { rigLayout } from './rigLayout';
 import { DECK_HEIGHT } from './trussGeometry';
@@ -48,9 +49,17 @@ function createGlowGeometry(fixtures) {
     return g;
 }
 
+// How the beams move toward a new position, sweep or speed: a critically damped spring (like the
+// camera's), so every move speeds up and slows down smoothly. Easing straight toward the target
+// started each change at full speed (from standing still in one frame), which read as jerky
+// whenever a cue snapped (a solo, a slam, a new phrase's look).
+const MOVE_TIME = 0.3; // seconds
+const glide = (uniform, target, dt) => easing.damp(uniform, 'value', target, MOVE_TIME, dt);
+
 /** Ease one role's uniforms toward the look; pulse and strobe applied on top, unsmoothed. */
 function driveRole(u, role, target, state, delta) {
-    const ease = 1 - Math.exp(-Math.min(delta, 0.1) * 4);
+    const dt = Math.min(delta, 0.1);
+    const ease = 1 - Math.exp(-dt * 4);
     const { a, b, ta, tb } = state.colors;
     const hexA = target[role.colors[0]] ?? target.colorA;
     const hexB = target[role.colors[1]] ?? target.colorB;
@@ -60,13 +69,14 @@ function driveRole(u, role, target, state, delta) {
     u.uTime.value += delta;
     // washes barely move, except when a cue lifts them (the washes solo)
     const sweepScale = role === ROLES.wash ? (target.washSweep ?? role.sweep) : role.sweep;
-    u.uSweep.value += (target.sweep * sweepScale - u.uSweep.value) * ease;
+    glide(u.uSweep, target.sweep * sweepScale, dt);
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
-    u.uConverge.value += (converge - u.uConverge.value) * (drop > 0.5 ? Math.min(1, delta * 9) : ease);
+    if (drop > 0.5) u.uConverge.value += (converge - u.uConverge.value) * Math.min(1, delta * 9); // the drop hits on the beat
+    else glide(u.uConverge, converge, dt);
     u.uSideways.value = role.sideways ? drop : 0;
-    u.uDown.value += ((role === ROLES.wash ? target.washDown ?? 0 : 0) - u.uDown.value) * ease;
+    glide(u.uDown, role === ROLES.wash ? target.washDown ?? 0 : 0, dt);
     // Converging beams meet mid-air over the stage, or (focus) on the centre of the stage floor
     const ff = target.focusFloor ?? 0;
     u.uTarget.value.set(0, DECK_HEIGHT + 4 - 4 * ff, -6.5 - 0.5 * ff);
@@ -75,7 +85,7 @@ function driveRole(u, role, target, state, delta) {
     u.uBeat.value = target.beatPos ?? state.clock * 2;
     u.uAlternate.value += ((target.alternate ?? 0) - u.uAlternate.value) * ease;
     u.uSparkle.value += ((target.sparkle ?? 0) - u.uSparkle.value) * ease;
-    u.uSpeed.value += (target.speed * role.speed - u.uSpeed.value) * ease;
+    glide(u.uSpeed, target.speed * role.speed, dt);
     // Accumulate the movement position: a speed change alters how fast it moves from where it is
     // (computing sin(time * speed) made beams leap whenever a cue changed the speed)
     state.phase += delta * u.uSpeed.value;
@@ -83,14 +93,14 @@ function driveRole(u, role, target, state, delta) {
     // Side towers: their pan is their crossing angle times (1 + sidesAim): 0 = crossing (rest),
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
     const fan = role.ownAim ? 1 + (target.sidesAim ?? 0) : target.fan ?? 1;
-    u.uFan.value += (fan - u.uFan.value) * ease;
+    glide(u.uFan, fan, dt);
     // the side towers rest a little above level, aimed across at the audience: they take a look's
     // tilt only downward (a "sky" position lifting them into the sky looked wrong)
     const shift = role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0)) : target.tiltShift ?? 0;
-    u.uTiltShift.value += (shift - u.uTiltShift.value) * ease;
+    glide(u.uTiltShift, shift, dt);
     const tiltWave = role.ownAim ? 0 : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
-    u.uTiltWave.value += (tiltWave - u.uTiltWave.value) * ease;
-    u.uPhaseSpread.value += ((target.phaseSpread ?? 0.25) - u.uPhaseSpread.value) * ease;
+    glide(u.uTiltWave, tiltWave, dt);
+    glide(u.uPhaseSpread, target.phaseSpread ?? 0.25, dt);
     u.uHaze.value += (target.haze - u.uHaze.value) * ease;
     u.uColorA.value.lerp(ta, ease);
     u.uColorB.value.lerp(tb, ease);

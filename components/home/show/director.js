@@ -1,8 +1,8 @@
 import { EFFECT_KEYS, sampleCueSheet, sampleSongShow, songEffectsAt } from '@/lib/show/timeline';
 import { smoothstep, venueLit } from '@/lib/show/look';
-import { CO2_FADE, co2FromFirings, co2TrussFromFirings } from '@/lib/show/co2';
-import { CONFETTI_LIFE, STREAMER_LIFE, confettiFromFirings, streamersFromFirings } from '@/lib/show/confetti';
-import { firingsDone } from '@/lib/show/effects';
+import { CO2_FADE, CO2_JETS, CO2_TRUSS_JETS, co2FromFirings, co2TrussFromFirings } from '@/lib/show/co2';
+import { CONFETTI_LIFE, CONFETTI_UNITS, STREAMER_LIFE, confettiFromFirings, streamersFromFirings } from '@/lib/show/confetti';
+import { firingsDone, mergeStates } from '@/lib/show/effects';
 import { activeFireworks, fireworkDuration } from '@/lib/show/fireworks';
 import { PLAY_FROM } from './scrollShow';
 
@@ -66,6 +66,38 @@ function withLingering(control, look) {
     return out;
 }
 
+// What the visitor can fire live during a song's light show (space bar: the floor and truss CO2;
+// shift: the confetti), on top of the song's own programming
+const LIVE = [
+    ['co2', co2FromFirings, CO2_JETS, CO2_FADE],
+    ['co2Truss', co2TrussFromFirings, CO2_TRUSS_JETS, CO2_FADE],
+    ['confetti', confettiFromFirings, CONFETTI_UNITS, CONFETTI_LIFE],
+];
+
+/**
+ * The visitor's live firings (`control.live`: { kind: [{ unit, at, len }] }, like the desk's) added to
+ * a song's look: the show carries on as programmed, every one of its own firings included; per jet
+ * or cannon the newer firing shows.
+ */
+function withLive(control, look) {
+    const live = control.live;
+    if (!live) return look;
+    const now = performance.now();
+    let out = look;
+    for (const [kind, toState, count, fade] of LIVE) {
+        const fired = live[kind];
+        if (!fired?.length) continue;
+        const state = toState(fired, now);
+        if (state) {
+            if (out === look) out = { ...look };
+            out[kind] = mergeStates(look[kind], state, count);
+        } else if (firingsDone(fired, now, fade)) {
+            live[kind] = [];
+        }
+    }
+    return out;
+}
+
 function baseState(control) {
     if (control.mode === 'manual' && control.desk) {
         const look = { ...venueLit(control.desk, control.desk.house ?? 0) }; // a copy: never write onto the desk
@@ -97,9 +129,9 @@ function baseState(control) {
             const look = { ...state.look, master: Math.max(state.look.master ?? 1, k), house: Math.max(state.look.house ?? 0, k) };
             // the effects come from the lingering ones, which keep moving (the song's clock has stopped)
             for (const key of EFFECT_KEYS) delete look[key];
-            return { ...state, look: venueLit(look, k), name: 'House lights' };
+            return { ...state, look: withLive(control, venueLit(look, k)), name: 'House lights' };
         }
-        return state;
+        return control.live ? { ...state, look: withLive(control, state.look) } : state;
     }
     // The director smooths scroll progress (wheel notches arrive in jumps); fall back to the raw value
     const progress = control.smoothProgress ?? control.progress;
