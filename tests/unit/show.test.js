@@ -281,19 +281,17 @@ describe('programming rules (concert-style)', () => {
         for (const c of phrases.slice(1)) expect(c.fade).toBeGreaterThanOrEqual(1.9);
     });
 
-    it('the final breakdown: side towers alone, from crossing inside to out at the audience', () => {
+    it('the final breakdown: the tower lasers alone (the side towers have their solo), fanning out and gathering in', () => {
         expect(show.sections.find((s) => s.start === 112).kind).toBe('breakdown');
         const open = at(113);
-        expect(open.beams + open.floor + open.wash + open.laser).toBe(0);
-        expect(open.sides).toBe(1);
-        // one line, no wiggle, level; turning only horizontally:
-        // crossing -> flared outside (~100 deg) -> straight at the audience -> crossing
-        expect(open.sweep).toBe(0);
-        expect(Math.abs(open.sidesAim)).toBeLessThan(0.05);
-        expect(at(120.6).sidesAim).toBeLessThan(-1.8);
-        expect(Math.abs(at(123.9).sidesAim + 1)).toBeLessThan(0.1);
-        expect(Math.abs(at(127.95).sidesAim)).toBeLessThan(0.1);
-        for (const t of [113, 118, 122, 126]) expect(Math.abs(at(t).tiltShift + 0.15)).toBeLessThan(0.01);
+        expect(open.beams + open.floor + open.sides).toBe(0);
+        expect(open.laser).toBe(1);
+        expect(open.laserTower).toBe(1);
+        expect(open.laserFloor).toBe(0);
+        // narrow -> fanned out wide -> gathered in again
+        expect(open.laserSpread).toBeLessThan(1);
+        expect(at(120.6).laserSpread).toBeGreaterThan(1.8);
+        expect(at(127.95).laserSpread).toBeLessThan(1);
     });
 
     it('a breakdown between peaks: blinders alone, then washes alone, then slowing down', () => {
@@ -394,8 +392,8 @@ describe('programming rules (concert-style)', () => {
         expect(sampleSongShow(q, 143.95).look.master).toBeLessThan(0.05);
     });
 
-    it('a song that winds down through a breakdown keeps the side-tower ending', () => {
-        expect(show.cues.some((c) => c.name.includes('flaring out'))).toBe(true);
+    it('a song that winds down through a breakdown keeps the tower-laser ending', () => {
+        expect(show.cues.some((c) => c.name.includes('fanning out'))).toBe(true);
     });
 
     it('the outro fades slowly into blackout', () => {

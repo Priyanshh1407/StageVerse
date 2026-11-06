@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     BURN, CANDLES_X, COMETS_X, MINES, RISE, SHELLS, SMOKE, STAGE_PYRO, TRUSS_TOP, TRUSS_Y, TRUSS_Z,
-    activeFireworks, defaultGrid, dropVolley, finale, fireOne, fireworkDuration, makeShell, makeStagePyro, rng, shellColours,
+    activeFireworks, defaultGrid, dropVolley, FINALE_OPENINGS, finale, fireOne, fireworkDuration, makeShell, makeStagePyro, rng, shellColours,
 } from '@/lib/show/fireworks';
 import { ROWS } from '@/components/home/stage/trussGeometry';
 import { SHOTS } from '@/lib/show/shots';
@@ -96,7 +96,7 @@ describe('fireworks: timing and colour', () => {
     it('every genre\'s finale has stage pyro: roman candles, roof comets and mines', () => {
         for (const genre of ['edm', 'pop', 'rap', 'bollywood']) {
             const types = new Set(finale(rng(0.9), {}, { bars: Array.from({ length: 9 }, (_, i) => 10 + i * 2) }, { genre, bpm: 120, energy: new Array(8).fill(0.8) }).map((x) => x.launch.type));
-            for (const t of ['candles', 'comets', 'mines']) expect(types.has(t)).toBe(true);
+            for (const t of ['candles', 'comets', 'mines', 'chase']) expect(types.has(t)).toBe(true);
         }
     });
 });
@@ -244,7 +244,7 @@ describe('fireworks outside the finale stay small', () => {
         expect(show.hits.some((h) => h.kind === 'firework' && h.fw.type === 'candles' && Math.abs(h.t - solo.t) < 0.01)).toBe(true);
     });
 
-    it('an earlier drop lands with one shell of the genre\'s own kind on its beat, the mines, and candles from its build', () => {
+    it('an earlier drop lands with one shell of the genre\'s own kind on its beat, the mines, and stage pyro leading in', () => {
         // the drop lands where its CO2 blast fires (an EDM spool lands two bars into the peak)
         const drop = show.hits.find((h) => h.kind === 'co2' && h.jets === 'all' && h.t >= at(16) - 0.01 && h.t <= at(19)).t;
         const near = show.hits.filter((h) => h.kind === 'firework' && h.t > drop - 3 && h.t < drop + 1);
@@ -253,11 +253,13 @@ describe('fireworks outside the finale stay small', () => {
         expect(bursts[0].fw.type).toBe('palm'); // EDM's signature shell
         expect(bursts[0].t + RISE).toBeCloseTo(drop, 2);
         expect(near.filter((h) => h.fw.type === 'mines')).toHaveLength(MINES);
-        expect(near.some((h) => h.fw.type === 'candles' && h.t < drop)).toBe(true);
+        // stage pyro leading in: the comet chase (every other accent) or the roman candles after a build
+        expect(show.hits.some((h) => h.kind === 'firework' && ['candles', 'chase'].includes(h.fw.type) && h.t < drop && h.t > drop - 4)).toBe(true);
     });
 
     it('accents never crowd the finale: the finale keeps its variety for the end', () => {
-        const finaleStart = Math.min(...show.hits.filter((h) => h.kind === 'firework' && h.fw.type === 'candles' && h.t > at(90)).map((h) => h.t));
+        // the finale starts where the confetti pours (5-8 s) and its opening candles and comets fire
+        const finaleStart = show.hits.find((h) => h.kind === 'confetti' && h.dur >= 5).t;
         const before = shells.filter((h) => h.t < finaleStart - 1);
         const kindsBefore = new Set(before.map((h) => h.fw.type));
         const kindsInFinale = new Set(shells.filter((h) => h.t >= finaleStart - 1.5).map((h) => h.fw.type));
@@ -295,5 +297,42 @@ describe('every song gets every special effect', () => {
         const to = show.hits.find((h) => h.kind === 'streamers').t;
         const from = to - 16;
         for (const c of show.cues.filter((x) => /^Solo · [^·]+$/.test(x.name))) expect(c.t < from - 1 || c.t > to).toBe(true);
+    });
+});
+
+describe('the finale opens with the stage pyro alone', () => {
+    it('bars 1 and 2: the roman candles, roof comets and comet chase, no shell bursting over them', () => {
+        const bars = Array.from({ length: 9 }, (_, i) => 10 + i * 2);
+        for (const genre of ['edm', 'pop', 'rap', 'bollywood']) {
+            const v = finale(rng(0.4), {}, { bars }, { genre, bpm: 120, energy: new Array(8).fill(0.9) });
+            const inBar1 = v.filter((x) => (SHELLS.includes(x.launch.type) ? x.at + RISE : x.at) < bars[1] - 0.01);
+            expect(inBar1.length).toBeGreaterThan(0);
+            expect(inBar1.every((x) => ['candles', 'comets', 'chase'].includes(x.launch.type))).toBe(true);
+            // bar 2 too: stage pyro only; nothing of it later, where shells would hide it
+            const inBar2 = v.filter((x) => { const t = SHELLS.includes(x.launch.type) ? x.at + RISE : x.at; return t >= bars[1] - 0.01 && t < bars[2] - 0.01; });
+            expect(inBar2.every((x) => ['candles', 'comets', 'chase'].includes(x.launch.type))).toBe(true);
+            expect(v.some((x) => ['candles', 'comets', 'chase'].includes(x.launch.type) && x.at >= bars[2] - 0.01)).toBe(false);
+        }
+    });
+});
+
+describe('each song\'s finale opens its own way', () => {
+    const bars = Array.from({ length: 9 }, (_, i) => 10 + i * 2);
+    const openingOf = (style) => finale(rng(0.4), {}, { bars }, { genre: 'pop', bpm: 120, energy: new Array(8).fill(0.8), ...style })
+        .filter((x) => x.at < bars[2] - 0.01 && !SHELLS.includes(x.launch.type))
+        .map((x) => `${x.launch.type}${x.launch.variant ?? ''}@${(x.at - bars[0]).toFixed(2)}`).join(' ');
+
+    it('every opening is different, and each uses the candles, the roof comets and the comet chase', () => {
+        const all = Array.from({ length: FINALE_OPENINGS }, (_, opening) => openingOf({ opening }));
+        expect(new Set(all).size).toBe(FINALE_OPENINGS);
+        for (const o of all) for (const type of ['candles', 'comets', 'chase']) expect(o).toContain(type);
+    });
+
+    it('the demo songs open in different ways', () => {
+        const kinds = new Set();
+        for (const seed of [0.11, 0.27, 0.43, 0.59, 0.75, 0.91]) {
+            kinds.add(finale(rng(seed), {}, { bars }, { genre: 'edm', bpm: 128 }).filter((x) => x.at < bars[2] - 0.01).map((x) => `${x.launch.type}@${(x.at - bars[0]).toFixed(2)}`).join(' '));
+        }
+        expect(kinds.size).toBeGreaterThan(2);
     });
 });

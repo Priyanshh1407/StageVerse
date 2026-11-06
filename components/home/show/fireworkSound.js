@@ -54,7 +54,7 @@ function burst(when, { type = 'lowpass', freq = 300, gain = 1, decay = 1.2, rate
 export function fireworkBoom(type) {
     if (!enabled || !ctx || ctx.state !== 'running') return;
     const now = ctx.currentTime + 0.02;
-    if (type === 'mines' || type === 'comets' || type === 'candles') {
+    if (type === 'mines' || type === 'comets' || type === 'candles' || type === 'chase') {
         burst(now, { type: 'bandpass', freq: 900, gain: 0.45, decay: 0.25, rate: 1.4 });
         return;
     }

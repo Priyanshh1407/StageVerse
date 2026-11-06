@@ -139,6 +139,7 @@ const STAGE_BUTTONS = [
     ['comets', 'Roof comets', 'V and W fans'],
     ['mines', 'Mines', 'from the stage front'],
     ['candles', 'Roman candles', 'a chase on the truss'],
+    ['chase', 'Comet chase', 'one by one: a V or a W'],
 ];
 // Every special effect the desk fires, for the EVERYTHING row
 const ALL_EFFECTS = ['co2', 'co2Truss', 'confetti', 'streamers'];
@@ -337,7 +338,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     ))}
                 </div>
                 <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mt-2 mb-1.5">STAGE PYRO</div>
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-2 gap-1.5">
                     {STAGE_BUTTONS.map(([type, label, hint]) => (
                         <button key={type} onClick={() => onFirework(type)}
                             className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-black tracking-wide">

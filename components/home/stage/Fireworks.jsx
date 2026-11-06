@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { BURN, CANDLES_X, CANDLE_STEP, COMET_STEP, RISE, SHELLS, SMOKE, TYPES } from '@/lib/show/fireworks';
+import { BURN, CANDLES_X, CANDLE_STEP, CHASE_COUNT, CHASE_HALF_WIDTH, CHASE_STEP, COMET_STEP, RISE, SHELLS, SMOKE, TYPES } from '@/lib/show/fireworks';
 import { fireworkBoom } from '../show/fireworkSound';
 import { pyroLayout } from './rigLayout';
 
@@ -252,6 +252,27 @@ const VERTEX = /* glsl */ `
             float ang = variant == 0 ? (k8 - 3.5) / 3.5 * 0.6 : (mod(k8, 2.0) < 0.5 ? -1.0 : 1.0) * (0.25 + 0.45 * floor(k8 / 2.0) / 3.0);
             vec3 d = normalize(vec3(sin(ang), cos(ang), 0.25));
             pos = flyPos(origin, d, 28.0, 0.9, 6.0, tt);
+            vel = flyVel(d, 28.0, 0.9, 6.0, tt);
+            heat = tt / 2.2;
+            if (heat > 1.0) return;
+            bright = (j < 0.06 ? 2.2 : (1.0 - j)) * (1.0 - heat);
+            col = j < 0.06 ? colA : gold;
+            streakK = 0.3;
+            streakMax = 5.0;
+        } else if (type == ${TYPES.indexOf('chase')}) {
+            // comet chase: comets spread along the top of the truss, fired one after another, left to
+            // right, each tilted so the trails draw a V (variant 0) or a W (variant 1: two Vs)
+            float n = ${CHASE_COUNT.toFixed(1)};
+            float k = floor(u * n);
+            float j = fract(u * n);
+            float tt = age - k * (shotStep > 0.0 ? shotStep : ${CHASE_STEP.toFixed(2)}) - j * 0.3;
+            if (tt < 0.0) return;
+            float halfN = n * 0.5;
+            float m = variant == 0 ? (k - (n - 1.0) * 0.5) / ((n - 1.0) * 0.5) : (mod(k, halfN) - (halfN - 1.0) * 0.5) / ((halfN - 1.0) * 0.5);
+            float ang = m * 0.6;
+            vec3 o = origin + vec3(-${CHASE_HALF_WIDTH.toFixed(1)} + k * ${((2 * CHASE_HALF_WIDTH) / (CHASE_COUNT - 1)).toFixed(4)}, 0.0, 0.0);
+            vec3 d = normalize(vec3(sin(ang), cos(ang), 0.25));
+            pos = flyPos(o, d, 28.0, 0.9, 6.0, tt);
             vel = flyVel(d, 28.0, 0.9, 6.0, tt);
             heat = tt / 2.2;
             if (heat > 1.0) return;

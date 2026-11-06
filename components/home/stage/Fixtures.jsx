@@ -99,7 +99,10 @@ function driveRole(u, role, target, state, delta) {
     state.level += (wanted - state.level) * ease;
     const strobe = role === ROLES.wash ? 0 : target.strobe ?? 0; // strobing is the strobes' job; beams flicker with them
     const flash = (u.uTime.value * 12.5) % 1 < 0.3 ? 1.6 : 0.15;
-    u.uIntensity.value = state.level * (1 + (target.pulse ?? 0) * 0.7) * (1 + (flash - 1) * strobe * 0.12);
+    // the beat pulse, per role: a look can make the aerial beams pulse harder (pulseBeams) or hold the
+    // washes steady (pulseWash 0)
+    const pulseGain = role === ROLES.wash ? target.pulseWash ?? 1 : role === ROLES.aerial ? target.pulseBeams ?? 1 : 1;
+    u.uIntensity.value = state.level * (1 + (target.pulse ?? 0) * 0.7 * pulseGain) * (1 + (flash - 1) * strobe * 0.12);
 }
 
 function RoleGroup({ roleName, fixtures, parts, map, look }) {

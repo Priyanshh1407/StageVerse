@@ -129,7 +129,10 @@ describe('CO2 jets in a song', () => {
         // the same number of solos: CO2 takes the last slot rather than adding one
         expect(withCo2.length).toBe(plain.length);
         const solo = programShow(analysis, { extras: { co2: true } }).cues.find((c) => c.name === 'Solo · CO2');
-        expect(solo.look.beams).toBe(0);
+        // the jets are the focus: one fixture type (the aerial beams, lifted into the sky) fills the space, gently
+        expect(solo.look.beams).toBeGreaterThan(0);
+        expect(solo.look.beams).toBeLessThan(0.8);
+        expect(solo.look.sides + solo.look.floor).toBe(0);
     });
 
     it('playback puts the jets on the look while they fire', () => {

@@ -2,6 +2,7 @@
   "title": "goosebumps",
   "artist": "Travis Scott",
   "co2": true,
+  "finaleOpening": 7,
   "_note": "Hand-marked structure (bars of 1.84 s at 130.2 BPM, from the analysis bars): quiet intro; the beat slams in 0:15; softer verse 0:29 (beat cut at 0:41); hook 0:44; loud verse 1:28; quieter verse climbing 2:05 (beat cut at 2:17); hook 2 2:20; vocal-heavy verse 2:49; climb 3:07; final hook 3:18; tail 3:48; outro 3:55. Colours: dark trap reds and purples. Re-run npm run demos after editing.",
   "sections": [
     {
