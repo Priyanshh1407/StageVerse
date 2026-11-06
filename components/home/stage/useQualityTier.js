@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 
 // Rendering budget for the 3D show:
 //   0  no 3D: static poster + 2D lights (no WebGL, "reduce motion", very weak devices)
-//   1  integrated GPUs (e.g. Intel Iris Xe): fewer beams, half-resolution bloom, dpr 1
-//   2  discrete GPUs: more beams, bloom, dpr up to 1.5
+//   1  integrated GPUs (e.g. Intel Iris Xe): 64 moving heads, bloom (rendered at half resolution), dpr 1
+//   2  discrete GPUs: the same 64 heads and bloom, dpr up to 1.5 (sharper)
 // The three rig sizes a visitor can pick on the lighting desk (52 is the minimum that still
 // looks like a full concert rig)
 export const BEAM_COUNTS = [64, 96, 140];
