@@ -47,11 +47,9 @@ const LoginPage = () => {
       const userRole = data.user.role;
       const destination = ROLE_PATHS[userRole] || '/dashboard';
 
-      console.log(`✅ Login Success! User is a ${userRole}. Redirecting to ${destination}...`);
-      setTimeout(() => {
-        router.push(destination);
-        router.refresh();
-      }, 500);
+      // one navigation: refreshing straight after it re-requested /login, which the proxy redirects
+      // (now logged in), and that request failed with a 404
+      router.replace(destination);
     } catch (err) {
       console.log('Login Error: ', err);
       setError(err.message);

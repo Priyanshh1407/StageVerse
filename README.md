@@ -17,7 +17,7 @@
   <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Mongoose_9-00ed64?style=flat-square&logo=mongodb&logoColor=black">
   <img alt="Socket.IO" src="https://img.shields.io/badge/Socket.IO-4-ffb000?style=flat-square&logo=socketdotio&logoColor=black">
   <img alt="Gemini" src="https://img.shields.io/badge/AI-Gemini_%2F_Groq-ff6a00?style=flat-square&logo=googlegemini&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-392_passing-39ff14?style=flat-square&logo=vitest&logoColor=black">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-399_passing-39ff14?style=flat-square&logo=vitest&logoColor=black">
   <img alt="60 FPS" src="https://img.shields.io/badge/60_FPS-on_Intel_Iris_Xe-ff3df2?style=flat-square">
   <img alt="License: all rights reserved" src="https://img.shields.io/badge/license-all_rights_reserved-a855f7?style=flat-square">
 </p>
@@ -92,7 +92,7 @@ The crew's patch sheet downloads the show's patch as a grandMA3 XML file ([`lib/
 
 | Role | Highlights |
 |---|---|
-| **Fan** | Passport dashboard, discover events, predict the setlist (scored after the show), vote in the live encore poll, memory vault (photos open full size), friends (who's going to your shows, follow fans) |
+| **Fan** | Passport dashboard, discover events, predict the setlist (scored after the show), vote in the live encore poll, memory vault (photos open full size), friends (who's going to your shows, follow fans), direct messages, notifications |
 | **Artist** | Setlist builder, encore polls, live-show console (start/pause/last-song alert), tech rider with LD assignment, day sheet, guest list |
 | **Organizer** | Create and manage events, AI-written event descriptions, reports and analytics |
 | **Production crew** | Live cue screen synced to the artist, DMX patch studio with an AI patch assistant and grandMA3 export, logistics board, tasks |
@@ -178,7 +178,7 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 
 ## 🧪 Testing and quality
 
-- **392 tests in 36 files** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, the grandMA3 export, and the homepage show: song analysis (against a synthetic click track), genre analysis (synthetic pop, rap and Bollywood songs), the cue engine, every lighting-programming rule, the strobe/blinder light, the scroll stops, the special effects and fireworks (the finale follows each song's beats, loudness, genre and tempo; shells are kept for the finale), the live CO2/confetti keys and the loading screen.
+- **399 tests in 37 files** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, the grandMA3 export, and the homepage show: song analysis (against a synthetic click track), genre analysis (synthetic pop, rap and Bollywood songs), the cue engine, every lighting-programming rule, the strobe/blinder light, the scroll stops, the special effects and fireworks (the finale follows each song's beats, loudness, genre and tempo; shells are kept for the finale), the live CO2/confetti keys and the loading screen.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, tests with coverage, a production build and a dependency audit on every push.
 - **Manual test guide:** [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md) walks through every upgraded feature in the browser (including how to force each AI fallback level) and lists the automated test commands.
 - The engineering history (each bug, how it was found, the fix and the trade-off) is in [`FIX_LOG.md`](FIX_LOG.md). The audit that started it is in [`PROJECT_AUDIT_REPORT.md`](PROJECT_AUDIT_REPORT.md).

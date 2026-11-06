@@ -21,6 +21,7 @@ A third flagship (concurrency-safe ticketing, UPG-01) comes back when ticketing 
 - Open (developer): Atlas password rotation; a test import of the grandMA3 export in grandMA3 onPC; listening through the demo songs' section marks.
 - Homepage special effects done (Nov 2026): CO2 jets (floor and truss), confetti, streamers, stage pyro and a song-driven fireworks finale; live CO2/confetti keys during a song; a loading screen. Flames and cold sparks were tried and dropped.
 - One site palette from the logo (sunset, purple, white), a finale flicker fix (BUG-33), and an author credit in the footer, loading screen and metadata (Nov 2026). A light theme is being considered (preview shared; not decided).
+- Dashboard fixes found by clicking through every role (BUG-34 to BUG-41, Nov 2026): button fills, fan notifications on every page, fan direct messages, artist polls list and preview, real organizer KPIs, View Live, crew archive and tasks, Escape on popups, the profile form, a post-login 404.
 - Next: the demo video and the re-audit.
 
 Earlier (2026-10-27): Phases 0–2 done on branches `phase-0-safety-net` → `phase-1-security` → `phase-2-correctness`, 139 tests. Also fixed beyond the plan: BUG-13 (guest list hardcoded to event 13), BUG-14 (production couldn't create shows at new venues), artist message/notification scoping, a regression from my own ERR-01 codemod (login catch).

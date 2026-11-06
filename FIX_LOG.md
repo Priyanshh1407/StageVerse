@@ -413,3 +413,53 @@ generated (read as `bg-<colour>`), so it's `sv-sunset`.
 ### Author credit (feature)
 "Designed and built by Priyansh Waghela" (linked) in both footer layouts and on the loading screen; `authors`,
 `creator` and `publisher` in the page metadata; a credit and copyright line in the README.
+
+## Dashboard fixes after the palette (2026-11-07, commit 1d2120b and the login fix after it)
+
+Found by the developer clicking through every role, then confirmed in a production build (screenshots of each).
+
+### BUG-34 — Buttons black or "transparent" after the palette change
+The gradient fill came from a custom `@utility` (`sv-sunset`); a dev server started before it existed served CSS
+without it, so filled buttons showed only their glow (the desk's ON switches, the live CO2/Confetti buttons, Sign up).
+Fix: Tailwind's built-in gradient classes (`bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]`), which every
+build and dev server generates; dark text on the gradient (white on amber was about 1.9:1 contrast).
+
+### BUG-35 — Fan notifications only opened on the dashboard
+The sidebar's Notifications button called a handler only the dashboard page passed in; on Discover, Memories,
+Friends and Tickets it did nothing. The sidebar now opens the panel itself.
+
+### BUG-36 — Fan "Message" buttons did nothing
+There was no messaging behind them. Added direct messages: `models/Message.js`, `/api/fan/messages` (login
+required; only the two people in a conversation can read it; recipient validated; 1,000-character limit; 20 per
+minute per user), a Messages panel in the fan sidebar and on Top Friends. The Top Friends "shared shows" count was
+`Math.random()`; it is now the real number of shows both hold tickets for.
+
+### BUG-37 — Artist polls "not adding", preview empty
+New polls were saved, but the list always showed one hard-coded sample and never loaded the show's polls; the
+preview was an empty box. The list now loads the show's polls (status, votes) and refreshes after saving; the
+preview is a phone mock-up of the poll as fans see it.
+
+### BUG-38 — Organizer: fake KPI cards, View Live 404
+The dashboard's KPI cards were hard-coded ($142,500, a fixed 78% bar, invented trends, a "waitlist" with no data
+behind it). New `/api/organizer/stats` (organizer only, own events): revenue and its 30-day trend, tickets sold and
+the share of upcoming capacity sold, upcoming shows and the next one. Reports' refund rate (hard-coded 0.8%) and
+its invented revenue-by-type fallback are now real or empty. "View Live" opened `/event/<id>` (no such route): it
+now opens `/events/<id>`; the Analytics action pointed at a missing route: now `/analysis`.
+
+### BUG-39 — Crew: archive did nothing, tasks couldn't be created or opened
+Archiving wrote `archived` to the event's public status while the dashboard reads `productionStatus`: production
+states now go to `productionStatus`. The new-task form listed made-up shows and sent no show id, so every create
+failed validation: it now lists the crew's real shows and requires one, with a details field. Clicking a task opens
+its details.
+
+### BUG-40 — Escape didn't close popups; the edit profile form was misaligned
+A global handler (`components/EscapeToClose.jsx`) closes the topmost full-screen popup the way clicking its
+backdrop does, and only ever clicks a backdrop. The profile form's labels and fields are aligned and labelled; the
+Instagram handle no longer shows "@@".
+
+### BUG-41 — A 404 right after logging in
+Login called `router.push(destination)` then `router.refresh()`; the refresh re-requested /login, which the proxy
+redirects once logged in, and that request failed. One `router.replace` now.
+
+Also: the navbar's links and active underline are orange, Sign up is orange and white on hover.
+`npm test`: **399 passing** (37 files) · lint: **0 errors** · build: passes.
