@@ -168,7 +168,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
           <p className="text-[#90b2cb] max-w-md mx-auto mb-8">The artist has declared the official setlist for {event.venue}. Check your scorecard to see how many points you scored.</p>
           <button
             onClick={() => setShowScorecard(true)}
-            className="px-8 py-4 sv-sunset hover:brightness-110 text-white font-bold rounded-xl shadow-xl shadow-[#ff6a00]/20 transition-transform hover:scale-105 active:scale-95"
+            className="px-8 py-4 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold rounded-xl shadow-xl shadow-[#ff6a00]/20 transition-transform hover:scale-105 active:scale-95"
           >
             View Scorecard
           </button>
@@ -205,7 +205,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                       <p className="text-white text-sm font-medium truncate">{song.title}</p>
                       <p className="text-[#90b2cb] text-xs truncate">{song.album || "Single"}</p>
                     </div>
-                    <div className="bg-[#223949] p-1.5 rounded-full text-[#ff6a00] group-hover:sv-sunset group-hover:text-white transition-colors shrink-0">
+                    <div className="bg-[#223949] p-1.5 rounded-full text-[#ff6a00] group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-white transition-colors shrink-0">
                       <Plus className="w-4 h-4" />
                     </div>
                   </button>
@@ -279,7 +279,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
               <button
                 onClick={handleSave}
                 disabled={prediction.length === 0 || isSubmitting || isGraded}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 sv-sunset hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold shadow-lg shadow-[#ff6a00]/20 transition-all active:scale-95"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-lg font-bold shadow-lg shadow-[#ff6a00]/20 transition-all active:scale-95"
               >
                 <Save className="w-4 h-4" />
                 {isSubmitting ? "Saving..." : (isGraded ? "Prediction Locked" : "Lock In Prediction")}

@@ -80,7 +80,7 @@ export default function DaySheetListPage() {
                   </span>
 
                   <div className="relative z-10">
-                    <span className={`inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider mb-4 ${index === 0 ? 'sv-sunset text-white shadow-lg shadow-orange-500/20' : 'bg-[#223949] text-slate-400'}`}>
+                    <span className={`inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider mb-4 ${index === 0 ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-lg shadow-orange-500/20' : 'bg-[#223949] text-slate-400'}`}>
                       {index === 0 ? 'Next Up' : 'Scheduled'}
                     </span>
 

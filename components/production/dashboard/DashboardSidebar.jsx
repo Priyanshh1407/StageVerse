@@ -44,7 +44,7 @@ function TaskItem({ task }) {
   const colorMap = {
     red: { border: 'bg-red-500', badge: 'text-red-500 bg-red-500/10' },
     amber: { border: 'bg-amber-500', badge: 'text-amber-500 bg-amber-500/10' },
-    blue: { border: 'sv-sunset', badge: 'text-orange-500 bg-orange-500/10' },
+    blue: { border: 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]', badge: 'text-orange-500 bg-orange-500/10' },
   };
   const theme = isMessage
     ? { border: 'bg-purple-500', badge: 'text-purple-400 bg-purple-500/10' }
@@ -90,7 +90,7 @@ function ActivityItem({ item }) {
         icon: CheckCircle2, color: 'bg-green-500', ring: 'ring-green-500/20', text: 'text-green-400'
       };
       case 'document': return {
-        icon: FileText, color: 'sv-sunset', ring: 'ring-purple-500/20', text: 'text-orange-400'
+        icon: FileText, color: 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]', ring: 'ring-purple-500/20', text: 'text-orange-400'
       };
       default: return {
         icon: Zap, color: 'bg-gray-500', ring: 'ring-gray-500/20', text: 'text-gray-400'

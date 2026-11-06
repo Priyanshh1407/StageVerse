@@ -147,7 +147,7 @@ export default function GuestlistPanel({ eventId }) {
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white uppercase shadow-lg ring-2 ring-offset-2 ring-offset-[#0b1217] transition-all ${selectedGuest?._id === guest._id ? 'sv-sunset ring-[#a855f7]' : 'bg-slate-700 ring-slate-700 group-hover:ring-slate-600'}`}>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white uppercase shadow-lg ring-2 ring-offset-2 ring-offset-[#0b1217] transition-all ${selectedGuest?._id === guest._id ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] ring-[#a855f7]' : 'bg-slate-700 ring-slate-700 group-hover:ring-slate-600'}`}>
                                             {guest.name?.substring(0, 2)}
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -192,7 +192,7 @@ export default function GuestlistPanel({ eventId }) {
                                 <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#ff6a00]/20 rounded-full blur-[80px]" />
 
                                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-10 text-center md:text-left">
-                                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#ffb000] to-[#ff3d7a] flex items-center justify-center text-3xl font-bold text-white uppercase shadow-[0_0_30px_rgba(255,106,0,0.3)] ring-4 ring-[#0b1217]">
+                                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#ffb000] to-[#ff3d7a] flex items-center justify-center text-3xl font-bold text-black uppercase shadow-[0_0_30px_rgba(255,106,0,0.3)] ring-4 ring-[#0b1217]">
                                         {selectedGuest.name?.substring(0, 2)}
                                     </div>
                                     <div className="flex-1">
@@ -241,7 +241,7 @@ export default function GuestlistPanel({ eventId }) {
                                 <div className="mt-6 bg-[#0b1217]/50 rounded-2xl p-5 border border-[#315168]/30">
                                     <div className="flex items-center justify-between mb-3">
                                         <p className="text-[#587b94] text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full sv-sunset" /> Internal Notes
+                                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" /> Internal Notes
                                         </p>
                                         {!isEditingNotes && (
                                             <button
@@ -271,7 +271,7 @@ export default function GuestlistPanel({ eventId }) {
                                                 </button>
                                                 <button
                                                     onClick={handleSaveNotes}
-                                                    className="px-4 py-1.5 rounded-lg text-xs font-bold sv-sunset text-white hover:brightness-110 shadow-lg shadow-orange-500/20 transition-all active:scale-95"
+                                                    className="px-4 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black hover:brightness-110 shadow-lg shadow-orange-500/20 transition-all active:scale-95"
                                                     disabled={actionLoading}
                                                 >
                                                     {actionLoading ? 'Saving...' : 'Save Notes'}

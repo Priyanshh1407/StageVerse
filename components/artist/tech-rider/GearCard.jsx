@@ -20,8 +20,8 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
             className={`
               p-2.5 rounded-lg transition-colors
               ${isSelected
-                ? 'sv-sunset text-white'
-                : 'bg-[#ff6a00]/10 text-[#ff6a00] group-hover:sv-sunset group-hover:text-white'}
+                ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black'
+                : 'bg-[#ff6a00]/10 text-[#ff6a00] group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-white'}
             `}
           >
             <item.icon className="w-6 h-6" />
@@ -39,7 +39,7 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
           className={`
             w-8 h-8 rounded flex items-center justify-center transition-colors
             ${isSelected
-              ? 'sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white shadow-lg shadow-[#ff6a00]/20'
+              ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black shadow-lg shadow-[#ff6a00]/20'
               : 'bg-white/10 hover:bg-white/20 text-white'}
           `}>
           <Minus className="w-4 h-4" />
@@ -54,7 +54,7 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
           className={`
             w-8 h-8 rounded flex items-center justify-center transition-colors
             ${isSelected
-              ? 'sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white shadow-lg shadow-[#ff6a00]/20'
+              ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black shadow-lg shadow-[#ff6a00]/20'
               : 'bg-white/10 hover:bg-white/20 text-white'}
           `}
         >

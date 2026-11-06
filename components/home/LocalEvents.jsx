@@ -90,7 +90,7 @@ export default function LocalEvents({ events, isLoading }) {
                   <div className="w-full md:w-64 h-48 md:h-auto shrink-0 relative overflow-hidden">
                     <img src={event.image} alt={event.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                     {event.badge && (
-                      <div className="absolute top-3 left-3 sv-sunset text-black text-xs font-bold px-2 py-0.5 rounded">
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-xs font-bold px-2 py-0.5 rounded">
                         {event.badge}
                       </div>
                     )}
@@ -112,7 +112,7 @@ export default function LocalEvents({ events, isLoading }) {
 
                       <div className="flex flex-col items-end gap-3">
                         <span className="text-xl font-bold text-white">{event.price}</span>
-                        <div className={`px-6 py-2 rounded-lg text-sm font-bold transition-transform group-hover:scale-105 text-center ${event.price === 'Free' ? 'bg-white/10 text-white' : 'bg-white/10 group-hover:sv-sunset group-hover:text-black text-white'}`}>
+                        <div className={`px-6 py-2 rounded-lg text-sm font-bold transition-transform group-hover:scale-105 text-center ${event.price === 'Free' ? 'bg-white/10 text-white' : 'bg-white/10 group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-black text-white'}`}>
                           {event.price === 'Free' ? 'RSVP' : 'Buy'}
                         </div>
                       </div>

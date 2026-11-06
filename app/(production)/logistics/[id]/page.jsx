@@ -268,7 +268,7 @@ export default function LogisticsPage(props) {
                                 <button onClick={handleDownloadPDF} className="bg-green-600 text-white px-4 py-2 rounded mr-2 font-bold hover:bg-green-700 inline-flex items-center gap-2">
                                     <Download className="w-4 h-4" /> Download PDF
                                 </button>
-                                <button onClick={() => window.print()} className="sv-sunset text-white px-4 py-2 rounded mr-2 font-bold hover:brightness-110">Print</button>
+                                <button onClick={() => window.print()} className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black px-4 py-2 rounded mr-2 font-bold hover:brightness-110">Print</button>
                                 <button onClick={() => setIsReportOpen(false)} className="bg-gray-200 text-gray-800 px-4 py-2 rounded font-bold hover:bg-gray-300">Close</button>
                             </div>
                         </div>
@@ -337,7 +337,7 @@ export default function LogisticsPage(props) {
                                 </button>
                                 <button
                                     onClick={handleExport}
-                                    className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 sv-sunset hover:brightness-110 text-white gap-2 text-xs font-bold uppercase leading-normal tracking-wide shadow-lg shadow-orange-500/20 transition-all">
+                                    className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black gap-2 text-xs font-bold uppercase leading-normal tracking-wide shadow-lg shadow-orange-500/20 transition-all">
                                     <Download className="w-4 h-4" />
                                     <span>Export</span>
                                 </button>

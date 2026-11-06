@@ -28,6 +28,7 @@ export const metadata = {
 import { Toaster } from "@/components/ui/sonner";
 
 import { SocketProvider } from "@/components/providers/SocketProvider";
+import EscapeToClose from "@/components/EscapeToClose";
 
 export default function RootLayout({ children }) {
   return (
@@ -38,6 +39,7 @@ export default function RootLayout({ children }) {
         <SocketProvider>
           {children}
           <Toaster />
+          <EscapeToClose />
         </SocketProvider>
       </body>
     </html>

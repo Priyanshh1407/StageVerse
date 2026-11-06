@@ -95,7 +95,7 @@ export default function CreateAlertModal({ isOpen, onClose }) {
                                 </div>
                             </div>
 
-                            <button type="submit" className="w-full py-3 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white font-bold rounded-xl shadow-lg shadow-[#ff6a00]/20 transition-all">
+                            <button type="submit" className="w-full py-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black font-bold rounded-xl shadow-lg shadow-[#ff6a00]/20 transition-all">
                                 Save Alert
                             </button>
                         </form>

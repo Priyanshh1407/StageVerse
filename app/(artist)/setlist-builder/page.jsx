@@ -322,7 +322,7 @@ function SetlistBuilderContent() {
           >
             Setlist Builder
             {viewMode === 'builder' && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 sv-sunset shadow-[0_0_10px_#ff6a00] rounded-t-full" />
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] shadow-[0_0_10px_#ff6a00] rounded-t-full" />
             )}
           </button>
           <button
@@ -331,7 +331,7 @@ function SetlistBuilderContent() {
           >
             Guestlist Manager
             {viewMode === 'guestlist' && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 sv-sunset shadow-[0_0_10px_#ff6a00] rounded-t-full" />
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] shadow-[0_0_10px_#ff6a00] rounded-t-full" />
             )}
           </button>
         </div>

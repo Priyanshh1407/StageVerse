@@ -128,7 +128,7 @@ export default function CreateVenueModal({
           {}
           <div className="flex items-center justify-between px-5 py-4 md:px-6 md:py-5 border-b border-[#314368] bg-[#101622] shrink-0 z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg sv-sunset shadow-lg shadow-[#ff6a00]/20 flex items-center justify-center text-white shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] shadow-lg shadow-[#ff6a00]/20 flex items-center justify-center text-black shrink-0">
                 <Landmark className="w-6 h-6" />
               </div>
               <div>
@@ -275,7 +275,7 @@ export default function CreateVenueModal({
                     <span className="text-[#90a4cb] text-xs">Can attendees park on-site?</span>
                   </div>
                   {}
-                  <div className={`w-11 h-6 rounded-full relative transition-colors ${formData.hasParking ? 'sv-sunset' : 'bg-gray-700'}`}>
+                  <div className={`w-11 h-6 rounded-full relative transition-colors ${formData.hasParking ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]' : 'bg-gray-700'}`}>
                     <div className={`absolute top-[2px] left-[2px] bg-white w-5 h-5 rounded-full transition-transform ${formData.hasParking ? 'translate-x-full' : ''}`}></div>
                   </div>
                 </div>
@@ -340,7 +340,7 @@ export default function CreateVenueModal({
             <button
               onClick={handleSaveVenue}
               disabled={isSubmitting}
-              className="px-6 md:px-8 h-10 md:h-12 rounded-lg sv-sunset hover:brightness-110 text-white font-bold shadow-lg shadow-[#ff6a00]/25 hover:shadow-[#ff6a00]/40 active:scale-95 transition-all flex items-center gap-2 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 md:px-8 h-10 md:h-12 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold shadow-lg shadow-[#ff6a00]/25 hover:shadow-[#ff6a00]/40 active:scale-95 transition-all flex items-center gap-2 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>

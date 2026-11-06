@@ -41,7 +41,7 @@ export default function EventCard({ event }) {
               {event.priceDisplay}
             </span>
             {}
-            <div className="rounded-full bg-white/10 p-2 text-white group-hover:sv-sunset group-hover:text-black transition-colors">
+            <div className="rounded-full bg-white/10 p-2 text-white group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-black transition-colors">
               <ArrowRight className="w-5 h-5" />
             </div>
           </div>

@@ -198,7 +198,7 @@ export default function SocialPage() {
                           <button
                             onClick={() => setFollow(p, true)}
                             disabled={busy === p.id}
-                            className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white disabled:opacity-50"
+                            className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black disabled:opacity-50"
                           >
                             <UserPlus className="w-4 h-4" /> Follow
                           </button>

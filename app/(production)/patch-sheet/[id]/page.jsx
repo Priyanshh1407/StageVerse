@@ -187,7 +187,7 @@ export default function PatchSheetPage(props) {
           <button
             onClick={() => setMobileView('sheet')}
             className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all duration-200 ${mobileView === 'sheet'
-              ? 'sv-sunset text-black shadow-md'
+              ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-md'
               : 'text-gray-500 hover:text-gray-300'
               }`}
           >
@@ -198,7 +198,7 @@ export default function PatchSheetPage(props) {
           <button
             onClick={() => setMobileView('tools')}
             className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all duration-200 ${mobileView === 'tools'
-              ? 'sv-sunset text-black shadow-md'
+              ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-md'
               : 'text-gray-500 hover:text-gray-300'
               }`}
           >
@@ -269,7 +269,7 @@ export default function PatchSheetPage(props) {
               <button
                 onClick={handleSavePatch}
                 disabled={isSaving}
-                className="flex items-center justify-center gap-2 px-4 py-2 sv-sunset hover:brightness-110 border border-purple-500 rounded-lg text-xs font-bold text-white transition-all shadow-lg hover:shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 border border-purple-500 rounded-lg text-xs font-bold text-black transition-all shadow-lg hover:shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 SAVE PATCH
@@ -343,7 +343,7 @@ export default function PatchSheetPage(props) {
 
               <button
                 type="submit"
-                className="w-full sv-sunset hover:brightness-110 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
               >
                 <Save className="w-4 h-4" />
                 Update Fixture

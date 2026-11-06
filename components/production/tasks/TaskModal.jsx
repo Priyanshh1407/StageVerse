@@ -173,7 +173,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                         </button>
                         <button
                             type="submit"
-                            className="px-6 py-2 rounded-lg text-sm font-bold sv-sunset hover:brightness-110 text-white shadow-lg shadow-orange-600/20 transition-all"
+                            className="px-6 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black shadow-lg shadow-orange-600/20 transition-all"
                         >
                             {task ? 'Save Changes' : 'Create Task'}
                         </button>

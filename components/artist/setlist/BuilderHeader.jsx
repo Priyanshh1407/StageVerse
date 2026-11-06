@@ -79,7 +79,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
         <button
           onClick={onSave}
           disabled={!event}
-          className="flex items-center justify-center gap-2 rounded-lg h-10 px-6 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold tracking-[0.015em] transition-colors shadow-lg shadow-[#ff6a00]/20"
+          className="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:cursor-not-allowed text-black text-sm font-bold tracking-[0.015em] transition-colors shadow-lg shadow-[#ff6a00]/20"
         >
           <Save className="w-4 h-4" />
           Save Setlist

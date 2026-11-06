@@ -50,7 +50,7 @@ export default function RiderHeader({
         <button
           onClick={onSave}
           disabled={isSaving}
-          className="flex items-center gap-2 px-4 py-2 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-[#ff6a00]/20"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:cursor-not-allowed text-black text-sm font-bold rounded-lg transition-all shadow-lg shadow-[#ff6a00]/20"
         >
           {isSaving ? (
             <>Saving...</>

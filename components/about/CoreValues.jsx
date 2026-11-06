@@ -41,7 +41,7 @@ export default function CoreValues() {
 function ValueCard({ icon: Icon, title, text }) {
   return (
     <div className="group bg-[#18181B] p-8 rounded-2xl border border-white/5 hover:border-[#a855f7]/50 transition-all duration-300 hover:-translate-y-1">
-      <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center mb-6 group-hover:sv-sunset transition-colors duration-300">
+      <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] transition-colors duration-300">
         <Icon className="w-8 h-8 text-white group-hover:text-black" />
       </div>
       <h3 className="text-xl font-bold text-white mb-3">{title}</h3>

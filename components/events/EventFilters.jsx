@@ -135,7 +135,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                       onClick={() => toggleArrayItem('vibes', vibe)}
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                         isActive 
-                          ? 'border-[#a855f7] sv-sunset text-black font-bold' 
+                          ? 'border-[#a855f7] bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black font-bold' 
                           : 'border-white/10 bg-[#1e1e1e] text-slate-400 hover:border-[#a855f7]/50 hover:text-white'
                       }`}
                     >
@@ -149,7 +149,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
             <div className="lg:hidden pt-4">
               <button 
                 onClick={onClose}
-                className="w-full py-3 rounded-lg sv-sunset text-black font-bold hover:bg-white hover:bg-none transition-colors"
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black font-bold hover:bg-white hover:bg-none transition-colors"
               >
                 Show Results
               </button>

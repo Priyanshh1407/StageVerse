@@ -71,7 +71,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                                     key={icn}
                                     type="button"
                                     onClick={() => setIconType(icn)}
-                                    className={`p-3 rounded-lg border transition-all ${iconType === icn ? 'sv-sunset border-[#a855f7] text-white' : 'bg-[#101b23] border-[#223949] text-white/50 hover:border-white/30'}`}
+                                    className={`p-3 rounded-lg border transition-all ${iconType === icn ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] border-[#a855f7] text-black' : 'bg-[#101b23] border-[#223949] text-white/50 hover:border-white/30'}`}
                                 >
                                     {icn === 'Lightbulb' && <Lightbulb className="w-5 h-5" />}
                                     {icn === 'Zap' && <Zap className="w-5 h-5" />}
@@ -85,7 +85,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
 
                     <button
                         type="submit"
-                        className="mt-2 w-full sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white font-bold py-3 rounded-lg transition-all active:scale-[0.98]"
+                        className="mt-2 w-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black font-bold py-3 rounded-lg transition-all active:scale-[0.98]"
                     >
                         Add to Grid
                     </button>

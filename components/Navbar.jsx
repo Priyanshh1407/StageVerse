@@ -93,10 +93,10 @@ export default function Navbar() {
                   href={item.href} 
                   className={`text-sm tracking-wide uppercase transition-colors flex items-center gap-2 ${
                     isActive 
-                      ? 'text-white border-b-2 border-[#a855f7] pb-0.5 font-bold' 
+                      ? 'text-white border-b-2 border-[#ff6a00] pb-0.5 font-bold' 
                       : isDashboard 
-                        ? 'text-[#ffb000] font-bold hover:text-white' 
-                        : 'text-slate-400 font-medium hover:text-white'
+                        ? 'text-[#ffb000] font-bold hover:text-[#ff6a00]' 
+                        : 'text-slate-400 font-medium hover:text-[#ff6a00]'
                   }`}
                 >
                   {isDashboard && <LayoutDashboard className="w-4 h-4" />}
@@ -136,10 +136,10 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-4">
-                <Link href="/login" className="text-sm font-bold text-slate-300 uppercase transition-colors hover:text-white hover:underline decoration-[#ffb000] underline-offset-4">
+                <Link href="/login" className="text-sm font-bold text-slate-300 uppercase transition-colors hover:text-[#ff6a00]">
                   Login
                 </Link>
-                <Link href="/signup" className="rounded-full sv-sunset px-6 py-2 text-sm font-bold text-black uppercase transition-all hover:bg-white hover:bg-none hover:scale-105 shadow-[0_0_15px_rgba(255,106,0,0.3)]">
+                <Link href="/signup" className="rounded-full bg-[#ff6a00] px-6 py-2 text-sm font-bold text-black uppercase transition-all hover:bg-white hover:text-black hover:scale-105 shadow-[0_0_15px_rgba(255,106,0,0.35)]">
                   Sign Up
                 </Link>
               </div>
@@ -147,7 +147,7 @@ export default function Navbar() {
 
             {}
             <button 
-              className="md:hidden text-white hover:text-[#ffb000] transition-colors p-1"
+              className="md:hidden text-white hover:text-[#ff6a00] transition-colors p-1"
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
@@ -179,7 +179,7 @@ export default function Navbar() {
                         ? 'text-[#ffb000]' 
                         : isDashboard 
                             ? 'text-[#ffb000]' 
-                            : 'text-slate-300 hover:text-white'
+                            : 'text-slate-300 hover:text-[#ff6a00]'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -195,9 +195,9 @@ export default function Navbar() {
                       <Link 
                         href={getDashboardLink()}
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-white/5 to-transparent border border-white/10 hover:border-[#a855f7]/50 transition-all"
+                        className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-white/5 to-transparent border border-white/10 hover:border-[#ff6a00]/60 transition-all"
                       >
-                        <div className="w-10 h-10 rounded-full sv-sunset flex items-center justify-center text-black font-bold text-lg shadow-[0_0_10px_rgba(255,106,0,0.4)]">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] flex items-center justify-center text-black font-bold text-lg shadow-[0_0_10px_rgba(255,106,0,0.4)]">
                            {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
@@ -214,10 +214,10 @@ export default function Navbar() {
                    </div>
                 ) : (
                    <div className="grid grid-cols-2 gap-4">
-                    <Link href="/login" onClick={() => setIsOpen(false)} className="py-3 rounded-lg border border-white/10 text-white font-bold text-center hover:bg-white/5 transition-colors uppercase">
+                    <Link href="/login" onClick={() => setIsOpen(false)} className="py-3 rounded-lg border border-white/10 text-white font-bold text-center hover:text-[#ff6a00] hover:border-[#ff6a00]/50 transition-colors uppercase">
                       Login
                     </Link>
-                    <Link href="/signup" onClick={() => setIsOpen(false)} className="py-3 rounded-lg sv-sunset text-black font-bold text-center hover:bg-white hover:bg-none transition-colors shadow-[0_0_15px_rgba(255,106,0,0.25)] uppercase">
+                    <Link href="/signup" onClick={() => setIsOpen(false)} className="py-3 rounded-lg bg-[#ff6a00] text-black font-bold text-center hover:bg-white transition-colors shadow-[0_0_15px_rgba(255,106,0,0.3)] uppercase">
                       Sign Up
                     </Link>
                    </div>

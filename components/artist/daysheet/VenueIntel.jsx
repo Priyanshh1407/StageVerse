@@ -147,7 +147,7 @@ export default function VenueIntel({ intel, onUpdate }) {
 
           <button
             onClick={handleGetDirections}
-            className="w-full h-10 rounded-lg sv-sunset hover:brightness-110 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors"
+            className="w-full h-10 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black text-sm font-bold flex items-center justify-center gap-2 transition-colors"
           >
             <Navigation className="w-4 h-4" />
             Get Directions

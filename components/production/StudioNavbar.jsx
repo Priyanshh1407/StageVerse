@@ -448,7 +448,7 @@ export default function StudioNavbar({ projectId }) {
                 <button
                   onClick={handleSendMessage}
                   disabled={msgStatus === 'sending' || !msgContent.trim()}
-                  className="px-6 py-2 sv-sunset hover:bg-[#ff6a00]/80 hover:bg-none disabled:opacity-50 text-black font-bold rounded-lg text-sm transition-colors"
+                  className="px-6 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/80 hover:bg-none disabled:opacity-50 text-black font-bold rounded-lg text-sm transition-colors"
                 >
                   {msgStatus === 'sending' ? 'Sending...' : msgStatus === 'success' ? 'Sent!' : 'Send Message'}
                 </button>

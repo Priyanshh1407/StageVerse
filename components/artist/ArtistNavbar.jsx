@@ -117,7 +117,7 @@ export default function ArtistNavbar() {
                     notifications.map(note => (
                       <div key={note._id} className="p-3 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex justify-between items-start">
                         <div className="flex items-start gap-3">
-                          <div className="mt-1.5 w-2 h-2 rounded-full sv-sunset flex-shrink-0"></div>
+                          <div className="mt-1.5 w-2 h-2 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] flex-shrink-0"></div>
                           <div>
                             <p className="text-slate-800 dark:text-white text-sm font-medium leading-tight">{note.title.replace('Crew Message: ', '')}</p>
                             <p className="text-xs text-slate-500 mt-1">{new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>

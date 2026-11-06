@@ -100,7 +100,7 @@ export default function LDSelector({ selectedLD, onSelect }) {
                             onClick={() => handleSelect(user)}
                             className="w-full text-left px-4 py-3 hover:bg-[#223949] transition-colors flex items-center gap-3 group"
                         >
-                            <div className="w-8 h-8 rounded-full bg-[#223949] group-hover:sv-sunset flex items-center justify-center text-white/70 group-hover:text-white font-bold text-xs transition-colors">
+                            <div className="w-8 h-8 rounded-full bg-[#223949] group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] flex items-center justify-center text-white/70 group-hover:text-white font-bold text-xs transition-colors">
                                 {user.name.charAt(0)}
                             </div>
                             <div className="flex flex-col">

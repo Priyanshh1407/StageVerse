@@ -223,7 +223,7 @@ function Header({ onMenuClick }) {
         </div>
         <button className="relative p-2 text-[#90b2cb] hover:text-white">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 sv-sunset rounded-full"></span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></span>
         </button>
         <div className="flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
           <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffb000] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
@@ -290,7 +290,7 @@ function ReportControls({ category, setCategory, scope, setScope, eventsList, da
           <button
             onClick={onGenerate}
             disabled={isGenerating}
-            className={`flex-1 lg:flex-none flex items-center justify-center gap-2 sv-sunset hover:sv-sunset text-white font-medium px-5 py-2.5 rounded-lg transition-all shadow-[0_0_15px_rgba(255,106,0,0.3)] ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
+            className={`flex-1 lg:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] text-white font-medium px-5 py-2.5 rounded-lg transition-all shadow-[0_0_15px_rgba(255,106,0,0.3)] ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
           >
             <RefreshCw className={`w-5 h-5 ${isGenerating ? 'animate-spin' : ''}`} />
             {isGenerating ? 'Generating...' : 'Generate'}
@@ -374,7 +374,7 @@ function SalesChart({ data }) {
         </div>
         <div className="flex gap-2">
           <span className="flex items-center gap-1.5 text-xs text-white bg-[#101b22] border border-[#2c3b47] px-2 py-1 rounded">
-            <span className="w-2 h-2 rounded-full sv-sunset"></span> Revenue
+            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]"></span> Revenue
           </span>
         </div>
       </div>
@@ -422,7 +422,7 @@ function SalesChart({ data }) {
 function RevenueByType({ data }) {
   const [activeMenu, setActiveMenu] = useState(false);
   const items = data && data.length > 0 ? data : [];
-  const colors = ["sv-sunset", "sv-sunset", "sv-sunset", "sv-sunset"];
+  const colors = ["bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]", "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]", "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]", "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]"];
 
   return (
     <div className="lg:col-span-1 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col h-[350px]">
@@ -548,7 +548,7 @@ function TransactionsTable({ data, search, onSearch, page, totalPages, onPageCha
               <button
                 key={p}
                 onClick={() => onPageChange(p)}
-                className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${page === p ? 'sv-sunset text-white font-bold' : 'hover:bg-[#2c3b47]'}`}
+                className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${page === p ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black font-bold' : 'hover:bg-[#2c3b47]'}`}
               >
                 {p}
               </button>

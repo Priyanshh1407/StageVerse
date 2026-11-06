@@ -52,6 +52,7 @@ export async function GET(req) {
             id: t._id,
             eventId: t.eventId?._id,
             title: t.title,
+            description: t.description || '',
             show: t.eventId?.title || 'General',
             venue: t.eventId?.city || '',
             priority: t.priority,

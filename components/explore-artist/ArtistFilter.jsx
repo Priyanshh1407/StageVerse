@@ -61,7 +61,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
                       {genre}
                     </span>
                     <div 
-                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filters.genres.includes(genre) ? 'sv-sunset border-[#a855f7]' : 'border-gray-600 bg-[#27272A]'}`}
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filters.genres.includes(genre) ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] border-[#a855f7]' : 'border-gray-600 bg-[#27272A]'}`}
                       onClick={() => toggleArrayItem('genres', genre)}
                     >
                       {filters.genres.includes(genre) && <Check className="w-3 h-3 text-black" />}
@@ -80,7 +80,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
                     <span className="text-gray-300 text-sm">{type}</span>
                     <button 
                       onClick={() => toggleArrayItem('types', type)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${filters.types.includes(type) ? 'sv-sunset' : 'bg-gray-700'}`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${filters.types.includes(type) ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]' : 'bg-gray-700'}`}
                     >
                       <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${filters.types.includes(type) ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
@@ -111,7 +111,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
 
             {}
             <div className="lg:hidden pt-4">
-              <button onClick={onClose} className="w-full py-3 rounded-lg sv-sunset text-black font-bold">
+              <button onClick={onClose} className="w-full py-3 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black font-bold">
                 Apply Filters
               </button>
             </div>

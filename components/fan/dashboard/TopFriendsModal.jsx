@@ -91,7 +91,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
                     <p className="font-bold text-xs">{friend.sharedShows} Shared</p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="text-[10px] text-slate-400 hover:text-[#ff6a00] transition-colors flex items-center gap-0.5">
+                    <button type="button" onClick={() => { onClose(); window.dispatchEvent(new CustomEvent('sv:open-messages', { detail: { id: String(friend.id ?? friend._id), name: friend.name, avatar: friend.avatar ?? null } })); }} className="text-[10px] text-slate-400 hover:text-[#ff6a00] transition-colors flex items-center gap-0.5">
                       Message <MessageSquare className="w-3 h-3" />
                     </button>
                   </div>

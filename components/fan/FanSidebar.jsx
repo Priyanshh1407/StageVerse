@@ -1,17 +1,27 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import NotificationsModal from '@/components/fan/dashboard/NotificationsModal';
+import MessagesModal from '@/components/fan/MessagesModal';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Logo from '@/components/brand/Logo';
 import {
   Compass, Ticket, Users, Settings,
-  LogOut, Image as ImageIcon, X, Bell
+  LogOut, Image as ImageIcon, X, Bell, MessageSquare
 } from 'lucide-react';
 
 const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [messages, setMessages] = useState({ open: false, start: null });
+  // any fan page can open a conversation (e.g. "Message" on a friend): window event sv:open-messages
+  useEffect(() => {
+    const open = (e) => setMessages({ open: true, start: e.detail ?? null });
+    window.addEventListener('sv:open-messages', open);
+    return () => window.removeEventListener('sv:open-messages', open);
+  }, []);
 
   const links = [
     { label: "My Passport", href: "/dashboard", icon: Ticket },
@@ -19,6 +29,7 @@ const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
     { label: "Memories", href: "/memory-vault", icon: ImageIcon },
     { label: "Friends", href: "/social", icon: Users },
     { label: "Tickets", href: "/ticket", icon: Ticket },
+    { label: "Messages", action: "OPEN_MESSAGES", icon: MessageSquare },
     { label: "Notifications", action: "OPEN_NOTIFICATIONS", icon: Bell },
   ];
 
@@ -78,14 +89,29 @@ const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
           {links.map((item) => {
             const isActive = pathname === item.href;
 
+            if (item.action === 'OPEN_MESSAGES') {
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => { onClose(); setMessages({ open: true, start: null }); }}
+                  className="flex w-full items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#ff6a00] text-left"
+                >
+                  <item.icon className="w-5 h-5" />
+                  {item.label}
+                </button>
+              );
+            }
+
             if (item.action === 'OPEN_NOTIFICATIONS') {
               return (
                 <button
                   key={item.label}
                   onClick={() => {
-                    console.log("Notification Clicked", { onOpenNotifications });
                     onClose();
+                    // the page may handle it; otherwise the sidebar opens the panel itself (every fan page)
                     if (onOpenNotifications) onOpenNotifications();
+                    else setNotificationsOpen(true);
                   }}
                   className="flex w-full items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white text-left"
                 >
@@ -101,7 +127,7 @@ const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
                 href={item.href}
                 onClick={onClose} // Close sidebar on mobile when a link is clicked
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${isActive
-                  ? "sv-sunset text-white shadow-lg shadow-orange-600/25"
+                  ? "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-lg shadow-orange-600/25"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
@@ -122,6 +148,8 @@ const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
           </button>
         </div>
       </aside>
+      <NotificationsModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+      <MessagesModal isOpen={messages.open} start={messages.start} onClose={() => setMessages({ open: false, start: null })} />
     </>
   );
 };

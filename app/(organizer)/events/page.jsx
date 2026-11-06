@@ -97,8 +97,9 @@ export default function EventsPage() {
     router.push('/create-event');
   };
 
-  const handleViewLive = (eventId) => {
-    window.open(`/event/${eventId}`, '_blank');
+  // the public event page (/events/<short id>), in a new tab
+  const handleViewLive = (event) => {
+    window.open(`/events/${event.eventId ?? event.id}`, '_blank', 'noopener');
   };
 
   const handleEdit = (event) => {
@@ -106,8 +107,9 @@ export default function EventsPage() {
     router.push(`/create-event?id=${idToUse}`);
   }
 
-  const handleAnalytics = (id) => {
-    router.push(`/manage/events/${id}/analytics`);
+  // the organizer's analytics page (there is no per-event analytics route)
+  const handleAnalytics = () => {
+    router.push('/analysis');
   }
 
   const handleDuplicate = async (event) => {
@@ -257,7 +259,7 @@ function Header({ onMenuClick }) {
       <div className="flex items-center gap-4 md:gap-6">
         <button className="relative p-2 text-[#90b2cb] hover:text-white">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 sv-sunset rounded-full"></span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></span>
         </button>
         <div className="flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
           <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffb000] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
@@ -330,7 +332,7 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
       {}
       <button
         onClick={onCreate}
-        className="flex items-center gap-2 sv-sunset hover:brightness-110 text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-lg shadow-[#ff6a00]/20 w-full md:w-auto justify-center"
+        className="flex items-center gap-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black px-5 py-2.5 rounded-lg font-medium transition-all shadow-lg shadow-[#ff6a00]/20 w-full md:w-auto justify-center"
       >
         <Plus className="w-5 h-5" />
         Create New Event
@@ -410,9 +412,9 @@ function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLiv
 
   const getProgressColor = (status) => {
     if (status === 'Completed') return 'bg-[#90b2cb]';
-    if (status === 'Draft') return 'sv-sunset';
+    if (status === 'Draft') return 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]';
     if (status === 'Scheduled') return 'bg-gray-600';
-    return 'sv-sunset';
+    return 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]';
   };
 
   return (
@@ -491,7 +493,7 @@ function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLiv
             {showMenu && (
               <div className="absolute right-0 top-full mt-2 w-32 bg-[#192734] border border-[#2c3b47] rounded-lg shadow-xl z-20 overflow-hidden flex flex-col">
                 <button
-                  onClick={() => onViewLive(event.id)}
+                  onClick={() => { setShowMenu(false); onViewLive(event); }}
                   className="flex items-center gap-2 px-4 py-2 text-xs text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] text-left">
                   <Eye className="w-3 h-3" /> View Live
                 </button>
@@ -530,7 +532,7 @@ function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageC
             key={page}
             onClick={() => onPageChange(page)}
             className={`px-3 py-1.5 text-xs font-medium rounded shadow-sm transition-colors ${currentPage === page
-              ? 'text-white sv-sunset hover:brightness-110'
+              ? 'text-black bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110'
               : 'text-[#90b2cb] hover:text-white hover:bg-[#2c3b47]'
               }`}
           >

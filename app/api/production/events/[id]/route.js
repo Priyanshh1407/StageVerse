@@ -8,7 +8,7 @@ import { verifyAuth } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 function getTypeColor(type) {
     switch (type) {
-        case 'Touring': return 'sv-sunset';
+        case 'Touring': return 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]';
         case 'Festival': return 'bg-indigo-500';
         case 'Corporate': return 'bg-slate-600';
         case 'Theatre': return 'bg-amber-600';
@@ -35,8 +35,10 @@ export async function PUT(req, { params }) {
         if (body.type || body.genre) event.genre = body.type || body.genre;
 
         if (body.status) {
-            if (body.status === 'active' && isAssigned) {
-                event.productionStatus = 'active';
+            // production states (accepting a request, archiving, unarchiving) live in productionStatus,
+            // which the crew dashboard reads; the public event status is left alone
+            if (['requested', 'active', 'archived', 'completed'].includes(body.status)) {
+                event.productionStatus = body.status;
             } else {
                 event.status = body.status;
             }

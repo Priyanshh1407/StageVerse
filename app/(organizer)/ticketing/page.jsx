@@ -141,7 +141,7 @@ export default function TicketingSelectionPage() {
                     {}
                     <div className="flex items-center gap-3">
                        <span className="hidden sm:block text-sm font-medium text-[#90b2cb] group-hover:text-white transition-colors">Manage Tickets</span>
-                       <div className="w-8 h-8 rounded-full bg-[#101b22] flex items-center justify-center text-[#90b2cb] group-hover:sv-sunset group-hover:text-white transition-all">
+                       <div className="w-8 h-8 rounded-full bg-[#101b22] flex items-center justify-center text-[#90b2cb] group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-white transition-all">
                           <ArrowRight className="w-4 h-4" />
                        </div>
                     </div>

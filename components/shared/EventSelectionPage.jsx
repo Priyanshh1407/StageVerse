@@ -114,7 +114,7 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                             <p className="text-[10px] font-bold tracking-[0.2em] text-slate-500 uppercase">
                                                 {role === 'artist' ? 'Artist Access' : 'Crew Access'}
                                             </p>
-                                            <div className="px-4 py-2 sv-sunset text-[#050505] text-sm font-bold rounded shadow-[0_0_15px_rgba(255,106,0,0.4)] group-hover:scale-105 transition-transform flex items-center gap-2">
+                                            <div className="px-4 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-[#050505] text-sm font-bold rounded shadow-[0_0_15px_rgba(255,106,0,0.4)] group-hover:scale-105 transition-transform flex items-center gap-2">
                                                 {role === 'artist' ? 'LAUNCH SHOW' : 'OPEN CONSOLE'} <ArrowRight className="w-4 h-4" />
                                             </div>
                                         </div>

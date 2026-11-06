@@ -16,6 +16,12 @@ export default function GlobalTasksPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [shows, setShows] = useState([]);
+  useEffect(() => {
+    fetch('/api/production/dashboard').then((r) => r.json())
+      .then((j) => { if (j.success) setShows((j.data.shows || []).filter((x) => x.status !== 'archived').map((x) => ({ id: String(x.id), title: x.title, venue: x.venue }))); })
+      .catch(() => {});
+  }, []);
   const fetchTasks = async () => {
     try {
       const res = await fetch('/api/production/tasks');
@@ -124,7 +130,7 @@ export default function GlobalTasksPage() {
               </div>
               <button
                 onClick={openCreateModal}
-                className="flex items-center gap-2 sv-sunset hover:brightness-110 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-orange-600/20"
+                className="flex items-center gap-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black px-4 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-orange-600/20"
               >
                 <Plus className="w-4 h-4" />
                 Create Task
@@ -196,6 +202,7 @@ export default function GlobalTasksPage() {
       {isModalOpen && (
         <TaskModal
           task={editingTask}
+          shows={shows}
           onClose={closeModal}
           onSave={handleSaveTask}
         />
@@ -236,9 +243,9 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
       </button>
 
       {}
-      <div className="flex-1 min-w-0 flex flex-col gap-1">
+      <button type="button" onClick={onEdit} aria-label={`Open task: ${task.title}`} className="flex-1 min-w-0 flex flex-col gap-1 text-left rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a855f7]">
         <div className="flex items-center gap-3">
-          <span className={`text-sm font-medium ${task.status === 'completed' ? 'text-gray-500 line-through' : 'text-white'}`}>
+          <span className={`text-sm font-medium group-hover:text-[#ffb000] transition-colors ${task.status === 'completed' ? 'text-gray-500 line-through' : 'text-white'}`}>
             {task.title}
           </span>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-[#27272A] bg-[#222] text-gray-400 uppercase tracking-wider">
@@ -251,7 +258,7 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
             {task.priority}
           </span>
         </div>
-      </div>
+      </button>
 
       {}
       <div className="flex items-center gap-6">
@@ -304,106 +311,95 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
   );
 }
 
-function TaskModal({ task, onClose, onSave }) {
+function TaskModal({ task, shows = [], onClose, onSave }) {
   const [formData, setFormData] = useState({
     title: task ? task.title : '',
-    show: task ? task.show : 'General',
-    venue: task ? task.venue : '',
+    eventId: task ? String(task.eventId ?? '') : '',
+    description: task ? task.description || '' : '',
     priority: task ? task.priority : 'Medium',
-    dueDate: task ? task.dueDate : '',
+    dueDate: task ? (task.dueDate === 'ASAP' ? '' : task.dueDate) : '',
   });
+  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
+    setSaving(true);
+    // an existing task keeps its show (eventId is set once, on create)
+    const { eventId, ...rest } = formData;
+    await onSave(task ? rest : { ...rest, eventId });
+    setSaving(false);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[#18181B] border border-[#27272A] w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+  const field = 'w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#a855f7] focus:ring-2 focus:ring-[#a855f7]/25';
+  const label = 'block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5';
 
-        <div className="flex justify-between items-center p-5 border-b border-[#27272A]">
-          <h3 className="text-white font-bold text-lg">{task ? 'Edit Task' : 'Create New Task'}</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#18181B] border border-[#27272A] w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex justify-between items-start gap-4 p-5 border-b border-[#27272A]">
+          <div className="min-w-0">
+            <h3 id="task-modal-title" className="text-white font-bold text-lg">{task ? 'Task details' : 'Create new task'}</h3>
+            {task && <p className="mt-0.5 text-xs text-gray-500 truncate">{task.show}{task.venue ? ` · ${task.venue}` : ''} · {task.status === 'completed' ? 'Completed' : 'Open'}</p>}
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close" className="p-1.5 rounded-full text-gray-500 hover:text-[#ff6a00] hover:bg-white/5"><X className="w-5 h-5" /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Task Title</label>
-            <input
-              required
-              type="text"
-              className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
-              placeholder="e.g. Update Patch Sheet"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
+            <label htmlFor="task-title" className={label}>Task title</label>
+            <input id="task-title" required type="text" maxLength={200} className={field} placeholder="e.g. Update patch sheet"
+              value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Show / Project</label>
-              <select
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
-                value={formData.show}
-                onChange={(e) => setFormData({ ...formData, show: e.target.value })}
-              >
-                <option>General</option>
-                <option>Hamlet World Tour</option>
-                <option>Neon Nights Tour</option>
-                <option>Synthwave Sunset</option>
+          <div>
+            <label htmlFor="task-show" className={label}>Show</label>
+            {task ? (
+              <p id="task-show" className="px-4 py-2.5 rounded-lg bg-[#0F0F10] border border-[#27272A] text-sm text-gray-300">{task.show}</p>
+            ) : (
+              <select id="task-show" required className={field} value={formData.eventId} onChange={(e) => setFormData({ ...formData, eventId: e.target.value })}>
+                <option value="" disabled>{shows.length ? 'Pick a show' : 'Loading your shows…'}</option>
+                {shows.map((show) => <option key={show.id} value={show.id}>{show.title}{show.venue ? ` (${show.venue})` : ''}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Venue</label>
-              <input
-                type="text"
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
-                placeholder="Optional"
-                value={formData.venue}
-                onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-              />
-            </div>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="task-description" className={label}>Details</label>
+            <textarea id="task-description" rows={3} maxLength={2000} className={`${field} resize-none`} placeholder="What needs doing, and anything the crew should know"
+              value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Priority</label>
-              <select
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-              >
+              <label htmlFor="task-priority" className={label}>Priority</label>
+              <select id="task-priority" className={field} value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })}>
                 <option>Low</option>
                 <option>Medium</option>
                 <option>High</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Due Date</label>
-              <input
-                type="text"
-                className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
-                placeholder="e.g. Tomorrow"
-                value={formData.dueDate}
-                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              />
+              <label htmlFor="task-due" className={label}>Due</label>
+              <input id="task-due" type="text" maxLength={50} className={field} placeholder="e.g. Tomorrow, 18:00"
+                value={formData.dueDate} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} />
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-[#27272A] flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white hover:bg-[#27272A] transition-colors"
-            >
+          <div className="mt-2 pt-4 border-t border-[#27272A] flex justify-end gap-3">
+            <button type="button" onClick={onClose}
+              className="px-5 py-2.5 rounded-lg text-sm font-bold text-gray-300 border border-[#27272A] hover:border-[#ff6a00]/60 hover:text-white transition-colors">
               Cancel
             </button>
-            <button
-              type="submit"
-              className="px-6 py-2 rounded-lg text-sm font-bold sv-sunset hover:brightness-110 text-white shadow-lg shadow-orange-600/20 transition-all"
-            >
-              {task ? 'Save Changes' : 'Create Task'}
+            <button type="submit" disabled={saving}
+              className="px-6 py-2.5 rounded-lg text-sm font-bold text-black bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 disabled:opacity-60 shadow-lg shadow-orange-600/20 transition-all">
+              {saving ? 'Saving…' : task ? 'Save changes' : 'Create task'}
             </button>
           </div>
         </form>

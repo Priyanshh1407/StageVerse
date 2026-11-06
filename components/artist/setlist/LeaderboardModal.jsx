@@ -84,7 +84,7 @@ export default function LeaderboardModal({
                                 <button
                                     onClick={onConfirmGuestlist}
                                     disabled={guestlistLoading}
-                                    className="flex-1 py-3 px-4 rounded-lg sv-sunset hover:brightness-110 text-white font-bold transition-colors disabled:opacity-50"
+                                    className="flex-1 py-3 px-4 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold transition-colors disabled:opacity-50"
                                 >
                                     {guestlistLoading ? "Adding..." : "Confirm Add"}
                                 </button>
@@ -124,7 +124,7 @@ export default function LeaderboardModal({
                                         {}
                                         <button
                                             onClick={() => onAddToGuestlist && onAddToGuestlist(winner.userId)}
-                                            className="ml-2 p-2 bg-[#ff6a00]/10 hover:sv-sunset text-[#ff6a00] hover:text-white rounded-lg transition-colors"
+                                            className="ml-2 p-2 bg-[#ff6a00]/10 hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] text-[#ff6a00] hover:text-white rounded-lg transition-colors"
                                             title="Add to Guestlist"
                                         >
                                             <Medal className="w-5 h-5" />

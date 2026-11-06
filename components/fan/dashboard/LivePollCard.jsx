@@ -182,7 +182,7 @@ export default function LivePollCard({ eventId, onComplete }) {
                                 {}
                                 {isSelected && (
                                     <div className="relative z-10 flex items-center gap-3 pointer-events-none">
-                                        <div className="w-8 h-8 rounded-full sv-sunset text-black flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black flex items-center justify-center">
                                             <Check className="w-5 h-5 font-bold" strokeWidth={4} />
                                         </div>
                                     </div>
@@ -190,7 +190,7 @@ export default function LivePollCard({ eventId, onComplete }) {
 
                                 {}
                                 {!!votedOptionId && (
-                                    <div className="absolute bottom-0 left-0 h-1 sv-sunset transition-all duration-1000 ease-out pointer-events-none" style={{ width: `${percent}%` }} />
+                                    <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] transition-all duration-1000 ease-out pointer-events-none" style={{ width: `${percent}%` }} />
                                 )}
                             </button>
                         );
@@ -206,7 +206,7 @@ export default function LivePollCard({ eventId, onComplete }) {
                     {}
                     <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden relative z-10">
                         <div
-                            className="h-full sv-sunset shadow-[0_0_10px_#ffb000] transition-all duration-1000 linear"
+                            className="h-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] shadow-[0_0_10px_#ffb000] transition-all duration-1000 linear"
                             style={{ width: `${(timeLeft / 60) * 100}%` }}
                         />
                     </div>

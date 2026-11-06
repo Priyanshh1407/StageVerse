@@ -84,7 +84,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
           </div>
           <div className="rounded-full bg-[#16222b] border border-[#223949] h-2.5 overflow-hidden relative">
             <div
-              className="absolute h-full sv-sunset transition-all duration-300 ease-linear"
+              className="absolute h-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] transition-all duration-300 ease-linear"
               style={{ width: `${currentSong.progress}%` }}
             ></div>
           </div>
@@ -187,7 +187,7 @@ function PollMonitor({ poll, onReveal }) {
                 </div>
                 <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-500 ${isWinning ? 'sv-sunset' : 'bg-slate-600'}`}
+                    className={`h-full transition-all duration-500 ${isWinning ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]' : 'bg-slate-600'}`}
                     style={{ width: `${opt.percent}%` }}
                   />
                 </div>
@@ -206,7 +206,7 @@ function PollMonitor({ poll, onReveal }) {
             ? 'bg-slate-900 border-slate-700 cursor-default opacity-90'
             : totalVotes === 0
               ? 'bg-slate-800 border-slate-700 cursor-not-allowed'
-              : 'sv-sunset hover:brightness-110 active:brightness-110 border-purple-500/50 hover:shadow-[0_0_30px_rgba(255,106,0,0.5)]'
+              : 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 active:brightness-110 border-purple-500/50 hover:shadow-[0_0_30px_rgba(255,106,0,0.5)]'
           }
         `}
       >

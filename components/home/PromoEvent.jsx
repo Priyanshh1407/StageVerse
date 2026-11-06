@@ -49,7 +49,7 @@ export default function PromoSection() {
             </div>
             
             <div className="pt-4">
-              <button className="px-8 py-3 rounded-lg border border-[#a855f7]/50 text-[#ffb000] font-bold hover:sv-sunset hover:text-black transition-all uppercase tracking-wide">
+              <button className="px-8 py-3 rounded-lg border border-[#a855f7]/50 text-[#ffb000] font-bold hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] hover:text-black transition-all uppercase tracking-wide">
                 Become a Partner
               </button>
             </div>

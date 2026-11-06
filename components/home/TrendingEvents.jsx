@@ -76,7 +76,7 @@ export default function TrendingEvents({ events, isLoading }) {
                         {event.location}
                       </div>
                       {}
-                      <div className={`w-full rounded-lg py-3 text-sm font-bold transition-all text-center ${event.price ? 'sv-sunset text-black group-hover:scale-105' : 'bg-white/10 border border-white/10 text-white group-hover:bg-white group-hover:text-black'}`}>
+                      <div className={`w-full rounded-lg py-3 text-sm font-bold transition-all text-center ${event.price ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black group-hover:scale-105' : 'bg-white/10 border border-white/10 text-white group-hover:bg-white group-hover:text-black'}`}>
                         {event.price ? `Get Tickets • $${event.price}` : 'Join Waitlist'}
                       </div>
                     </div>

@@ -30,7 +30,7 @@ export default function CrewMessenger() {
     return (
         <div id="crew-messenger" className="bg-[#1a2632] border border-[#223949] rounded-2xl p-6 relative overflow-hidden group">
             {}
-            <div className="absolute top-0 right-0 p-8 opacity-10 blur-3xl rounded-full sv-sunset" />
+            <div className="absolute top-0 right-0 p-8 opacity-10 blur-3xl rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" />
 
             <div className="relative z-10 flex flex-col gap-4">
                 <div className="flex justify-between items-start">
@@ -65,7 +65,7 @@ export default function CrewMessenger() {
                     <button
                         onClick={handleSend}
                         disabled={status === 'sending' || !message.trim()}
-                        className="flex items-center gap-2 px-6 py-2.5 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:hover:brightness-110 text-white font-bold rounded-lg transition-all active:scale-95"
+                        className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:hover:brightness-110 text-black font-bold rounded-lg transition-all active:scale-95"
                     >
                         {status === 'sending' ? (
                             <span className="animate-pulse">Sending...</span>

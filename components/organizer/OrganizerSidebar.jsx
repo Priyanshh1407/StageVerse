@@ -83,7 +83,7 @@ const OrganizerSidebar = ({ isOpen, onClose }) => {
                 href={item.href}
                 onClick={onClose} // Close sidebar on mobile click
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${isActive
-                  ? "sv-sunset text-white shadow-lg shadow-orange-600/25"
+                  ? "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-lg shadow-orange-600/25"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >

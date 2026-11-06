@@ -136,7 +136,7 @@ export default function ContactPage() {
                       <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Headquarters</p>
                       <p className="text-sm text-white font-medium">1200 Music Row, Nashville, TN</p>
                     </div>
-                    <a href="#" className="w-8 h-8 rounded-full sv-sunset text-black flex items-center justify-center hover:bg-amber-300 hover:bg-none transition-colors">
+                    <a href="#" className="w-8 h-8 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black flex items-center justify-center hover:bg-amber-300 hover:bg-none transition-colors">
                       <Navigation className="w-4 h-4" />
                     </a>
                   </div>
@@ -215,7 +215,7 @@ export default function ContactPage() {
                         w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a855f7] focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed
                         ${status === 'success'
                           ? 'bg-green-500 text-white hover:bg-green-600'
-                          : 'sv-sunset text-black hover:brightness-110'}
+                          : 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black hover:brightness-110'}
                       `}
                     >
                       {status === 'loading' ? (

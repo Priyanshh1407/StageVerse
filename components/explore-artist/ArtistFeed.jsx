@@ -79,7 +79,7 @@ export default function ArtistsFeed({
             <div className="mt-12 flex justify-center">
               <button
                 onClick={onLoadMore}
-                className="bg-[#18181B] hover:sv-sunset hover:text-black text-white border border-gray-700 hover:border-[#a855f7] px-8 py-3 rounded-full font-bold transition-all flex items-center gap-2 shadow-lg group"
+                className="bg-[#18181B] hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] hover:text-black text-white border border-gray-700 hover:border-[#a855f7] px-8 py-3 rounded-full font-bold transition-all flex items-center gap-2 shadow-lg group"
               >
                 Load More Artists
                 <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />

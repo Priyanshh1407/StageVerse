@@ -10,7 +10,7 @@ import { requireRole } from '@/lib/authz';
 import { nextEventId } from '@/lib/counters';
 function getTypeColor(type) {
     switch (type) {
-        case 'Touring': return 'sv-sunset';
+        case 'Touring': return 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]';
         case 'Festival': return 'bg-indigo-500';
         case 'Corporate': return 'bg-slate-600';
         case 'Theatre': return 'bg-amber-600';

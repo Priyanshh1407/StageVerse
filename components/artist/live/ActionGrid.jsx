@@ -131,7 +131,7 @@ function SlideToConfirm({ onConfirm }) {
             {}
             <div
                 style={{ width: `${sliderWidth}px` }}
-                className="absolute inset-y-0 left-0 sv-sunset transition-all duration-75 ease-linear"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] transition-all duration-75 ease-linear"
             ></div>
 
             {}
@@ -141,7 +141,7 @@ function SlideToConfirm({ onConfirm }) {
                 onPointerUp={handlePointerUp}
                 onPointerLeave={handlePointerUp} // Safety fallback
                 style={{ left: `${sliderWidth}px` }}
-                className="absolute inset-y-0 w-14 sv-sunset flex items-center justify-center cursor-grab active:cursor-grabbing hover:brightness-110 shadow-xl z-10 transition-all duration-75 ease-linear"
+                className="absolute inset-y-0 w-14 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] flex items-center justify-center cursor-grab active:cursor-grabbing hover:brightness-110 shadow-xl z-10 transition-all duration-75 ease-linear"
             >
                 <ChevronsRight className="text-white w-6 h-6" />
             </div>

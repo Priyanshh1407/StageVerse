@@ -16,7 +16,7 @@ export default function OurStory() {
           </div>
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="h-px w-8 sv-sunset"></span>
+              <span className="h-px w-8 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]"></span>
               <span className="text-[#ffb000] font-bold uppercase tracking-widest text-sm">Our Story</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">From Garage Gigs to Global Stages</h2>

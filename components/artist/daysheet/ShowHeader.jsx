@@ -110,7 +110,7 @@ export default function ShowHeader({ city, venue, date }) {
                     {eventOnDay ? (
                       <Link
                         href={`/day-sheet/${eventOnDay._id || eventOnDay.eventId}`} // Use correct ID
-                        className="w-full h-full flex items-center justify-center rounded-full sv-sunset text-white font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer"
+                        className="w-full h-full flex items-center justify-center rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer"
                       >
                         {dayNum}
                       </Link>
@@ -123,7 +123,7 @@ export default function ShowHeader({ city, venue, date }) {
             </div>
 
             <div className="mt-6 flex items-center gap-2 text-xs text-slate-400">
-              <div className="w-3 h-3 rounded-full sv-sunset"></div>
+              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]"></div>
               <span>Show Day</span>
             </div>
 

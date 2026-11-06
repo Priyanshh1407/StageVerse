@@ -31,7 +31,7 @@ export default function GuestListHeader({ onNewList, onExport }) {
         {}
         <button
           onClick={onNewList}
-          className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white text-sm font-bold shadow-sm transition-colors"
+          className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black text-sm font-bold shadow-sm transition-colors"
         >
           <Plus className="w-5 h-5" />
           <span>New List</span>

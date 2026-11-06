@@ -121,7 +121,7 @@ export default function PublicArtistPage() {
               </h1>
 
               <div className="flex flex-wrap gap-4">
-                <button className="sv-sunset text-black px-8 py-3 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 transition-transform flex items-center gap-2 shadow-[0_0_20px_rgba(255,106,0,0.4)]">
+                <button className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black px-8 py-3 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 transition-transform flex items-center gap-2 shadow-[0_0_20px_rgba(255,106,0,0.4)]">
                   <Heart className="w-4 h-4" /> Follow
                 </button>
                 <button className="bg-white/10 text-white border border-white/20 px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-white hover:text-black transition-all flex items-center gap-2 backdrop-blur-md">
@@ -182,7 +182,7 @@ export default function PublicArtistPage() {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-slate-500 text-sm">3:45</span>
-                        <button className="w-10 h-10 rounded-full sv-sunset text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
+                        <button className="w-10 h-10 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
                           <Play className="w-4 h-4 fill-current ml-0.5" />
                         </button>
                       </div>

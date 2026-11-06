@@ -127,7 +127,7 @@ export default function FanDashboard() {
                     )}
                     {data.user.socials?.instagram && (
                       <div className="flex items-center gap-1 text-xs text-[#ff6a00]">
-                        <Instagram className="w-3 h-3" /> @{data.user.socials.instagram}
+                        <Instagram className="w-3 h-3" /> @{String(data.user.socials.instagram).replace(/^@+/, "")}
                       </div>
                     )}
                   </div>
@@ -161,7 +161,7 @@ export default function FanDashboard() {
                   </div>
                   <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-1 rounded sv-sunset text-white text-[10px] font-bold uppercase tracking-wider animate-pulse">Live Challenge</span>
+                      <span className="px-2 py-1 rounded bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-[10px] font-bold uppercase tracking-wider animate-pulse">Live Challenge</span>
                     </div>
                     <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Predict Setlist</p>
                     <h3 className="text-white text-2xl font-bold leading-tight mt-1 truncate">{activeEvent.artist}</h3>
@@ -170,7 +170,7 @@ export default function FanDashboard() {
                     <div className="mt-4 flex gap-2">
                       <button
                         onClick={(e) => { e.stopPropagation(); setIsPredictorOpen(true); }}
-                        className="px-4 py-2 sv-sunset hover:brightness-110 text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-[#ff6a00]/20"
+                        className="px-4 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black text-xs font-bold rounded-lg transition-colors shadow-lg shadow-[#ff6a00]/20"
                       >
                         {activeEventPrediction ? (activeEventPrediction.status === 'graded' ? 'View Results' : 'Edit Prediction') : 'Play'}
                       </button>
@@ -255,7 +255,7 @@ export default function FanDashboard() {
             <motion.section variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col gap-6 pt-4">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div><h3 className="text-2xl font-bold tracking-tight uppercase flex items-center gap-2"><ImageIcon className="w-6 h-6 text-[#ff6a00]" />Memory Vault</h3><p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Your curated collection of moments.</p></div>
-                <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 px-4 py-2 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</button>
+                <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black rounded-lg text-sm font-bold transition-colors"><Plus className="w-4 h-4" />Upload Media</button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
                 {data.memories.length > 0 ? data.memories.slice(0, 5).map((memory, memoryIndex) => {
@@ -386,7 +386,7 @@ function StatCard({ icon: Icon, label, value, valueColor, subtext, progress, ext
       <div className="absolute top-0 right-0 p-4 opacity-5"><Icon className="w-24 h-24" /></div>
       <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider relative z-10">{label}</p>
       <p className={`text-slate-900 dark:text-white text-4xl font-bold leading-tight relative z-10 ${valueColor || ''}`}>{value}</p>
-      {progress !== undefined && <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-4 relative z-10 overflow-hidden"><div className="sv-sunset h-full rounded-full" style={{ width: `${progress}%` }}></div></div>}
+      {progress !== undefined && <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-4 relative z-10 overflow-hidden"><div className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] h-full rounded-full" style={{ width: `${progress}%` }}></div></div>}
       {subtext && <p className="text-xs text-slate-400 mt-2">{subtext}</p>}
       {extra}
     </div>

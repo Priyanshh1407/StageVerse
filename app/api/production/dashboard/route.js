@@ -110,7 +110,7 @@ function getColorForGenre(genre) {
     if (g.includes('jazz') || g.includes('classical')) return 'bg-amber-500';
     if (g.includes('festival')) return 'bg-indigo-500';
     if (g.includes('corporate')) return 'bg-slate-500';
-    return 'sv-sunset'; // Default
+    return 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]'; // Default
 }
 
 function formatTimeAgo(date) {

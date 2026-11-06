@@ -246,7 +246,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      <button
                         onClick={handleAiPatch}
                         disabled={isGenerating}
-                        className="text-[10px] text-orange-500 hover:text-white hover:sv-sunset transition-colors flex items-center gap-1 bg-orange-500/10 px-2 py-0.5 rounded border border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-[10px] text-orange-500 hover:text-white hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors flex items-center gap-1 bg-orange-500/10 px-2 py-0.5 rounded border border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                      >
                         {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
                         {isGenerating ? 'Thinking...' : 'AI Assist'}
@@ -262,7 +262,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
 
                <button
                   onClick={handleSubmit}
-                  className="sv-sunset hover:brightness-110 shadow-[0_0_15px_rgba(255,106,0,0.3)] w-full text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]"
+                  className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 shadow-[0_0_15px_rgba(255,106,0,0.3)] w-full text-black font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]"
                >
                   <PlusCircle className="w-5 h-5" />
                   Add To Patch
@@ -332,7 +332,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      <button
                         type="submit"
                         disabled={isCreating}
-                        className="w-full sv-sunset hover:brightness-110 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
+                        className="w-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
                      >
                         {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
                         Create Profile

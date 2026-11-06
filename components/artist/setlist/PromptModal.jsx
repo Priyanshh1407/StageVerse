@@ -67,7 +67,7 @@ export default function PromptModal({ isOpen, onClose, onSubmit }) {
               </button>
               <button
                 onClick={() => onSubmit(prompt)}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white text-sm font-bold shadow-lg shadow-[#ff6a00]/25 hover:shadow-[#ff6a00]/40 transition-all whitespace-nowrap ring-1 ring-white/20"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black text-sm font-bold shadow-lg shadow-[#ff6a00]/25 hover:shadow-[#ff6a00]/40 transition-all whitespace-nowrap ring-1 ring-white/20"
               >
                 Submit Optimized Flow
               </button>

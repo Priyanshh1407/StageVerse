@@ -99,7 +99,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
                     className="object-cover opacity-60 group-hover:opacity-40 transition-opacity"
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <button className="px-4 py-2 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white text-xs font-bold rounded-lg shadow-lg transform transition-transform group-hover:scale-105">
+                    <button className="px-4 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black text-xs font-bold rounded-lg shadow-lg transform transition-transform group-hover:scale-105">
                       Get Directions
                     </button>
                   </div>
@@ -121,7 +121,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
           <button onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
             Close
           </button>
-          <button className="px-5 py-2.5 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white text-sm font-bold rounded-lg shadow-lg shadow-[#ff6a00]/25 transition-all">
+          <button className="px-5 py-2.5 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black text-sm font-bold rounded-lg shadow-lg shadow-[#ff6a00]/25 transition-all">
             Visit Official Site
           </button>
         </div>

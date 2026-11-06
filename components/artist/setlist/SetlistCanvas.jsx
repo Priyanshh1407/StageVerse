@@ -190,7 +190,7 @@ export default function SetlistCanvas({ items, setItems }) {
                           `}
                           style={{ ...provided.draggableProps.style }}
                         >
-                          {index === 0 && !snapshot.isDragging && (<div className="absolute left-0 top-0 bottom-0 w-1 sv-sunset rounded-l-xl"></div>)}
+                          {index === 0 && !snapshot.isDragging && (<div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-l-xl"></div>)}
                           <div className="flex items-start gap-5">
                             <div {...provided.dragHandleProps} className="text-[#90b2cb]/30 group-hover:text-[#90b2cb] flex items-center justify-center shrink-0 w-6 pt-1.5 cursor-grab active:cursor-grabbing hover:bg-white/5 rounded">
                               <GripVertical className="w-6 h-6" />

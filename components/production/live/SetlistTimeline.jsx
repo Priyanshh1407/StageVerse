@@ -22,7 +22,7 @@ export default function SetlistTimeline({ items = [] }) {
           <span className="text-slate-400 font-bold text-sm uppercase group-hover:text-white transition-colors">Manual Override</span>
           <div className="relative inline-flex items-center cursor-pointer">
             <input className="sr-only peer" type="checkbox" />
-            <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:sv-sunset"></div>
+            <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-[#ffb000] peer-checked:via-[#ff6a00] peer-checked:to-[#ff3d7a]"></div>
           </div>
         </label>
       </div>
@@ -48,7 +48,7 @@ function TimelineItem({ item, index }) {
   if (item.status === 'live') {
     return (
       <div className="relative">
-        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 sv-sunset rounded-r"></div>
+        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-r"></div>
         <div className="flex gap-4 p-3 rounded-lg bg-[#ff6a00]/10 border border-[#a855f7]/30">
           <span className="text-[#ff6a00] font-mono text-sm pt-1 animate-pulse">{displayId}</span>
           <div>

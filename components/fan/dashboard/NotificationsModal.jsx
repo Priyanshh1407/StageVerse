@@ -59,7 +59,7 @@ export default function NotificationsModal({ isOpen, onClose }) {
                             {notifications.map((note) => (
                                 <div key={note._id} className={`p-4 hover:bg-white dark:hover:bg-[#1a2632] transition-colors ${!note.read ? 'bg-orange-50/50 dark:bg-[#ff6a00]/5' : ''}`}>
                                     <div className="flex gap-3">
-                                        <div className={`mt-1 flex-none w-2 h-2 rounded-full ${!note.read ? 'sv-sunset' : 'bg-transparent'}`} />
+                                        <div className={`mt-1 flex-none w-2 h-2 rounded-full ${!note.read ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]' : 'bg-transparent'}`} />
                                         <div className="flex-1 space-y-1">
                                             <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{note.title}</p>
                                             <p className="text-sm text-slate-600 dark:text-slate-400">{note.message}</p>

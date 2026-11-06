@@ -140,7 +140,7 @@ export default function MemoryVaultPage() {
               </div>
               <button 
                 onClick={() => setIsUploadModalOpen(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white rounded-xl text-sm font-bold shadow-lg shadow-[#ff6a00]/20 transition-all hover:-translate-y-0.5"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black rounded-xl text-sm font-bold shadow-lg shadow-[#ff6a00]/20 transition-all hover:-translate-y-0.5"
               >
                 <Plus className="w-5 h-5" />
                 Upload New Memories
@@ -264,7 +264,7 @@ export default function MemoryVaultPage() {
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 p-3 sv-sunset text-white rounded-full shadow-lg hover:bg-[#ff6a00]/90 hover:bg-none transition-all z-50 animate-in fade-in slide-in-from-bottom-4"
+          className="fixed bottom-8 right-8 p-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black rounded-full shadow-lg hover:bg-[#ff6a00]/90 hover:bg-none transition-all z-50 animate-in fade-in slide-in-from-bottom-4"
           aria-label="Scroll to top"
         >
           <ArrowUp className="w-6 h-6" />
@@ -326,7 +326,7 @@ function MemoryCard({ item, onOpen }) {
           </div>
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-1 rounded sv-sunset text-white text-xs font-bold uppercase">Video</span>
+              <span className="px-2 py-1 rounded bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-xs font-bold uppercase">Video</span>
               <span className="text-slate-200 text-xs font-medium">{item.duration}</span>
             </div>
             <h3 className="text-white font-bold text-2xl leading-tight">{item.title}</h3>

@@ -54,7 +54,7 @@ export default function PollModal({ isOpen, onClose, onActivate, pollData }) {
                 <div className="flex justify-between items-start relative z-10">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Option {idx + 1}</span>
                   {isSelected && (
-                    <div className="w-6 h-6 rounded-full sv-sunset text-black flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black flex items-center justify-center">
                       <Check className="w-4 h-4 font-bold" />
                     </div>
                   )}
@@ -70,7 +70,7 @@ export default function PollModal({ isOpen, onClose, onActivate, pollData }) {
         <footer className="p-6 bg-[#050505] border-t border-white/10">
           <button
             onClick={onActivate}
-            className="w-full py-4 rounded-xl sv-sunset hover:brightness-110 text-black font-black uppercase tracking-widest text-lg shadow-[0_0_20px_rgba(255,106,0,0.4)] transition-all transform hover:scale-[1.02]"
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-black uppercase tracking-widest text-lg shadow-[0_0_20px_rgba(255,106,0,0.4)] transition-all transform hover:scale-[1.02]"
           >
             Launch Poll to Audience
           </button>

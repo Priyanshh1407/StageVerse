@@ -215,7 +215,7 @@ export default function ArtistDashboard() {
               <span className="hidden md:inline">Guests</span>
             </a>
 
-            <a href="/setlist-builder" className="group flex items-center gap-2 px-3 py-2 sv-sunset hover:brightness-110 text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/20 transition-all ml-1">
+            <a href="/setlist-builder" className="group flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black rounded-xl text-sm font-bold shadow-lg shadow-orange-500/20 transition-all ml-1">
               <Music className="w-4 h-4" />
               <span>Setlist Builder</span>
             </a>

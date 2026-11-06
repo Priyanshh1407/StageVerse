@@ -57,7 +57,7 @@ const Fader = ({ label, value, max = 1, onChange, onFlash, onRelease, accent = '
 const Channel = ({ label, on, onToggle, onFlash, onRelease }) => (
     <div className="flex flex-col gap-1 min-w-0">
         <button onClick={onToggle} aria-pressed={on} aria-label={`${label} ${on ? 'on' : 'off'}`}
-            className={`rounded py-2 text-[10px] font-black tracking-wider transition-colors ${on ? 'sv-sunset text-black shadow-[0_0_10px_rgba(255,176,0,0.5)]' : 'bg-white/10 text-gray-400 hover:bg-white/15'}`}>
+            className={`rounded py-2 text-[10px] font-black tracking-wider transition-colors ${on ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-[0_0_10px_rgba(255,176,0,0.5)]' : 'bg-white/10 text-gray-400 hover:bg-white/15'}`}>
             {on ? 'ON' : 'OFF'}
         </button>
         <button onPointerDown={onFlash} onPointerUp={onRelease} onPointerLeave={onRelease} aria-label={`Flash ${label}`}
@@ -103,7 +103,7 @@ const Panel = ({ title, children, className = '' }) => (
 const Key = ({ on, onClick, children, danger }) => (
     <button onClick={onClick} aria-pressed={on}
         className={`px-2 py-1.5 rounded text-[10px] font-bold tracking-wide transition-colors ${on
-            ? danger ? 'bg-red-500 text-white' : 'sv-sunset text-black'
+            ? danger ? 'bg-red-500 text-white' : 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black'
             : 'bg-white/10 text-gray-300 hover:bg-white/15'}`}>
         {children}
     </button>
@@ -168,7 +168,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 </div>
                 <div className="flex items-center gap-2">
                     {manual && (
-                        <button onClick={onResume} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded sv-sunset text-black text-[10px] font-bold">
+                        <button onClick={onResume} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-[10px] font-bold">
                             <RotateCcw className="w-3 h-3" /> Resume show
                         </button>
                     )}

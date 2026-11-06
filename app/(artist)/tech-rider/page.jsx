@@ -266,7 +266,7 @@ export default function TechRiderPage() {
                       onClick={() => setIsModalOpen(true)}
                       className="border border-dashed border-[#223949] rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-[#a855f7]/50 hover:bg-[#ff6a00]/5 transition-all group min-h-[140px]"
                     >
-                      <div className="p-3 rounded-full bg-[#1a2632] group-hover:sv-sunset transition-colors text-white/50 group-hover:text-white">
+                      <div className="p-3 rounded-full bg-[#1a2632] group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] transition-colors text-white/50 group-hover:text-white">
                         <PlusCircle className="w-6 h-6" />
                       </div>
                       <span className="text-sm font-bold text-white/50 group-hover:text-white">Add New Fixture</span>

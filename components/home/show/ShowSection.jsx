@@ -845,7 +845,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         onPointerDown={(e) => { e.currentTarget.setPointerCapture?.(e.pointerId); liveHold(which, true); }}
                                         onPointerUp={() => liveHold(which, false)} onPointerCancel={() => liveHold(which, false)} onLostPointerCapture={() => liveHold(which, false)}
                                         onContextMenu={(e) => e.preventDefault()}
-                                        className={`flex-1 select-none touch-none py-2 rounded-lg border text-xs font-black tracking-widest transition-colors ${liveOn[which] ? 'sv-sunset text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
+                                        className={`flex-1 select-none touch-none py-2 rounded-lg border text-xs font-black tracking-widest transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
                                         {fx.label} <kbd className={`ml-1 px-1.5 py-0.5 rounded font-mono text-[10px] font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
                                     </button>
                                 ))}

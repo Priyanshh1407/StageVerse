@@ -154,7 +154,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 </div>
             )}
 
-            <button type="submit" className="w-full py-2 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white text-xs font-bold rounded-lg transition-colors mt-1 shadow-lg shadow-[#ff6a00]/20">
+            <button type="submit" className="w-full py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black text-xs font-bold rounded-lg transition-colors mt-1 shadow-lg shadow-[#ff6a00]/20">
               Add to Bank
             </button>
           </form>
@@ -180,7 +180,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                   onClick={() => setActiveFilter(filter)}
                   className={`whitespace-nowrap px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
                     activeFilter === filter 
-                    ? 'sv-sunset text-white border-[#a855f7]' 
+                    ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-[#a855f7]' 
                     : 'bg-[#223949] hover:bg-white/10 text-[#90b2cb] border-transparent'
                   }`}
                 >
@@ -213,7 +213,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 className={`size-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                   recentlyAdded === song.id 
                   ? 'bg-green-500 text-white scale-110' 
-                  : 'text-[#ff6a00] hover:sv-sunset hover:text-white'
+                  : 'text-[#ff6a00] hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] hover:text-white'
                 }`}
               >
                 {recentlyAdded === song.id ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}

@@ -143,7 +143,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
             <button
               onClick={handleSubmit}
               disabled={!name}
-              className={`w-full sm:flex-1 h-10 md:h-11 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-sm md:text-base ${isSuccess ? 'bg-green-500 text-white' : 'sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white disabled:opacity-50 disabled:cursor-not-allowed'} ${editingGuest ? 'w-full' : ''}`}
+              className={`w-full sm:flex-1 h-10 md:h-11 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-sm md:text-base ${isSuccess ? 'bg-green-500 text-white' : 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black disabled:opacity-50 disabled:cursor-not-allowed'} ${editingGuest ? 'w-full' : ''}`}
             >
               {isSuccess ? (
                   <><CheckCircle2 className="w-4 h-4 md:w-5 md:h-5" /> {editingGuest ? 'Updated' : 'Added'}</>
@@ -172,7 +172,7 @@ function TierOption({ label, sub, badge, color, current, set }) {
       onClick={() => set(label)}
       className={`relative flex items-center p-2.5 md:p-3 rounded-lg border cursor-pointer transition-all ${isSelected ? 'border-[#a855f7] bg-[#ff6a00]/5 dark:bg-[#ff6a00]/10' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-[#223949]'}`}
     >
-      <div className={`w-4 h-4 rounded-full border mr-3 flex items-center justify-center shrink-0 ${isSelected ? 'border-[#a855f7] sv-sunset' : 'border-slate-400'}`}>
+      <div className={`w-4 h-4 rounded-full border mr-3 flex items-center justify-center shrink-0 ${isSelected ? 'border-[#a855f7] bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]' : 'border-slate-400'}`}>
         {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
       </div>
       <div className="flex-1 min-w-0">

@@ -251,7 +251,7 @@ export default function PatchStudioPage(props) {
                <button
                   onClick={handleSavePatch}
                   disabled={isSaving}
-                  className="flex items-center gap-2 sv-sunset hover:brightness-110 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-orange-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-orange-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                >
                   {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                   Save

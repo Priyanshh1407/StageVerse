@@ -19,7 +19,7 @@ export function LiveShowCard({ data }) {
       <div className="relative z-10 flex flex-col h-full justify-between p-6 md:p-10">
         <div className="flex justify-between items-start">
           <span className="inline-flex items-center gap-2 rounded-full bg-black/40 backdrop-blur-md px-4 py-1.5 text-xs font-bold text-white uppercase tracking-wider border border-white/10 shadow-lg">
-            <span className={`h-2 w-2 rounded-full animate-pulse shadow-[0_0_10px_currentColor] ${data.isLive ? 'sv-sunset text-[#ff6a00]' : 'bg-gray-400 text-gray-400'}`}></span>
+            <span className={`h-2 w-2 rounded-full animate-pulse shadow-[0_0_10px_currentColor] ${data.isLive ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-[#ff6a00]' : 'bg-gray-400 text-gray-400'}`}></span>
             {data.statusLabel}
           </span>
           <div className="flex flex-col items-end text-right bg-black/20 backdrop-blur-sm p-3 rounded-lg border border-white/5">
@@ -81,7 +81,7 @@ function AssignProductionOverlay({ eventId, currentAssignee }) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="absolute top-6 left-1/2 -translate-x-1/2 z-20 bg-black/50 hover:sv-sunset backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold border border-white/10 transition-all flex items-center gap-2"
+        className="absolute top-6 left-1/2 -translate-x-1/2 z-20 bg-black/50 hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold border border-white/10 transition-all flex items-center gap-2"
       >
         <Lightbulb className="w-3 h-3" />
         {currentAssignee ? 'Manage Production' : 'Assign LD / Production'}
@@ -164,7 +164,7 @@ export function MerchAlert({ data, onClick }) {
   const colorMap = {
     critical: "bg-red-500 text-white",
     warning: "bg-amber-500 text-white",
-    info: "sv-sunset text-white"
+    info: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black"
   };
 
   const isClickable = !!onClick;
@@ -253,7 +253,7 @@ export function UpcomingStops({ data }) {
           <div key={i} className="bg-white dark:bg-[#223949] p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-5 group cursor-pointer hover:border-[#a855f7]/50 transition-all hover:shadow-md relative overflow-hidden">
             {}
             <div className="absolute bottom-0 left-0 h-1 bg-slate-100 dark:bg-slate-700 w-full">
-              <div className="h-full sv-sunset" style={{ width: `${stop.percentSold || 0}%` }}></div>
+              <div className="h-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" style={{ width: `${stop.percentSold || 0}%` }}></div>
             </div>
 
             <div className="bg-slate-50 dark:bg-[#101b23] w-14 h-14 flex flex-col items-center justify-center rounded-xl flex-shrink-0 border border-slate-100 dark:border-slate-700">
@@ -326,10 +326,10 @@ export function DaySheetCard({ onClick, data }) {
                   {}
                   <div className={`absolute left-[16px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 z-10 transition-all duration-500
                                     ${isActive
-                      ? 'sv-sunset border-white shadow-[0_0_20px_#ff6a00] scale-125'
+                      ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] border-white shadow-[0_0_20px_#ff6a00] scale-125'
                       : 'bg-[#0b1219] border-slate-600 group-hover/item:border-[#a855f7]'}
                                 `}>
-                    {isActive && <div className="absolute inset-0 sv-sunset animate-ping rounded-full opacity-50"></div>}
+                    {isActive && <div className="absolute inset-0 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] animate-ping rounded-full opacity-50"></div>}
                   </div>
 
                   <div>
@@ -337,7 +337,7 @@ export function DaySheetCard({ onClick, data }) {
                     <span className={`text-sm md:text-base ${isActive ? 'text-white font-bold tracking-wide' : 'text-slate-300 font-medium'}`}>{item.event}</span>
                   </div>
 
-                  {isActive && <span className="text-[10px] font-bold sv-sunset text-white px-2 py-0.5 rounded shadow-lg shadow-orange-500/40">NOW</span>}
+                  {isActive && <span className="text-[10px] font-bold bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black px-2 py-0.5 rounded shadow-lg shadow-orange-500/40">NOW</span>}
                 </div>
               );
             })}

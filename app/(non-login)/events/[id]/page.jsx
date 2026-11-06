@@ -80,7 +80,7 @@ export default function EventDetailPage() {
                     <Flame className="w-16 h-16 text-red-500 mb-6 animate-bounce" />
                     <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tighter">Event Not Found</h2>
                     <p className="text-slate-400 mb-8 text-lg">{error || "The event you're looking for has vanished."}</p>
-                    <Link href="/events" className="sv-sunset hover:bg-white hover:bg-none hover:text-black text-black px-8 py-4 rounded-full font-bold transition-all text-lg uppercase tracking-widest shadow-[0_0_20px_rgba(255,106,0,0.4)]">
+                    <Link href="/events" className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-white hover:bg-none hover:text-black text-black px-8 py-4 rounded-full font-bold transition-all text-lg uppercase tracking-widest shadow-[0_0_20px_rgba(255,106,0,0.4)]">
                         Explore Other Gigs
                     </Link>
                 </div>
@@ -136,7 +136,7 @@ export default function EventDetailPage() {
                         >
                             {}
                             <div className="flex flex-wrap items-center gap-4 mb-6">
-                                <span className="sv-sunset text-black text-xs font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm shadow-[0_0_15px_rgba(255,106,0,0.6)]">
+                                <span className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-xs font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm shadow-[0_0_15px_rgba(255,106,0,0.6)]">
                                     {event.type || 'Concert'}
                                 </span>
                                 {event.status && (
@@ -157,7 +157,7 @@ export default function EventDetailPage() {
                             {}
                             <div className="flex flex-wrap items-center gap-8 md:gap-16 text-white/90 glass-panel p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md inline-flex">
                                 <div className="flex items-center gap-4 group cursor-default">
-                                    <div className="p-3 bg-white/10 rounded-full group-hover:sv-sunset group-hover:text-black transition-colors duration-300">
+                                    <div className="p-3 bg-white/10 rounded-full group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-black transition-colors duration-300">
                                         <Calendar className="w-6 h-6" />
                                     </div>
                                     <div className="flex flex-col">
@@ -167,7 +167,7 @@ export default function EventDetailPage() {
                                 </div>
                                 <div className="w-px h-10 bg-white/10 hidden md:block"></div>
                                 <div className="flex items-center gap-4 group cursor-default">
-                                    <div className="p-3 bg-white/10 rounded-full group-hover:sv-sunset group-hover:text-black transition-colors duration-300">
+                                    <div className="p-3 bg-white/10 rounded-full group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-black transition-colors duration-300">
                                         <MapPin className="w-6 h-6" />
                                     </div>
                                     <div className="flex flex-col">
@@ -280,7 +280,7 @@ export default function EventDetailPage() {
                                             <h4 className="text-xl font-bold text-white">{event.venue.name}</h4>
                                             <p className="text-slate-400 text-sm">{event.venue.address || event.venue.city}</p>
                                         </div>
-                                        <button className="px-6 py-3 bg-white text-black font-bold rounded-xl hover:sv-sunset transition-colors flex items-center gap-2">
+                                        <button className="px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors flex items-center gap-2">
                                             <Navigation className="w-4 h-4" /> Get Directions
                                         </button>
                                     </div>
@@ -379,7 +379,7 @@ function SimilarEventCard({ event }) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute top-4 left-4">
-                    <span className="sv-sunset text-black text-[10px] font-black uppercase px-2 py-1 rounded-sm">{event.genre}</span>
+                    <span className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-[10px] font-black uppercase px-2 py-1 rounded-sm">{event.genre}</span>
                 </div>
                 <div className="absolute bottom-4 left-4">
                     <p className="text-white font-black text-xl leading-none mb-1">{event.name}</p>
@@ -391,7 +391,7 @@ function SimilarEventCard({ event }) {
                     <p className="text-xs text-slate-500 font-bold uppercase mb-0.5">Starting at</p>
                     <p className="text-white font-bold text-lg">${event.price}</p>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white group-hover:sv-sunset group-hover:text-black transition-colors">
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-black transition-colors">
                     <ArrowRight className="w-4 h-4" />
                 </div>
             </div>

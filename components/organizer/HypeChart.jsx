@@ -35,7 +35,7 @@ export default function HypeChart({ data = DEFAULT_DATA, period = "Last 30 Days"
         {}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full sv-sunset"></span>
+            <span className="w-3 h-3 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]"></span>
             <span className="text-xs text-white">Velocity</span>
           </div>
           <select className="bg-[#101b22] border border-[#2c3b47] text-white text-xs rounded-md px-2 py-1 focus:outline-none focus:border-[#a855f7]">

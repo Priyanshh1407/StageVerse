@@ -42,7 +42,7 @@ export default function ArtistCard({ artist }) {
             <span className="text-sm font-bold text-white">{artist.upcomingEvents} Events</span>
           </div>
 
-          <div className="sv-sunset text-black px-4 py-2 rounded-lg text-sm font-bold transition-all hover:bg-white hover:bg-none flex items-center gap-2 group/btn">
+          <div className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black px-4 py-2 rounded-lg text-sm font-bold transition-all hover:bg-white hover:bg-none flex items-center gap-2 group/btn">
             View Profile
           </div>
         </div>

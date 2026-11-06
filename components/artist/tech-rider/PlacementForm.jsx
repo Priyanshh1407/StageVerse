@@ -88,7 +88,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
               </div>
             </div>
             <div
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${hazer ? 'sv-sunset' : 'bg-[#223949]'}`}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${hazer ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]' : 'bg-[#223949]'}`}
               onClick={(e) => { e.preventDefault(); setHazer(!hazer); }}
             >
               <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${hazer ? 'translate-x-5' : 'translate-x-0'}`}></span>

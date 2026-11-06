@@ -44,8 +44,8 @@ export default function EncoreScreen({ winnerName, onClose }) {
         <div className="mb-4 sm:mb-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500 fill-mode-forwards opacity-0" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#ff6a00] font-bold tracking-[0.2em] text-xs sm:text-sm uppercase backdrop-blur-md">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full sv-sunset opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 sv-sunset"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]"></span>
             </span>
             Winner Selected
           </span>
@@ -63,7 +63,7 @@ export default function EncoreScreen({ winnerName, onClose }) {
 
         {}
         <div className="absolute -bottom-32 w-64 h-1 bg-white/10 rounded-full overflow-hidden">
-             <div className="h-full sv-sunset w-full animate-[shrink_20s_linear_forwards]" style={{ animationName: 'shrinkWidth' }}></div>
+             <div className="h-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] w-full animate-[shrink_20s_linear_forwards]" style={{ animationName: 'shrinkWidth' }}></div>
         </div>
 
       </div>

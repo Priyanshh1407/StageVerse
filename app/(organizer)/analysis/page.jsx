@@ -112,7 +112,7 @@ export default function AnalysisPage() {
 
               <button
                 onClick={() => router.push('/manage/dashboard')}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl sv-sunset hover:brightness-110 text-white font-bold transition-all shadow-lg shadow-[#ff6a00]/20"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold transition-all shadow-lg shadow-[#ff6a00]/20"
               >
                 <ArrowLeft className="w-4 h-4" /> Return to Dashboard
               </button>
@@ -189,7 +189,7 @@ export default function AnalysisPage() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between px-2">
                   <h3 className="text-white text-xl font-bold flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full sv-sunset"></span>
+                    <span className="w-2 h-2 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]"></span>
                     What they loved
                   </h3>
                   <span className="text-xs text-[#90b2cb] uppercase tracking-wider font-bold">Positive Sentiment</span>
@@ -240,13 +240,13 @@ export default function AnalysisPage() {
                   <div className="flex bg-white/5 rounded-lg p-0.5">
                     <button
                       onClick={() => setChartView('event')}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'event' ? 'sv-sunset text-white shadow' : 'text-[#90b2cb] hover:text-white'}`}
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'event' ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow' : 'text-[#90b2cb] hover:text-white'}`}
                     >
                       Event Day
                     </button>
                     <button
                       onClick={() => setChartView('post')}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'post' ? 'sv-sunset text-white shadow' : 'text-[#90b2cb] hover:text-white'}`}
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartView === 'post' ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow' : 'text-[#90b2cb] hover:text-white'}`}
                     >
                       Post-Event
                     </button>
@@ -386,7 +386,7 @@ function Header({ onMenuClick, isGenerating, onGenerate }) {
             disabled={isGenerating}
             className={`
               flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg 
-              sv-sunset hover:sv-sunset text-white text-sm font-bold shadow-lg shadow-[#ff6a00]/20 
+              bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] text-white text-sm font-bold shadow-lg shadow-[#ff6a00]/20 
               transition-all hover:translate-y-[-1px] disabled:opacity-70 disabled:cursor-wait
             `}
           >

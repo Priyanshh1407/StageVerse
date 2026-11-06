@@ -14,12 +14,12 @@ export default function CTASection() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
             <Link href="/signup">
-              <button className="sv-sunset hover:brightness-110 text-white px-8 py-3 rounded-full font-bold text-lg transition-transform transform hover:scale-105 shadow-[0_0_20px_rgba(255,106,0,0.25)]">
+              <button className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black px-8 py-3 rounded-full font-bold text-lg transition-transform transform hover:scale-105 shadow-[0_0_20px_rgba(255,106,0,0.25)]">
                   Create Free Account
               </button>
             </Link>
             <Link href="/explore">
-              <button className="sv-sunset hover:brightness-110 text-white px-8 py-3 rounded-full font-bold text-lg transition-transform transform hover:scale-105 shadow-[0_0_20px_rgba(255,106,0,0.25)]">
+              <button className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black px-8 py-3 rounded-full font-bold text-lg transition-transform transform hover:scale-105 shadow-[0_0_20px_rgba(255,106,0,0.25)]">
                   Explore Events
               </button>
             </Link>

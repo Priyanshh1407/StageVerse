@@ -125,12 +125,25 @@ export async function GET(req) {
             type: m.videoSrc ? 'video' : 'image',
             featured: m.featured || !!m.videoSrc
         }));
-        const topFriends = user.following ? user.following.map(f => ({
+        // the people you follow, with how many shows you both hold tickets for (real, not made up)
+        const myShows = new Set(tickets.filter((t) => t.status !== 'Refunded' && t.eventId).map((t) => String(t.eventId._id)));
+        const friendIds = (user.following || []).map((f) => f._id);
+        const friendTickets = friendIds.length
+            ? await Ticket.find({ userId: { $in: friendIds }, status: { $ne: 'Refunded' } }).select('userId eventId').lean()
+            : [];
+        const shared = new Map();
+        for (const t of friendTickets) {
+            if (!myShows.has(String(t.eventId))) continue;
+            const key = String(t.userId);
+            shared.set(key, (shared.get(key) ?? new Set()).add(String(t.eventId)));
+        }
+        const topFriends = (user.following || []).map((f) => ({
+            id: String(f._id),
             name: f.name,
             avatar: f.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
-            sharedShows: Math.floor(Math.random() * 5) + 1,
+            sharedShows: shared.get(String(f._id))?.size ?? 0,
             role: "Concert Buddy"
-        })) : [];
+        })).sort((x, y) => y.sharedShows - x.sharedShows);
         const dashboardData = {
             user: {
                 name: user.name,

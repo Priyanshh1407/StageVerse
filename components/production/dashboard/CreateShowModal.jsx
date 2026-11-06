@@ -208,7 +208,7 @@ export default function CreateShowModal({ onClose, onSave }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-3 rounded-lg font-bold text-sm sv-sunset hover:brightness-110 text-white shadow-lg shadow-orange-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-lg font-bold text-sm bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black shadow-lg shadow-orange-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {isSubmitting ? 'Creating...' : 'Create Project'}

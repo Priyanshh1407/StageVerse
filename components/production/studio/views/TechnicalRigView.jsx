@@ -148,7 +148,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
 
               <button
                 type="submit"
-                className="w-full sv-sunset hover:brightness-110 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
               >
                 <Save className="w-4 h-4" />
                 Save Changes
@@ -223,7 +223,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
 function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConflict, isOpen, onToggle, onDelete, onEdit, onView }) {
   const getCueColors = (color) => {
     const map = {
-      blue: { bg: 'bg-orange-900/20', text: 'text-orange-400', border: 'border-purple-500/20', dot: 'sv-sunset' },
+      blue: { bg: 'bg-orange-900/20', text: 'text-orange-400', border: 'border-purple-500/20', dot: 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]' },
       orange: { bg: 'bg-orange-900/20', text: 'text-orange-400', border: 'border-orange-500/20', dot: 'bg-orange-500' },
       red: { bg: 'bg-red-900/20', text: 'text-red-400', border: 'border-red-500/20', dot: 'bg-red-500' },
     };
@@ -291,7 +291,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
 
               <button
                 onClick={() => { onEdit(); onToggle(); }}
-                className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:sv-sunset transition-colors w-full text-left group/item"
+                className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors w-full text-left group/item"
               >
                 <Pencil className="w-3.5 h-3.5 text-gray-500 group-hover/item:text-white" />
                 Edit Fixture
@@ -299,7 +299,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
 
               <button
                 onClick={() => { onView(); onToggle(); }}
-                className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:sv-sunset transition-colors w-full text-left group/item"
+                className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors w-full text-left group/item"
               >
                 <Info className="w-3.5 h-3.5 text-gray-500 group-hover/item:text-white" />
                 View Details

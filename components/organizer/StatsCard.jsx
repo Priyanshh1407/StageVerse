@@ -20,7 +20,7 @@ export default function StatsCard({ label, value, icon: Icon, trend, trendLabel,
       {progress ? (
         <div className="mt-4">
           <div className="w-full bg-[#2c3b47] h-1.5 rounded-full overflow-hidden">
-            <div className="sv-sunset h-full rounded-full" style={{ width: `${progress}%` }}></div>
+            <div className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] h-full rounded-full" style={{ width: `${progress}%` }}></div>
           </div>
           <div className="mt-2 text-right">
             <span className="text-[#90b2cb] text-xs">{progress}% Capacity</span>

@@ -131,7 +131,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
           <button
             onClick={handleProceed}
             disabled={!selectedTierId}
-            className="w-full py-3.5 rounded-xl font-bold text-white sv-sunset hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full py-3.5 rounded-xl font-bold text-black bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             Continue
           </button>
@@ -184,7 +184,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
           <button
             onClick={handleBuy}
             disabled={isBuying || !buyerName}
-            className="w-full py-3.5 rounded-xl font-bold text-white sv-sunset hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#ff6a00]/20"
+            className="w-full py-3.5 rounded-xl font-bold text-black bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#ff6a00]/20"
           >
             {isBuying ? <Loader2 className="w-5 h-5 animate-spin" /> : `Pay $${totalPrice}`}
           </button>

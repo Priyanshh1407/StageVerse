@@ -263,7 +263,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 Delete
               </button>
             )}
-            <button onClick={handleSubmit} className="flex-[2] sv-sunset hover:brightness-110 text-white font-bold py-2 rounded-lg text-sm transition-colors shadow-lg shadow-orange-500/20">
+            <button onClick={handleSubmit} className="flex-[2] bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold py-2 rounded-lg text-sm transition-colors shadow-lg shadow-orange-500/20">
               {editingItem ? 'Save Changes' : 'Add to Schedule'}
             </button>
           </div>
@@ -274,7 +274,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
         { }
         { }
         { }
-        <div className="absolute left-[24px] top-4 bottom-12 w-[2px] sv-sunset opacity-30 shadow-[0_0_15px_#ff6a00]"></div>
+        <div className="absolute left-[24px] top-4 bottom-12 w-[2px] bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] opacity-30 shadow-[0_0_15px_#ff6a00]"></div>
 
         <div className="flex flex-col gap-6">
           {schedule.map((item, index) => {
@@ -327,7 +327,7 @@ function TimelineItem({ item, isActive, isCompleted, isExpanded, onToggleExpand,
       : 'bg-[#131d24] border-[#223949] opacity-100';
 
   const iconClasses = isActive
-    ? 'sv-sunset text-white border-[#a855f7] shadow-lg scale-110'
+    ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-[#a855f7] shadow-lg scale-110'
     : isCompleted
       ? 'bg-[#101b22] text-[#587386] border-[#223949]'
       : 'bg-[#101b22] text-white border-[#223949] group-hover:border-[#a855f7]';

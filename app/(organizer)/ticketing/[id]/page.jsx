@@ -203,7 +203,7 @@ export default function TicketingPage() {
                                     <button
                                         onClick={() => setPricingMode(!pricingMode)}
                                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${pricingMode
-                                            ? 'sv-sunset text-white border-[#a855f7]'
+                                            ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-[#a855f7]'
                                             : 'bg-white dark:bg-[#1a2632] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-[#a855f7] dark:hover:border-[#a855f7]'
                                             }`}
                                     >
@@ -347,7 +347,7 @@ function TicketTierRow({ tier, isEditing, activeDropdown, onToggleDropdown, onAc
             <td className="px-6 py-4">
                 <div className="flex flex-col gap-1 w-32">
                     <div className="flex justify-between text-xs text-slate-500"><span>{tier.sold}</span><span>{tier.capacity}</span></div>
-                    <div className="w-full bg-slate-200 dark:bg-[#101b22] h-1.5 rounded-full overflow-hidden"><div className="h-full rounded-full sv-sunset" style={{ width: `${percentSold}%` }}></div></div>
+                    <div className="w-full bg-slate-200 dark:bg-[#101b22] h-1.5 rounded-full overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" style={{ width: `${percentSold}%` }}></div></div>
                 </div>
             </td>
             <td className="px-6 py-4 text-slate-900 dark:text-white font-mono">${(tier.revenue || 0).toLocaleString()}</td>
@@ -408,7 +408,7 @@ function DiscountForm({ initialData, onSave }) {
                     <input required type="number" value={value} onChange={e => setValue(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="20" />
                 </div>
             </div>
-            <button type="submit" className="w-full py-3 sv-sunset hover:brightness-110 text-white font-bold rounded-xl mt-2">Save Discount</button>
+            <button type="submit" className="w-full py-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold rounded-xl mt-2">Save Discount</button>
         </form>
     );
 }
@@ -453,7 +453,7 @@ function CreateTierForm({ onSave, initialData }) {
                     <input required type="number" value={capacity} onChange={e => setCapacity(e.target.value)} className="no-spinner w-full p-3 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#a855f7]" placeholder="100" />
                 </div>
             </div>
-            <button type="submit" className="w-full py-3 sv-sunset hover:brightness-110 text-white font-bold rounded-xl mt-2">{initialData ? 'Update Tier' : 'Create Tier'}</button>
+            <button type="submit" className="w-full py-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold rounded-xl mt-2">{initialData ? 'Update Tier' : 'Create Tier'}</button>
         </form>
     );
 }
@@ -472,7 +472,7 @@ function StatCard({ label, value, icon: Icon, footer }) {
 
 function ActionButton({ label, icon: Icon, primary, onClick }) {
     return (
-        <button onClick={onClick} className={`w-full text-left px-4 py-3 rounded-lg font-bold text-sm flex justify-between items-center group ${primary ? "sv-sunset text-white hover:brightness-110" : "bg-slate-100 dark:bg-[#151f28] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e2a35]"}`}>
+        <button onClick={onClick} className={`w-full text-left px-4 py-3 rounded-lg font-bold text-sm flex justify-between items-center group ${primary ? "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black hover:brightness-110" : "bg-slate-100 dark:bg-[#151f28] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e2a35]"}`}>
             {label} <Icon className="w-5 h-5" />
         </button>
     );

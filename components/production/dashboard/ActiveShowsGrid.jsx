@@ -260,7 +260,7 @@ function ShowCard({ show, isRequested, variants }) {
                             href={`/patch-studio/${show.eventId || show.id}`}
                             className={`flex-1 h-9 flex items-center justify-center gap-2 text-sm font-bold rounded transition-colors ${isArchived
                                 ? 'bg-[#27272A] text-gray-400 hover:text-white'
-                                : 'sv-sunset hover:brightness-110 text-white'
+                                : 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black'
                                 }`}
                         >
                             <Settings2 className="w-4 h-4" />

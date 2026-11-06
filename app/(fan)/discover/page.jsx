@@ -306,7 +306,7 @@ function FilterDropdown({ icon: Icon, label, options, value, onChange }) {
 
 function VibeTag({ label, active, onClick }) {
   return (
-    <button onClick={onClick} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${active ? 'sv-sunset text-white border-[#a855f7] shadow-md shadow-[#ff6a00]/20' : 'bg-white dark:bg-[#1a2632] border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-[#a855f7] hover:text-[#ff6a00]'}`}>{label}</button>
+    <button onClick={onClick} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${active ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-[#a855f7] shadow-md shadow-[#ff6a00]/20' : 'bg-white dark:bg-[#1a2632] border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-[#a855f7] hover:text-[#ff6a00]'}`}>{label}</button>
   );
 }
 
@@ -401,7 +401,7 @@ function FriendEventCard({ event }) {
           <p className="text-sm text-slate-500 mb-4">{event.venue}</p>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <div className="flex -space-x-3">{event.attendees.map((person, i) => <div key={i} className={`size-8 rounded-full ring-2 ring-white dark:ring-[#1a2632] flex items-center justify-center overflow-hidden ${person.color || 'bg-gray-300 dark:bg-slate-700'}`}>{person.img ? <Image src={person.img} alt="User" width={32} height={32} className="object-cover h-full w-full" /> : <span className={`text-[10px] font-bold ${person.count ? 'text-white sv-sunset w-full h-full flex items-center justify-center' : 'text-slate-600 dark:text-slate-300'}`}>{person.initials || `+${person.count}`}</span>}</div>)}</div>
+          <div className="flex -space-x-3">{event.attendees.map((person, i) => <div key={i} className={`size-8 rounded-full ring-2 ring-white dark:ring-[#1a2632] flex items-center justify-center overflow-hidden ${person.color || 'bg-gray-300 dark:bg-slate-700'}`}>{person.img ? <Image src={person.img} alt="User" width={32} height={32} className="object-cover h-full w-full" /> : <span className={`text-[10px] font-bold ${person.count ? 'text-black bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] w-full h-full flex items-center justify-center' : 'text-slate-600 dark:text-slate-300'}`}>{person.initials || `+${person.count}`}</span>}</div>)}</div>
           <span className="text-sm font-bold text-[#ff6a00] hover:text-[#ff6a00]/80 transition-colors">Join Them</span>
         </div>
       </div>

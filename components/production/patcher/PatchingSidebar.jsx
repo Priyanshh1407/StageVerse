@@ -179,7 +179,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
       <div className="flex-none p-6 border-b border-[#2c3e50] bg-[#16202a]">
         <h1 className="text-white font-bold text-xl tracking-tight leading-none">Intelligent Patch Studio</h1>
         <div className="flex items-center gap-2 mt-2">
-          <span className="w-2 h-2 rounded-full sv-sunset animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] animate-pulse"></span>
           <p className="text-xs text-[#90b2cb] font-mono uppercase tracking-wide truncate">
             {showName || 'Active Show'}
           </p>
@@ -258,7 +258,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
         <button
           onClick={handleCalculate}
           disabled={isGenerating}
-          className="w-full py-4 bg-gradient-to-r from-[#ffb000] to-[#ff3d7a] hover:from-[#ffb000] hover:to-[#ff3d7a] text-white font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2 text-sm transform active:scale-[0.98] border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 bg-gradient-to-r from-[#ffb000] to-[#ff3d7a] hover:from-[#ffb000] hover:to-[#ff3d7a] text-black font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2 text-sm transform active:scale-[0.98] border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5 fill-none" />}
           {isGenerating ? 'Thinking...' : 'Calculate & Append'}
@@ -320,7 +320,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
               <button
                 type="submit"
                 disabled={isCreating}
-                className="w-full sv-sunset hover:brightness-110 text-white font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold py-3 rounded-lg mt-2 flex items-center justify-center gap-2"
               >
                 {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
                 Create Profile

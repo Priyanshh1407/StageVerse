@@ -155,23 +155,24 @@ export async function GET(req) {
       status: t.status
     }));
 
+    // the share of this period's tickets that were refunded (real, from the tickets)
+    const periodTickets = await Ticket.countDocuments({ ...matchStage, createdAt: { $gte: thirtyDaysAgo } });
+    const refunded = await Ticket.countDocuments({ ...matchStage, createdAt: { $gte: thirtyDaysAgo }, status: 'Refunded' });
+    const refundRate = periodTickets ? Math.round((refunded / periodTickets) * 1000) / 10 : 0;
+
     const responseData = {
       kpi: [
         { id: 'revenue', label: "Total Revenue", value: current.revenue, type: 'currency', trend: calcTrend(current.revenue, prev.revenue) },
         { id: 'tickets', label: "Tickets Sold", value: current.tickets, type: 'number', trend: calcTrend(current.tickets, prev.tickets) },
         { id: 'avg_price', label: "Avg. Ticket Price", value: current.avgPrice || 0, type: 'currency', trend: 0 },
-        { id: 'refunds', label: "Refund Rate", value: 0.8, type: 'percentage', trend: -0.5 }
+        { id: 'refunds', label: "Refund Rate", value: refundRate, type: 'percentage', trend: 0 }
       ],
       chart: finalChart,
       revenueTypes: statsData[0].byType.length > 0 ? statsData[0].byType.map(item => ({
         label: item._id || 'Standard',
         value: item.value,
         percent: current.revenue ? ((item.value / current.revenue) * 100).toFixed(1) : 0
-      })) : [
-        { label: 'General Admission', value: 5000, percent: 45 },
-        { label: 'VIP', value: 3500, percent: 30 },
-        { label: 'Early Bird', value: 2500, percent: 25 }
-      ],
+      })) : [],
       transactions: finalTransactions.length > 0 ? finalTransactions : [],
       pagination: { total: totalTrx },
       eventsList: myEvents

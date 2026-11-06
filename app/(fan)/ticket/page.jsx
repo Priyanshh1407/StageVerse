@@ -105,7 +105,7 @@ export default function TicketsPage() {
                                         {}
                                         {primaryTicket && (
                                             <div className="flex flex-col lg:flex-row bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-md group relative">
-                                                <div className="absolute top-0 left-0 w-1 h-full sv-sunset z-20"></div>
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] z-20"></div>
                                                 <div className="relative lg:w-72 h-48 lg:h-auto shrink-0 bg-slate-900">
                                                     <Image src={primaryTicket.bgImage} alt={primaryTicket.artist} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent lg:hidden"></div>
@@ -147,7 +147,7 @@ export default function TicketsPage() {
                                                     </div>
                                                     <button
                                                         onClick={() => handleOpenTicket(primaryTicket)}
-                                                        className="w-full py-3 sv-sunset hover:bg-[#ff6a00]/90 hover:bg-none text-white font-bold rounded-xl shadow-lg shadow-[#ff6a00]/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                                                        className="w-full py-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black font-bold rounded-xl shadow-lg shadow-[#ff6a00]/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
                                                     >
                                                         <Info className="w-4 h-4" /> View Ticket Details
                                                     </button>

@@ -20,9 +20,9 @@ function StatsCard({ label, value, icon: Icon, trend, trendLabel, progress }) {
         <div className="p-2 bg-[#101b22] rounded-lg group-hover:bg-[#ff6a00]/10 transition-colors">
           <Icon className="w-5 h-5 text-[#90b2cb] group-hover:text-[#ff6a00]" />
         </div>
-        {trend && (
-          <span className="flex items-center gap-1 text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
-            +{trend}%
+        {typeof trend === 'number' && (
+          <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${trend >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}>
+            {trend >= 0 ? '+' : ''}{trend}%
           </span>
         )}
       </div>
@@ -30,9 +30,12 @@ function StatsCard({ label, value, icon: Icon, trend, trendLabel, progress }) {
         <h3 className="text-2xl font-bold text-white">{value}</h3>
         <p className="text-xs text-[#90b2cb] font-medium">{label}</p>
       </div>
-      {progress && (
-        <div className="mt-4 w-full bg-[#101b22] h-1.5 rounded-full overflow-hidden">
-          <div className="sv-sunset h-full rounded-full" style={{ width: `${progress}%` }}></div>
+      {typeof progress === 'number' && (
+        <div className="mt-4">
+          <div className="w-full bg-[#101b22] h-2 rounded-full overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-label={`${label}: ${progress}% of capacity`}>
+            <div className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] h-full rounded-full transition-[width] duration-700" style={{ width: `${Math.max(progress, progress > 0 ? 2 : 0)}%` }}></div>
+          </div>
+          <p className="mt-2 flex justify-between text-[10px] text-[#90b2cb]"><span>Upcoming shows</span><span className="font-bold text-white">{progress}% of capacity sold</span></p>
         </div>
       )}
       {trendLabel && <p className="text-[10px] text-[#587386] mt-3">{trendLabel}</p>}
@@ -43,11 +46,6 @@ function StatsCard({ label, value, icon: Icon, trend, trendLabel, progress }) {
 const IS_COMING_SOON = false;
 
 const dashboardData = {
-  stats: {
-    revenue: "$142,500",
-    ticketsSold: "12,450",
-    waitlist: "856"
-  },
   hypeData: [
     { date: 'Aug 01', velocity: 20 },
     { date: 'Aug 05', velocity: 35 },
@@ -63,15 +61,22 @@ const dashboardData = {
     { date: 'Sep 25', velocity: 90 },
   ],
   locations: [
-    { city: "New York", percent: 42, color: "sv-sunset" },
-    { city: "London", percent: 21, color: "sv-sunset" },
-    { city: "Berlin", percent: 15, color: "sv-sunset" },
-    { city: "Tokyo", percent: 9, color: "sv-sunset" },
+    { city: "New York", percent: 42, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
+    { city: "London", percent: 21, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
+    { city: "Berlin", percent: 15, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
+    { city: "Tokyo", percent: 9, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
   ]
 };
 
 export default function OrganizerDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [stats, setStats] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/organizer/stats').then((r) => r.json()).then((j) => { if (alive && j.success) setStats(j.stats); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  const money = (n) => `$${Math.round(n ?? 0).toLocaleString()}`;
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -95,7 +100,7 @@ export default function OrganizerDashboard() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Dashboard Coming Soon</h2>
               <p className="text-[#90b2cb] mb-8">We are finalizing the command center. Check back shortly.</p>
-              <button onClick={() => window.location.reload()} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl sv-sunset hover:brightness-110 text-white font-bold transition-all shadow-lg shadow-[#ff6a00]/20">
+              <button onClick={() => window.location.reload()} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold transition-all shadow-lg shadow-[#ff6a00]/20">
                 <ArrowLeft className="w-4 h-4" /> Refresh Page
               </button>
             </div>
@@ -140,7 +145,7 @@ export default function OrganizerDashboard() {
             </button>
             <button className="relative p-2 text-[#90b2cb] hover:text-white transition-colors">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 sv-sunset rounded-full"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></span>
             </button>
           </div>
         </header>
@@ -154,15 +159,15 @@ export default function OrganizerDashboard() {
           >
 
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatsCard label="Gross Revenue" value={dashboardData.stats.revenue} icon={DollarSign} trend={15} trendLabel="vs last 30 days" />
-              <StatsCard label="Tickets Sold" value={dashboardData.stats.ticketsSold} icon={Ticket} progress={78} />
-              <StatsCard label="Waitlist Count" value={dashboardData.stats.waitlist} icon={Hourglass} trend={24} trendLabel="new since yesterday" />
+              <StatsCard label="Gross Revenue" value={stats ? money(stats.revenue) : '…'} icon={DollarSign} trend={stats?.revenueTrend} trendLabel="last 30 days vs the 30 before" />
+              <StatsCard label="Tickets Sold" value={stats ? stats.ticketsSold.toLocaleString() : '…'} icon={Ticket} trend={stats?.ticketsTrend} progress={stats ? stats.capacityPercent : undefined} />
+              <StatsCard label="Upcoming Shows" value={stats ? stats.upcomingShows : '…'} icon={Hourglass} trendLabel={stats?.nextShow ? `Next: ${stats.nextShow.title}, ${new Date(stats.nextShow.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : 'No upcoming shows'} />
 
               <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] flex flex-col justify-center gap-3 shadow-lg">
                 <h4 className="text-white font-bold text-sm flex items-center gap-2 mb-1">
                   <Zap className="w-4 h-4 text-[#ff6a00]" /> Quick Actions
                 </h4>
-                <Link href="/create-event" className="w-full px-4 py-2.5 rounded-lg sv-sunset text-white font-bold text-sm hover:brightness-110 transition-colors flex justify-between items-center group">
+                <Link href="/create-event" className="w-full px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black font-bold text-sm hover:brightness-110 transition-colors flex justify-between items-center group">
                   Create New Event <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <div className="flex gap-2">
@@ -196,10 +201,10 @@ export default function OrganizerDashboard() {
                 </div>
                 <div className="space-y-4">
                   {[
-                    { label: "18 - 24", val: 45, color: "sv-sunset" },
-                    { label: "25 - 34", val: 32, color: "sv-sunset" },
-                    { label: "35 - 44", val: 15, color: "sv-sunset" },
-                    { label: "45+", val: 8, color: "sv-sunset" },
+                    { label: "18 - 24", val: 45, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
+                    { label: "25 - 34", val: 32, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
+                    { label: "35 - 44", val: 15, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
+                    { label: "45+", val: 8, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
                   ].map((item) => (
                     <div key={item.label}>
                       <div className="flex justify-between text-sm mb-1">
@@ -223,9 +228,9 @@ export default function OrganizerDashboard() {
                 <div className="flex-1 flex gap-4">
                   <div className="relative flex-1 rounded-lg overflow-hidden bg-[#101b22] border border-[#2c3b47]">
                     <div className="absolute inset-0 opacity-40 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-cover bg-center invert filter brightness-50 contrast-125"></div>
-                    <div className="absolute top-[30%] left-[25%] w-3 h-3 sv-sunset rounded-full animate-ping"></div>
-                    <div className="absolute top-[30%] left-[25%] w-3 h-3 sv-sunset rounded-full"></div>
-                    <div className="absolute top-[35%] left-[48%] w-2 h-2 sv-sunset rounded-full"></div>
+                    <div className="absolute top-[30%] left-[25%] w-3 h-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full animate-ping"></div>
+                    <div className="absolute top-[30%] left-[25%] w-3 h-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></div>
+                    <div className="absolute top-[35%] left-[48%] w-2 h-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></div>
                   </div>
                   <div className="w-32 flex flex-col justify-center gap-4">
                     {dashboardData.locations.map((loc) => (
