@@ -1,0 +1,26 @@
+Copyright (c) 2026 Priyansh Waghela. All rights reserved.
+
+StageVerse, including its source code, design, documentation, light-show and audio-analysis
+engines, graphics and other materials in this repository (the "Software"), is the exclusive
+property of Priyansh Waghela.
+
+No licence or permission is granted to any person to use, copy, modify, merge, publish,
+distribute, sublicense, sell, deploy, or create derivative works of the Software, in whole or
+in part, for any purpose, without prior written permission from the copyright holder.
+
+The Software is made publicly visible solely so that it can be viewed and evaluated (for example
+by recruiters and reviewers). Viewing the Software does not grant any right to use it. Forking
+it on GitHub is permitted only to the extent required by GitHub's Terms of Service, and does not
+grant any right to use, modify or redistribute it.
+
+Third-party material in this repository remains the property of its respective owners and is
+used under its own terms: the demo songs (educational, non-commercial use only; see the
+disclaimer in README.md), the 3D fixture models (CC BY 4.0, see public/fixtures/CREDITS.md),
+the fonts (SIL Open Font License) and the open-source packages listed in package.json.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. IN NO EVENT
+SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM, OUT
+OF OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.
+
+For permission requests, contact Priyansh Waghela:
+https://www.linkedin.com/in/priyansh-waghela-3b754b282/

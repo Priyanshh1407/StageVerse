@@ -19,6 +19,7 @@
   <img alt="Gemini" src="https://img.shields.io/badge/AI-Gemini_%2F_Groq-ff6a00?style=flat-square&logo=googlegemini&logoColor=white">
   <img alt="Tests" src="https://img.shields.io/badge/tests-392_passing-39ff14?style=flat-square&logo=vitest&logoColor=black">
   <img alt="60 FPS" src="https://img.shields.io/badge/60_FPS-on_Intel_Iris_Xe-ff3df2?style=flat-square">
+  <img alt="License: all rights reserved" src="https://img.shields.io/badge/license-all_rights_reserved-a855f7?style=flat-square">
 </p>
 
 <p align="center">
@@ -247,6 +248,10 @@ docs/           design notes, manual test guide, deployment guide
 ## 🙏 Credits
 
 3D fixture models (CC BY 4.0): "Moving Head Beam (high Poly)" by Lord Henry and "STROBO LIGHTING WASIS" by eventdesignws, both from Sketchfab. Details in [`public/fixtures/CREDITS.md`](public/fixtures/CREDITS.md). Fonts (SIL Open Font License, via Google Fonts and `next/font`): Sedgwick Ave Display and Yellowtail for the logo, Orbitron for the LED wall.
+
+## 🔒 License
+
+**All rights reserved.** StageVerse is proprietary: © 2026 Priyansh Waghela. The code is public only so it can be viewed and evaluated; no one may use, copy, modify, distribute or deploy it, in whole or in part, without my written permission. See [`LICENSE`](LICENSE). Third-party material (the demo songs, fixture models, fonts and packages) stays under its own terms.
 
 ## ⚖️ Contact
 

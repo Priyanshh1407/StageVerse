@@ -2,6 +2,8 @@
   "name": "stageverse",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
+  "author": "Priyansh Waghela",
   "engines": {
     "node": ">=22.9"
   },
