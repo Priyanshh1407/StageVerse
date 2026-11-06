@@ -5,13 +5,13 @@
       <stop offset="1" stop-color="#010208"/>
     </linearGradient>
     <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#19d9ff"/>
-      <stop offset="0.5" stop-color="#ff3df2"/>
-      <stop offset="1" stop-color="#ffb000"/>
+      <stop offset="0" stop-color="#ffb000"/>
+      <stop offset="0.5" stop-color="#ff6a00"/>
+      <stop offset="1" stop-color="#ff3d7a"/>
     </linearGradient>
     <linearGradient id="beamC" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#19d9ff" stop-opacity="0.55"/>
-      <stop offset="1" stop-color="#19d9ff" stop-opacity="0"/>
+      <stop offset="0" stop-color="#a855f7" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#a855f7" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="beamM" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ff3df2" stop-opacity="0.55"/>
@@ -39,7 +39,7 @@
   </g>
   <!-- truss -->
   <rect x="150" y="34" width="900" height="8" rx="2" fill="#2a2f45"/>
-  <g fill="#19d9ff"><circle cx="215" cy="44" r="4"/><circle cx="655" cy="44" r="4"/><circle cx="985" cy="44" r="4"/></g>
+  <g fill="#a855f7"><circle cx="215" cy="44" r="4"/><circle cx="655" cy="44" r="4"/><circle cx="985" cy="44" r="4"/></g>
   <g fill="#ff3df2"><circle cx="355" cy="44" r="4"/><circle cx="845" cy="44" r="4"/></g>
   <circle cx="535" cy="44" r="4" fill="#ffb000"/>
   <!-- fireworks -->
@@ -48,7 +48,7 @@
       <line x1="0" y1="0" x2="0" y2="-30"/><line x1="0" y1="0" x2="21" y2="-21"/><line x1="0" y1="0" x2="30" y2="0"/><line x1="0" y1="0" x2="21" y2="21"/>
       <line x1="0" y1="0" x2="0" y2="30"/><line x1="0" y1="0" x2="-21" y2="21"/><line x1="0" y1="0" x2="-30" y2="0"/><line x1="0" y1="0" x2="-21" y2="-21"/>
     </g>
-    <g stroke="#19d9ff" transform="translate(110 110) scale(0.75)">
+    <g stroke="#a855f7" transform="translate(110 110) scale(0.75)">
       <line x1="0" y1="0" x2="0" y2="-30"/><line x1="0" y1="0" x2="21" y2="-21"/><line x1="0" y1="0" x2="30" y2="0"/><line x1="0" y1="0" x2="21" y2="21"/>
       <line x1="0" y1="0" x2="0" y2="30"/><line x1="0" y1="0" x2="-21" y2="21"/><line x1="0" y1="0" x2="-30" y2="0"/><line x1="0" y1="0" x2="-21" y2="-21"/>
     </g>

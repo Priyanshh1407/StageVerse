@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import Logo from '@/components/brand/Logo';
+import BuiltBy from '@/components/brand/BuiltBy';
 import { PART_LABELS, getReady, subscribeReady } from './stageReady';
 
 // Revealed at the latest after this long, whatever is still loading (a slow network or driver
@@ -69,7 +70,10 @@ export default function LoadingScreen() {
             </div>
 
             <div className="relative flex flex-col items-center gap-8 px-6">
-                <Logo size="lg" />
+                <div className="flex flex-col items-center gap-3">
+                    <Logo size="lg" />
+                    <BuiltBy className="text-xs tracking-wide text-white/60" />
+                </div>
                 <div className="w-64 max-w-[70vw]">
                     <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
                         <div

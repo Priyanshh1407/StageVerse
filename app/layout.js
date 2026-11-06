@@ -18,6 +18,10 @@ const inter = Inter({
 
 export const metadata = {
   title: "StageVerse: the entire concert ecosystem",
+  // the author: StageVerse is designed and built by Priyansh Waghela
+  authors: [{ name: "Priyansh Waghela", url: "https://www.linkedin.com/in/priyansh-waghela-3b754b282/" }],
+  creator: "Priyansh Waghela",
+  publisher: "Priyansh Waghela",
   description: "Discover live shows, vote on the setlist, and run production: one platform for fans, artists, organizers and crew.",
 };
 

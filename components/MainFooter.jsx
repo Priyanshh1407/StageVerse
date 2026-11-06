@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Twitter, Facebook, Instagram, Youtube, BarChart3 } from "lucide-react";
 import Logo from '@/components/brand/Logo';
+import BuiltBy from "@/components/brand/BuiltBy";
 
 const MainFooter = ({ isLoggedIn = false }) => {
   
@@ -50,7 +51,7 @@ const MainFooter = ({ isLoggedIn = false }) => {
           </div>
         </div>
         <div className="mt-8 text-center text-xs text-[#90b2cb]">
-          © {new Date().getFullYear()} StageVerse. All rights reserved.
+          © {new Date().getFullYear()} StageVerse. <BuiltBy />. All rights reserved.
           <p className="mt-2">Songs on this site are used for educational, non-commercial purposes only. All rights belong to their respective owners.</p>
         </div>
       </footer>
@@ -92,7 +93,7 @@ const MainFooter = ({ isLoggedIn = false }) => {
         </div>
 
         <div className="mt-8 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} StageVerse. All rights reserved.
+          © {new Date().getFullYear()} StageVerse. <BuiltBy />. All rights reserved.
           <p className="mt-2">Songs on this site are used for educational, non-commercial purposes only. All rights belong to their respective owners.</p>
         </div>
       </div>

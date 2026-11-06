@@ -4,6 +4,7 @@
 
 <h1 align="center">⚡ StageVerse</h1>
 <p align="center"><b><i>Bridging live event production and systems engineering</i></b></p>
+<p align="center">Designed and built by <a href="https://www.linkedin.com/in/priyansh-waghela-3b754b282/"><b>Priyansh Waghela</b></a></p>
 
 <p align="center">
   <a href="https://stage-verse.vercel.app/"><img alt="Live site" src="https://img.shields.io/badge/live-stage--verse.vercel.app-ff3df2?style=for-the-badge&logo=vercel&logoColor=white"></a>
@@ -11,7 +12,7 @@
 </p>
 <p align="center">
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white">
-  <img alt="React 19" src="https://img.shields.io/badge/React-19-19d9ff?style=flat-square&logo=react&logoColor=black">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-a855f7?style=flat-square&logo=react&logoColor=white">
   <img alt="three.js" src="https://img.shields.io/badge/three.js-R3F-a855f7?style=flat-square&logo=threedotjs&logoColor=white">
   <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Mongoose_9-00ed64?style=flat-square&logo=mongodb&logoColor=black">
   <img alt="Socket.IO" src="https://img.shields.io/badge/Socket.IO-4-ffb000?style=flat-square&logo=socketdotio&logoColor=black">
@@ -96,6 +97,10 @@ The crew's patch sheet downloads the show's patch as a grandMA3 XML file ([`lib/
 | **Production crew** | Live cue screen synced to the artist, DMX patch studio with an AI patch assistant and grandMA3 export, logistics board, tasks |
 
 ---
+
+## 🎨 Design
+
+The whole site uses one palette taken from the logo: the sunset of "Verse" (amber `#ffb000` → orange `#ff6a00` → pink `#ff3d7a`) for main buttons and fills (the `sv-sunset` utility in `app/globals.css`), the logo's purple `#a855f7` for outlines, rings and focus, and white for labels. The 3D light show keeps its own full colour range.
 
 ## 🚀 Architecture
 
@@ -248,3 +253,7 @@ docs/           design notes, manual test guide, deployment guide
 Developed by **Priyansh Waghela**, Information Technology Engineering student at Dwarkadas J. Sanghvi College of Engineering (DJSCE), Mumbai.
 
 *For software architecture inquiries, placement collaborations, or professional outreach, connect on **[LinkedIn](https://www.linkedin.com/in/priyansh-waghela-3b754b282/)** or see my work on **[GitHub](https://github.com/Priyanshh1407)**.*
+
+---
+
+<p align="center"><sub>© 2026 Priyansh Waghela. StageVerse, its code, design and light-show engine are designed and built by Priyansh Waghela. The demo songs belong to their respective owners (see the <a href="#-disclaimer">disclaimer</a>).</sub></p>

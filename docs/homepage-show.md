@@ -533,3 +533,19 @@ the poster tier doesn't wait for 3D. Measured: revealed at about 6 s on the Iris
   briefly as a song starts.
 - **Closer** corrected by ear: drops at 1:11, 2:30 and 3:33 (its sung choruses are louder than its drops, so the
   analysis took them for the drops).
+
+## Site palette and a finale flicker (Nov 2026)
+
+- **One palette from the logo.** Every page's blues and cyans were replaced (132 files, by a codemod mapping each
+  Tailwind utility by role): main fills use the `sv-sunset` gradient (amber, orange, pink), text accents amber on
+  dark pages and orange in the dashboards (readable in light mode), tinted backgrounds orange, borders, rings and
+  focus the logo's purple; the shadcn `--primary` and `--ring` tokens follow. The homepage overlays (player bar,
+  live CO2/confetti buttons, genre picker, lighting desk) use it too; the 3D stage and light-show colours don't.
+  The utility is called `sv-sunset`, not `bg-sunset`: Tailwind 4 read `bg-sunset` as its own `bg-<colour>`
+  utility with an unknown colour and generated nothing.
+- **Finale flicker fixed.** At the busiest moments of a finale an occasional frame went completely black: one
+  NaN or infinite pixel from the stacked additive stars in the half-float bloom buffer is blurred by bloom over the
+  whole frame. The fireworks fragment shader now drops NaN pixels (they fail every comparison) and caps brightness;
+  measured 3 black frames in 62 before, 0 in 158 after (headless capture of the High On Life finale).
+- **Author credit**: "Designed and built by Priyansh Waghela" in the site footer and on the loading screen, and the
+  page metadata names him as author and creator (`components/brand/BuiltBy.jsx`).

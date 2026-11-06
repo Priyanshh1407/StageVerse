@@ -375,6 +375,12 @@ const FRAGMENT = /* glsl */ `
             vec3 core = mix(vColor, vec3(1.0, 0.97, 0.9), 0.75 * (1.0 - vHeat)); // white-hot while fresh
             c = (trail * tail * 0.9 + core * head * 1.6 + vColor * halo) * vGlow * 3.2;
         }
+        // Guard the bloom buffer: one NaN or infinite pixel (a star at a degenerate moment, or dozens of
+        // additive stars stacked at a burst) is blurred by bloom over the whole frame, which then
+        // flashes black. A NaN fails every comparison, so it's dropped; brightness is capped well inside
+        // what the half-float buffer holds.
+        if (!(c.r >= 0.0 && c.g >= 0.0 && c.b >= 0.0)) discard;
+        c = min(c, vec3(24.0));
         if (max(c.r, max(c.g, c.b)) < 0.002) discard;
         gl_FragColor = vec4(c, 1.0);
     }

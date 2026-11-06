@@ -387,3 +387,29 @@ Fix: sweep, fan, tilt, wave, spread, speed and convergence follow a critically d
 - Tried and removed: flames, cold sparks, the waterfall and shaped shells.
 
 `npm test`: **392 passing** (36 files) · lint: **0 errors** · build: passes.
+
+## Site palette, a finale flicker and the author credit (2026-11-06)
+
+### BUG-33 — Single black frames during a fireworks finale (commit pending)
+Symptom: README captures of the High On Life finale had an occasional completely black frame, stage and fireworks
+included; frames without fireworks never did.
+Investigation: per-frame brightness logging in a headless production build. Not the strobe (its frames are white
+flashes), not the quality step-down (the canvas never resized), not the first flash of a session. 3 black frames in
+62 during the finale, 0 in 65 in a stretch with no fireworks.
+Root cause: one NaN or infinite pixel from the stacked additive fireworks stars in the half-float bloom buffer; bloom
+blurs it over every pixel, so the whole frame goes black for that frame.
+Fix: the fireworks fragment shader discards NaN pixels (a NaN fails every comparison) and caps brightness at 24.
+Result: 0 black frames in 158 finale frames over two runs.
+Interview version: "A black flash that only appeared when the sky was full of fireworks. I measured frame brightness
+to rule out the strobe and the quality step-down, then recognised the bloom signature: one bad pixel becomes a
+black frame. A NaN-safe guard and a brightness cap in the fireworks shader removed it."
+
+### Palette (feature)
+The site was blue and cyan while the logo is white with a sunset "Verse". A codemod (132 files) mapped every blue
+utility by role to the logo's colours: `sv-sunset` gradient for main fills, amber or orange text, orange tints,
+purple borders, rings and focus; shadcn tokens updated. A Tailwind 4 catch: a custom `@utility bg-sunset` was never
+generated (read as `bg-<colour>`), so it's `sv-sunset`.
+
+### Author credit (feature)
+"Designed and built by Priyansh Waghela" (linked) in both footer layouts and on the loading screen; `authors`,
+`creator` and `publisher` in the page metadata; a credit and copyright line in the README.
