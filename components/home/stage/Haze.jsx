@@ -84,7 +84,8 @@ export default function Haze({ look, blinders }) {
         if (!group.current) return;
         const target = look.current;
         // Haze shows up where there's light in it: thicker smoke and a brighter rig both raise it
-        const level = (target.master ?? 1) * (0.05 + 0.13 * (target.haze ?? 0.5)) * (0.4 + 0.6 * Math.min(target.intensity, 1.4) * (target.beams ?? 1));
+        // (40% thicker than it started: a festival stage runs heavy haze so the beams carry)
+        const level = 1.4 * (target.master ?? 1) * (0.05 + 0.13 * (target.haze ?? 0.5)) * (0.4 + 0.6 * Math.min(target.intensity, 1.4) * (target.beams ?? 1));
         group.current.children.forEach((mesh, i) => {
             const u = mesh.material.uniforms;
             u.uTime.value += delta;

@@ -2,7 +2,7 @@
   "title": "Closer",
   "artist": "The Chainsmokers feat. Halsey",
   "co2": true,
-  "_note": "Hand-marked structure (bars of 2.53 s at 95 BPM, from the analysis bars): intro; verse 1 0:11; sung chorus climbing into the drop 0:31; drop 1 0:51; post-drop 1:11; verse 2 1:34; chorus 2 climbing 1:52; drop 2 2:12; post-drop 2:32; bridge climbing 2:52; final drop 3:13 (the loudest part); outro 3:53. Colours: pastel blues, pinks and violets. Re-run npm run demos after editing.",
+  "_note": "Hand-marked structure (bars of 2.53 s at 95 BPM, from the analysis bars), corrected by ear: intro; verse 1 0:11; pre-chorus 0:31; chorus climbing 0:51; drop 1 1:11; verse 2 1:32 (a groove, so it never looks dead); chorus 2 climbing 2:12; drop 2 2:30; bridge 2:52; final chorus climbing 3:18; final drop 3:33 (the loudest part), with the fireworks finale played slowly right through it (one finale bar per musical bar); outro 3:53. The sung choruses are louder than the drops, so the automatic analysis took them for the drops. Colours: pastel blues, pinks and violets. Re-run npm run demos after editing.",
   "sections": [
     {
       "fromBar": 0,
@@ -14,38 +14,42 @@
     },
     {
       "fromBar": 12,
-      "kind": "build"
+      "kind": "groove"
     },
     {
       "fromBar": 20,
-      "kind": "peak"
+      "kind": "build"
     },
     {
       "fromBar": 28,
-      "kind": "groove"
-    },
-    {
-      "fromBar": 36,
-      "kind": "calm"
-    },
-    {
-      "fromBar": 44,
-      "kind": "build"
-    },
-    {
-      "fromBar": 52,
       "kind": "peak"
     },
     {
-      "fromBar": 60,
+      "fromBar": 36,
       "kind": "groove"
     },
     {
-      "fromBar": 68,
+      "fromBar": 44,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 52,
       "kind": "build"
     },
     {
-      "fromBar": 76,
+      "fromBar": 59,
+      "kind": "peak"
+    },
+    {
+      "fromBar": 68,
+      "kind": "groove"
+    },
+    {
+      "fromBar": 78,
+      "kind": "build"
+    },
+    {
+      "fromBar": 84,
       "kind": "peak"
     },
     {
@@ -79,5 +83,6 @@
         ]
       ]
     }
-  ]
+  ],
+  "finaleBeatsPerBar": 4
 }

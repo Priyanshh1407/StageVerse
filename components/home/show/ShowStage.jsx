@@ -13,6 +13,10 @@ import { currentState } from './director';
 import { markReady } from './stageReady';
 import hero from '@/public/images/hero.jpg';
 
+// Fireworks going up into the sky (shells, roman candles, roof comets, the comet chase): the camera
+// looks up. The mines are a low spray from the stage front, so they keep the camera's shot.
+const skyward = (look) => look.fireworks?.some((f) => f.type !== 'mines') ?? false;
+
 /** One frame of the show: put the current look on the rig and fly the camera toward its shot. */
 function directFrame(control, look, camera, aim, delta) {
     // Glide toward the scroll position instead of jumping a wheel notch at a time: a critically damped
@@ -26,7 +30,8 @@ function directFrame(control, look, camera, aim, delta) {
     look.current = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;
     if (control.mode !== 'manual') control.shot = state.shot;
     // While fireworks are in the air the camera stands back and looks up, so the whole sky is in view
-    const shot = (state.look.fireworks?.length ? SHOTS.sky : SHOTS[control.shot]) || SHOTS.wide;
+    const sky = skyward(state.look);
+    const shot = (sky ? SHOTS.sky : SHOTS[control.shot]) || SHOTS.wide;
     if (!aim.placed) {
         // First frame: start on the shot instead of flying in from the default camera
         camera.position.set(...shot.pos);
@@ -65,7 +70,7 @@ function directFrame(control, look, camera, aim, delta) {
         }
     }
     // fireworks: a quick move to the sky shot (a shell bursts 1.3 s after it fires), the usual glide back
-    const glide = state.look.fireworks?.length ? 0.6 : 1.8;
+    const glide = sky ? 0.6 : 1.8;
     easing.damp3(camera.position, aim.pos, glide, delta);
     easing.damp3(aim.target, aim.look, glide, delta);
     camera.lookAt(aim.target);

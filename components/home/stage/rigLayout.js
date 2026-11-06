@@ -49,6 +49,8 @@ function placeGroup(group, n, groupIndex) {
         let pan;
         let mount = MOUNTS[group.mount];
         let colorMix = (i + groupIndex) % 2; // alternate the two colours along the row
+        // the fixture's number for beat effects (odd/even alternating, random sparkle): its place in the row
+        let beatIndex = i;
         if (layout.towers) {
             // Alternate left/right tower, stacking upward
             const side = i % 2 === 0 ? -1 : 1;
@@ -60,6 +62,9 @@ function placeGroup(group, n, groupIndex) {
             const y = layout.yFrom + ((layout.yTo - layout.yFrom) * level) / levels;
             position = [side * layout.x, y, layout.z];
             pan = -side * group.pan; // fire inward, across the stage, and towards the audience
+            // numbered by height, so odd/even alternates up each tower, mirrored on both sides
+            // (by place in the row, odd/even was left tower/right tower: one side went dark at a time)
+            beatIndex = level + (side > 0 ? 500 : 0);
         } else if (layout.rows) {
             // Split across rows; beams alternate inward/outward so neighbours cross
             const row = i % layout.rows.length;
@@ -84,6 +89,7 @@ function placeGroup(group, n, groupIndex) {
             tilt: group.tilt,
             phase: n > 1 ? i / (n - 1) : 0, // place along the row: movement waves travel along it
             colorMix,
+            beatIndex,
         });
     }
     return out;

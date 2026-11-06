@@ -14,7 +14,8 @@ export const MOVING_HEAD_URL = '/fixtures/moving-head.glb';
 // One job per group, like a real rig. `level` is the look key that switches the group on,
 // colours come from the look, and each job moves in its own way.
 export const ROLES = {
-    aerial: { level: 'beams', colors: ['colorA', 'colorB'], sweep: 1, speed: 1, converge: 1, spread: 1, opacity: 1 },
+    // the aerial beams are the rig's centrepiece: denser and brighter than the rest, with more smoke in them
+    aerial: { level: 'beams', colors: ['colorA', 'colorB'], sweep: 1, speed: 1, converge: 1, spread: 1, opacity: 1.5, haze: 0.15 },
     // Side towers keep to their own aim (sidesAim), so wide or mirrored positions never throw them
     // outside the towers; they sweep only a little
     sides: { level: 'sides', colors: ['colorB', 'colorA'], sweep: 0.3, speed: 0.7, converge: 1, spread: 1.1, opacity: 1, ownAim: true },
@@ -31,7 +32,7 @@ function withFixtureAttributes(geometry, fixtures) {
     geometry.setAttribute('aColorMix', attr(fixtures.map((f) => f.colorMix), 1));
     geometry.setAttribute('aUp', attr(fixtures.flatMap((f) => f.up), 3));
     geometry.setAttribute('aXAxis', attr(fixtures.flatMap((f) => f.xAxis), 3));
-    geometry.setAttribute('aIndex', attr(fixtures.map((_, i) => i), 1));
+    geometry.setAttribute('aIndex', attr(fixtures.map((f, i) => f.beatIndex ?? i), 1));
     return geometry;
 }
 
@@ -45,7 +46,7 @@ function createGlowGeometry(fixtures) {
     g.setAttribute('aColorMix', attr(fixtures.map((f) => f.colorMix), 1));
     g.setAttribute('aUp', attr(fixtures.flatMap((f) => f.up), 3));
     g.setAttribute('aXAxis', attr(fixtures.flatMap((f) => f.xAxis), 3));
-    g.setAttribute('aIndex', attr(fixtures.map((_, i) => i), 1));
+    g.setAttribute('aIndex', attr(fixtures.map((f, i) => f.beatIndex ?? i), 1));
     return g;
 }
 
@@ -101,7 +102,7 @@ function driveRole(u, role, target, state, delta) {
     const tiltWave = role.ownAim ? 0 : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
     glide(u.uTiltWave, tiltWave, dt);
     glide(u.uPhaseSpread, target.phaseSpread ?? 0.25, dt);
-    u.uHaze.value += (target.haze - u.uHaze.value) * ease;
+    u.uHaze.value += (Math.min(1, target.haze + (role.haze ?? 0)) - u.uHaze.value) * ease;
     u.uColorA.value.lerp(ta, ease);
     u.uColorB.value.lerp(tb, ease);
 
