@@ -18,6 +18,8 @@ Corrections to this report: the "glued lines" were lone carriage returns, not hi
 
 Baseline → now: tests 0 → 173 · lint errors 82 → 0 · prod audit 19 → 1 (unreachable) · build passes · CI added (unverified until first push).
 
+**Update (2026-11-05).** Since this audit: SEC-10 and SEC-11, BUG-17 to BUG-27 and PERF-02 found and fixed (details in `FIX_LOG.md`); the app is deployed on Vercel; UPG-04 (the 3D homepage) is done and extended with genre-aware song analysis and 9 demo songs; a grandMA3 patch export and a new logo were added. Tests 173 → **392** (36 files) · lint 0 errors · build passes. **Update (2026-11-06):** the homepage special effects are done (BUG-28 to BUG-32 in `FIX_LOG.md`). Still open: the Atlas password rotation (SEC-01, developer), ticketing (parked), and a re-audit (audit #2), which is now due. The findings below are the original audit, kept as written.
+
 ## 1. Executive Summary
 
 - **Overall health:** An ambitious, visually rich multi-role platform (fan / artist / organizer / production crew) with a real live-show sync feature, but the server trusts almost every caller: authorization is mostly "is there a valid cookie", and the two flows that matter most (buying tickets and running a live show) both have confirmed correctness bugs.

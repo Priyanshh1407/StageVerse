@@ -111,7 +111,17 @@ the recruiter passwords. It never touches other accounts or the events they crea
 
 - [ ] `https://stage-verse.vercel.app/api/health` returns `{"status":"ok","db":"up"}`
       (a 503 means the database can't be reached: check `MONGODB_URI` and Atlas Network Access)
-- [ ] The homepage 3D stage loads, and a demo song plays in the playground
+- [ ] The homepage 3D stage loads with the new logo on the LED wall and in the navbar, and the
+      browser tab shows the "Sv" icon
+- [ ] Playground: each genre tile lists its demo songs (EDM 3, Pop 2, Rap 2, Bollywood 2), and a
+      demo song plays with its light show. The songs ship in `public/audio/<genre>/` (about 9
+      MP3s), so check the deploy included them: a 404 on a song means the audio wasn't pushed
+- [ ] The loading screen shows, then reveals the finished stage (within about 20 s at worst)
+- [ ] During a demo song: CO2, confetti, streamers and stage pyro fire on the drops, the fireworks finale
+      plays at the end, and holding Space (CO2) or Shift (confetti) fires them without stopping the show
+- [ ] Lighting desk → FIREWORKS: a shell and the comet chase both appear (a shader that fails to compile
+      shows nothing in production, with no error)
+- [ ] Crew → a show's patch sheet → **grandMA3** downloads an `.xml` file
 - [ ] Log in as each recruiter account: each dashboard shows the Afterglow Tour data
 - [ ] Artist → Live Show → start the show. The crew's live screen follows it (see the
       limitation below), and its refresh button puts it back on track

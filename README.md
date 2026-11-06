@@ -39,7 +39,10 @@ Live shows change fast; the artist's console, the crew's cue screens and fans' p
 * **The show clock** is stored with the show (seconds banked plus when the current run started), so a screen that opens late or presses refresh is on the right second ([`docs/live-sync.md`](docs/live-sync.md)).
 
 ### 3. The homepage: a 3D concert you can run
-A scroll-driven 3D concert (venue gate, full lighting rig, LED wall) that runs at 60 FPS on integrated graphics. Visitors can play a song (a demo, or their own, analysed in the browser for tempo, beats, sections and energy and programmed into a light show the way a lighting designer would), then run the lights themselves with one-tap controls or the full lighting desk. The scroll settles gently on each of its 9 sections, with small dots to jump between them, and every transition is paced to play out visibly. House lights light the venue in warm work light, as at the end of a real concert. On phones the scroll show plays and the playground asks for a bigger screen ([`docs/homepage-show.md`](docs/homepage-show.md)).
+A scroll-driven 3D concert that runs at 56–60 FPS on integrated graphics: a venue gate, then a festival main stage (raised deck, four truss rows, three-column side towers, 64 moving heads, LED pixel bars, truss and tower strobes, 8 laser projectors, an LED wall, flown line arrays, sub stacks and a crowd barrier). Visitors pick a genre (EDM, pop, rap or Bollywood) and play one of 9 demo songs, or their own song, which is analysed in the browser with that genre's settings (tempo, beats, sections, chorus by repetition, vocals) and programmed into a light show the way a lighting designer would. Every show also fires special effects on the music: CO2 jets on the floor and the truss, confetti, streamers, stage pyro (roman candles, roof comets, a comet chase, mines) through the song, and a fireworks finale choreographed on the song's own beats, opening differently for every song. During a song, Space and Shift fire the CO2 and confetti live without stopping the show. Then they can run the lights and effects themselves with one-tap controls or a DMX-style lighting desk. A loading screen holds the page until the stage, its shaders and the songs are ready. The scroll settles gently on each of its 9 sections, with small dots to jump between them, and every transition is paced to play out visibly. House lights light the venue in warm work light, as at the end of a real concert. On phones the scroll show plays and the playground asks for a bigger screen ([`docs/homepage-show.md`](docs/homepage-show.md)).
+
+### 4. grandMA3 patch export
+The crew's patch sheet downloads the show's patch as a grandMA3 XML file ([`lib/patch/grandma3.js`](lib/patch/grandma3.js)), ready to import on a grandMA3 console. Lines with clashing or invalid addresses are left out and listed at the top of the file. It hasn't been test-imported on grandMA3 onPC yet.
 
 ## What each role can do
 
@@ -48,7 +51,7 @@ A scroll-driven 3D concert (venue gate, full lighting rig, LED wall) that runs a
 | **Fan** | Passport dashboard, discover events, predict the setlist (scored after the show), vote in the live encore poll, memory vault (photos open full size), friends (who's going to your shows, follow fans) |
 | **Artist** | Setlist builder, encore polls, live-show console (start/pause/last-song alert), tech rider with LD assignment, day sheet, guest list |
 | **Organizer** | Create and manage events, AI-written event descriptions, reports and analytics |
-| **Production crew** | Live cue screen synced to the artist, DMX patch studio with an AI patch assistant, logistics board, tasks |
+| **Production crew** | Live cue screen synced to the artist, DMX patch studio with an AI patch assistant and grandMA3 export, logistics board, tasks |
 
 ---
 
@@ -79,7 +82,7 @@ Design decisions:
 - **The server is the source of truth for live state.** Details, sequence diagram and numbers: [`docs/live-sync.md`](docs/live-sync.md).
 - **AI requests are always answered.** Providers are tried in order (Gemini 3.8 Flash → Gemini 3.5 Flash-Lite → Groq `gpt-oss-120b`), and a provider that just hit overload or quota is skipped for a while (circuit breaker). If none answers, each feature falls back to something useful without AI: template copy, the artist's own song catalogue, a BPM energy curve for setlist order, or a rule-based reader for patch requests. Responses say `degraded: true` when that happens ([`lib/llm.js`](lib/llm.js)).
 - **The LLM interprets, code computes.** The patch assistant asks the model only for intent (`{action, fixtures:[{type,count}]}`, JSON-schema constrained and validated, with one repair retry); the allocator assigns the addresses.
-- **The 3D homepage fakes light instead of computing it.** Instanced real fixture models whose pan and tilt are solved in a vertex shader, additive cone beams (no real spotlights), each group of lights doing one job, about 31 draw calls, quality tiers with a live step-down and a 2D fallback.
+- **The 3D homepage fakes light instead of computing it.** Instanced real fixture models whose pan and tilt are solved in a vertex shader, additive cone beams (no real spotlights), each group of lights doing one job, the static stage merged into a few draw calls, shaders compiled before each part is shown, the same 64-head rig on every machine (stronger GPUs get sharper rendering), quality tiers with a live step-down and a 2D fallback.
 
 ---
 
@@ -119,13 +122,15 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 | `npm run lint` | ESLint (CI fails on any error) |
 | `npm run seed -- --yes` | Seed demo data into the database in `.env.local` |
 | `npm run bench` | Live-screen benchmark (endpoint latency, socket push latency) |
-| `npm run analyse:song -- <file> <slug> <title>` | Analyse a song (tempo, beats, sections) and program its homepage light show ([docs](docs/homepage-show.md)) |
+| `npm run demos` | Analyse every demo song in `public/audio/<genre>/` with its genre's settings and write the shows and `public/shows/index.json` |
+| `npm run analyse:song -- <file> <slug> <title>` | Analyse one song (tempo, beats, sections) and program its homepage light show ([docs](docs/homepage-show.md)) |
 | `npm run song:bars -- <file>` | Bar-by-bar loudness, drum density, brightness and bass of a song, for annotating its structure by hand |
+| `npm run score:analysis` | Score the song analysis against the hand-marked test set in `tests/songs/` (each song as EDM and as its own genre) |
 | `npm run eval:patch -- --provider groq` | AI patch-assistant evaluation, legacy vs current pipeline (~65 real API calls; `-- --fake` checks the harness without API calls) |
 
 ## Testing and quality
 
-- **289 tests** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, and the homepage show: song analysis (against a synthetic click track), the cue engine and every lighting-programming rule.
+- **392 tests in 36 files** (Vitest) covering authentication, an authorization matrix across roles and routes (including the cases that *must* still be allowed), voting integrity (20 concurrent votes from one fan count once), socket handshake auth and room isolation against a real Socket.IO server, prediction scoring, input validation, rate limiting, the DMX allocator (with property-based tests over random patches), the AI patch route with a scripted model, the grandMA3 export, and the homepage show: song analysis (against a synthetic click track), genre analysis (synthetic pop, rap and Bollywood songs), the cue engine, every lighting-programming rule, the strobe/blinder light, the scroll stops, the special effects and fireworks (the finale follows each song's beats, loudness, genre and tempo; shells are kept for the finale), the live CO2/confetti keys and the loading screen.
 - **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, tests with coverage, a production build and a dependency audit on every push.
 - **Manual test guide:** [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md) walks through every upgraded feature in the browser (including how to force each AI fallback level) and lists the automated test commands.
 - The engineering history (each bug, how it was found, the fix and the trade-off) is in [`FIX_LOG.md`](FIX_LOG.md). The audit that started it is in [`PROJECT_AUDIT_REPORT.md`](PROJECT_AUDIT_REPORT.md).
@@ -141,8 +146,9 @@ To see the live sync, open the artist's live-show page, the crew's live page and
 | AI patching: cases with colliding DMX addresses | 17% → **0%** (30-case eval, Groq gpt-oss-120b) | `evals/patch/results/` |
 | AI patching: request understood correctly | 90% → **100%** (93% before one round of prompt fixes) | `evals/patch/results/` |
 | AI patching: p50 / p95 latency | 1.3 / 2.1 s → **0.78 / 1.5 s** | `evals/patch/results/` |
-| Homepage 3D stage on Intel Iris Xe (integrated) | ~89 real lights → 3 cheap fills; **60 FPS**, 58 FPS 1% low with bloom at native resolution | `bench/results/stage-*.json`, [docs](docs/homepage-show.md) |
+| Homepage 3D stage on Intel Iris Xe (integrated) | ~89 real lights → 3 cheap fills; **60 FPS**, 58 FPS 1% low with bloom at native resolution (beams and truss); **56–60 FPS** at every scroll stop with the full stage, PA and 64 moving heads | `bench/results/stage-*.json`, [docs](docs/homepage-show.md) |
 | Song analysis: tempo | *A Sky Full of Stars* 125.1 BPM (published 125); *Yellow* 86.8 BPM (published ~87) | [docs](docs/homepage-show.md) |
+| Song analysis: pop by genre vs the EDM analysis | boundaries 38% → 53%, chorus 25% → 59%, peaks 64% → 65% (hand-marked songs) | `npm run score:analysis` |
 
 ## Known limitations
 
@@ -153,19 +159,22 @@ Written down on purpose: this is a portfolio project, and these are the honest e
 - **Rate limits are per process** (in-memory token buckets).
 - **Free AI tiers are tight** (Gemini: 5 requests/minute and 20/day per model). The provider chain and non-AI fallbacks keep features working, but fallback answers are simpler; heavy AI use needs a billed key.
 - **Accounts choose their own role at signup.** Fine for a demo; a real deployment would approve organizer and crew accounts.
-- **Demo songs.** *A Sky Full of Stars* and *Yellow* (Coldplay) are commercial recordings, committed only so the homepage demo works and used for educational purposes only ([disclaimer](#disclaimer)); any other track stays local (gitignored). Their programmed shows and hand-annotated structures are in `public/shows/` (`<slug>.show.json`, `<slug>.extras.json`). "Light up your song" analyses any MP3/WAV/OGG/FLAC in the visitor's browser without uploading it.
+- **Demo songs.** The 9 demo songs (listed in the [disclaimer](#disclaimer)) are commercial recordings, committed only so the homepage demo works and used for educational purposes only; any other track stays local (gitignored). Their programmed shows and hand-marked structures are in `public/shows/` (`<slug>.show.json`, `<slug>.extras.json`). "Light up your song" analyses any MP3/WAV/OGG/FLAC in the visitor's browser without uploading it.
+- **Genre analysis is measured on few songs.** The genre settings were tuned on hand-marked pop songs; rap and Bollywood are checked on synthetic songs only until real ones are marked in `tests/songs/`. Vocal detection is a rough signal-processing cue (no ML model): good enough to drive lighting, not a transcription.
 - **Sentiment analysis isn't built.** The analysis page shows labelled sample data.
 - The AI patch eval uses 30 cases I wrote, and the second prompt version was tuned on them, so its 100% intent accuracy is optimistic; a held-out case set is the next step. Gemini results are pending: the free tier's 20 requests/day per model is less than one full run.
 
 ## Disclaimer
 
-This is a non-commercial portfolio project built for learning. The songs used in the homepage demo, *A Sky Full of Stars* and *Yellow* by Coldplay, are used for **educational, non-commercial purposes only**, to demonstrate the song analysis and light-show programming. All rights to the music belong to its respective owners (the artists, songwriters and labels). No ownership is claimed and nothing is sold. If you are a rights holder and want a track removed, contact me on [LinkedIn](https://www.linkedin.com/in/priyansh-waghela-3b754b282/) and it will be taken down. Fixture models and fonts are used under their own licences (see Credits).
+This is a non-commercial portfolio project built for learning. The songs used in the homepage demo (*A Sky Full of Stars* and *Yellow* by Coldplay; *Closer* by The Chainsmokers feat. Halsey; *High On Life* by Martin Garrix feat. Bonn; *Smack That* by Akon feat. Eminem; *BAND4BAND* by Central Cee & Lil Baby; *goosebumps* by Travis Scott; *Subha Hone Na De* from *Desi Boyz*, music by Pritam; *Uff Teri Adaa* from *Karthik Calling Karthik*, music by Shankar-Ehsaan-Loy) are used for **educational, non-commercial purposes only**, to demonstrate the song analysis and light-show programming. All rights to the music belong to its respective owners (the artists, songwriters and labels). No ownership is claimed and nothing is sold. If you are a rights holder and want a track removed, contact me on [LinkedIn](https://www.linkedin.com/in/priyansh-waghela-3b754b282/) and it will be taken down. Fixture models and fonts are used under their own licences (see Credits).
 
 ## 🗺️ Roadmap
 
 - [x] Collision-free DMX allocation with overlap checks, and an AI patch assistant on top of it.
 - [x] Real-time show sync over Socket.IO with server-authoritative state.
 - [x] 3D homepage concert with song analysis and automatic light-show programming.
+- [x] Genre-aware song analysis (EDM, pop, rap, Bollywood) with a scored, hand-marked test set.
+- [x] Special effects on the homepage stage: CO2 jets (floor and truss), confetti, streamers, stage pyro and a song-driven fireworks finale, on the desk, in every song and in uploads (flames and cold sparks were tried and dropped).
 - [x] GrandMA3 patch export: the patch sheet downloads the patch as grandMA3 XML (`lib/patch/grandma3.js`; lines with clashes or bad addresses are left out and listed in the file). Not yet test-imported on grandMA3 onPC.
 - [ ] Art-Net / sACN packet simulator to visualize DMX data transmission in the browser (universes mapped to UDP packets).
 - [ ] RDM (Remote Device Management) telemetry, to simulate automated fixture monitoring.
@@ -176,19 +185,21 @@ This is a non-commercial portfolio project built for learning. The songs used in
 ```
 app/            pages (grouped by role) and API route handlers (app/api)
 components/     UI components by area (components/home/show and components/home/stage: the 3D homepage)
-lib/            auth, authorization, errors, validation schemas, realtime, socket server, DMX allocator, LLM client, show engine (lib/show)
+components/brand/   the StageVerse logo (one component, used site-wide)
+lib/            auth, authorization, errors, validation schemas, realtime, socket server, DMX allocator, grandMA3 export (lib/patch), LLM client, show engine and song analysis (lib/show)
 models/         Mongoose schemas
 pages/api/socket/io.js   Socket.IO bootstrap (needs the Node server)
-public/shows/   programmed light shows and hand-annotated structure for the demo songs
-scripts/        seed (demo data and recruiter logins), song analysis and bar-by-bar tools
-tests/          Vitest suites (unit, security, characterization)
+public/audio/   the demo songs, one folder per genre (edm, pop, rap, bollywood)
+public/shows/   programmed light shows and hand-marked structure for the demo songs, plus index.json
+scripts/        seed (demo data and recruiter logins), song analysis, demo builder, analysis scoring, bar-by-bar tool
+tests/          Vitest suites (unit, security, characterization); tests/songs holds the hand-marked song test set
 bench/ evals/   performance benchmark and LLM evaluation harness
 docs/           design notes, manual test guide, deployment guide
 ```
 
 ## Credits
 
-3D fixture models (CC BY 4.0): "Moving Head Beam (high Poly)" by Lord Henry and "STROBO LIGHTING WASIS" by eventdesignws, both from Sketchfab. Details in [`public/fixtures/CREDITS.md`](public/fixtures/CREDITS.md).
+3D fixture models (CC BY 4.0): "Moving Head Beam (high Poly)" by Lord Henry and "STROBO LIGHTING WASIS" by eventdesignws, both from Sketchfab. Details in [`public/fixtures/CREDITS.md`](public/fixtures/CREDITS.md). Fonts (SIL Open Font License, via Google Fonts and `next/font`): Sedgwick Ave Display and Yellowtail for the logo, Orbitron for the LED wall.
 
 ## ⚖️ Contact
 

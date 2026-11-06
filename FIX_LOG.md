@@ -292,3 +292,98 @@ The wall showed the first two events of a list that included past shows (2022's 
 - The playground in two steps: songs, then one-tap lighting controls, with a clear "Next" button.
 
 `npm test`: **285 passing** · lint: **0 errors** · build: passes.
+
+## Homepage stage, genre analysis and the new logo (2026-11-03 to 2026-11-05, branch `upg-04-homepage`)
+
+### PERF-02 — Freezes at startup and on reaching sections; the fog cost a third of a frame (commit fda3d2b)
+Symptom: the homepage stalled for about a second on load and again the first time each section's lights came on; the developer also felt the page had got heavier.
+Investigation: performance traces in headless Edge with background throttling off (an open Chrome tab and throttled timers had skewed the first readings). The long tasks were shader compiles: three.js compiles a material's program the first time it's drawn, and each group (lasers, strobes, fog) first drew when its cue arrived. An A/B production build with the low fog removed showed the fog alone cost about a third of a frame at the gate and rig stops.
+Fix: a `Warm` wrapper compiles each group's shaders for both render targets (the bloom buffer and the screen) before it's shown; shader error checks off in production; the stage dressing deferred until after the first frames; the LED wall text packed with canvas compositing instead of a per-pixel loop; the fog cut to 2 layers on a small noise texture, smaller, and hidden when the stage is dark.
+Result: 56–60 FPS at every scroll stop on the Iris Xe; startup long tasks about 1.1 s in total.
+
+### BUG-22 — The LED wall vanished after the logo change (commit 706c959)
+Symptom: with the new logo, the whole LED wall stayed invisible; the console showed `Cannot read properties of undefined (reading 'isReady')` from inside three.js.
+Root cause: three's `compileAsync` collects the materials to compile, then polls each one's program. The LED wall now waits for its three fonts and redraws, which replaces its material mid-compile; the replaced material's program was gone, the poll threw, and the promise never resolved, so the warm-up never revealed the wall.
+Fix: compile synchronously with `gl.compile` for both targets (the driver still links in parallel), then poll `isReady()` defensively, skipping materials that have no program, and reveal after 4 s at the latest whatever happens.
+Interview version: "A logo change made a whole 3D object disappear. The stack trace was inside the library, so I read its `compileAsync`: it assumed the set of materials can't change while it waits. Mine could, because the wall redraws once its fonts load. I replaced it with a compile plus a defensive readiness poll and a timeout, so a warm-up can delay a part of the scene but never hide it."
+
+### BUG-23 — The page jumped when resuming the show from the desk (commit 1d1ba99)
+Symptom: pressing Resume on the lighting desk sometimes scrolled the page up.
+Root cause: scroll chaining. The desk is a scrollable panel over a scroll-snapping page; when the panel hit its end, the wheel passed to the page, and snapping pulled it to another section.
+Fix: `overscroll-behavior: contain` on the desk and a sticky header, so Resume never moves. The desk also mirrors the running show every 300 ms instead of showing the state from when it was opened (it once showed the lasers OFF while they were on).
+
+### BUG-24 — The cue label lagged, then ran ahead (commit fda3d2b)
+The "CUE · GO" label first named the cue whose scroll position had been passed, which changed before the lights visibly moved; switching to the eased position made it lag. It now names the last cue at least halfway through its fade, which matches what you see.
+
+### BUG-25 — Rap tempo locked onto trap triplet hi-hats (commit f86e990)
+Symptom: BAND4BAND and goosebumps were analysed at about 2/3 of their tempo. Root cause: the tempo search, weighted toward 120 BPM, preferred the triplet hi-hat period. Fix: a wide tempo search, then a half/double check that moves the tempo toward 88 BPM for rap (`checkTempoOctave`). Pinned by a synthetic trap test.
+
+### BUG-26 — Strobes and aerials looked offset from the truss after raising the stage (commits 592dcc6, fae99e7)
+Raising the deck to 1.8 m left the top-row strobes and aerials apparently sitting in the truss rather than under it. The top truss now sits 0.6 m higher (19 m), so its fixtures clearly hang below it, and the camera stands back between the rig and the encore so the top truss clears the navbar.
+
+### BUG-27 — Floor light with nothing pointing at the floor; side towers aiming at the sky (commit fda3d2b)
+The floor glow was driven by the overall light level, so it lit up with only the lasers or the floor fixtures on. It now comes only from the aerial heads, scaled by how far down they point and faded while they converge. Side-tower tilt is clamped to level or below, so they never swing up into the sky.
+
+### Analysis tuning by measurement, not by ear (item 14)
+Early genre tuning by eye kept regressing one song while fixing another. The fix was process: a hand-marked test set (`tests/songs/`), a scorer (`lib/show/score.js`, `npm run score:analysis`) and a grid search over `TUNING`. Pop vs the EDM analysis: boundaries 38% → 53%, chorus 25% → 59%, peaks 64% → 65%. Two test-tool bugs were found on the way: the synthetic voice's vibrato phase grew with time, and its harmonics coincided with the pad's notes (fixed in `tests/helpers/synthSong.js`).
+
+### Features in this release
+- **Stage**: deeper stage, three-column side towers, ladder truss rows, bigger LED wall, LED pixel bars, a raised 1.8 m deck with skirt and LED edge, glossy floor, low fog, floor fade, crowd barrier and photo pit, flown 16-box line arrays and 12 touring-style sub stacks of three.
+- **Lights**: truss and tower strobes as the visible source of strobe and blinder light, random coloured strobes, warm blinders, 8 laser projectors with groups, one-by-one turn-on and beat-synced beam counts; 64 moving heads for every machine.
+- **Show programming**: 7 solos, two-colour focus and vocal focus, a real wave, smoother peaks, three drop styles (spool, slam, burst).
+- **Genre analysis**: genre choice with an artist help list, chorus by repetition, vocal detection, rap and Bollywood detection, the scored test set; 9 hand-marked demo songs from per-genre folders (`npm run demos`).
+- **Homepage**: genre-first song step, smooth damped scroll, the Crew → Encore glide, the STAGEVERSE CONSOLE desk with on/off and flash per fixture type.
+- **grandMA3 patch export** from the patch sheet (`lib/patch/grandma3.js`, 5 tests); not yet test-imported on grandMA3 onPC.
+- **New logo** everywhere (navbar, footer, login, signup, all four dashboards, the encore screen, the LED wall, the gate sign) and a new favicon / app icon.
+
+`npm test`: **326 passing** (30 files) · lint: **0 errors** · build: passes.
+
+## Special effects, fireworks and the loading screen (2026-11-05 to 2026-11-06, branch `upg-04-homepage`)
+
+### BUG-28 — Every firework silently stopped drawing in production (commit 35d91cd)
+Symptom: after adding the comet chase, no firework of any kind appeared in the production build, from the desk or in songs; no error anywhere.
+Investigation: a headless check fired the old roof comets as a control: nothing either, so it wasn't the new effect's data. Production turns three's shader error checks off (they stall the main thread), so a failed compile is invisible.
+Root cause: the new GLSL branch named a variable `half`, a reserved word in GLSL ES. One bad word fails the whole program, so every firework type went with it. (The same class of bug as `out`, renamed earlier in the session.)
+Fix: renamed it; checked in the bundle and on screen (the High On Life finale opening). Lesson written into the docs: check new shader code in a development build, where errors are reported.
+Interview version: "Adding one effect made all the fireworks disappear, with no error. I ruled out the new code's data by firing an old effect as a control, then remembered production disables shader error checks. The new branch used `half`, a reserved word in WebGL's shading language, which fails the whole shader. Now I test shader changes in a dev build first."
+
+### BUG-29 — Only one side tower's beams were working (commit 2d348e2)
+Symptom: in many looks only the left or the right side tower lit, swapping on the beat.
+Root cause: beat effects (odd/even alternating, random sparkle) number fixtures by their place in the row, and the side towers are laid out left, right, left, right. So "odd vs even" meant "left tower vs right tower", and any alternating look turned one whole tower off.
+Fix: the layout gives each fixture a `beatIndex`; the side towers are numbered by height, so alternation runs up and down each tower, mirrored on both sides.
+
+### BUG-30 — Streamers froze mid-air when a song ended (commit fd5e38d)
+Symptom: at the end of A Sky Full of Stars the ribbons stopped in mid-air under the house lights, then vanished.
+Root cause: the effects are sampled at the song's time; when the audio ends its clock stops, so every effect froze, and returning to the scroll show dropped them.
+Fix: when a song ends or is stopped, `control.linger` keeps its show and the time it ended; its effects (`songEffectsAt`) keep ageing in their own time over the house lights, the scroll show or the desk, filling only effects the stage isn't running itself, until everything has finished.
+
+### BUG-31 — Closer's drops were marked on its choruses (commit 2d348e2)
+Symptom: the developer heard the drops at 1:11, 2:30 and 3:33; the show dropped 20 s early each time.
+Root cause: in Closer the sung choruses are louder (RMS) than the synth drops after them, so both the analysis and the hand-marking based on it took the choruses for the peaks.
+Fix: the hand-marked structure corrected by ear and checked against the loudness curve (the change at 2:30.5 lands on bar 59); the choruses are now builds. The finale plays slowly through the final drop (`extras.finaleBeatsPerBar`).
+
+### BUG-32 — Light movement looked jerky on cue changes (commit f71c140)
+Symptom: beams lurched when a solo started, on a slam or a new phrase's look.
+Root cause: each motion uniform eased toward its target at a speed proportional to the distance left (first order), so a target that changed at once made the beam go from still to full speed in one frame.
+Fix: sweep, fan, tilt, wave, spread, speed and convergence follow a critically damped spring (`easing.damp`, 0.3 s), which starts and stops smoothly; the drop keeps its instant snap.
+
+### Smaller fixes found while building the effects
+- The React compiler rejects mutating per-frame objects inside components: every effect's per-frame work moved into module-level `driveX` functions.
+- The director cleared a pattern's desk firings before its later steps had fired (`firingsDone` now waits for every step).
+- `venueLit` returned the desk's own look object, which then got mutated: it returns a copy.
+- Streamers shrank and vanished mid-air: ribbons now keep a fixed length (an arc-length walk back along the path) and each ribbon's life is computed from its height and sinking speed, so every one reaches the floor.
+- Fireworks were invisible at first: they burst out of view. Shells now burst 40-50 m up and the camera moves to a sky shot while anything goes into the sky.
+- The finale's patterns weren't monotonic with loudness: bars are ranked by loudness across the full pattern range.
+- The keyboard handler for the live keys was declared before the function it used (a render-time crash, caught before it shipped).
+
+### Features in this release
+- **CO2 jets**: 6 on the floor (in the free gaps, never in front of a light), 4 on the top truss aimed at the crowd; with the lights through every song, not only in a solo.
+- **Confetti** fired with CO2 from 4 cannons (under the line arrays and in the sub gaps), continuous while held; **streamers** from 3 launchers on the truss, random coverage per firing, one burst per firing.
+- **Fireworks**: 7 shells, 4 stage pyro types including the new comet chase, sky glow, smoke, light tint on the rig, Web Audio sound, a sky camera shot.
+- **Song programming**: a finale choreographed on each song's beats, loudness, genre and tempo, opening one of 10 ways per song; shells kept for the finale, stage pyro through the song; confetti, streamers and mines on the drops; every effect in every song and upload; fireworks snapped to the real eighth-note grid.
+- **Live keys** during a song: Space (CO2) and Shift (confetti) without stopping the show.
+- **Loading screen** that waits for every part of the stage and the show.
+- **Lighting**: tower lasers more often and as the ending, beams pulsing in the vocal focus, a filled CO2 solo, brighter aerial beams and thicker haze, smooth movement.
+- Tried and removed: flames, cold sparks, the waterfall and shaped shells.
+
+`npm test`: **392 passing** (36 files) · lint: **0 errors** · build: passes.

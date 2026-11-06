@@ -14,8 +14,15 @@ On top of that base, two flagship talking points:
 
 A third flagship (concurrency-safe ticketing, UPG-01) comes back when ticketing is un-parked.
 
-## Progress (2026-10-27)
-Phases 0–2 done on branches `phase-0-safety-net` → `phase-1-security` → `phase-2-correctness` (see FIX_LOG.md). 139 tests passing. Open from 0–2: Atlas password rotation (developer). Also fixed beyond the plan: BUG-13 (guest list hardcoded to event 13), BUG-14 (production couldn't create shows at new venues), artist message/notification scoping, a regression from my own ERR-01 codemod (login catch). Next: Phase 3.
+## Progress (2026-11-05)
+- Phases 0–5 done (see FIX_LOG.md). Phase 6: BUG-10, hygiene, deployment (Vercel, live at stage-verse.vercel.app), `/api/health`, DOC-01 and UPG-04 done; the demo video and the re-audit are still open.
+- UPG-04 grew well beyond its plan (Nov 2026): a festival main stage with PA, 9 hand-marked demo songs, genre-aware song analysis with a scored test set, a DMX-style lighting desk, 56–60 FPS at every scroll stop on the Iris Xe. Plus a grandMA3 patch export and a new logo.
+- **326 tests** (30 files) passing · lint 0 errors · build passes. Work since 2026-10-29 is on `upg-04-homepage` (local, not yet pushed).
+- Open (developer): Atlas password rotation; a test import of the grandMA3 export in grandMA3 onPC; listening through the demo songs' section marks.
+- Homepage special effects done (Nov 2026): CO2 jets (floor and truss), confetti, streamers, stage pyro and a song-driven fireworks finale; live CO2/confetti keys during a song; a loading screen. Flames and cold sparks were tried and dropped.
+- Next: the demo video and the re-audit.
+
+Earlier (2026-10-27): Phases 0–2 done on branches `phase-0-safety-net` → `phase-1-security` → `phase-2-correctness`, 139 tests. Also fixed beyond the plan: BUG-13 (guest list hardcoded to event 13), BUG-14 (production couldn't create shows at new venues), artist message/notification scoping, a regression from my own ERR-01 codemod (login catch).
 
 ## Phase Overview
 
@@ -209,10 +216,10 @@ Risk / rollback:
 ## Phase 6 — Ship & Document
 Goal: a recruiter can click a live demo and a reviewer can understand the system in 5 minutes.
 Items:
-- [ ] **BUG-10** Delete the empty `python-service/`, `app/api/sentiment`, `app/api/wizard/generate` and `lib/gemini.js`; label hardcoded analysis reviews as sample data (or remove the "engine" claim); remove the hardcoded `bpm: 128` — S
-- [ ] Hygiene bundle: remove debug scripts and log, unused deps (`react-router-dom`, one of the two DnD libs, `jsonwebtoken`), console noise; rename `middleware.js` → `proxy.js`; run Prettier once — S–M
-- [ ] **Deployment decision**: Socket.IO needs a long-running Node process. Either deploy the whole app on a single always-on host (Render/Railway/Fly with a custom `server.js` running Next and Socket.IO), or keep Next on Vercel and run the socket server separately. Document the choice and add `GET /api/health` (DB ping, no secrets) — M
-- [ ] **DOC-01** README: what it is, the four roles, an architecture diagram (Next app ⇄ Mongo, Socket.IO rooms, Gemini), setup in < 10 minutes with `.env.example` and `scripts/seed.mjs`, demo accounts, a design decisions section (cookie JWT, server-authoritative sync, LLM intent + deterministic allocator), and an honest **known limitations** section (no real payments, single-instance sockets, self-serve roles) — M
+- [x] **BUG-10** Delete the empty `python-service/`, `app/api/sentiment`, `app/api/wizard/generate` and `lib/gemini.js`; label hardcoded analysis reviews as sample data (or remove the "engine" claim); remove the hardcoded `bpm: 128` — S
+- [x] Hygiene bundle: remove debug scripts and log, unused deps (`react-router-dom`, one of the two DnD libs, `jsonwebtoken`), console noise; rename `middleware.js` → `proxy.js`; run Prettier once — S–M
+- [x] **Deployment decision** (done: the app runs on Vercel, with the live screens falling back to a 20 s re-sync because Vercel can't hold sockets; see `docs/DEPLOYMENT.md`): Socket.IO needs a long-running Node process. Either deploy the whole app on a single always-on host (Render/Railway/Fly with a custom `server.js` running Next and Socket.IO), or keep Next on Vercel and run the socket server separately. Document the choice and add `GET /api/health` (DB ping, no secrets) — M
+- [x] **DOC-01** README: what it is, the four roles, an architecture diagram (Next app ⇄ Mongo, Socket.IO rooms, Gemini), setup in < 10 minutes with `.env.example` and `scripts/seed.mjs`, demo accounts, a design decisions section (cookie JWT, server-authoritative sync, LLM intent + deterministic allocator), and an honest **known limitations** section (no real payments, single-instance sockets, self-serve roles) — M
 - [x] **UPG-04 "The Show": a scroll-driven 3D concert homepage that runs on integrated graphics** (full design: `C:\Users\Intel\.claude\plans\yes-add-that-to-linear-orbit.md`)
   - Problem it solves in THIS project: the `/test-3d` prototype (`components/canvas/StageRig.jsx`) uses ~89 real dynamic lights (78 drei volumetric SpotLights + 11 pointLights), 3 per-frame `RenderTexture` scenes, ~500 draw calls (estimate) and full-res Bloom. It's unusable on the dev laptop (Intel Iris Xe). The gate/tunnel sections are dropped. `public/textures/env.exr` (70 MB) is unreferenced.
   - What gets built (scope-limited): `components/home/stage/`. Beams are a single `InstancedMesh` of additive shader cones animated in the vertex shader (0 real spotlights). Fixtures are instanced from `low_moving_head.glb`; the truss is one merged geometry; the LED wall is a `CanvasTexture` showing real upcoming events. Quality tiers 0/1/2 (`detect-gpu` + `PerformanceMonitor`, `?tier=` override; tier 0 = poster + existing `ConcertLights`, also used for reduced-motion). A 400vh sticky section driven by GSAP `ScrollTrigger` runs a data-driven **cue stack** (`cues.js`): house lights down → cues 1–3 → build (per-role shots) → the drop → "you call the encore" colour pick. The render loop pauses off-screen; the HTML headline keeps LCP fast. Afterwards, delete the gate/tunnel/unused components and ~76 MB of unused assets.
@@ -222,6 +229,16 @@ Items:
   - Effort: L (~4–6 days) | Interview impact: 4 (frontend/SDE), 2 (ML) | Buzzword risk: Low (backed by measured numbers)
   - Note: safe to build in parallel with security phases (public page, no auth or data writes)
   - **Done (2026-10-28)**, see [`docs/homepage-show.md`](docs/homepage-show.md). Changes from the plan: native scroll + a ref instead of GSAP ScrollTrigger (no dependency, same no-re-render result); fixtures are the detailed moving-head and strobe models (CC BY 4.0), instanced, with pan/tilt solved in the vertex shader, and grouped by job (aerial, sides, floor, wash, strobes, blinders, lasers, house lights); LED screens are a procedural shader plus a canvas texture. Added beyond the plan: lighting desk (manual mode / resume show), lasers, blinders, strobe, and **concert mode**: self-written song analysis (tempo, beats, downbeats, sections) programs a timecoded cue sheet synced to the audio clock (`npm run analyse:song`). Measured: 3 cheap fill lights, 15 draw calls, 60 FPS (1% low 58, bloom on, native DPR) on the Iris Xe. The old `Hero` was removed (its 2D lights live on as the tier-0 fallback). The old `/test-3d` prototype and its ~12 MB of assets were never committed; they are now gitignored (kept on disk for reference).
+  - **Second round (2026-11-03 to 11-05)**, from the developer's change list (items 0–14):
+    - Stage: deeper stage, three-column side towers, ladder truss rows (top truss at 19 m), bigger LED wall, LED pixel bars, a 1.8 m raised deck with skirt and LED edge, glossy floor, low fog, floor fade, crowd barrier, flown 16-box line arrays and 12 sub stacks of three.
+    - Lights: truss and tower strobes as the visible source of strobe and blinder light, random coloured strobes, warm blinders, 8 laser projectors with groups and beat-synced beam counts; 64 moving heads on every machine, the count never changes mid-show.
+    - Programming: 7 solos, two-colour and vocal focus, a real wave, smoother peaks, three drop styles (spool, slam, burst).
+    - Genre-aware analysis (EDM, pop, rap, Bollywood): chorus by repetition, vocal detection, rap and Bollywood detection, a hand-marked test set with a scorer and grid-searched settings (pop vs EDM: boundaries 38% → 53%, chorus 25% → 59%).
+    - 9 hand-marked demo songs from per-genre folders (`npm run demos`), a genre-first playground, a DMX-style desk (STAGEVERSE CONSOLE), smooth damped scroll.
+    - Performance: shaders compiled before each part is shown, the fog shrunk, deferred dressing: 56–60 FPS at every scroll stop on the Iris Xe.
+    - Special effects (done): CO2, confetti, streamers and fireworks, one draw call each and nothing drawn while idle; the desk FINALE holds 60 FPS (1% low ~58.5) on the Iris Xe.
+- [x] **UPG-05 grandMA3 patch export** (added 2026-11-05): the patch sheet downloads the patch as grandMA3 XML (`lib/patch/grandma3.js`); lines with address clashes or invalid addresses are left out and listed in the file; 5 tests. Not yet test-imported on grandMA3 onPC.
+- [x] **New logo** (2026-11-05): a sprayed "Stage" with a sunset script "Verse", in one component (`components/brand/Logo.jsx`) used on every page and dashboard, on the LED wall and the gate sign, plus a new favicon and app icon.
 - [ ] 60–90 s demo GIF or video: run a live show with an encore vote across three browser windows (artist, crew, fan) — S
 - [ ] Re-run `project-audit-upgrade` (re-audit), then `project-interview-report`, then `project-mock-interview` — S
 Acceptance criteria:
@@ -276,4 +293,5 @@ Fill the `<placeholders>` only with numbers you actually measured. Never guess.
 - Secured the real-time show-control layer with handshake authentication, per-event rooms and server-side role checks, and enforced one-vote-per-fan with a unique index (`<1000>` stuffing attempts → 1 counted).
 - Replaced 1 s polling with server-authoritative push plus reconciliation, cutting DB requests from `<before>`/s to `<after>`/s with `<n>` concurrent crew screens at `<latency>` ms p95 update latency.
 - Redesigned an LLM-driven DMX patching feature so the model extracts intent (schema-validated with repair retry) and a deterministic allocator assigns addresses; on a `<30>`-case eval set, address collisions went from `<x>%` to 0% and schema-valid responses from `<y>%` to `<z>%`.
+- Built a 3D concert homepage that holds 56–60 FPS on integrated graphics (Intel Iris Xe) by faking volumetric light with instanced additive cones moved in a vertex shader, and programs a light show for any song from self-written, genre-aware audio analysis (pop chorus detection 25% → 59% against hand-marked songs).
 - Introduced centralised authorization and a `<n>`-test suite (Vitest + in-memory MongoDB) with CI, closing `<n>` IDOR vulnerabilities found in a self-audit.

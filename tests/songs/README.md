@@ -29,5 +29,10 @@ skipped.
   the chorus).
 - `moments` (rap, optional): `[{ "t": 83.2 }]`, where the beat cuts out and slams back in.
 
+Marked so far: *A Sky Full of Stars* and *Yellow* (as pop) and *High On Life* (EDM). The settings in
+`TUNING` (`lib/show/analysis.js`) were grid-searched on the pop songs: pop vs the EDM analysis,
+boundaries 38% → 53%, chorus 25% → 59%, peaks 64% → 65%. Rap and Bollywood have no marked songs yet
+(they're checked on synthetic songs in `tests/unit/genres.test.js`).
+
 Aim for 3-5 songs per genre. Mark sections by ear (a DAW or `npm run song:bars` helps); within a
 second or two is fine, the score allows 3 seconds.
