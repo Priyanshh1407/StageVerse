@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { FEATURES } from '@/lib/features';
 
 // Rendering budget for the 3D show:
 //   0  no 3D: static poster + 2D lights (no WebGL, "reduce motion", very weak devices)
@@ -17,8 +18,9 @@ export const TIER_SETTINGS = {
     // Moving heads are the detailed model (~16.5k vertices each), so counts stay moderate
     // Every machine starts with the same rig (64 moving heads); a stronger GPU gets sharper rendering,
     // not more fixtures. Visitors can raise the count on the lighting desk (96, 140).
-    1: { beams: 64, bloom: true, dpr: 1 },
-    2: { beams: 64, bloom: true, dpr: [1, 1.5] },
+    // Bloom is off everywhere for now (decided 2026-11-12); NEXT_PUBLIC_FEATURE_BLOOM=on brings it back
+    1: { beams: 64, bloom: FEATURES.bloom, dpr: 1 },
+    2: { beams: 64, bloom: FEATURES.bloom, dpr: [1, 1.5] },
 };
 
 function hasWebGL() {
