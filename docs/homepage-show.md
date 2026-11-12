@@ -550,3 +550,13 @@ the poster tier doesn't wait for 3D. Measured: revealed at about 6 s on the Iris
   measured 3 black frames in 62 before, 0 in 158 after (headless capture of the High On Life finale).
 - **Author credit**: "Designed and built by Priyansh Waghela" in the site footer and on the loading screen, and the
   page metadata names him as author and creator (`components/brand/BuiltBy.jsx`).
+
+## Festival stages (in progress: test pages only)
+
+Three new stages are being built on their own test pages before anything reaches the homepage (the plan is `private/STAGE_BUILD_PLAN.md`). The homepage's files are not edited while this happens.
+
+- **Definitions** (`lib/show/stages/`): each stage as plain data, built from its layout: structure, LED surfaces, moving heads with a role (aerial, sides, floor, wash) and a beat number, strobes, blinders, lasers, pixel bars, effect mounts, crowd area, camera shots, home genres (EDM mainstage, pop and Bollywood desert, rap warehouse). `rig.js` turns a definition into what the components draw (base pan and tilt for the beam shader, a light count thinned evenly across roles, 6 floor and 4 high CO2 jets, 4 confetti cannons, 3 streamer launchers, firework launches moved onto the stage). `screenFx.js` picks the LED screens' animation.
+- **Renderer** (`components/home/stage/festival/`): copies of the homepage's components that take positions from a definition (heads, strobes, lasers, CO2, confetti, streamers, fireworks, crowd), and new code for the structure, the LED screens (six animations: equaliser, centre-out sweep, chase, strobe frames, colour wipe, sparkle) and the pixel bars (any angle, one draw call). Haze and the performer are the homepage's own, placed with a transform.
+- **Test pages**: `/lab/desert` shows the built desert stage (looks, the demo songs, camera shots, an optional camera that follows the show, the light count, an FPS counter; `?layout=1` for the grey layout; `?song=<slug>&t=<s>` starts a song at a moment). `/lab/mainstage` and `/lab/warehouse` still show their layouts.
+- `r3f-perf` crashed Turbopack's development build ("invalid utf-8 ... source map"); the festival test page uses its own FPS counter instead.
+

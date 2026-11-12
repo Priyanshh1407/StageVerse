@@ -1,0 +1,194 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import { easing } from 'maath';
+import * as THREE from 'three';
+import { DEFAULT_LOOK } from '@/lib/show/look';
+import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
+import { STAGES } from '@/lib/show/stages';
+import { useQualityTier, TIER_SETTINGS } from '../useQualityTier';
+import FestivalScene from './FestivalScene';
+
+// The test page for a built festival stage: the stage lit and running, with looks to switch between,
+// the demo songs to play through it, camera shots, the light count and the FPS overlay. The homepage
+// does not use any of this yet.
+
+
+const PRESETS = {
+    Calm: { sweep: 0.15, converge: 0, intensity: 0.55, speed: 0.25, haze: 0.8, crowd: 0.12, laser: 0, pixelChase: 0.3 },
+    Groove: { sweep: 0.35, converge: 0, intensity: 0.85, speed: 0.9, haze: 0.6, crowd: 0.4, laser: 0.6, phaseSpread: 0.5 },
+    Build: { sweep: 0.45, converge: 0, intensity: 0.95, speed: 1.6, haze: 0.5, crowd: 0.5, tiltWave: 0.25, laser: 0.8, strobeRandom: 0.3 },
+    Peak: { sweep: 0.6, converge: 0, intensity: 1.3, speed: 2, haze: 0.4, crowd: 1, laser: 1, laserChase: 1, pixelSparkle: 0.5 },
+    Drop: { sweep: 0.1, converge: 1, intensity: 1.4, speed: 2.2, haze: 0.3, crowd: 1, dropFx: 1, strobe: 1, laser: 1 },
+    'House lights': { house: 1, intensity: 0.5, sweep: 0, laser: 0, crowd: undefined },
+};
+const COUNTS = [64, 96, 160, 400];
+
+/** One frame: the song's look when one is playing, otherwise the preset's on a 120 BPM beat. */
+function driveLook(look, preset, song, clock, delta) {
+    clock.t += delta;
+    const s = song.current;
+    if (s?.audio && !s.audio.paused) {
+        const sample = sampleSongShow(s.show, s.audio.currentTime);
+        look.current = sample.look;
+        look.shot = sample.shot;
+        return;
+    }
+    look.shot = null;
+    const beat = clock.t * 2;
+    const p = PRESETS[preset];
+    look.current = { ...DEFAULT_LOOK, ...p, beatPos: p.house ? undefined : beat, pulse: p.house ? 0 : Math.exp(-(beat % 1) * 9) * 0.4 };
+}
+
+function Driver({ look, preset, song }) {
+    const clock = useRef({ t: 0 });
+    useFrame((_, delta) => driveLook(look, preset, song, clock.current, delta));
+    return null;
+}
+
+/** Count frames and write the rate into the overlay twice a second (r3f-perf crashed Turbopack's dev build). */
+function countFrames(meter, state, delta) {
+    state.frames++;
+    state.time += delta;
+    if (state.time < 0.5 || !meter.current) return;
+    meter.current.textContent = `${Math.round(state.frames / state.time)} FPS`;
+    state.frames = 0;
+    state.time = 0;
+}
+
+function FpsMeter({ meter }) {
+    const state = useRef({ frames: 0, time: 0 });
+    useFrame((_, delta) => countFrames(meter, state.current, delta));
+    return null;
+}
+
+/** The camera following the show: the cue's shot, the sky shot while fireworks are up (not for mines). */
+function followShow(stage, look, camera, controls, aim, delta) {
+    const up = look.current.fireworks?.some((f) => f.type !== 'mines');
+    const shot = (up ? stage.shots.sky : stage.shots[look.shot]) ?? stage.shots.wide;
+    aim.pos.set(...shot.pos);
+    aim.look.set(...shot.target);
+    easing.damp3(camera.position, aim.pos, up ? 0.6 : 1.8, delta);
+    if (controls.current) {
+        easing.damp3(controls.current.target, aim.look, up ? 0.6 : 1.8, delta);
+        controls.current.update();
+    }
+}
+
+function AutoCamera({ stage, look, controls }) {
+    const aim = useRef({ pos: new THREE.Vector3(), look: new THREE.Vector3() });
+    useFrame(({ camera }, delta) => followShow(stage, look, camera, controls, aim.current, Math.min(delta, 0.1)));
+    return null;
+}
+
+function ViewRig({ shot, controls }) {
+    const camera = useThree((s) => s.camera);
+    useEffect(() => {
+        if (!shot) return;
+        camera.position.set(...shot.pos);
+        controls.current?.target.set(...shot.target);
+        controls.current?.update();
+    }, [shot, camera, controls]);
+    return null;
+}
+
+export default function FestivalLab({ stageKey }) {
+    const stage = STAGES[stageKey];
+    const tier = useQualityTier();
+    const controls = useRef(null);
+    const look = useRef(DEFAULT_LOOK);
+    const song = useRef(null);
+    const meter = useRef(null);
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const [preset, setPreset] = useState(PRESETS[params?.get('look')] ? params.get('look') : 'Build');
+    const [shotName, setShotName] = useState(stage.shots[params?.get('view')] ? params.get('view') : 'wide');
+    const [count, setCount] = useState(Number(params?.get('lights')) || null);
+    const [perf, setPerf] = useState(params?.get('perf') !== '0');
+    const [panel, setPanel] = useState(params?.get('panel') !== '0');
+    const [follow, setFollow] = useState(params?.get('follow') === '1');
+    const [demos, setDemos] = useState([]);
+    const [playing, setPlaying] = useState(null);
+    // the performer: a band on the desert stage, a DJ elsewhere (the Performer component reads the genre)
+    const control = useRef({ mode: 'song', song: { genre: stage.performer === 'band' ? 'pop' : 'edm' } });
+
+    const play = async (demo, startAt = 0) => {
+        song.current?.audio?.pause();
+        const show = prepareSongShow(await (await fetch(demo.show)).json());
+        const audio = new Audio(encodeURI(show.audio));
+        if (startAt > 0) audio.addEventListener('loadedmetadata', () => { audio.currentTime = Math.min(startAt, audio.duration - 1); }, { once: true });
+        audio.addEventListener('ended', () => setPlaying(null));
+        song.current = { show, audio };
+        await audio.play().catch(() => {});
+        setPlaying(demo.slug);
+    };
+    const stop = () => { song.current?.audio?.pause(); song.current = null; setPlaying(null); };
+
+    useEffect(() => {
+        // ?song=<slug>&t=<seconds> starts a song straight away (for checking a moment, e.g. a finale)
+        const asked = params?.get('song');
+        fetch('/shows/index.json').then((r) => r.json()).then((index) => {
+            setDemos(index.demos ?? []);
+            const demo = index.demos?.find((d) => d.slug === asked);
+            if (demo) play(demo, Number(params.get('t')) || 0);
+        }).catch(() => {});
+        return () => song.current?.audio?.pause();
+    }, []);
+
+    if (tier === null) return <div className="grid h-screen place-items-center bg-[#02030a] font-mono text-amber-300">Loading stage…</div>;
+    const settings = TIER_SETTINGS[tier === 0 ? 1 : tier];
+    const lights = count ?? (tier >= 2 ? 160 : 96);
+    const button = (on) => `rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${on ? 'bg-[#ff6a00] text-black' : 'bg-white/10 text-white hover:bg-white/20'}`;
+    const shot = stage.shots[shotName];
+
+    return (
+        <div className="relative h-screen w-full bg-[#010208]">
+            <Canvas camera={{ position: shot.pos, fov: 55, near: 0.5, far: 1200 }} dpr={settings.dpr} gl={{ antialias: !settings.bloom, powerPreference: 'high-performance' }}
+                onCreated={({ gl }) => { gl.debug.checkShaderErrors = true; }}>
+                <Driver look={look} preset={preset} song={song} />
+                <FestivalScene stage={stage} look={look} count={lights} bloom={settings.bloom} quality={tier >= 2 ? 'high' : 'low'} control={control} />
+                <OrbitControls ref={controls} makeDefault target={shot.target} />
+                <ViewRig shot={shot} controls={controls} />
+                {follow && <AutoCamera stage={stage} look={look} controls={controls} />}
+                {perf && <FpsMeter meter={meter} />}
+            </Canvas>
+
+            {perf && <div ref={meter} className="absolute bottom-3 right-3 rounded-md bg-black/70 px-2.5 py-1 font-mono text-sm text-amber-300">… FPS</div>}
+            <div className="absolute left-3 top-3 max-h-[calc(100vh-1.5rem)] w-[18rem] overflow-y-auto rounded-xl border border-white/10 bg-black/75 p-3 text-white backdrop-blur">
+                <div className="flex items-start justify-between gap-2">
+                    <h1 className="text-sm font-bold">{stage.title} <span className="font-normal text-white/60">· built</span></h1>
+                    <button type="button" className={button(false)} onClick={() => setPanel((o) => !o)}>{panel ? 'Hide' : 'Show'}</button>
+                </div>
+                {panel && (
+                    <>
+                        <p className="mt-1 text-[11px] text-white/55">Test page only: the homepage does not use this stage yet.</p>
+                        <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Look</p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                            {Object.keys(PRESETS).map((name) => <button key={name} type="button" className={button(!playing && preset === name)} onClick={() => { stop(); setPreset(name); }}>{name}</button>)}
+                        </div>
+                        <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Play a song through it</p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                            {demos.map((d) => <button key={d.slug} type="button" className={button(playing === d.slug)} onClick={() => (playing === d.slug ? stop() : play(d))}>{d.title}</button>)}
+                        </div>
+                        <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Camera</p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                            {Object.keys(stage.shots).map((name) => <button key={name} type="button" className={button(shotName === name)} onClick={() => setShotName(name)}>{name}</button>)}
+                        </div>
+                        <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Moving heads ({stage.heads.length} in the layout)</p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                            {COUNTS.map((n) => <button key={n} type="button" className={button(lights === n || (n === 400 && lights >= stage.heads.length))} onClick={() => setCount(n)}>{n === 400 ? 'All' : n}</button>)}
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                            <button type="button" className={button(follow)} onClick={() => setFollow((f) => !f)}>Camera follows the show</button>
+                            <button type="button" className={button(perf)} onClick={() => setPerf((p) => !p)}>FPS</button>
+                            <Link href={`/lab/${stageKey}?layout=1`} className={button(false)}>Layout view</Link>
+                        </div>
+                        <p className="mt-3 text-[11px] text-white/50">Tier {tier}: {settings.bloom ? 'bloom on' : 'bloom off'}. Drag to orbit, scroll to zoom.</p>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+}

@@ -29,6 +29,12 @@ function Piece({ item }) {
     if (item.kind === 'cone') return <mesh position={item.position}><coneGeometry args={[item.radius, item.height, 5]} />{material}</mesh>;
     if (item.kind === 'sphere') return <mesh position={item.position} scale={item.scale ?? [1, 1, 1]}><sphereGeometry args={[item.radius, 16, 12]} />{material}</mesh>;
     if (item.kind === 'torus') return <mesh position={item.position}><torusGeometry args={[item.radius, item.tube, 8, 40]} />{material}</mesh>;
+    if (item.kind === 'rod') {
+        const a = new THREE.Vector3(...item.from);
+        const b = new THREE.Vector3(...item.to);
+        const q = new THREE.Quaternion().setFromUnitVectors(UP, b.clone().sub(a).normalize());
+        return <mesh position={a.clone().add(b).multiplyScalar(0.5)} quaternion={q}><cylinderGeometry args={[item.radius[1], item.radius[0], a.distanceTo(b), 6]} />{material}</mesh>;
+    }
     if (item.kind === 'truss' || item.kind === 'cable') {
         const a = new THREE.Vector3(...item.from);
         const b = new THREE.Vector3(...item.to);
