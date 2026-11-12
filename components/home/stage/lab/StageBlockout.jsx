@@ -5,10 +5,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { COLORS, GROUPS, TYPES } from './blockoutKit';
-import mainstage from './mainstageLayout';
-import desert from './desertLayout';
-import warehouse from './warehouseLayout';
+import { COLORS, GROUPS, TYPES } from '@/lib/show/stages/blockoutKit';
+import mainstage from '@/lib/show/stages/mainstageLayout';
+import desert from '@/lib/show/stages/desertLayout';
+import warehouse from '@/lib/show/stages/warehouseLayout';
 
 // The stage blockout pages: plain shapes at real size with every light and effect position marked,
 // to agree each stage's structure and rig before anything is built. Not used by the homepage.
