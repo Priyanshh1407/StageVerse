@@ -1,5 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import DmxMonitor from './DmxMonitor';
+import { FEATURES } from '@/lib/features';
 import { BEAM_COUNTS } from '@/components/home/stage/useQualityTier';
 import { Settings2, Music, Play, Square, RotateCcw, X } from 'lucide-react';
 
@@ -13,7 +16,7 @@ const COLORS = [
     { value: '#00ff3c', label: 'Green' },
     { value: '#00ffc8', label: 'Teal' },
     { value: '#19d9ff', label: 'Cyan' },
-    { value: '#ff6a00', label: 'Blue' },
+    { value: '#0066ff', label: 'Blue' },
     { value: '#3b2bff', label: 'Deep blue' },
     { value: '#a855f7', label: 'Purple' },
     { value: '#ff3df2', label: 'Magenta' },
@@ -144,7 +147,8 @@ const STAGE_BUTTONS = [
 // Every special effect the desk fires, for the EVERYTHING row
 const ALL_EFFECTS = ['co2', 'co2Truss', 'confetti', 'streamers'];
 
-export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, onEffect, onEffectHold, onFirework, onFinale, fwOptions, onFwOptions, song }) {
+export default function LightingDesk({ open, onOpenChange, desk, counts, manual, onChange, onCounts, onMomentary, onResume, onDrop, onEffect, onEffectHold, onFirework, onFinale, fwOptions, onFwOptions, song, look }) {
+    const [monitor, setMonitor] = useState(false);
     if (!open) {
         return (
             <button onClick={() => onOpenChange(true)}
@@ -361,6 +365,15 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     <Key on={fwOptions.sound} onClick={() => onFwOptions({ sound: !fwOptions.sound })}>{fwOptions.sound ? 'Sound on' : 'Sound off'}</Key>
                 </div>
             </Panel>
+
+            {/* What the look on stage is as DMX (lib/features.js: dmxMonitor) */}
+            {FEATURES.dmxMonitor && look && (
+                <Panel title="DMX MONITOR" className="mt-2">
+                    {monitor
+                        ? <><DmxMonitor look={look} beams={counts.beams} /><div className="mt-1.5"><Key on onClick={() => setMonitor(false)}>Hide the monitor</Key></div></>
+                        : <div className="flex items-center justify-between gap-2"><p className="text-[11px] text-gray-400">See the channel values this look would send to a real rig, live.</p><Key onClick={() => setMonitor(true)}>Show the monitor</Key></div>}
+                </Panel>
+            )}
 
             {song.available && (
                 <Panel title="CONCERT MODE" className="mt-2">

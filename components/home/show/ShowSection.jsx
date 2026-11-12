@@ -911,6 +911,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                         onMomentary={momentary}
                         onResume={resume}
                         song={songControls}
+                        look={look}
                     />
                 </div>
             </div>
