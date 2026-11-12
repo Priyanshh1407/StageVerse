@@ -89,10 +89,16 @@ export default function StageBlockout({ stage = 'mainstage' }) {
     const [viewKey, setViewKey] = useState(layout.views[initial?.get('view')] ? initial.get('view') : 'audience');
     const [beams, setBeams] = useState(initial?.get('beams') === '1');
     const [hidden, setHidden] = useState({});
+    // a layout can offer more than one design for a part of the stage (the mainstage's aerial rig)
+    const variants = layout.variants ?? [];
+    const [variantKey, setVariantKey] = useState(variants.some((v) => v.key === initial?.get('rig')) ? initial.get('rig') : variants[0]?.key);
+    const variant = variants.find((v) => v.key === variantKey);
+    const structure = variant ? [...layout.structure, ...variant.structure] : layout.structure;
+    const fixtures = variant ? [...layout.fixtures, ...variant.fixtures] : layout.fixtures;
     const [panelOpen, setPanelOpen] = useState(initial?.get('panel') !== '0');
     const view = layout.views[viewKey];
 
-    const counts = useMemo(() => layout.fixtures.reduce((acc, f) => ({ ...acc, [f.type]: (acc[f.type] ?? 0) + 1 }), {}), [layout]);
+    const counts = fixtures.reduce((acc, f) => ({ ...acc, [f.type]: (acc[f.type] ?? 0) + 1 }), {});
     const lights = GROUPS[0].types.reduce((n, t) => n + (counts[t] ?? 0), 0);
     const button = (on) => `rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${on ? 'bg-[#ff6a00] text-black' : 'bg-white/10 text-white hover:bg-white/20'}`;
 
@@ -107,8 +113,8 @@ export default function StageBlockout({ stage = 'mainstage' }) {
                     <planeGeometry args={layout.ground} />
                     <meshStandardMaterial color={COLORS.ground} roughness={1} />
                 </mesh>
-                {layout.structure.map((item, i) => <Piece key={i} item={item} />)}
-                {layout.fixtures.map((f, i) => (hidden[f.type] ? null : <Fixture key={i} f={f} beams={beams} scale={layout.beamScale ?? 1} />))}
+                {structure.map((item, i) => <Piece key={`${variantKey}-${i}`} item={item} />)}
+                {fixtures.map((f, i) => (hidden[f.type] ? null : <Fixture key={`${variantKey}-${i}`} f={f} beams={beams} scale={layout.beamScale ?? 1} />))}
                 <OrbitControls ref={controls} makeDefault target={view.target} />
                 <ViewRig view={view} controls={controls} />
             </Canvas>
@@ -125,6 +131,16 @@ export default function StageBlockout({ stage = 'mainstage' }) {
                                 <Link key={key} href={`/lab/${key}`} className={button(key === layout.key)}>{LAYOUTS[key].title}</Link>
                             ))}
                         </div>
+                        {variants.length > 1 && (
+                            <>
+                                <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Aerial rig design</p>
+                                <div className="mt-1 flex flex-wrap gap-1.5">
+                                    {variants.map((v) => (
+                                        <button key={v.key} type="button" className={button(variantKey === v.key)} onClick={() => setVariantKey(v.key)}>{v.label}</button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                         <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">View</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
                             {Object.entries(layout.views).map(([key, v]) => (
