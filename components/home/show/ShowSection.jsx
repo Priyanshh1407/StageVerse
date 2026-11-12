@@ -11,6 +11,9 @@ import { buildIdleShow } from '@/lib/show/program';
 import { CO2_JETS, CO2_TRUSS_JETS, co2Pattern, co2TrussPattern } from '@/lib/show/co2';
 import { CONFETTI_UNITS, STREAMER_UNITS, confettiPattern, streamerPattern } from '@/lib/show/confetti';
 import { defaultGrid, finale, fireOne, rng as fwRng } from '@/lib/show/fireworks';
+import { FEATURES } from '@/lib/features';
+import { HowItWorks, ShareButtons } from './SongExtras';
+import { readSongLink } from '@/lib/show/share';
 import { primeFireworkSound, setFireworkSound } from './fireworkSound';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
 import { currentState, HOUSE_UP_MS, songTime } from './director';
@@ -159,6 +162,8 @@ function ShowExperience({ events = [], isPhone = false }) {
     const [brightnessTip, setBrightnessTip] = useState(false); // shown for the first seconds of a show
     const [screenNotice, setScreenNotice] = useState(false); // phones: the playground is for bigger screens
     const [playStep, setPlayStep] = useState('genre'); // the playground: 'genre', then 'songs', then 'lights'
+    const [explain, setExplain] = useState(false); // the "how it works" overlay during a song
+    const [linked, setLinked] = useState(null);    // a song and moment asked for by the page's link (?song=&t=)
     const [stopKey, setStopKey] = useState(STOPS[0].key); // the section dot that's lit
     // The loading screen starts over each time the homepage mounts. Done while rendering, before the
     // stage's effects run, so nothing they report is wiped.
@@ -527,7 +532,7 @@ function ShowExperience({ events = [], isPhone = false }) {
     }, []);
 
     /** Play a programmed show with its audio (a URL, or an object URL for an uploaded file). */
-    const playShow = (show, url, objectUrl = null) => {
+    const playShow = (show, url, objectUrl = null, startAt = 0) => {
         const c = control.current;
         c.audio?.pause();
         if (c.objectUrl && c.objectUrl !== objectUrl) URL.revokeObjectURL(c.objectUrl);
@@ -538,6 +543,8 @@ function ShowExperience({ events = [], isPhone = false }) {
         clearTimeout(c.afterShow);
         c.houseUpAt = null;
         const audio = new Audio(url);
+        // a shared link starts at its moment
+        if (startAt > 0) audio.addEventListener('loadedmetadata', () => { audio.currentTime = Math.min(startAt, Math.max(0, audio.duration - 5)); }, { once: true });
         audio.addEventListener('timeupdate', () => setSong((s) => ({ ...s, time: audio.currentTime })));
         // The last note: house lights up and hold for a moment, like the end of a concert, then back to the playground
         audio.addEventListener('ended', () => {
@@ -559,16 +566,16 @@ function ShowExperience({ events = [], isPhone = false }) {
 
     // A demo's show, fetched the first time it's picked
     const demoShows = useRef(new Map());
-    const playDemo = async (demo) => {
+    const playDemo = async (demo, startAt = 0) => {
         try {
             let show = demoShows.current.get(demo.slug);
             if (!show) {
                 const res = await fetch(demo.show);
                 if (!res.ok) throw new Error('missing');
-                show = { ...(await res.json()), artist: demo.artist, demo: true };
+                show = { ...(await res.json()), artist: demo.artist, demo: true, slug: demo.slug };
                 demoShows.current.set(demo.slug, show);
             }
-            playShow(show, encodeURI(show.audio));
+            playShow(show, encodeURI(show.audio), null, startAt);
         } catch {
             setSong((s) => ({ ...s, error: `Couldn't load ${demo.title}. Try again in a moment.` }));
         }
@@ -580,6 +587,13 @@ function ShowExperience({ events = [], isPhone = false }) {
     const bigScreenOnly2 = (action) => (arg) => (isPhone ? setScreenNotice(true) : action(arg));
     const genreDemos = song.demos.filter((d) => d.genre === genre);
     const closeScreenNotice = useCallback(() => setScreenNotice(false), []);
+    // A link to a song and moment: offered as one button (a browser only plays sound after a click)
+    useEffect(() => {
+        if (!FEATURES.share) return;
+        const asked = readSongLink(window.location.search);
+        if (asked) setLinked(asked);
+    }, []);
+    const linkedDemo = linked ? song.demos.find((d) => d.slug === linked.slug) : null;
 
     // The visitor's own song: decoded and analysed in their browser, never uploaded anywhere
     const analyseUpload = async (file) => {
@@ -807,6 +821,18 @@ function ShowExperience({ events = [], isPhone = false }) {
                     </div>
                 )}
 
+                {FEATURES.howItWorks && explain && mode !== 'scroll' && song.playing && now && <HowItWorks show={now} control={control} onClose={() => setExplain(false)} />}
+                {/* Opened from a shared link: one click starts that song at that moment */}
+                {linkedDemo && !song.playing && (
+                    <div className="absolute left-1/2 top-24 z-30 -translate-x-1/2 rounded-2xl border border-white/10 bg-black/80 p-4 text-center text-white backdrop-blur-md">
+                        <p className="text-xs text-gray-300">Someone shared a moment with you</p>
+                        <button type="button" onClick={bigScreenOnly(() => { const d = linkedDemo; const t = linked.t; setLinked(null); playDemo(d, t); })}
+                            className="mx-auto mt-2 flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] px-5 py-2.5 text-sm font-bold text-black">
+                            <Play className="h-4 w-4" /> Play {linkedDemo.title}{linked.t > 0 ? ` from ${fmt(linked.t)}` : ''}
+                        </button>
+                        <button type="button" onClick={() => setLinked(null)} className="mt-2 text-[11px] text-gray-400 hover:text-white">Not now</button>
+                    </div>
+                )}
                 {/* Concert mode: now playing, with the programmed timeline (click to seek) */}
                 {mode !== 'scroll' && song.playing && now && (
                     <div className="absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[36rem] bottom-20 sm:bottom-6 rounded-2xl bg-black/75 backdrop-blur-md border border-white/10 p-4 text-white">
@@ -837,6 +863,17 @@ function ShowExperience({ events = [], isPhone = false }) {
                             )}
                             <div className="absolute top-0 bottom-0 w-0.5 bg-white" style={{ left: `${(song.time / now.duration) * 100}%` }} />
                         </div>
+                        {(FEATURES.share || FEATURES.howItWorks) && (
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                                {FEATURES.share && <ShareButtons show={now} time={song.time} stage={stage} />}
+                                {FEATURES.howItWorks && (
+                                    <button type="button" onClick={() => setExplain((x) => !x)} aria-pressed={explain}
+                                        className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold ${explain ? 'border-transparent bg-[#ff6a00] text-black' : 'border-white/15 bg-white/10 hover:bg-white/20'}`}>
+                                        How it works
+                                    </button>
+                                )}
+                            </div>
+                        )}
                         {/* Live effects on top of the show (it carries on): hold to fire, or hold the key */}
                         {mode === 'song' && (
                             <div className="mt-3 flex items-center gap-2">

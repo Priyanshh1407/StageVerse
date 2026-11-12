@@ -37,6 +37,8 @@ const publicPaths = [
   '/audio',           // homepage show music (local only, never deployed)
   '/shows',           // programmed light shows (derived data, no audio)
   '/api', // API routes do their own auth
+  '/robots.txt',      // for search engines
+  '/sitemap.xml',
 ];
 
 // Segment-aware prefix match: '/live' matches '/live' and '/live/123' but not '/live-show'
