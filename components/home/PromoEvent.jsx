@@ -1,6 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { Sparkles, DollarSign } from 'lucide-react';
+import { FEATURES } from '@/lib/features';
+
+// the product's own screens (switch off: the stock photos return)
+const PICTURES = FEATURES.liveSections
+  ? { back: '/images/promo-rig.jpg', front: '/images/promo-desk.jpg', backAlt: 'The StageVerse stage', frontAlt: 'The StageVerse lighting desk' }
+  : { back: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop', front: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop', backAlt: 'Dashboard BG', frontAlt: 'Analytics' };
 
 export default function PromoSection() {
   return (
@@ -13,8 +20,8 @@ export default function PromoSection() {
             <div className="rounded-xl overflow-hidden aspect-video relative">
               {}
               <img 
-                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop" 
-                alt="Dashboard BG" 
+                src={PICTURES.back}
+                alt={PICTURES.backAlt}
                 className="w-full h-full object-cover opacity-80" 
               />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -23,8 +30,8 @@ export default function PromoSection() {
               
               {}
               <img 
-                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop" 
-                alt="Analytics" 
+                src={PICTURES.front}
+                alt={PICTURES.frontAlt}
                 className="absolute top-0 right-0 w-2/3 h-full object-cover object-left" 
                 style={{ WebkitMaskImage: 'linear-gradient(to right, transparent, black)' }}
               />
@@ -49,9 +56,9 @@ export default function PromoSection() {
             </div>
             
             <div className="pt-4">
-              <button className="px-8 py-3 rounded-lg border border-[#a855f7]/50 text-[#ffb000] font-bold hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] hover:text-black transition-all uppercase tracking-wide">
+              <Link href="/signup" className="inline-block px-8 py-3 rounded-lg border border-[#a855f7]/50 text-[#ffb000] font-bold hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] hover:text-black transition-all uppercase tracking-wide">
                 Become a Partner
-              </button>
+              </Link>
             </div>
           </div>
 

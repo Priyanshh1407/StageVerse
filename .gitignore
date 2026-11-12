@@ -78,3 +78,7 @@ public/audio/*.flac
 /public/strobe.glb
 /public/truss.glb
 /public/tunnel-transformed.glb
+
+# browser tests
+/playwright-report/
+/test-results/

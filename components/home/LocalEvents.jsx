@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function LocalEvents({ events, isLoading }) {
+export default function LocalEvents({ events, isLoading, city = null, live = false }) {
   const [startIndex, setStartIndex] = useState(0);
   const itemsPerPage = 2;
   const visibleEvents = events.slice(startIndex, startIndex + itemsPerPage);
@@ -29,9 +29,9 @@ export default function LocalEvents({ events, isLoading }) {
 
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">This Weekend in Brooklyn</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">{live ? (city ? `Coming up in ${city}` : 'Coming up next') : 'This Weekend in Brooklyn'}</h2>
             <p className="text-slate-400">
-              Showing {isLoading ? '...' : `${startIndex + 1}-${Math.min(startIndex + itemsPerPage, events.length)} of ${events.length} picks`}
+              Showing {isLoading ? '...' : events.length === 0 ? 'No upcoming shows yet' : `${startIndex + 1}-${Math.min(startIndex + itemsPerPage, events.length)} of ${events.length} ${live ? 'shows' : 'picks'}`}
             </p>
           </div>
 

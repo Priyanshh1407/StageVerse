@@ -50,3 +50,48 @@ jobs:
         # Reported, not enforced: the one remaining advisory (xlsx) has no fixed release
         # and isn't reachable (the app only writes spreadsheets). See FIX_LOG.md, SEC-07.
         run: npm audit --omit=dev || true
+
+  # Browser tests: a real browser opens the public pages, logs in as each role and walks its screens.
+  # They run against CI's own database (a MongoDB container, filled by the seed script), never the
+  # live one. Not enforced until this job has passed on GitHub once: then remove continue-on-error.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    services:
+      mongo:
+        image: mongo:7
+        ports: ['27017:27017']
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017/ci-e2e
+      JWT_SECRET: ci-only-not-a-real-secret
+      GEMINI_API_KEY: ci-placeholder
+      NEXT_TELEMETRY_DISABLED: 1
+      CI: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fill CI's database with the demo data and logins
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed.mjs --yes
+
+      - run: npm run build
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
