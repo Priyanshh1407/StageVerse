@@ -155,6 +155,18 @@ describe('the finale follows the song', () => {
         const f = finale(rng(0.7), {}, defaultGrid(128));
         expect(Math.min(...f.map((x) => x.at))).toBeGreaterThanOrEqual(0);
     });
+
+    it('lasts about 30 seconds: the same shells spaced further apart, and a crescendo at full pace', () => {
+        const long = defaultGrid(128);
+        const short = defaultGrid(128, 4);
+        expect(long.bars[8] - long.bars[0]).toBeCloseTo(30, 0);
+        const bursts = (grid, from, to) => finale(rng(0.7), {}, grid, { genre: 'edm', bpm: 128 })
+            .filter((x) => SHELLS.includes(x.launch.type) && x.at + RISE >= grid.bars[from] - 1e-6 && x.at + RISE < grid.bars[to] - 1e-6).length;
+        // bars 3-6: no shells added
+        expect(bursts(long, 2, 6)).toBe(bursts(short, 2, 6));
+        // the last two bars: twice as long, twice the shells, so as dense as before
+        expect(bursts(long, 6, 8)).toBe(2 * bursts(short, 6, 8));
+    });
 });
 
 describe('special effects in a song', () => {

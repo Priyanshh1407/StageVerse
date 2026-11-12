@@ -495,6 +495,7 @@ shaped shells.
 - **Effects finish after the song**: whatever is in the air when a song ends or is stopped (streamers,
   confetti, CO2, the last stars) carries on in its own time over the house lights and whatever comes next.
 - **Per-song extras** (`public/shows/<slug>.extras.json`): `co2`, `finaleOpening` (0-9), `finaleBeatsPerBar`
+- **Finale length**: the fireworks finale lasts about 30 s in every song and on the desk. Its 8 bars are stretched to an even number of the song's beats each (`FINALE_SECONDS` in `lib/show/program.js`), so the same shells fire further apart. The last two bars (about 7-8 s) are the exception: they keep the song's own pace, repeating their pattern on every four beats, so the ending is the densest part; confetti, streamers and CO2 fire again as they start, the confetti pouring up to the final hit. Songs under 2 minutes get a shorter one (a quarter of the song, at least 12 s). `finaleBeatsPerBar` in a song's extras still overrides the pace.
   (Closer's finale plays slowly through its whole final drop), plus the existing structure and colours.
 
 ### The desk and the live keys
