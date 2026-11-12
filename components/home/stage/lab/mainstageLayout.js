@@ -1,4 +1,4 @@
-import { COLORS, aim, along, box, fx, panel, spread, truss, turned } from './blockoutKit.js';
+import { COLORS, aim, along, box, cable, fx, panel, spread, truss, turned } from './blockoutKit.js';
 
 // The mainstage (design E, "winged fins"), home of EDM. A rough layout: the structure, and where
 // every light and effect would go. Nothing here is used by the homepage.
@@ -45,38 +45,56 @@ for (const s of [-1, 1]) structure.push(box([1.6, 10, 1.4], [s * 47, 13, -4], CO
 structure.push(box([92, 1.2, 0.2], [0, 0.6, 6], COLORS.dark));
 structure.push(box([0.5, 1.8, 0.3], [6, 0.9, 7], COLORS.person));
 
-// ---- the aerial rig: a canopy over the DJ, standing on its own four legs ----------------------
-// A real ground-supported roof inside the centre bay. It is narrower than the gap between the two
-// innermost fins, so from the crowd it never crosses a fin, and lower than the top of the wall, so
-// it never covers the crown or the logo. Two side beams sit on four towers; four arrow-shaped
-// trusses span between them, one behind the other, each repeating the crown: from the front they
-// stack into a tunnel of arrows over the DJ.
-const CANOPY = { half: 11.5, back: WALL.z + 1.6, front: -9.5, eaves: D + 14.5, rise: 4.6 };
-const ARROWS = spread(CANOPY.back + 1, CANOPY.front, 4);
-const ARM = ['beam', 'wash', 'beam', 'strobe', 'beam', 'beam', 'wash'];
-for (const s of [-1, 1]) {
-    const x = s * CANOPY.half;
-    for (const z of [CANOPY.back, CANOPY.front]) structure.push(truss([x, D, z], [x, CANOPY.eaves, z]));
-    structure.push(truss([x, CANOPY.eaves, CANOPY.back], [x, CANOPY.eaves, CANOPY.front]));
-    // washes under the side beams (onto the DJ), and beams up the two front legs (out over the crowd)
-    along([x, CANOPY.eaves - 0.6, CANOPY.back], [x, CANOPY.eaves - 0.6, CANOPY.front], 4, 0.15).forEach((q) => fixtures.push(fx('wash', q, aim(-s * 0.55, -1, 0.15), 18)));
-    for (const y of spread(3, 12, 5)) fixtures.push(fx('beam', [x, D + y, CANOPY.front + 0.5], aim(s * 0.3, 0.15 + y * 0.04, 1)));
-}
-ARROWS.forEach((z, k) => {
-    const peak = [0, CANOPY.eaves + CANOPY.rise, z];
+// ---- the aerial rig: three massive arrows, hung from two masts behind the stage -----------------
+// Three arrow-shaped trusses repeat the crown, each wider, lower and further forward than the last, so
+// from the crowd they stack into a tunnel of arrows over the whole stage. They sit above the fin tips
+// and above the crown, so they cross neither.
+// They hang the way big festival roofs really do: two lattice masts stand on the ground BEHIND the
+// wall and the fins (nothing stands in front of a fin), each with a jib reaching forward high over the
+// stage like a crane's, held back by stay cables to ballast blocks behind. Every arrow hangs from the
+// two jibs on steel cables: one straight down each side, and two bridles out along each arm to its end.
+const CHEVRONS = [
+    { z: -22, half: 19, endY: D + 23, rise: 7, perArm: 7 },
+    { z: -15, half: 24, endY: D + 22, rise: 7, perArm: 8 },
+    { z: -8, half: 29, endY: D + 21, rise: 7, perArm: 9 },
+];
+const ARM = ['beam', 'beam', 'wash', 'beam', 'strobe', 'beam', 'wash', 'beam', 'beam'];
+// a point on an arrow's arm, `along` it from the peak (0) to the end (1)
+const onArm = (c, s, t) => [s * c.half * t, c.endY + c.rise * (1 - t), c.z - 2.5 * t];
+CHEVRONS.forEach((c, k) => {
     for (const s of [-1, 1]) {
-        const end = [s * CANOPY.half, CANOPY.eaves, z];
-        structure.push(truss(end, peak));
-        along(end, peak, 5, 0.1).forEach((q, n) => fixtures.push(fx(ARM[(n + k) % ARM.length], [q[0], q[1] - 0.6, q[2]], aim(q[0] * 0.06, -0.5, 1))));
+        structure.push(truss(onArm(c, s, 1), onArm(c, s, 0), 0.7));
+        along(onArm(c, s, 1), onArm(c, s, 0), c.perArm, 0.06).forEach((q, n) => {
+            fixtures.push(fx(ARM[(n + k) % ARM.length], [q[0], q[1] - 0.7, q[2]], aim(q[0] * 0.035, -1, 0.55 + 0.1 * k)));
+        });
     }
-    fixtures.push(fx('spot', [0, peak[1] - 0.7, z], aim(0, -1, 0.3), 22));
+    fixtures.push(fx('spot', [0, c.endY + c.rise - 0.8, c.z], aim(0, -1, 0.35)));
 });
-// a ridge truss joins the four peaks
-structure.push(truss([0, CANOPY.eaves + CANOPY.rise, ARROWS[0]], [0, CANOPY.eaves + CANOPY.rise, ARROWS[3]]));
+const MAST = { base: [10, 0, -37], top: [7, 54, -34], jib: [5, 47, -3], anchors: [[22, 0, -60], [3, 0, -62]] };
+const mirror = (q, s) => [s * q[0], q[1], q[2]];
+for (const s of [-1, 1]) {
+    const top = mirror(MAST.top, s);
+    const tip = mirror(MAST.jib, s);
+    structure.push(truss(mirror(MAST.base, s), top, 2));          // the mast
+    structure.push(truss(top, tip, 1.3));                          // its jib, out over the stage
+    for (const anchor of MAST.anchors) {                           // stay cables back to ballast on the ground
+        structure.push(cable(top, mirror(anchor, s)));
+        structure.push(box([3.5, 2.2, 3.5], [s * anchor[0], 1.1, anchor[2]], COLORS.dark));
+    }
+    structure.push(cable(top, [tip[0], tip[1] + 0.3, tip[2]]));    // and a pendant along the jib
+    // each arrow hangs from the jib above it
+    for (const c of CHEVRONS) {
+        const t = (c.z - top[2]) / (tip[2] - top[2]);
+        const hook = [top[0] + (tip[0] - top[0]) * t, top[1] + (tip[1] - top[1]) * t, c.z];
+        for (const reach of [Math.abs(hook[0]) / c.half, 0.6, 1]) structure.push(cable(hook, onArm(c, s, reach)));
+    }
+}
+// the two masts are tied together at the top and at the jib tips
+structure.push(truss(mirror(MAST.top, -1), mirror(MAST.top, 1), 1.3));
+structure.push(truss(mirror(MAST.jib, -1), mirror(MAST.jib, 1), 1));
 // the front arrow also carries the truss CO2 and the streamer launchers
-const onFrontArrow = (x) => CANOPY.eaves + CANOPY.rise * (1 - Math.abs(x) / CANOPY.half);
-for (const x of [-8, -3, 3, 8]) fixtures.push(fx('co2', [x, onFrontArrow(x) + 0.5, CANOPY.front + 0.6]));
-for (const x of [-9, -4.5, 0, 4.5, 9]) fixtures.push(fx('streamer', [x, onFrontArrow(x) + 0.6, CANOPY.front]));
+for (const x of [-21, -8, 8, 21]) { const q = onArm(CHEVRONS[2], Math.sign(x), Math.abs(x) / CHEVRONS[2].half); fixtures.push(fx('co2', [q[0], q[1] + 0.6, q[2] + 0.6])); }
+for (const x of [-24, -12, 0, 12, 24]) { const q = onArm(CHEVRONS[2], Math.sign(x) || 1, Math.abs(x) / CHEVRONS[2].half); fixtures.push(fx('streamer', [q[0], q[1] + 0.7, q[2]])); }
 
 // ---- lights on the structure -------------------------------------------------------------------
 for (const s of [-1, 1]) {
@@ -157,10 +175,10 @@ const layout = {
     fixtures,
     ground: [260, 220],
     views: {
-        audience: { label: 'Audience', pos: [0, 2.2, 52], target: [0, 13, -14] },
-        front: { label: 'Front', pos: [0, 14, 92], target: [0, 13, -14] },
-        quarter: { label: 'Three-quarter', pos: [-62, 18, 54], target: [0, 10, -14] },
-        side: { label: 'Side', pos: [105, 12, -12], target: [0, 11, -14] },
+        audience: { label: 'Audience', pos: [0, 2.2, 64], target: [0, 19, -14] },
+        front: { label: 'Front', pos: [0, 18, 112], target: [0, 20, -14] },
+        quarter: { label: 'Three-quarter', pos: [-78, 24, 68], target: [0, 17, -18] },
+        side: { label: 'Side', pos: [125, 22, -18], target: [0, 21, -18] },
         top: { label: 'Top', pos: [0, 125, 0.01], target: [0, 0, -12] },
     },
     notes: [
@@ -168,7 +186,7 @@ const layout = {
         'Fins: 6 a side, each 3.2 m further forward than the one inside it',
         'A leaning ladder of lights up the middle of every gap between fins',
         'Pixel bars round every fin, as a lit border',
-        'Aerial rig: a canopy over the DJ on four legs, with four arrow trusses; it never crosses a fin',
+        'Aerial rig: three massive arrows above the fins, hung on cables from two crane masts behind the wall',
         'Orange plate = the logo; blue-grey = LED screen; white = a person (1.8 m)',
     ],
 };

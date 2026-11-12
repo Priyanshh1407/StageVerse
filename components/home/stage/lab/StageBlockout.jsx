@@ -29,12 +29,14 @@ function Piece({ item }) {
     if (item.kind === 'cone') return <mesh position={item.position}><coneGeometry args={[item.radius, item.height, 5]} />{material}</mesh>;
     if (item.kind === 'sphere') return <mesh position={item.position} scale={item.scale ?? [1, 1, 1]}><sphereGeometry args={[item.radius, 16, 12]} />{material}</mesh>;
     if (item.kind === 'torus') return <mesh position={item.position}><torusGeometry args={[item.radius, item.tube, 8, 40]} />{material}</mesh>;
-    if (item.kind === 'truss') {
+    if (item.kind === 'truss' || item.kind === 'cable') {
         const a = new THREE.Vector3(...item.from);
         const b = new THREE.Vector3(...item.to);
         const mid = a.clone().add(b).multiplyScalar(0.5);
         const q = new THREE.Quaternion().setFromUnitVectors(UP, b.clone().sub(a).normalize());
-        return <mesh position={mid} quaternion={q}><boxGeometry args={[0.5, a.distanceTo(b), 0.5]} /><meshStandardMaterial color={COLORS.truss} roughness={0.7} wireframe /></mesh>;
+        if (item.kind === 'cable') return <mesh position={mid} quaternion={q}><cylinderGeometry args={[0.05, 0.05, a.distanceTo(b), 5]} /><meshBasicMaterial color="#aab0c0" /></mesh>;
+        const size = item.size ?? 0.5;
+        return <mesh position={mid} quaternion={q}><boxGeometry args={[size, a.distanceTo(b), size, 1, Math.max(1, Math.round(a.distanceTo(b) / (size * 2))), 1]} /><meshStandardMaterial color={COLORS.truss} roughness={0.7} wireframe /></mesh>;
     }
     return null;
 }

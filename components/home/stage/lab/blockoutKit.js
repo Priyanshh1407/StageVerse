@@ -43,6 +43,8 @@ export const fx = (type, pos, dir, reach) => ({ type, pos, ...(dir ? { aim: dir 
 /** The same fixture turned: `rot` is [x, y, z] in radians (a strobe stood on end, a pixel bar along an edge). */
 export const turned = (fixture, rot) => ({ ...fixture, rot });
 export const box = (size, position, color = COLORS.structure, extra = {}) => ({ kind: 'box', size, position, color, ...extra });
-export const truss = (from, to) => ({ kind: 'truss', from, to });
+export const truss = (from, to, size = 0.5) => ({ kind: 'truss', from, to, size });
+/** A steel cable between two points. */
+export const cable = (from, to) => ({ kind: 'cable', from, to });
 /** A flat panel from an [x, y] outline at depth z, `depth` thick; y is measured from `base`. */
 export const panel = (outline, z, color = COLORS.structure, depth = 0.5, base = 0) => ({ kind: 'panel', outline, z, color, depth, base });
