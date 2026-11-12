@@ -20,6 +20,9 @@ import Co2Jets from './Co2Jets';
 import Confetti from './Confetti';
 import Streamers from './Streamers';
 import Fireworks, { fireworkLight } from './Fireworks';
+import Crowd from './Crowd';
+import Performer from './Performer';
+import { FEATURES } from '@/lib/features';
 import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { markReady } from '@/components/home/show/stageReady';
@@ -35,7 +38,7 @@ import { roomFlash } from './flash';
  * + haze 3 + pixel bars 1 + strobe glow 1 + PA 3 + skirt 2 + barrier 1 + low fog 2 + CO2 nozzles 2 (floor, truss) + confetti and streamer cannons 2 (these a moment after the
  * first frames) = 45, plus lasers and house lights (1 each, skipped while off), the CO2 plumes (floor, truss),
  * the confetti (with its CO2 blasts), the streamers and the fireworks (1 each, zero instances while idle)
- * and bloom.
+ * and bloom. With their switches on: the crowd 1, the performer 1.
  */
 
 /**
@@ -230,7 +233,7 @@ function Warm({ part, children }) {
     return <group ref={group} visible={ready}>{children}</group>;
 }
 
-export default function StageScene({ beams, bloom, look, events = [], lasers = 40, blinders = 8, screen, font, logoFonts, effects = 'low' }) {
+export default function StageScene({ beams, bloom, look, events = [], lasers = 40, blinders = 8, screen, font, logoFonts, effects = 'low', control }) {
     const dressed = useAfterFirstFrames();
     const truss = useMemo(() => createTrussGeometry(), []);
     const backdrop = useMemo(() => createBackdropMaterial(), []);
@@ -280,6 +283,9 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     <Co2Jets look={look} count={beams} quality={effects} blinders={blinders} mount="confetti" />
                     <Streamers look={look} quality={effects} blinders={blinders} />
                     <Fireworks look={look} count={beams} quality={effects} />
+                    {/* the audience and whoever is on stage (each can be switched off: lib/features.js) */}
+                    {FEATURES.crowd && <Crowd look={look} quality={effects} blinders={blinders} />}
+                    {FEATURES.performer && <Performer look={look} control={control} />}
                 </Warm>
             )}
             <CameraFlash look={look} blinders={blinders} />
