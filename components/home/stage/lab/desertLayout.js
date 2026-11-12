@@ -42,20 +42,24 @@ structure.push(box([1, 19, 1], [78, 9.5, -70], COLORS.truss));
 // ---- the roof rig: four straight trusses, each with its own job -------------------------------
 const ROWS = [
     // the front truss lights the band's faces and blinds the crowd
-    { z: -1, y: ROOF_Y - 1.6, cycle: ['spot', 'blinder', 'spot', 'wash', 'spot', 'blinder', 'spot'], dir: (x) => aim(x * -0.02, -1, -0.5) },
-    { z: -6.5, y: ROOF_Y - 1.2, cycle: ['beam', 'wash', 'beam', 'strobe', 'beam', 'wash', 'beam'], dir: (x) => aim(x * 0.03, -1, 0.45) },
-    { z: -12, y: ROOF_Y - 1.2, cycle: ['beam', 'strobe', 'beam', 'wash', 'beam', 'strobe', 'beam'], dir: (x) => aim(x * 0.03, -1, 0.6) },
+    { z: -1, y: ROOF_Y - 1.6, cycle: ['spot', 'blinder', 'spot', 'wash', 'spot', 'blinder', 'spot'], dir: (x) => aim(x * -0.02, -1, -0.42), reach: 19 },
+    { z: -6.5, y: ROOF_Y - 1.2, cycle: ['beam', 'wash', 'beam', 'strobe', 'beam', 'wash', 'beam'], dir: (x) => aim(x * 0.045, -0.5, 1), washDir: (x) => aim(x * -0.01, -1, 0.1), reach: 46, washReach: 18 },
+    { z: -12, y: ROOF_Y - 1.2, cycle: ['beam', 'strobe', 'beam', 'wash', 'beam', 'strobe', 'beam'], dir: (x) => aim(x * 0.04, -0.38, 1), washDir: (x) => aim(x * -0.01, -1, 0.15), reach: 50, washReach: 18 },
     // the rear truss throws beams over the band into the crowd
-    { z: -17.5, y: ROOF_Y - 1.2, cycle: ['beam', 'beam', 'ledbar', 'beam', 'strobe', 'beam', 'ledbar'], dir: (x) => aim(x * 0.035, -0.8, 1) },
+    { z: -17.5, y: ROOF_Y - 1.2, cycle: ['beam', 'beam', 'ledbar', 'beam', 'strobe', 'beam', 'ledbar'], dir: (x) => aim(x * 0.035, -0.3, 1), reach: 54 },
 ];
 for (const row of ROWS) {
     structure.push(truss([-21, row.y + 0.6, row.z], [21, row.y + 0.6, row.z]));
-    spread(-20, 20, 16).forEach((x, i) => fixtures.push(fx(row.cycle[i % row.cycle.length], [x, row.y, row.z], row.dir(x))));
+    spread(-20, 20, 16).forEach((x, i) => {
+        const type = row.cycle[i % row.cycle.length];
+        const wash = type === 'wash' && row.washDir;
+        fixtures.push(fx(type, [x, row.y, row.z], wash ? row.washDir(x) : row.dir(x), wash ? row.washReach : row.reach));
+    });
 }
 // two short trusses running front to back join the rows into a grid and carry washes
 for (const s of [-1, 1]) {
     structure.push(truss([s * 10.5, ROOF_Y - 0.6, -1], [s * 10.5, ROOF_Y - 0.6, -17.5]));
-    along([s * 10.5, ROOF_Y - 1.2, -1], [s * 10.5, ROOF_Y - 1.2, -17.5], 4, 0.18).forEach((p) => fixtures.push(fx('wash', p, aim(-s * 0.2, -1, 0.2))));
+    along([s * 10.5, ROOF_Y - 1.2, -1], [s * 10.5, ROOF_Y - 1.2, -17.5], 4, 0.18).forEach((p) => fixtures.push(fx('wash', p, aim(-s * 0.2, -1, 0.2), 18)));
 }
 
 // ---- the side towers -----------------------------------------------------------------------------
@@ -63,26 +67,26 @@ for (const s of [-1, 1]) {
     // three ladders of beams up each side of the stage, a strobe on top of each
     for (const z of [-3.5, -9.5, -15.5]) {
         structure.push(truss([s * 22.6, D, z], [s * 22.6, ROOF_Y - 1.6, z]));
-        for (const y of spread(3, 16, 6)) fixtures.push(fx('beam', [s * 22, D + y, z], aim(-s * 0.9, 0.25 - y * 0.03, 0.55)));
+        for (const y of spread(3, 16, 6)) fixtures.push(fx('beam', [s * 22, D + y, z], aim(-s * 0.3, (y - 11) * 0.035, 1), 44));
         fixtures.push(fx('strobe', [s * 22, D + 17.8, z]));
     }
     // lasers half-way up, and pixel bars down the front legs
-    for (const y of [9, 14]) fixtures.push(fx('laser', [s * 22, D + y, -1], aim(-s * 0.7, 0.2, 0.7)));
+    for (const y of [9, 14]) fixtures.push(fx('laser', [s * 22, D + y, -1], aim(-s * 0.45, 0.05, 1)));
     for (const y of spread(4, 17, 5)) fixtures.push(fx('ledbar', [s * 23.3, y, 1.3]));
     // strobes and washes framing the side screens
     for (const x of [-4, 0, 4]) fixtures.push(fx('strobe', [s * 34 + x, 21.6, 1.4]));
-    for (const x of [-4.5, 4.5]) fixtures.push(fx('wash', [s * 34 + x, 2.4, 2.4], aim(0, 1, -0.05)));
+    for (const x of [-4.5, 4.5]) fixtures.push(fx('wash', [s * 34 + x, 2.4, 2.4], aim(0, 1, -0.05), 16));
 }
 
 // ---- the floor -----------------------------------------------------------------------------------
 // beams on the floor behind the band, pixel bars under the wall, washes and lasers on the front lip
-for (const x of spread(-17, 17, 12)) fixtures.push(fx('beam', [x, D + 0.5, -16.5], aim(x * 0.03, 1, 0.35)));
+for (const x of spread(-17, 17, 12)) fixtures.push(fx('beam', [x, D + 0.5, -16.5], aim(x * 0.035, 0.5, 1), 46));
 for (const x of spread(-14, 14, 8)) fixtures.push(fx('ledbar', [x, D + 0.9, -17.9]));
-for (const x of spread(-19, 19, 8)) fixtures.push(fx('wash', [x, D + 0.4, -1.2], aim(0, 0.8, -0.6)));
-for (const x of [-16, -6, 6, 16]) fixtures.push(fx('laser', [x, D + 0.3, -0.8], aim(x * 0.02, 0.9, 0.3)));
+for (const x of spread(-19, 19, 8)) fixtures.push(fx('wash', [x, D + 0.4, -1.2], aim(0, 0.45, -1), 12));
+for (const x of [-16, -6, 6, 16]) fixtures.push(fx('laser', [x, D + 0.3, -0.8], aim(x * 0.03, 0.55, 1)));
 for (const x of spread(-3, 3, 4)) fixtures.push(fx('blinder', [x, D + 0.9, -9.6]));
 // follow spots from the front-of-house tower
-for (const x of [-2, 2]) fixtures.push(fx('spot', [x, 6.6, 46], aim(-x * 0.02, -0.04, -1)));
+for (const x of [-2, 2]) fixtures.push(fx('spot', [x, 6.6, 46], aim(-x * 0.02, -0.055, -1), 50));
 
 // ---- effects -------------------------------------------------------------------------------------
 for (const x of spread(-18, 18, 6)) fixtures.push(fx('co2', [x, D + 0.3, -0.6]));
@@ -102,7 +106,7 @@ const layout = {
     fixtures,
     ground: [420, 420],
     views: {
-        audience: { label: 'Audience', pos: [0, 2.2, 44], target: [0, 11, -8] },
+        audience: { label: 'Audience', pos: [0, 2.2, 36], target: [0, 11, -8] },
         front: { label: 'Front', pos: [0, 13, 84], target: [0, 11, -8] },
         quarter: { label: 'Three-quarter', pos: [-58, 17, 50], target: [0, 9, -8] },
         side: { label: 'Side', pos: [95, 11, -8], target: [0, 10, -8] },

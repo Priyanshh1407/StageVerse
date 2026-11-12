@@ -38,7 +38,8 @@ const norm = ([x, y, z]) => { const l = Math.hypot(x, y, z) || 1; return [x / l,
 /** An aim direction, normalised. */
 export const aim = (x, y, z) => norm([x, y, z]);
 
-export const fx = (type, pos, dir) => ({ type, pos, ...(dir ? { aim: dir } : {}) });
+/** A fixture: its type, where it is, where it points, and (optionally) how far its beam reaches in metres. */
+export const fx = (type, pos, dir, reach) => ({ type, pos, ...(dir ? { aim: dir } : {}), ...(reach ? { reach } : {}) });
 export const box = (size, position, color = COLORS.structure, extra = {}) => ({ kind: 'box', size, position, color, ...extra });
 export const truss = (from, to) => ({ kind: 'truss', from, to });
 /** A flat panel from an [x, y] outline at depth z, `depth` thick; y is measured from `base`. */

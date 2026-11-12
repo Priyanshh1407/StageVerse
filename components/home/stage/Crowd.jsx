@@ -146,7 +146,7 @@ export default function Crowd({ look, quality = 'low', blinders = 8 }) {
             // rows and columns with a little disorder; packed tighter at the barrier
             const t = (row + rand() * 0.8) / rows;
             spot[i * 3] = (((col + 0.5 + (row % 2) * 0.5) / perRow) * 2 - 1) * AREA.x + (rand() - 0.5) * 0.35;
-            spot[i * 3 + 1] = 0.84 + rand() * 0.22;
+            spot[i * 3 + 1] = 0.72 + rand() * 0.19;
             spot[i * 3 + 2] = AREA.z0 + Math.pow(t, 1.15) * (AREA.z1 - AREA.z0);
             seed[i * 2] = rand();
             seed[i * 2 + 1] = rand();

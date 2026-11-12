@@ -44,7 +44,8 @@ function Fixture({ f, beams, scale }) {
     const type = TYPES[f.type];
     const cone = useMemo(() => {
         if (!beams || !type.beam || !f.aim) return null;
-        const [length, radius] = [type.beam[0] * scale, type.beam[1] * Math.sqrt(scale)];
+        const reach = f.reach ?? type.beam[0];
+        const [length, radius] = [reach * scale, type.beam[1] * Math.sqrt(scale) * Math.min(1, reach / type.beam[0] + 0.25)];
         const dir = new THREE.Vector3(...f.aim);
         return {
             length, radius,
