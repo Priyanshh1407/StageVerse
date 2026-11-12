@@ -1,9 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
-import { Search, FolderOpen, Save, Loader2, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useCallback, use } from 'react';
+import dynamic from 'next/dynamic';
+import { Search, FolderOpen, Save, Loader2, RefreshCw, Box } from 'lucide-react';
+import { FEATURES } from '@/lib/features';
+import { liveLook, patchRig } from '@/lib/show/liveLook';
 import { toast } from 'sonner';
 import StudioNavbar from '@/components/production/StudioNavbar';
+
+// the 3D stage, loaded only when it is opened
+const StageView = dynamic(() => import('@/components/live/StageView'), { ssr: false });
+const runningLook = (t) => liveLook({ status: 'Live' }, t);
 
 import StudioSidebar from '@/components/production/studio/StudioSidebar';
 import CreativeRigView from '@/components/production/studio/views/CreativeRigView';
@@ -22,6 +29,9 @@ export default function PatchStudioPage(props) {
    const [isSaving, setIsSaving] = useState(false);
    const [searchQuery, setSearchQuery] = useState("");
    const [lastSaved, setLastSaved] = useState(null);
+   const [onStage, setOnStage] = useState(false); // the patch shown as a rig on the 3D stage
+   const closeStage = useCallback(() => setOnStage(false), []);
+   const rig = patchRig(fixtures);
    useEffect(() => {
       if (!showId) return;
       loadPatch();
@@ -247,6 +257,13 @@ export default function PatchStudioPage(props) {
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                </button>
 
+               {FEATURES.patchStage && (
+                  <button onClick={() => setOnStage(true)} title="See this patch as a rig on the 3D stage"
+                     className="flex items-center gap-2 border border-[#27272A] hover:border-[#ff6a00] text-gray-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                     <Box className="w-3.5 h-3.5" /> View on stage
+                  </button>
+               )}
+
                {}
                <button
                   onClick={handleSavePatch}
@@ -311,6 +328,16 @@ export default function PatchStudioPage(props) {
 
             </div>
          </div>
+         {FEATURES.patchStage && (
+            <StageView open={onStage} onClose={closeStage} title="This patch on stage" subtitle="The 3D stage built with this patch's fixture counts" lookAt={runningLook} rig={rig.stage}>
+               <p className="text-sm text-gray-200">
+                  <b>{rig.total}</b> fixtures in <b>{rig.universes}</b> universe{rig.universes === 1 ? '' : 's'}: {rig.counts.heads} moving heads, {rig.counts.lasers} lasers, {rig.counts.strobes} strobes, {rig.counts.blinders} blinders, {rig.counts.bars} LED bars, {rig.counts.hazers} hazers{rig.counts.other ? `, ${rig.counts.other} other` : ''}.
+               </p>
+               <p className="mt-1 text-xs text-gray-400">
+                  The stage is drawn with {rig.stage.beams} moving heads{rig.exact ? '' : ` (it can draw between 12 and 140; this patch has ${rig.counts.heads})`}, placed in its own truss positions by type, not at each fixture&apos;s real position.
+               </p>
+            </StageView>
+         )}
       </div>
    );
 }

@@ -5,6 +5,7 @@ import { parseBody, pollCreateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
 import Poll from '@/models/Poll';
 import Vote from '@/models/Vote';
+import Setlist from '@/models/Setlist';
 import { verifyAuth } from '@/lib/auth';
 import { loadEventFor, hasEventRelation, SHOW_CONTROL } from '@/lib/authz';
 import { resolveEvent } from '@/lib/events';
@@ -41,7 +42,10 @@ export async function GET(req) {
             const vote = await Vote.findOne({ pollId: poll._id, userId: user.userId }).select('optionId');
             votedOptionId = vote ? String(vote.optionId) : null;
         }
-        return NextResponse.json({ success: true, poll, votedOptionId });
+        // where the show is (set from the crew's console): the fans' live stage view starts from it
+        const setlists = await Setlist.find({ eventId: event._id }).select('showStatus').lean();
+        const showStatus = ['Live', 'Paused'].find((s) => setlists.some((x) => x.showStatus === s)) ?? 'Standby';
+        return NextResponse.json({ success: true, poll, votedOptionId, showStatus });
     } catch (e) {
         return apiError(e, '/api/fan/poll');
     }

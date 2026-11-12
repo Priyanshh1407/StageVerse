@@ -109,7 +109,7 @@ const FRAGMENT = /* glsl */ `
         // a dark figure: lit from the stage side by the show, from above by the house lights
         vec3 c = vec3(0.012, 0.014, 0.02);
         c += show * uStage * (0.05 + 0.3 * max(0.0, -n.z));
-        c += vec3(1.0, 0.72, 0.42) * uHouse * (0.12 + 0.3 * max(0.0, n.y));
+        c += vec3(1.0, 0.72, 0.42) * uHouse * (0.035 + 0.11 * max(0.0, n.y));
         c += vec3(1.0, 0.97, 0.9) * uFlash * (0.2 + 0.5 * max(0.0, -n.z));
         if (vPart > 1.5) {
             // the wristband: one of the show's two colours, in the pattern of the moment

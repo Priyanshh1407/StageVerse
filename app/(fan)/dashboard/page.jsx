@@ -14,6 +14,8 @@ import PredictionModal from '@/components/fan/dashboard/SetListPredictor';
 import ScorecardModal from '@/components/fan/dashboard/ScoreCardModal';
 import NotificationsModal from '@/components/fan/dashboard/NotificationsModal';
 import LivePollCard from '@/components/fan/dashboard/LivePollCard';
+import LiveStageCard from '@/components/fan/dashboard/LiveStageCard';
+import { FEATURES } from '@/lib/features';
 import MemoryLightbox from '@/components/fan/MemoryLightbox';
 
 import {
@@ -375,6 +377,7 @@ export default function FanDashboard() {
 
       {}
       <LivePollCard eventId={activeEvent?._id} onComplete={() => console.log("Poll Ended")} />
+      {FEATURES.liveStage && <LiveStageCard eventId={activeEvent?._id} eventTitle={activeEvent?.title} />}
 
     </div>
   );
