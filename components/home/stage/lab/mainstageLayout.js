@@ -49,10 +49,9 @@ structure.push(box([0.5, 1.8, 0.3], [6, 0.9, 7], COLORS.person));
 // Three arrow-shaped trusses repeat the crown, each wider, lower and further forward than the last, so
 // from the crowd they stack into a tunnel of arrows over the whole stage. They sit above the fin tips
 // and above the crown, so they cross neither.
-// They hang the way big festival roofs really do: two lattice masts stand on the ground BEHIND the
-// wall and the fins (nothing stands in front of a fin), each with a jib reaching forward high over the
-// stage like a crane's, held back by stay cables to ballast blocks behind. Every arrow hangs from the
-// two jibs on steel cables: one straight down each side, and two bridles out along each arm to its end.
+// They hang like a load from a crane: one lattice mast stands on the ground BEHIND the middle of the
+// wall (nothing stands in front of a fin), with a jib reaching forward high over the stage, held back
+// by three stay cables to ballast blocks behind. Every arrow hangs from the jib on steel cables.
 const aerialFrom = { structure: structure.length, fixtures: fixtures.length };
 const CHEVRONS = [
     { z: -22, half: 19, endY: D + 23, rise: 7, perArm: 7 },
@@ -71,35 +70,28 @@ CHEVRONS.forEach((c, k) => {
     }
     fixtures.push(fx('spot', [0, c.endY + c.rise - 0.8, c.z], aim(0, -1, 0.35)));
 });
-const MAST = { base: [10, 0, -37], top: [7, 54, -34], jib: [5, 47, -3], anchors: [[22, 0, -60], [3, 0, -62]] };
-const mirror = (q, s) => [s * q[0], q[1], q[2]];
-for (const s of [-1, 1]) {
-    const top = mirror(MAST.top, s);
-    const tip = mirror(MAST.jib, s);
-    structure.push(truss(mirror(MAST.base, s), top, 2));          // the mast
-    structure.push(truss(top, tip, 1.3));                          // its jib, out over the stage
-    for (const anchor of MAST.anchors) {                           // stay cables back to ballast on the ground
-        structure.push(cable(top, mirror(anchor, s)));
-        structure.push(box([3.5, 2.2, 3.5], [s * anchor[0], 1.1, anchor[2]], COLORS.dark));
-    }
-    structure.push(cable(top, [tip[0], tip[1] + 0.3, tip[2]]));    // and a pendant along the jib
-    // each arrow hangs from the jib above it
-    for (const c of CHEVRONS) {
-        const t = (c.z - top[2]) / (tip[2] - top[2]);
-        const hook = [top[0] + (tip[0] - top[0]) * t, top[1] + (tip[1] - top[1]) * t, c.z];
-        for (const reach of [Math.abs(hook[0]) / c.half, 0.6, 1]) structure.push(cable(hook, onArm(c, s, reach)));
-    }
+const MAST = { base: [0, 0, -37], top: [0, 56, -34], jib: [0, 48, -3], anchors: [[-22, 0, -60], [22, 0, -60], [0, 0, -66]] };
+structure.push(truss(MAST.base, MAST.top, 2.4));                  // the mast, behind the middle of the wall
+structure.push(truss(MAST.top, MAST.jib, 1.5));                   // its jib, out over the stage
+structure.push(cable(MAST.top, [MAST.jib[0], MAST.jib[1] + 0.4, MAST.jib[2]]));
+for (const anchor of MAST.anchors) {                              // stay cables back to ballast on the ground
+    structure.push(cable(MAST.top, anchor));
+    structure.push(box([3.5, 2.2, 3.5], [anchor[0], 1.1, anchor[2]], COLORS.dark));
 }
-// the two masts are tied together at the top and at the jib tips
-structure.push(truss(mirror(MAST.top, -1), mirror(MAST.top, 1), 1.3));
-structure.push(truss(mirror(MAST.jib, -1), mirror(MAST.jib, 1), 1));
+// each arrow hangs from the jib above it: on both sides, a cable near the peak, one to the middle
+// of the arm and one to its end
+for (const c of CHEVRONS) {
+    const t = (c.z - MAST.top[2]) / (MAST.jib[2] - MAST.top[2]);
+    const hook = [0, MAST.top[1] + (MAST.jib[1] - MAST.top[1]) * t, c.z];
+    for (const s of [-1, 1]) for (const reach of [0.22, 0.6, 1]) structure.push(cable(hook, onArm(c, s, reach)));
+}
 // the front arrow also carries the truss CO2 and the streamer launchers
 for (const x of [-21, -8, 8, 21]) { const q = onArm(CHEVRONS[2], Math.sign(x), Math.abs(x) / CHEVRONS[2].half); fixtures.push(fx('co2', [q[0], q[1] + 0.6, q[2] + 0.6])); }
 for (const x of [-24, -12, 0, 12, 24]) { const q = onArm(CHEVRONS[2], Math.sign(x) || 1, Math.abs(x) / CHEVRONS[2].half); fixtures.push(fx('streamer', [q[0], q[1] + 0.7, q[2]])); }
 
 // That was the first aerial design. Its pieces are lifted out here so the page can switch between it
 // and the second one below.
-const hung = { key: 'hung', label: 'Hung from masts', structure: structure.splice(aerialFrom.structure), fixtures: fixtures.splice(aerialFrom.fixtures) };
+const hung = { key: 'hung', label: 'Hung from one mast', structure: structure.splice(aerialFrom.structure), fixtures: fixtures.splice(aerialFrom.fixtures) };
 
 // ---- the second aerial design: arches from side towers ------------------------------------------
 // Each arrow is a whole arch standing on the ground: a lattice tower at each side of the stage,
@@ -137,6 +129,31 @@ const FRONT = ARCHES[2];
 const onFront = (x) => [x, FRONT.top + (FRONT.peak - FRONT.top) * (1 - Math.abs(x) / FRONT.x), FRONT.z];
 for (const x of [-30, -12, 12, 30]) { const q = onFront(x); arches.fixtures.push(fx('co2', [q[0], q[1] + 0.7, q[2] + 0.6])); }
 for (const x of [-36, -18, 0, 18, 36]) { const q = onFront(x); arches.fixtures.push(fx('streamer', [q[0], q[1] + 0.8, q[2]])); }
+
+// ---- the third aerial design: no trusses at all ---------------------------------------------------
+// Nothing is flown. The aerial lights sit on top of what is already there: along the top edges of
+// every fin, along the top of the wall, up both slopes of the crown and on top of the PA towers.
+const mounted = { key: 'none', label: 'No trusses: lights on the fins and crown', structure: [], fixtures: [] };
+for (const f of FINS) {
+    // three on each fin's top: half-way up the outer slope, just inside the tip, half-way down the inner slope
+    const [outer, tip, inner] = [f.outline[2], f.outline[3], f.outline[4]];
+    const spots = [[(outer[0] + tip[0]) / 2, (outer[1] + tip[1]) / 2, 'beam'], [tip[0] - f.s * 0.9, tip[1] - 0.5, 'beam'], [(inner[0] + tip[0]) / 2, (inner[1] + tip[1]) / 2, 'wash']];
+    for (const [x, y, type] of spots) mounted.fixtures.push(fx(type, [x, D + y + 0.5, f.z + 0.9], aim(f.s * (0.12 + 0.05 * f.i), 0.55, 1)));
+}
+// beams between the spots along the top of the wall
+for (const x of spread(-12.5, 12.5, 9)) mounted.fixtures.push(fx('beam', [x, D + WALL.height + 0.5, WALL.z + 1.6], aim(x * 0.03, 0.35, 1)));
+// beams up both slopes of the crown, a spot on its peak, and the truss CO2 on its shoulders
+for (const s of [-1, 1]) {
+    along([s * WALL.topHalf, D + WALL.height + 1, WALL.z + 1.6], [0, D + WALL.height + CROWN.rise + 1, WALL.z + 1.6], 6, 0.12).forEach((q, n) => {
+        mounted.fixtures.push(fx(n % 3 === 2 ? 'wash' : 'beam', q, aim(s * (0.35 - 0.05 * n), 0.6, 1)));
+    });
+    for (const x of [6, 12]) mounted.fixtures.push(fx('co2', [s * x, D + WALL.height + CROWN.rise * (1 - x / WALL.topHalf) + 1.6, WALL.z + 2]));
+    // two beams on top of each PA tower
+    for (const z of [-4.6, -3.4]) mounted.fixtures.push(fx('beam', [s * 47, 18.6, z], aim(-s * 0.4, 0.5, 1)));
+}
+mounted.fixtures.push(fx('spot', [0, D + WALL.height + CROWN.rise + 1.2, WALL.z + 1.6], aim(0, -0.5, 1)));
+// the streamers fire from the top of the wall
+for (const x of [-14, -7, 0, 7, 14]) mounted.fixtures.push(fx('streamer', [x, D + WALL.height + 0.6, WALL.z + 2.4]));
 
 // ---- lights on the structure -------------------------------------------------------------------
 for (const s of [-1, 1]) {
@@ -216,7 +233,7 @@ const layout = {
     structure,
     fixtures,
     // two designs for the aerial rig: the page switches between them
-    variants: [hung, arches],
+    variants: [hung, arches, mounted],
     ground: [260, 220],
     views: {
         audience: { label: 'Audience', pos: [0, 2.2, 64], target: [0, 19, -14] },
@@ -230,7 +247,7 @@ const layout = {
         'Fins: 6 a side, each 3.2 m further forward than the one inside it',
         'A leaning ladder of lights up the middle of every gap between fins',
         'Pixel bars round every fin, as a lit border',
-        'Aerial rig, two designs to compare: arrows hung from crane masts behind the wall, or arches standing on side towers',
+        'Aerial rig, three designs to compare: arrows hung from one crane mast, arches on side towers, or no trusses',
         'Orange plate = the logo; blue-grey = LED screen; white = a person (1.8 m)',
     ],
 };
