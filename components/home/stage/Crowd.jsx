@@ -10,8 +10,9 @@ import { roomFlash } from './flash';
 // The audience: dark figures from the barrier back towards the camera, each with an LED wristband.
 // One instanced mesh, one draw call; every movement is worked out on the graphics card from a few
 // numbers the show already has:
-//   the beat      everyone bounces on it, harder when the show is loud
-//   loud moments  hands go up (the drop, the peaks); the arms pump on the beat
+//   the beat      everyone moves exactly on it: a sway in quiet parts, a bounce in a groove or a build,
+//                 a full jump only in the peaks
+//   the peaks     hands go up (and on a drop); the arms pump on the beat
 //   wristbands    the show's two colours, flashing on the beat in a pattern that changes every 16
 //                 beats (all together, a wave across the crowd, a random sparkle)
 //   quiet moments a share of the crowd holds up a phone torch
@@ -77,9 +78,11 @@ const VERTEX = /* glsl */ `
         } else {
             vLit = 0.0;
         }
-        // the bounce: on the beat, a little out of step from person to person
-        float hop = pow(abs(sin(3.14159 * (uBeat + aSeed.x * 0.12))), 3.0);
-        p.y = p.y * aSpot.y + (0.05 + 0.2 * uEnergy) * hop * (0.6 + 0.4 * aSeed.y);
+        // the bounce: up exactly on each beat of the song (a hair apart from person to person, like a
+        // real crowd); a sway most of the time, a bounce in a groove, a full jump only in the peaks
+        float hop = pow(abs(cos(3.14159 * (uBeat + (aSeed.x - 0.5) * 0.06))), 1.6);
+        float jump = 0.02 + 0.07 * uEnergy + 0.3 * smoothstep(0.7, 1.0, uEnergy);
+        p.y = p.y * aSpot.y + jump * hop * (0.65 + 0.35 * aSeed.y);
         p.x += aSpot.x;
         p.z += aSpot.z;
         vNormal = n;
@@ -179,12 +182,14 @@ export default function Crowd({ look, quality = 'low', blinders = 8 }) {
         const house = target.house ?? 0;
         const playing = target.beatPos !== undefined;
         // hands up when the show is at full strength or the drop lands; torches when it is quiet and dark
-        const loud = Math.max(target.dropFx ?? 0, Math.min(1, Math.max(0, (level - 0.95) / 0.3)));
+        // (a song says how hard its crowd moves, section by section: look.crowd; without it, the light level decides)
+        const crowd = target.crowd;
+        const loud = crowd !== undefined ? (crowd >= 1 ? 1 : (target.dropFx ?? 0)) : Math.max(target.dropFx ?? 0, Math.min(1, Math.max(0, (level - 0.95) / 0.3)));
         const quiet = playing && house < 0.2 ? Math.min(1, Math.max(0, (0.62 - level) / 0.2)) * master : 0;
         st.hands += ((playing ? loud : 0) - st.hands) * k;
         st.torch += (quiet - st.torch) * Math.min(1, delta * 1.2);
         st.bands += ((1 - Math.min(1, house * 1.5)) * master - st.bands) * k;
-        st.energy += ((playing ? Math.min(1, level / 1.2) : 0.1) - st.energy) * k;
+        st.energy += ((playing ? (crowd ?? Math.min(1, level / 1.2)) : 0.1) - st.energy) * Math.min(1, delta * 2.5);
         // with no song the crowd sways slowly on its own
         st.beat = playing ? target.beatPos : st.beat + delta * 0.8;
         u.uBeat.value = st.beat;

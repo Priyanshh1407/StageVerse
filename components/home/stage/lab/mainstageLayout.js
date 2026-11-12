@@ -1,4 +1,4 @@
-import { COLORS, aim, along, box, fx, panel, spread, truss } from './blockoutKit.js';
+import { COLORS, aim, along, box, fx, panel, spread, truss, turned } from './blockoutKit.js';
 
 // The mainstage (design E, "winged fins"), home of EDM. A rough layout: the structure, and where
 // every light and effect would go. Nothing here is used by the homepage.
@@ -45,50 +45,60 @@ for (const s of [-1, 1]) structure.push(box([1.6, 10, 1.4], [s * 47, 13, -4], CO
 structure.push(box([92, 1.2, 0.2], [0, 0.6, 6], COLORS.dark));
 structure.push(box([0.5, 1.8, 0.3], [6, 0.9, 7], COLORS.person));
 
-// ---- the aerial rig: three flown chevrons -----------------------------------------------------
-// Not one bar on top of the screen: three arrow-shaped trusses that repeat the crown, each one
-// wider, lower and further forward than the last, so from the crowd they stack into a tunnel of
-// arrows over the DJ. (Flown from a ground-support grid hidden behind the fins.)
-const CHEVRONS = [
-    { z: -22, half: 19, endY: D + 20, rise: 7.5, perArm: 7 },
-    { z: -15, half: 24, endY: D + 18.5, rise: 7.5, perArm: 8 },
-    { z: -8, half: 29, endY: D + 17, rise: 7.5, perArm: 9 },
-];
-const ARM = ['beam', 'beam', 'wash', 'beam', 'strobe', 'beam', 'wash', 'beam', 'beam'];
-CHEVRONS.forEach((c, k) => {
+// ---- the aerial rig: a canopy over the DJ, standing on its own four legs ----------------------
+// A real ground-supported roof inside the centre bay. It is narrower than the gap between the two
+// innermost fins, so from the crowd it never crosses a fin, and lower than the top of the wall, so
+// it never covers the crown or the logo. Two side beams sit on four towers; four arrow-shaped
+// trusses span between them, one behind the other, each repeating the crown: from the front they
+// stack into a tunnel of arrows over the DJ.
+const CANOPY = { half: 11.5, back: WALL.z + 1.6, front: -9.5, eaves: D + 14.5, rise: 4.6 };
+const ARROWS = spread(CANOPY.back + 1, CANOPY.front, 4);
+const ARM = ['beam', 'wash', 'beam', 'strobe', 'beam', 'beam', 'wash'];
+for (const s of [-1, 1]) {
+    const x = s * CANOPY.half;
+    for (const z of [CANOPY.back, CANOPY.front]) structure.push(truss([x, D, z], [x, CANOPY.eaves, z]));
+    structure.push(truss([x, CANOPY.eaves, CANOPY.back], [x, CANOPY.eaves, CANOPY.front]));
+    // washes under the side beams (onto the DJ), and beams up the two front legs (out over the crowd)
+    along([x, CANOPY.eaves - 0.6, CANOPY.back], [x, CANOPY.eaves - 0.6, CANOPY.front], 4, 0.15).forEach((q) => fixtures.push(fx('wash', q, aim(-s * 0.55, -1, 0.15), 18)));
+    for (const y of spread(3, 12, 5)) fixtures.push(fx('beam', [x, D + y, CANOPY.front + 0.5], aim(s * 0.3, 0.15 + y * 0.04, 1)));
+}
+ARROWS.forEach((z, k) => {
+    const peak = [0, CANOPY.eaves + CANOPY.rise, z];
     for (const s of [-1, 1]) {
-        const end = [s * c.half, c.endY, c.z - 2.5];
-        const apex = [0, c.endY + c.rise, c.z];
-        structure.push(truss(end, apex));
-        along(end, apex, c.perArm, 0.06).forEach((p, j) => {
-            const type = ARM[(j + k) % ARM.length];
-            fixtures.push(fx(type, [p[0], p[1] - 0.6, p[2]], aim(p[0] * 0.035, -1, 0.55 + 0.1 * k)));
-        });
+        const end = [s * CANOPY.half, CANOPY.eaves, z];
+        structure.push(truss(end, peak));
+        along(end, peak, 5, 0.1).forEach((q, n) => fixtures.push(fx(ARM[(n + k) % ARM.length], [q[0], q[1] - 0.6, q[2]], aim(q[0] * 0.06, -0.5, 1))));
     }
-    fixtures.push(fx('spot', [0, c.endY + c.rise - 0.7, c.z], aim(0, -1, 0.35)));
+    fixtures.push(fx('spot', [0, peak[1] - 0.7, z], aim(0, -1, 0.3), 22));
 });
-// the front chevron also carries the truss CO2 and the streamer launchers
-along([-CHEVRONS[2].half, CHEVRONS[2].endY, -10.5], [0, CHEVRONS[2].endY + 7.5, -8], 2, 0.3).forEach((p) => {
-    for (const s of [-1, 1]) fixtures.push(fx('co2', [s * Math.abs(p[0]), p[1] + 0.5, p[2] + 0.6]));
-});
-for (const x of [-24, -12, 0, 12, 24]) fixtures.push(fx('streamer', [x, CHEVRONS[2].endY + 7.5 * (1 - Math.abs(x) / 29) + 0.6, -8 - 2.5 * (Math.abs(x) / 29)]));
+// a ridge truss joins the four peaks
+structure.push(truss([0, CANOPY.eaves + CANOPY.rise, ARROWS[0]], [0, CANOPY.eaves + CANOPY.rise, ARROWS[3]]));
+// the front arrow also carries the truss CO2 and the streamer launchers
+const onFrontArrow = (x) => CANOPY.eaves + CANOPY.rise * (1 - Math.abs(x) / CANOPY.half);
+for (const x of [-8, -3, 3, 8]) fixtures.push(fx('co2', [x, onFrontArrow(x) + 0.5, CANOPY.front + 0.6]));
+for (const x of [-9, -4.5, 0, 4.5, 9]) fixtures.push(fx('streamer', [x, onFrontArrow(x) + 0.6, CANOPY.front]));
 
 // ---- lights on the structure -------------------------------------------------------------------
 for (const s of [-1, 1]) {
-    // a ladder of lights standing in every gap between two fins, from the floor up to the shoulder of
-    // the shorter fin (as tall as the screens beside it): beams with a wash every third, a strobe on top
+    // A ladder of lights in every gap between two fins, leaning with them: it runs up the middle of the
+    // gap (half-way between one fin's outer edge and the next fin's inner edge) to the shoulder of the
+    // shorter fin. Beams with a wash every third, and strobes stood on end like the ladder itself.
     for (let k = 1; k < FIN_COUNT; k++) {
         const a = fin(k, s);
         const b = fin(k + 1, s);
-        const x = (a.x + b.x) / 2 + s * 0.6;
-        const z = (a.z + b.z) / 2;
+        const w = (s * FIN_WIDTH) / 2;
         const top = 0.88 * b.height;
+        // the middle of the gap at height y (both edges are straight lines, so the ladder is one too)
+        const midX = (y) => (a.x + w + a.lean * (y / (0.8 * a.height)) + b.x - w + 0.85 * b.lean * (y / (0.88 * b.height))) / 2;
+        const z = (a.z + b.z) / 2;
+        const tilt = Math.atan2(midX(top) - midX(0), top);
+        structure.push(truss([midX(0), D, z], [midX(top), D + top, z]));
         const n = Math.floor(top / 2.3);
-        structure.push(truss([x, D, z], [x + s * 0.12 * top, D + top, z]));
         for (let j = 0; j < n; j++) {
             const y = 1.3 + j * 2.3;
-            const type = j === n - 1 ? 'strobe' : j % 3 === 2 ? 'wash' : 'beam';
-            fixtures.push(fx(type, [x + s * 0.12 * y, D + y, z + 0.5], aim(s * (0.25 + 0.07 * k), 0.75 - 0.05 * j, 0.6)));
+            const type = j === n - 1 || j === 2 ? 'strobe' : j % 3 === 1 ? 'wash' : 'beam';
+            const fixture = fx(type, [midX(y), D + y, z + 0.5], aim(s * (0.25 + 0.07 * k), 0.75 - 0.05 * j, 0.6));
+            fixtures.push(type === 'strobe' ? turned(fixture, [0, 0, Math.PI / 2 - tilt]) : fixture);
         }
     }
 }
@@ -100,8 +110,18 @@ for (const f of FINS) {
     fixtures.push(fx('pyro', [f.x + f.s * FIN_WIDTH / 2 + f.lean, D + 0.8 * f.height + 0.3, f.z]));
     // a wash at the foot of every fin, lighting it from below when its screen is dark
     fixtures.push(fx('wash', [f.x, D + 0.4, f.z + 1.6], aim(f.lean * 0.05, 1, -0.12)));
-    // pixel bars up the inner edge of every fin
-    for (const t of [0.2, 0.42, 0.64]) fixtures.push(fx('ledbar', [f.x - f.s * FIN_WIDTH / 2 + 0.85 * f.lean * (t / 0.88), D + t * f.height, f.z + 0.5]));
+    // pixel bars end to end round the whole fin (every edge but the floor), so each fin has a lit border
+    f.outline.forEach((from, e) => {
+        if (e === 0) return;
+        const to = f.outline[(e + 1) % f.outline.length];
+        const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
+        const n = Math.max(1, Math.round(length / 1.7));
+        const angle = Math.atan2(to[1] - from[1], to[0] - from[0]) - Math.PI / 2;
+        for (let j = 0; j < n; j++) {
+            const t = (j + 0.5) / n;
+            fixtures.push(turned(fx('ledbar', [from[0] + (to[0] - from[0]) * t, D + from[1] + (to[1] - from[1]) * t, f.z + 0.5]), [0, 0, angle]));
+        }
+    });
 }
 // spots along the top of the wall, under the crown (the key light on the DJ and the front washes)
 for (const x of spread(-14, 14, 10)) fixtures.push(fx('spot', [x, D + WALL.height - 0.6, WALL.z + 0.9], aim(x * -0.02, -0.55, 1)));
@@ -146,8 +166,9 @@ const layout = {
     notes: [
         'About 100 m wide, 30 m deep, 29 m to the top of the crown',
         'Fins: 6 a side, each 3.2 m further forward than the one inside it',
-        'A ladder of lights in every gap between fins, floor to shoulder',
-        'Aerial rig: three flown chevrons repeating the crown, stepping forward',
+        'A leaning ladder of lights up the middle of every gap between fins',
+        'Pixel bars round every fin, as a lit border',
+        'Aerial rig: a canopy over the DJ on four legs, with four arrow trusses; it never crosses a fin',
         'Orange plate = the logo; blue-grey = LED screen; white = a person (1.8 m)',
     ],
 };

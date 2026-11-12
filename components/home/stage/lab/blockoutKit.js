@@ -40,6 +40,8 @@ export const aim = (x, y, z) => norm([x, y, z]);
 
 /** A fixture: its type, where it is, where it points, and (optionally) how far its beam reaches in metres. */
 export const fx = (type, pos, dir, reach) => ({ type, pos, ...(dir ? { aim: dir } : {}), ...(reach ? { reach } : {}) });
+/** The same fixture turned: `rot` is [x, y, z] in radians (a strobe stood on end, a pixel bar along an edge). */
+export const turned = (fixture, rot) => ({ ...fixture, rot });
 export const box = (size, position, color = COLORS.structure, extra = {}) => ({ kind: 'box', size, position, color, ...extra });
 export const truss = (from, to) => ({ kind: 'truss', from, to });
 /** A flat panel from an [x, y] outline at depth z, `depth` thick; y is measured from `base`. */

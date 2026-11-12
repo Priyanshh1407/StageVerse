@@ -835,22 +835,20 @@ function ShowExperience({ events = [], isPhone = false }) {
                 )}
                 {/* Concert mode: now playing, with the programmed timeline (click to seek) */}
                 {mode !== 'scroll' && song.playing && now && (
-                    <div className="absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[36rem] bottom-20 sm:bottom-6 rounded-2xl bg-black/75 backdrop-blur-md border border-white/10 p-4 text-white">
-                        <div className="flex items-center justify-between text-sm mb-2">
+                    <div className="absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[30rem] bottom-20 sm:bottom-4 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 px-3 py-2 text-white">
+                        <div className="flex items-center justify-between gap-3 text-sm mb-1.5">
                             <div className="min-w-0">
-                                <div className="font-bold truncate">{now.title}</div>
-                                {now?.demo && <div className="text-[10px] text-gray-500 truncate">{now.artist ? `${now.artist} · ` : ''}educational, non-commercial use only</div>}
-                                <div className="text-[11px] text-gray-400 font-mono">
-                                    {now.bpm} BPM · {songSection ? (songSection.label ?? songSection.kind).toUpperCase() : ''}{mode === 'manual' ? ' · desk has the lights' : ''}
-                                </div>
+                                <div className="font-bold truncate leading-tight">{now.title}</div>
+                                {now?.demo && <div className="text-[9px] leading-tight text-gray-500 truncate">{now.artist ? `${now.artist} · ` : ''}educational, non-commercial use only</div>}
                             </div>
-                            <div className="flex items-center gap-3">
-                                <span className="font-mono text-xs text-gray-300">{fmt(song.time)} / {fmt(now.duration)}</span>
-                                <button onClick={stopSong} aria-label="Stop concert mode" className="p-2 rounded-full bg-white/10 hover:bg-white/20"><Square className="w-3.5 h-3.5" /></button>
+                            <div className="flex shrink-0 items-center gap-2 font-mono text-[11px] text-gray-300">
+                                <span className="hidden sm:inline text-gray-400">{now.bpm} BPM · {songSection ? (songSection.label ?? songSection.kind).toUpperCase() : ''}{mode === 'manual' ? ' · DESK' : ''}</span>
+                                <span>{fmt(song.time)} / {fmt(now.duration)}</span>
+                                <button onClick={stopSong} aria-label="Stop concert mode" className="p-1.5 rounded-full bg-white/10 hover:bg-white/20"><Square className="w-3 h-3" /></button>
                             </div>
                         </div>
                         <div onClick={seek} role="slider" aria-label="Song position" aria-valuemin={0} aria-valuemax={Math.round(now.duration)} aria-valuenow={Math.round(song.time)} tabIndex={0}
-                            className="relative h-8 rounded-md overflow-hidden cursor-pointer bg-white/5">
+                            className="relative h-5 rounded overflow-hidden cursor-pointer bg-white/5">
                             {now.sections.map((s) => (
                                 <div key={s.start} title={`${s.label ?? s.kind} ${fmt(s.start)}`} className="absolute top-0 bottom-0 border-r border-black/60"
                                     style={{ left: `${(s.start / now.duration) * 100}%`, width: `${((s.end - s.start) / now.duration) * 100}%`, background: `${SECTION_COLORS[s.kind]}55` }} />
@@ -863,32 +861,35 @@ function ShowExperience({ events = [], isPhone = false }) {
                             )}
                             <div className="absolute top-0 bottom-0 w-0.5 bg-white" style={{ left: `${(song.time / now.duration) * 100}%` }} />
                         </div>
+                        {/* one row: share, how it works, and the live effects */}
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                         {(FEATURES.share || FEATURES.howItWorks) && (
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <>
                                 {FEATURES.share && <ShareButtons show={now} time={song.time} stage={stage} />}
                                 {FEATURES.howItWorks && (
                                     <button type="button" onClick={() => setExplain((x) => !x)} aria-pressed={explain}
-                                        className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold ${explain ? 'border-transparent bg-[#ff6a00] text-black' : 'border-white/15 bg-white/10 hover:bg-white/20'}`}>
+                                        className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-bold ${explain ? 'border-transparent bg-[#ff6a00] text-black' : 'border-white/15 bg-white/10 hover:bg-white/20'}`}>
                                         How it works
                                     </button>
                                 )}
-                            </div>
+                            </>
                         )}
                         {/* Live effects on top of the show (it carries on): hold to fire, or hold the key */}
                         {mode === 'song' && (
-                            <div className="mt-3 flex items-center gap-2">
+                            <>
                                 {Object.entries(LIVE_FX).map(([which, fx]) => (
                                     <button key={which} type="button" aria-pressed={liveOn[which]} aria-keyshortcuts={fx.key === 'Space' ? 'Space' : 'Shift'}
                                         onPointerDown={(e) => { e.currentTarget.setPointerCapture?.(e.pointerId); liveHold(which, true); }}
                                         onPointerUp={() => liveHold(which, false)} onPointerCancel={() => liveHold(which, false)} onLostPointerCapture={() => liveHold(which, false)}
                                         onContextMenu={(e) => e.preventDefault()}
-                                        className={`flex-1 select-none touch-none py-2 rounded-lg border text-xs font-black tracking-widest transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
-                                        {fx.label} <kbd className={`ml-1 px-1.5 py-0.5 rounded font-mono text-[10px] font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
+                                        title="Hold to fire. The show carries on."
+                                        className={`select-none touch-none px-2.5 py-1 rounded-lg border text-[11px] font-black tracking-wider transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
+                                        {fx.label} <kbd className={`ml-0.5 px-1 py-0.5 rounded font-mono text-[9px] font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
                                     </button>
                                 ))}
-                                <span className="hidden sm:block text-[10px] leading-tight text-gray-400 w-28">Hold to fire. The show carries on.</span>
-                            </div>
+                            </>
                         )}
+                        </div>
                     </div>
                 )}
 

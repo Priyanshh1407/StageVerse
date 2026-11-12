@@ -58,12 +58,12 @@ export function ShareButtons({ show, time, stage }) {
             setTimeout(() => setCopied(false), 1800);
         } catch { /* clipboard blocked: nothing to do */ }
     };
-    const button = 'flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/10 px-2.5 py-1.5 text-[11px] font-bold hover:bg-white/20';
+    const button = 'flex items-center gap-1 rounded-lg border border-white/15 bg-white/10 px-2 py-1 text-[11px] font-bold hover:bg-white/20';
     return (
         <>
             {show.slug && (
                 <button type="button" onClick={copy} className={button} title="Copy a link that opens this song at this moment">
-                    {copied ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />} {copied ? 'Copied' : `Link at ${fmt(time)}`}
+                    {copied ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />} {copied ? 'Copied' : 'Link'}
                 </button>
             )}
             <button type="button" onClick={() => savePoster(stage.current, show)} className={button} title="Save a picture of the stage as it looks now">

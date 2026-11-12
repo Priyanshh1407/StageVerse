@@ -1,4 +1,4 @@
-import { COLORS, aim, box, fx, spread, truss } from './blockoutKit.js';
+import { COLORS, aim, box, fx, spread, truss, turned } from './blockoutKit.js';
 
 // The warehouse, home of rap: an indoor hall with a low roof, a tight truss grid over the crowd, LED
 // strips, lasers, strobes and haze. No fireworks indoors. A rough layout only.
@@ -42,8 +42,16 @@ CROSS.forEach((z, k) => {
     });
 });
 for (const x of [-17, 0, 17]) structure.push(truss([x, GRID_Y + 0.5, CROSS[0]], [x, GRID_Y + 0.5, CROSS.at(-1)]));
-// pixel bars hanging from the grid between the trusses, in two rows
-for (const z of [6.5, 13.5, 20.5, 27.5]) for (const x of [-8.5, 8.5]) fixtures.push(fx('ledbar', [x, GRID_Y - 0.8, z]));
+// ---- pixel bars: lines down the room, columns up the walls, frames round the stage ------------
+// end to end along the three trusses that run the length of the room, so three lines of light race
+// from the stage out over the crowd
+for (const x of [-17, 0, 17]) for (const z of spread(-3.6, 30.2, 20)) fixtures.push(turned(fx('ledbar', [x, GRID_Y + 0.15, z]), [Math.PI / 2, 0, 0]));
+// columns up both side walls, floor to grid, every 6.5 m
+for (const s of [-1, 1]) for (const z of [-6, 0.5, 7, 13.5, 20, 26.5, 33]) for (const y of spread(1.1, 7.1, 4)) fixtures.push(fx('ledbar', [s * 18.6, y, z]));
+// a frame round the LED wall, and a line along the front edge of the stage
+for (const y of [D + 0.7, D + 5.9]) for (const x of spread(-5.2, 5.2, 7)) fixtures.push(turned(fx('ledbar', [x, y, ROOM.back + 0.8]), [0, 0, Math.PI / 2]));
+for (const s of [-1, 1]) for (const y of spread(D + 1.7, D + 4.9, 3)) fixtures.push(fx('ledbar', [s * 6.3, y, ROOM.back + 0.8]));
+for (const x of spread(-10, 10, 12)) fixtures.push(turned(fx('ledbar', [x, D - 0.3, -3.92]), [0, 0, Math.PI / 2]));
 
 // ---- lasers, wall lights and the floor ---------------------------------------------------------
 // lasers from the back wall over the DJ, and from both side walls across the room
@@ -53,10 +61,8 @@ for (const s of [-1, 1]) for (const z of [2, 14, 26]) fixtures.push(fx('laser', 
 for (const s of [-1, 1]) fixtures.push(fx('spot', [s * 9, GRID_Y - 0.1, 13], aim(-s, -0.14, 0)));
 for (const s of [-1, 1]) {
     // vertical strobes and uplighting washes along the side walls
-    for (const z of [-1, 9, 19, 29]) fixtures.push(fx('strobe', [s * 18.4, 4.5, z], null));
+    for (const z of [-2.5, 3.8, 10.2, 16.8, 23.2, 29.8]) fixtures.push(turned(fx('strobe', [s * 18.4, 4.5, z]), [0, 0, Math.PI / 2]));
     for (const z of [4, 14, 24, 34]) fixtures.push(fx('wash', [s * 18, 0.4, z], aim(-s * 0.15, 1, 0)));
-    // pixel bars up the side walls
-    for (const z of [-6, 6.5, 21.5, 36]) fixtures.push(fx('ledbar', [s * 18.5, 5, z]));
 }
 // beams and strobes along the stage lip, blinders on the booth
 for (const x of spread(-9.5, 9.5, 8)) fixtures.push(fx('beam', [x, D + 0.5, -4.6], aim(x * 0.03, 0.9, 0.5)));
@@ -90,6 +96,7 @@ const layout = {
         'Room 38 m wide, 58 m long, 9.5 m high; stage 22 m wide and 1.1 m high',
         'Truss grid 8 m up: six trusses across the room, three down its length',
         'Lasers from the back wall and both side walls; a mirror ball mid-floor',
+        'Pixel bars: three lines down the room, columns up both walls, frames round the wall and stage',
         'No fireworks indoors: CO2 (floor and grid), confetti, streamers, haze',
         'Blue-grey = LED screen and strips; white = a person (1.8 m)',
     ],

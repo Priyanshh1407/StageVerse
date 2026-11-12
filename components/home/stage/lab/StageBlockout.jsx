@@ -55,7 +55,7 @@ function Fixture({ f, beams, scale }) {
     }, [beams, type, f, scale]);
     return (
         <>
-            <mesh position={f.pos}>
+            <mesh position={f.pos} rotation={f.rot ?? [0, 0, 0]}>
                 <boxGeometry args={type.size} />
                 <meshBasicMaterial color={type.color} />
             </mesh>

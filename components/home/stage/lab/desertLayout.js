@@ -1,4 +1,4 @@
-import { COLORS, aim, along, box, fx, spread, truss } from './blockoutKit.js';
+import { COLORS, aim, along, box, fx, spread, truss, turned } from './blockoutKit.js';
 
 // The desert live stage, home of pop and Bollywood: a wide black roof stage for a band, one big LED
 // wall, two giant portrait side screens, in a desert festival ground. A rough layout only.
@@ -46,7 +46,7 @@ const ROWS = [
     { z: -6.5, y: ROOF_Y - 1.2, cycle: ['beam', 'wash', 'beam', 'strobe', 'beam', 'wash', 'beam'], dir: (x) => aim(x * 0.045, -0.5, 1), washDir: (x) => aim(x * -0.01, -1, 0.1), reach: 46, washReach: 18 },
     { z: -12, y: ROOF_Y - 1.2, cycle: ['beam', 'strobe', 'beam', 'wash', 'beam', 'strobe', 'beam'], dir: (x) => aim(x * 0.04, -0.38, 1), washDir: (x) => aim(x * -0.01, -1, 0.15), reach: 50, washReach: 18 },
     // the rear truss throws beams over the band into the crowd
-    { z: -17.5, y: ROOF_Y - 1.2, cycle: ['beam', 'beam', 'ledbar', 'beam', 'strobe', 'beam', 'ledbar'], dir: (x) => aim(x * 0.035, -0.3, 1), reach: 54 },
+    { z: -17.5, y: ROOF_Y - 1.2, cycle: ['beam', 'beam', 'strobe', 'beam', 'beam', 'strobe', 'beam'], dir: (x) => aim(x * 0.035, -0.3, 1), reach: 54 },
 ];
 for (const row of ROWS) {
     structure.push(truss([-21, row.y + 0.6, row.z], [21, row.y + 0.6, row.z]));
@@ -69,24 +69,45 @@ for (const s of [-1, 1]) {
         structure.push(truss([s * 22.6, D, z], [s * 22.6, ROOF_Y - 1.6, z]));
         for (const y of spread(3, 16, 6)) fixtures.push(fx('beam', [s * 22, D + y, z], aim(-s * 0.3, (y - 11) * 0.035, 1), 44));
         fixtures.push(fx('strobe', [s * 22, D + 17.8, z]));
+        // and two more half-way up, stood on end
+        for (const y of [6.9, 12.1]) fixtures.push(turned(fx('strobe', [s * 21.4, D + y, z]), [0, 0, Math.PI / 2]));
     }
-    // lasers half-way up, and pixel bars down the front legs
+    // lasers half-way up
     for (const y of [9, 14]) fixtures.push(fx('laser', [s * 22, D + y, -1], aim(-s * 0.45, 0.05, 1)));
-    for (const y of spread(4, 17, 5)) fixtures.push(fx('ledbar', [s * 23.3, y, 1.3]));
     // strobes and washes framing the side screens
-    for (const x of [-4, 0, 4]) fixtures.push(fx('strobe', [s * 34 + x, 21.6, 1.4]));
+    for (const x of [-4, 0, 4]) fixtures.push(fx('strobe', [s * 34 + x, 22.2, 1.4]));
+    // blinders up the front legs, facing the crowd
+    for (const y of [6, 10, 14]) fixtures.push(fx('blinder', [s * 24.5, y, 1.35]));
     for (const x of [-4.5, 4.5]) fixtures.push(fx('wash', [s * 34 + x, 2.4, 2.4], aim(0, 1, -0.05), 16));
 }
 
 // ---- the floor -----------------------------------------------------------------------------------
-// beams on the floor behind the band, pixel bars under the wall, washes and lasers on the front lip
+// a row of beams along the front of the deck, between the lip washes, fanning up and out over the crowd
+for (const x of spread(-20, 20, 10)) fixtures.push(fx('beam', [x, D + 0.5, -2.4], aim(x * 0.04, 0.7, 1), 42));
+// more beams on the floor behind the band; washes and lasers on the front lip
 for (const x of spread(-17, 17, 12)) fixtures.push(fx('beam', [x, D + 0.5, -16.5], aim(x * 0.035, 0.5, 1), 46));
-for (const x of spread(-14, 14, 8)) fixtures.push(fx('ledbar', [x, D + 0.9, -17.9]));
 for (const x of spread(-19, 19, 8)) fixtures.push(fx('wash', [x, D + 0.4, -1.2], aim(0, 0.45, -1), 12));
 for (const x of [-16, -6, 6, 16]) fixtures.push(fx('laser', [x, D + 0.3, -0.8], aim(x * 0.03, 0.55, 1)));
 for (const x of spread(-3, 3, 4)) fixtures.push(fx('blinder', [x, D + 0.9, -9.6]));
 // follow spots from the front-of-house tower
 for (const x of [-2, 2]) fixtures.push(fx('spot', [x, 6.6, 46], aim(-x * 0.02, -0.055, -1), 50));
+
+// ---- blinders and strobes across the roof header, facing the crowd ------------------------------
+spread(-22, 22, 23).forEach((x, i) => fixtures.push(fx(i % 2 ? 'strobe' : 'blinder', [x, ROOF_Y - 1.3, 2.1])));
+
+// ---- pixel bars: clean unbroken lines that draw the stage's shape -------------------------------
+const flat = (pos) => turned(fx('ledbar', pos), [0, 0, Math.PI / 2]);   // a bar lying along x
+// the proscenium: along the bottom edge of the roof header and down the front of both front legs
+for (const x of spread(-23.3, 23.3, 28)) fixtures.push(flat([x, ROOF_Y - 2.75, 2.05]));
+for (const s of [-1, 1]) for (const y of spread(1, ROOF_Y - 3.6, 11)) fixtures.push(fx('ledbar', [s * 24.5, y, 1.2]));
+// a frame round the LED wall
+for (const y of [WALL.bottom - 0.3, WALL.bottom + WALL.height + 0.3]) for (const x of spread(-15.1, 15.1, 18)) fixtures.push(flat([x, y, WALL.z + 0.5]));
+for (const s of [-1, 1]) for (const y of spread(WALL.bottom + 0.9, WALL.bottom + WALL.height - 0.9, 8)) fixtures.push(fx('ledbar', [s * 16.3, y, WALL.z + 0.5]));
+// a frame round each side screen
+for (const s of [-1, 1]) {
+    for (const y of [2.6, 21.4]) for (const x of spread(-4.6, 4.6, 6)) fixtures.push(flat([s * 34 + x, y, 1.6]));
+    for (const edge of [-5.8, 5.8]) for (const y of spread(3.6, 20.4, 10)) fixtures.push(fx('ledbar', [s * 34 + edge, y, 1.6]));
+}
 
 // ---- effects -------------------------------------------------------------------------------------
 for (const x of spread(-18, 18, 6)) fixtures.push(fx('co2', [x, D + 0.3, -0.6]));
@@ -116,6 +137,8 @@ const layout = {
         'Stage 46 m wide, 20 m deep, roof 22 m up; about 80 m across with the side screens',
         'Roof rig: four trusses (front lights the band, rear throws beams into the crowd)',
         'Three ladders of beams up each side; follow spots from the tower in the crowd',
+        'Pixel bars outline the roof opening, the LED wall and both side screens',
+        'Blinders and strobes across the roof header; floor beams front and back',
         'Palms, mountains and a ferris wheel around it (scenery, no lights)',
         'Blue-grey = LED screen; white = a person (1.8 m)',
     ],
