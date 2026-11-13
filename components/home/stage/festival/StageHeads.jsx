@@ -16,14 +16,19 @@ export const MOVING_HEAD_URL = '/fixtures/moving-head.glb';
 // colours come from the look, and each job moves in its own way.
 export const ROLES = {
     // the aerial beams are the rig's centrepiece: denser and brighter than the rest, with more smoke in them
-    aerial: { level: 'beams', colors: ['colorA', 'colorB'], sweep: 1, speed: 1, converge: 1, spread: 1, opacity: 1.2, haze: 0.15 },
+    // (festival: stronger than the homepage's, since the stages are bigger and bloom is off; the aerials
+    // sweep half as far, so they stay pointed out at the audience)
+    aerial: { level: 'beams', colors: ['colorA', 'colorB'], sweep: 0.5, speed: 1, converge: 1, spread: 1, opacity: 1.8, haze: 0.2 },
     // Side towers keep to their own aim (sidesAim), so wide or mirrored positions never throw them
     // outside the towers; they sweep only a little
-    sides: { level: 'sides', colors: ['colorB', 'colorA'], sweep: 0.3, speed: 0.7, converge: 1, spread: 1.1, opacity: 1, ownAim: true },
+    sides: { level: 'sides', colors: ['colorB', 'colorA'], sweep: 0.3, speed: 0.7, converge: 1, spread: 1.1, opacity: 1.5, ownAim: true },
     // On the drop the floor fixtures don't focus: they swing fully sideways
-    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.8, speed: 1.3, converge: 0.8, spread: 0.9, opacity: 0.9, sideways: true },
+    // (the floor fixtures' bodies are smaller, so the performers stand out; the light is the same)
+    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.8, speed: 1.3, converge: 0.8, spread: 0.9, opacity: 1.3, sideways: true, scale: 1.6 },
     // Washes colour the stage: wide, soft, barely moving, never part of the drop's convergence
-    wash: { level: 'wash', colors: ['washColor', 'washColor'], sweep: 0.15, speed: 0.35, converge: 0, spread: 4.5, opacity: 0.22 },
+    wash: { level: 'wash', colors: ['washColor', 'washColor'], sweep: 0.15, speed: 0.35, converge: 0, spread: 4.5, opacity: 0.3 },
+    // spots: hard, medium-width beams on the performers, in the show's colours, barely moving
+    spot: { level: 'wash', colors: ['colorA', 'colorB'], sweep: 0.08, speed: 0.4, converge: 0, spread: 1.7, opacity: 0.9 },
 };
 
 function withFixtureAttributes(geometry, fixtures) {
@@ -56,6 +61,8 @@ function createGlowGeometry(fixtures) {
 // started each change at full speed (from standing still in one frame), which read as jerky
 // whenever a cue snapped (a solo, a slam, a new phrase's look).
 const MOVE_TIME = 0.3; // seconds
+// The most the aerial beams may swing up and down in a wave (radians): more would lift them over the truss
+const AERIAL_MAX_WAVE = 0.12;
 const glide = (uniform, target, dt) => easing.damp(uniform, 'value', target, MOVE_TIME, dt);
 
 /** Ease one role's uniforms toward the look; pulse and strobe applied on top, unsmoothed. */
@@ -94,13 +101,13 @@ function driveRole(u, role, target, state, delta) {
     u.uPhase.value = state.phase;
     // Side towers: their pan is their crossing angle times (1 + sidesAim): 0 = crossing (rest),
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
-    const fan = role === ROLES.wash ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0) : target.fan ?? 1;
+    const fan = role === ROLES.wash || role === ROLES.spot ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0) : target.fan ?? 1;
     glide(u.uFan, fan, dt);
     // the side towers rest a little above level, aimed across at the audience: they take a look's
     // tilt only downward (a "sky" position lifting them into the sky looked wrong)
-    const shift = role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0)) : target.tiltShift ?? 0;
+    const shift = role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0)) : role === ROLES.aerial ? Math.min(0, target.tiltShift ?? 0) : target.tiltShift ?? 0;
     glide(u.uTiltShift, shift, dt);
-    const tiltWave = role.ownAim ? 0 : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
+    const tiltWave = role.ownAim ? 0 : role === ROLES.aerial ? Math.min(AERIAL_MAX_WAVE, target.tiltWave ?? 0) : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
     glide(u.uTiltWave, tiltWave, dt);
     glide(u.uPhaseSpread, target.phaseSpread ?? 0.25, dt);
     u.uHaze.value += (Math.min(1, target.haze + (role.haze ?? 0)) - u.uHaze.value) * ease;
@@ -120,7 +127,7 @@ function driveRole(u, role, target, state, delta) {
 function RoleGroup({ roleName, fixtures, parts, map, look, focus }) {
     const role = ROLES[roleName];
     const uniforms = useMemo(() => {
-        const u = createRoleUniforms({ spread: role.spread, opacity: role.opacity });
+        const u = createRoleUniforms({ spread: role.spread, opacity: role.opacity, scale: role.scale ?? 2.3 });
         u.uMap.value = map;
         return u;
     }, [role, map]);

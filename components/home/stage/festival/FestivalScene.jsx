@@ -3,9 +3,13 @@
 import { Suspense, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
+import { Orbitron } from 'next/font/google';
 import * as THREE from 'three';
 import Haze from '../Haze';
 import Performer from '../Performer';
+import LowFog from '../LowFog';
+import { createFloorMaterial } from '../stageMaterials';
+import { logoTag, logoScript } from '@/components/brand/Logo';
 import { roomFlash } from '../flash';
 import { placeFirework, rigHeads, stageMounts } from '@/lib/show/stages/rig';
 import { widthOf } from '@/lib/show/stages';
@@ -18,9 +22,30 @@ import StageConfetti from './StageConfetti';
 import StageStreamers from './StageStreamers';
 import StageFireworks from './StageFireworks';
 import StageCrowd from './StageCrowd';
+import StagePa from './StagePa';
+import StageBarrier from './StageBarrier';
+import StageLedWall from './StageLedWall';
 
 // One festival stage, lit and running, for use inside a <Canvas>: built entirely from its definition
 // (lib/show/stages). The homepage does not use this yet: it renders on the /lab stage pages only.
+
+// The wall's wordmark is drawn in the logo's faces (as on the homepage's LED wall)
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display: 'swap' });
+const LOGO_FONTS = { tag: logoTag.style.fontFamily, script: logoScript.style.fontFamily };
+const PIXEL = 0.11; // LED pixel pitch on the walls (m), as on the homepage
+
+/** The stage's LED walls that carry the wordmark and visuals (the homepage's wall shader), from its pieces. */
+function ledWalls(stage) {
+    return stage.screens.filter((p) => p.ledWall && p.kind === 'box').map((p, i) => ({
+        key: p.ledWall,
+        position: [p.position[0], p.position[1], p.position[2] + p.size[2] / 2 + 0.01],
+        rotation: [0, 0, 0],
+        size: [p.size[0], p.size[1]],
+        grid: [Math.round(p.size[0] / PIXEL), Math.round(p.size[1] / PIXEL)],
+        text: p.ledWall === 'main',
+        seed: i * 3,
+    }));
+}
 
 const NIGHT = [new THREE.Color('#0b0f21'), new THREE.Color('#020309')];
 const DUSK = [new THREE.Color('#ff8a4a'), new THREE.Color('#3d1a5c')];
@@ -93,6 +118,66 @@ function Lights({ look, blinders }) {
     );
 }
 
+/** The glossy floor of the homepage's arena, under this stage's crowd: it reflects the show and pools where beams land. */
+function Floor({ look, blinders, width, z }) {
+    const material = useMemo(() => createFloorMaterial(), []);
+    const mesh = useRef();
+    useFrame(({ clock }, delta) => {
+        if (!mesh.current) return;
+        const target = look.current;
+        const u = mesh.current.material.uniforms;
+        u.uColorA.value.set(target.colorA);
+        u.uColorB.value.set(target.colorB);
+        const master = (target.master ?? 1) * Math.min(target.intensity ?? 1, 1.4);
+        const down = Math.min(1, Math.max(0, (0.4 - (target.tiltShift ?? 0)) / 0.6)) * (1 - Math.min(1, target.converge ?? 0));
+        u.uLight.value += (master * (target.beams ?? 0) * down * (1 + (target.pulse ?? 0) * 0.4) - u.uLight.value) * Math.min(1, delta * 4);
+        u.uWall.value = master * 0.25;
+        u.uHouse.value += ((target.house ?? 0) - u.uHouse.value) * Math.min(1, delta * 1.5);
+        u.uFlash.value = roomFlash(target, clock.elapsedTime, blinders).total;
+        u.uTime.value = clock.elapsedTime;
+    });
+    return (
+        <mesh ref={mesh} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, z]} material={material}>
+            <planeGeometry args={[width, 70]} />
+        </mesh>
+    );
+}
+
+/** The camera's exposure blowing out on a strobe or blinder hit (as on the homepage): a white veil over the view. */
+function cameraFlash(mesh, look, camera, time, blinders) {
+    const level = roomFlash(look.current, time, blinders).total;
+    mesh.visible = level > 0.01;
+    if (!mesh.visible) return;
+    mesh.material.opacity = Math.min(0.9, level * 0.5);
+    camera.updateMatrixWorld();
+    mesh.position.set(0, 0, -1).applyMatrix4(camera.matrixWorld);
+    mesh.quaternion.copy(camera.quaternion);
+}
+
+function CameraFlash({ look, blinders }) {
+    const mesh = useRef();
+    useFrame(({ camera, clock }) => mesh.current && cameraFlash(mesh.current, look, camera, clock.elapsedTime, blinders));
+    return (
+        <mesh ref={mesh} renderOrder={1000} frustumCulled={false} visible={false}>
+            <planeGeometry args={[4, 4]} />
+            <meshBasicMaterial color="#fff8ee" transparent opacity={0} depthTest={false} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+        </mesh>
+    );
+}
+
+/** Indoors there are no fireworks: while one would be in the air, the strobes and blinders fire instead. */
+function indoorPyro(look, time) {
+    const fw = look.current.fireworks;
+    if (!fw?.length) return;
+    const burst = fw.some((f) => (f.age ?? 0) < 1.2);
+    look.current = { ...look.current, fireworks: undefined, strobe: Math.max(look.current.strobe ?? 0, burst ? 1 : 0.4), blinder: Math.max(look.current.blinder ?? 0, burst && Math.floor(time * 4) % 2 ? 0.8 : 0) };
+}
+
+function IndoorPyro({ look }) {
+    useFrame(({ clock }) => indoorPyro(look, clock.elapsedTime));
+    return null;
+}
+
 export default function FestivalScene({ stage, look, count = 96, bloom = true, quality = 'low', control }) {
     const heads = useMemo(() => rigHeads(stage, count), [stage, count]);
     const mounts = useMemo(() => stageMounts(stage), [stage]);
@@ -101,9 +186,15 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
     const blinders = mounts.strobes.length;
     // the homepage's haze is sized for its 40 m stage: stretched to this one's width and depth
     const hazeScale = [width / 40, stage.indoor ? 0.6 : 1, Math.max(1, -stage.focus[2] / 8)];
+    const walls = useMemo(() => ledWalls(stage), [stage]);
+    // the performer set, scaled (bigger than life on the big stages) with its feet kept on the deck
+    const ps = stage.performerScale ?? 1;
+    const [px, py, pz] = stage.performerAt;
+    const blinding = Math.min(16, blinders);
 
     return (
         <>
+            {stage.indoor && <IndoorPyro look={look} />}
             <color attach="background" args={[stage.indoor ? '#010103' : '#010208']} />
             {!stage.indoor && <Sky kind={stage.sky} look={look} />}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
@@ -114,6 +205,13 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
             <StageStructure stage={stage} />
             <StageScreens stage={stage} look={look} />
+            {walls.length > 0 && <StageLedWall screens={walls} look={look} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} />}
+            <Floor look={look} blinders={blinding} width={Math.max(120, width * 2.6)} z={stage.crowd.z0 + 30} />
+            {stage.pa && <StagePa settings={stage.pa} />}
+            {stage.barrier && <StageBarrier width={stage.barrier.width} z={stage.barrier.z} />}
+            <group position={[0, stage.deck - 1.8, stage.focus[2] + 8]} scale={[width / 40, 1, 1]}>
+                <LowFog look={look} blinders={blinding} />
+            </group>
             <StagePixelBars stage={stage} look={look} />
             <Suspense fallback={null}>
                 <StageHeads heads={heads} look={look} focus={stage.focus} />
@@ -123,7 +221,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             <group position={[0, 0, stage.focus[2] + 8 * hazeScale[2]]} scale={hazeScale}>
                 <Haze look={look} blinders={Math.min(16, blinders)} />
             </group>
-            <group position={stage.performerAt}>
+            <group position={[px, py + 1.8 - 1.8 * ps, pz]} scale={ps}>
                 <Performer look={look} control={control} />
             </group>
             <StageCrowd look={look} area={stage.crowd} quality={quality} blinders={Math.min(16, blinders)} />
@@ -135,6 +233,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             <StageStreamers look={look} launchers={mounts.launchers} quality={quality} blinders={blinders} />
             {stage.fireworks && <StageFireworks look={look} spots={mounts.mines} place={place} quality={quality} />}
 
+            <CameraFlash look={look} blinders={blinding} />
             {bloom && (
                 <EffectComposer multisampling={0}>
                     <Bloom mipmapBlur luminanceThreshold={0.3} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} resolutionScale={0.5} />

@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
 import { STAGES } from '@/lib/show/stages';
+import { HITS, collectCues } from '@/lib/show/stages/cues';
 import { useQualityTier, TIER_SETTINGS } from '../useQualityTier';
 import FestivalScene from './FestivalScene';
 
@@ -27,8 +28,11 @@ const PRESETS = {
 };
 const COUNTS = [64, 96, 160, 400];
 
-/** One frame: the song's look when one is playing, otherwise the preset's on a 120 BPM beat. */
-function driveLook(look, preset, song, clock, delta) {
+/**
+ * One frame: the song's look when one is playing; otherwise the chosen preset or cue (`source`) on a
+ * 120 BPM beat, with any hit fired from the panel on top while it runs.
+ */
+function driveLook(look, source, song, clock, delta) {
     clock.t += delta;
     const s = song.current;
     if (s?.audio && !s.audio.paused) {
@@ -39,13 +43,19 @@ function driveLook(look, preset, song, clock, delta) {
     }
     look.shot = null;
     const beat = clock.t * 2;
-    const p = PRESETS[preset];
-    look.current = { ...DEFAULT_LOOK, ...p, beatPos: p.house ? undefined : beat, pulse: p.house ? 0 : Math.exp(-(beat % 1) * 9) * 0.4 };
+    const { look: p, shot, hit } = source.current;
+    let next = { ...DEFAULT_LOOK, ...p, beatPos: p.house ? undefined : beat, pulse: p.house ? 0 : Math.exp(-(beat % 1) * 9) * (p.pulseAmount ?? 0.4) };
+    if (hit) {
+        const progress = (clock.t - hit.at) / HITS[hit.kind].dur;
+        if (progress < 1) next = { ...next, ...HITS[hit.kind].apply(next, Math.max(0, progress)) };
+        else source.current.hit = null;
+    }
+    look.current = next;
+    look.shot = shot ?? null;
 }
 
-function Driver({ look, preset, song }) {
-    const clock = useRef({ t: 0 });
-    useFrame((_, delta) => driveLook(look, preset, song, clock.current, delta));
+function Driver({ look, source, song, clock }) {
+    useFrame((_, delta) => driveLook(look, source, song, clock.current, delta));
     return null;
 }
 
@@ -104,6 +114,20 @@ export default function FestivalLab({ stageKey }) {
     const meter = useRef(null);
     const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const [preset, setPreset] = useState(PRESETS[params?.get('look')] ? params.get('look') : 'Build');
+    // what the stage shows when no song plays: a preset or one of the shows' cues (and a hit on top)
+    const source = useRef({ look: PRESETS[preset], shot: null, hit: null });
+    const clock = useRef({ t: 0 });
+    const [cues, setCues] = useState(null);
+    const [cueKindOn, setCueKindOn] = useState(null);
+    const choosePreset = (name) => { setPreset(name); setCueKindOn(null); source.current = { look: PRESETS[name], shot: null, hit: null }; };
+    const chooseCue = (cue) => { setCueKindOn(cue.kind); source.current = { look: cue.look, shot: cue.shot, hit: null }; };
+    const fireHit = (kind) => { source.current = { ...source.current, hit: { kind, at: clock.current.t } }; };
+    // the cues of every demo song, loaded the first time the list is opened
+    const loadCues = async () => {
+        if (cues) return;
+        const shows = await Promise.all(demos.map((d) => fetch(d.show).then((r) => r.json()).catch(() => null)));
+        setCues(collectCues(shows.filter(Boolean)));
+    };
     const [shotName, setShotName] = useState(stage.shots[params?.get('view')] ? params.get('view') : 'wide');
     const [count, setCount] = useState(Number(params?.get('lights')) || null);
     const [perf, setPerf] = useState(params?.get('perf') !== '0');
@@ -147,7 +171,7 @@ export default function FestivalLab({ stageKey }) {
         <div className="relative h-screen w-full bg-[#010208]">
             <Canvas camera={{ position: shot.pos, fov: 55, near: 0.5, far: 1200 }} dpr={settings.dpr} gl={{ antialias: !settings.bloom, powerPreference: 'high-performance' }}
                 onCreated={({ gl }) => { gl.debug.checkShaderErrors = true; }}>
-                <Driver look={look} preset={preset} song={song} />
+                <Driver look={look} source={source} song={song} clock={clock} />
                 <FestivalScene stage={stage} look={look} count={lights} bloom={settings.bloom} quality={tier >= 2 ? 'high' : 'low'} control={control} />
                 <OrbitControls ref={controls} makeDefault target={shot.target} />
                 <ViewRig shot={shot} controls={controls} />
@@ -166,8 +190,22 @@ export default function FestivalLab({ stageKey }) {
                         <p className="mt-1 text-[11px] text-white/55">Test page only: the homepage does not use this stage yet.</p>
                         <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Look</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
-                            {Object.keys(PRESETS).map((name) => <button key={name} type="button" className={button(!playing && preset === name)} onClick={() => { stop(); setPreset(name); }}>{name}</button>)}
+                            {Object.keys(PRESETS).map((name) => <button key={name} type="button" className={button(!playing && !cueKindOn && preset === name)} onClick={() => { stop(); choosePreset(name); }}>{name}</button>)}
                         </div>
+                        <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Hits (on top of the look)</p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                            {Object.keys(HITS).map((kind) => <button key={kind} type="button" className={button(false)} onClick={() => fireHit(kind)}>{kind}</button>)}
+                        </div>
+                        <details className="mt-3" onToggle={(e) => e.currentTarget.open && loadCues()}>
+                            <summary className="cursor-pointer text-[11px] uppercase tracking-wider text-white/50">Every cue in the shows{cues ? ` (${cues.length})` : ''}</summary>
+                            {!cues && <p className="mt-1 text-[11px] text-white/50">Loading the cues of the demo songs…</p>}
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                                {cues?.map((cue) => (
+                                    <button key={cue.kind} type="button" title={`from ${cue.song}, ${Math.floor(cue.t / 60)}:${String(Math.floor(cue.t % 60)).padStart(2, '0')}`}
+                                        className={button(!playing && cueKindOn === cue.kind)} onClick={() => { stop(); chooseCue(cue); }}>{cue.kind}</button>
+                                ))}
+                            </div>
+                        </details>
                         <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Play a song through it</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
                             {demos.map((d) => <button key={d.slug} type="button" className={button(playing === d.slug)} onClick={() => (playing === d.slug ? stop() : play(d))}>{d.title}</button>)}

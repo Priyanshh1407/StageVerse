@@ -91,7 +91,7 @@ export function StageStructure({ stage }) {
     const groups = useMemo(() => {
         const byFinish = new Map();
         for (const p of stage.structure) {
-            if (SKIP.has(p.color)) continue;
+            if (SKIP.has(p.color) || p.drawnBy) continue;
             const key = (p.kind === 'truss' || p.kind === 'cable') && !SKIP.has(p.color) ? 'truss' : FINISH[p.color] ? p.color : COLORS.structure;
             const g = pieceGeometry(p);
             if (g) byFinish.set(key, [...(byFinish.get(key) ?? []), g]);
@@ -190,7 +190,9 @@ const SCREEN_FRAGMENT = /* glsl */ `
 
 /** Every LED surface (fins, walls, crown, side screens, strips): one draw call. */
 export function StageScreens({ stage, look }) {
-    const geometry = useMemo(() => mergeGeometries(stage.screens.map(pieceGeometry).filter(Boolean)), [stage]);
+    // (the screens that carry the wordmark are drawn by StageLedWall instead)
+    const pieces = useMemo(() => stage.screens.filter((p) => !p.ledWall).map(pieceGeometry).filter(Boolean), [stage]);
+    const geometry = useMemo(() => (pieces.length ? mergeGeometries(pieces) : new THREE.BufferGeometry()), [pieces]);
     const material = useMemo(() => {
         geometry.computeBoundingBox();
         const { min, max } = geometry.boundingBox;
@@ -222,7 +224,7 @@ export function StageScreens({ stage, look }) {
         u.uColorA.value.set(target.colorA);
         u.uColorB.value.set(target.colorB);
     });
-    return <mesh ref={mesh} geometry={geometry} material={material} />;
+    return pieces.length ? <mesh ref={mesh} geometry={geometry} material={material} /> : null;
 }
 
 // ---- pixel bars ------------------------------------------------------------------------------------

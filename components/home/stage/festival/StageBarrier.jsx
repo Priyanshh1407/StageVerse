@@ -1,0 +1,48 @@
+'use client';
+
+// A copy of ../CrowdBarrier.jsx for the festival stages (the homepage keeps the original, unchanged): its width and place come from the stage.
+
+import { useMemo } from 'react';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import * as THREE from 'three';
+
+// The steel crowd barrier in front of the stage, past the line of subwoofers, with the empty photo
+// pit between them. 1 m high, sections 1 m wide: a solid kick plate at the bottom and open vertical
+// slats above, a round top rail, and the foot plate reaching toward the audience. Merged into one
+// geometry: one draw call.
+const HEIGHT = 1.0;
+const SECTION = 1;
+
+function createBarrierGeometry(SECTIONS, BARRIER_Z) {
+    const parts = [];
+    const box = (w, h, d, x, y, z, rx = 0) => {
+        const g = new THREE.BoxGeometry(w, h, d);
+        if (rx) g.rotateX(rx);
+        parts.push(g.translate(x, y, z));
+    };
+    for (let i = 0; i < SECTIONS; i++) {
+        const x = (i - (SECTIONS - 1) / 2) * SECTION;
+        const w = SECTION - 0.03;                                         // a small gap between sections
+        box(w, 0.38, 0.04, x, 0.21, BARRIER_Z);                           // kick plate
+        box(w, 0.04, 0.05, x, 0.42, BARRIER_Z);                           // mid rail
+        for (let s = 0; s < 6; s++) box(0.025, HEIGHT - 0.44, 0.025, x - w / 2 + 0.08 + s * (w - 0.16) / 5, 0.42 + (HEIGHT - 0.44) / 2, BARRIER_Z); // slats
+        box(0.05, HEIGHT, 0.06, x - w / 2 + 0.025, HEIGHT / 2, BARRIER_Z); // section posts
+        box(0.05, HEIGHT, 0.06, x + w / 2 - 0.025, HEIGHT / 2, BARRIER_Z);
+        box(w, 0.02, 0.8, x, 0.01, BARRIER_Z + 0.42);                     // foot plate on the audience side
+        box(0.04, 0.04, 0.95, x, 0.42, BARRIER_Z + 0.38, -0.5);           // brace down to the foot plate
+    }
+    const rail = new THREE.CylinderGeometry(0.04, 0.04, SECTIONS * SECTION, 10).rotateZ(Math.PI / 2).translate(0, HEIGHT, BARRIER_Z);
+    parts.push(rail);
+    // Strip uvs so every part merges with the same attributes
+    for (const g of parts) g.deleteAttribute('uv');
+    return mergeGeometries(parts);
+}
+
+export default function StageBarrier({ width, z }) {
+    const geometry = useMemo(() => createBarrierGeometry(Math.round(width), z), [width, z]);
+    return (
+        <mesh geometry={geometry}>
+            <meshLambertMaterial color="#7d838f" emissive="#06070a" />
+        </mesh>
+    );
+}
