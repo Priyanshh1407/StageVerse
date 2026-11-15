@@ -26,7 +26,7 @@ import StagePa from './StagePa';
 import StageBarrier from './StageBarrier';
 import StageLedWall from './StageLedWall';
 import StageLogo from './StageLogo';
-import { clubLook } from '@/lib/show/stages/club';
+import { clubLook, onlyGroup } from '@/lib/show/stages/club';
 
 // One festival stage, lit and running, for use inside a <Canvas>: built entirely from its definition
 // (lib/show/stages). The homepage does not use this yet: it renders on the /lab stage pages only.
@@ -182,7 +182,7 @@ function IndoorPyro({ look }) {
 
 /** The warehouse: every moment of the show as a club look (lib/show/stages/club.js). */
 function toClub(look) {
-    look.current = clubLook(look.current);
+    look.current = onlyGroup(clubLook(look.current), look.current.only);
 }
 
 function ClubLooks({ look }) {

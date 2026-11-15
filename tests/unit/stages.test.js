@@ -51,7 +51,8 @@ describe.each(Object.values(STAGES))('the $key stage', (stage) => {
     it('has every camera shot, all in front of the stage and above the ground', () => {
         if (stage.key === 'warehouse') expect(stage.shots.dj.pos[2]).toBeLessThan(0); // the DJ view (warehouse only) stands on the stage
         else expect(stage.shots.dj).toBeUndefined();
-        expect(stage.logo.size[0]).toBeGreaterThan(stage.logo.size[1]);
+        if (stage.key === 'warehouse') expect(stage.logo).toBeUndefined(); // only the wordmark on its wall
+        else expect(stage.logo.size[0]).toBeGreaterThan(stage.logo.size[1]);
         for (const name of ['house', 'wide', 'dolly', 'high', 'left', 'right', 'drop', 'finale', 'sky']) {
             const shot = stage.shots[name];
             expect(shot, name).toBeTruthy();
@@ -78,5 +79,33 @@ describe('the festival', () => {
     it('keeps the warehouse indoors with no fireworks and no sky shot of its own', () => {
         expect(STAGES.warehouse.indoor).toBe(true);
         expect(STAGES.warehouse.shots.sky).toBe(STAGES.warehouse.shots.finale);
+    });
+});
+
+describe('the warehouse club looks', async () => {
+    const { clubLook } = await import('@/lib/show/stages/club');
+    const base = { intensity: 1, beams: 1, sides: 1, floor: 1, wash: 1, colorA: '#ff0000', colorB: '#0000ff' };
+
+    it('turns a quiet part into a mirror-ball moment and a peak into everything on', () => {
+        expect(clubLook({ ...base, crowd: 0.15 }).beams).toBe(0);
+        const peak = clubLook({ ...base, crowd: 1, beatPos: 8.02 });
+        expect([peak.beams, peak.sides, peak.floor]).toEqual([1, 1, 1]);
+        expect(peak.strobe).toBeGreaterThan(0); // the start of a bar
+        expect(clubLook({ ...base, crowd: 1, beatPos: 9.5 }).strobe ?? 0).toBe(0);
+    });
+
+    it('scans a groove in one colour and leaves the house lights alone', () => {
+        expect(clubLook({ ...base, crowd: 0.4 }).colorB).toBe('#ff0000');
+        const house = { ...base, house: 1 };
+        expect(clubLook(house)).toBe(house);
+    });
+
+    it('is a warehouse rule only', () => {
+        expect(STAGES.warehouse.club).toBe(true);
+        for (const key of ['desert', 'mainstage']) {
+            expect(STAGES[key].club, key).toBeFalsy();
+            expect(STAGES[key].laserPitch, key).toBeUndefined();
+            expect(STAGES[key].confetti, key).not.toBe(false);
+        }
     });
 });

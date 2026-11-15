@@ -8,6 +8,7 @@ import { easing } from 'maath';
 import * as THREE from 'three';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
+import { onlyGroup } from '@/lib/show/stages/club';
 import { STAGES } from '@/lib/show/stages';
 import { HITS, collectCues } from '@/lib/show/stages/cues';
 import { useQualityTier, TIER_SETTINGS } from '../useQualityTier';
@@ -54,13 +55,6 @@ function driveLook(look, source, song, clock, delta) {
     look.shot = shot ?? null;
 }
 
-const GROUP_LEVEL = { aerial: 'beams', sides: 'sides', floor: 'floor', wash: 'wash' };
-/** With ?only=<group>, every other group, the lasers and the pixel bars are off. */
-function onlyGroup(look, only) {
-    if (!GROUP_LEVEL[only]) return look;
-    const off = Object.fromEntries(Object.values(GROUP_LEVEL).filter((k) => k !== GROUP_LEVEL[only]).map((k) => [k, 0]));
-    return { ...look, ...off, laser: 0, pixel: 0, [GROUP_LEVEL[only]]: Math.max(0.8, look[GROUP_LEVEL[only]] ?? 0) };
-}
 
 function Driver({ look, source, song, clock }) {
     useFrame((_, delta) => driveLook(look, source, song, clock.current, delta));
