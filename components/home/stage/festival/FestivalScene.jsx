@@ -206,8 +206,8 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
     return (
         <>
-            {stage.club && <ClubLooks look={look} />}
             {stage.indoor && <IndoorPyro look={look} />}
+            {stage.club && <ClubLooks look={look} />}
             <color attach="background" args={[stage.indoor ? '#010103' : '#010208']} />
             {!stage.indoor && <Sky kind={stage.sky} look={look} />}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
@@ -242,6 +242,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
             <StageCo2 look={look} jets={mounts.floorJets} quality={quality} blinders={blinders} mount="floor" />
             <StageCo2 look={look} jets={mounts.highJets} quality={quality} blinders={blinders} mount="truss" />
+            {stage.co2Extra && <StageCo2 look={look} jets={stage.co2Extra.map((j) => ({ pos: j.pos, dir: [0, 0.999, 0.05] }))} follow={stage.co2Extra.map((j) => j.follow)} quality={quality} blinders={blinders} mount="floor" />}
             {stage.confetti !== false && (
                 <>
                     <StageConfetti look={look} cannons={mounts.cannons} quality={quality} blinders={blinders} />

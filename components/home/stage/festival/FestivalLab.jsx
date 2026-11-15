@@ -80,7 +80,8 @@ function FpsMeter({ meter }) {
 /** The camera following the show: the cue's shot, the sky shot while fireworks are up (not for mines). */
 function followShow(stage, look, camera, controls, aim, delta) {
     const up = look.current.fireworks?.some((f) => f.type !== 'mines');
-    const shot = (up ? stage.shots.sky : stage.shots[look.shot]) ?? stage.shots.wide;
+    // (a stage may play a show's shots as its own views: the warehouse's DJ and room views)
+    const shot = (up ? stage.shots.sky : stage.shots[stage.songShots?.[look.shot] ?? look.shot]) ?? stage.shots.wide;
     aim.pos.set(...shot.pos);
     aim.look.set(...shot.target);
     easing.damp3(camera.position, aim.pos, up ? 0.6 : 1.8, delta);

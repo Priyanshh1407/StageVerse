@@ -78,7 +78,7 @@ describe('the festival', () => {
 
     it('keeps the warehouse indoors with no fireworks and no sky shot of its own', () => {
         expect(STAGES.warehouse.indoor).toBe(true);
-        expect(STAGES.warehouse.shots.sky).toBe(STAGES.warehouse.shots.finale);
+        expect(STAGES.warehouse.shots.sky).toEqual(STAGES.warehouse.shots.finale);
     });
 });
 
@@ -91,6 +91,8 @@ describe('the warehouse club looks', async () => {
         const peak = clubLook({ ...base, crowd: 1, beatPos: 8.02 });
         expect([peak.beams, peak.sides, peak.floor]).toEqual([1, 1, 1]);
         expect(peak.strobe).toBeGreaterThan(0); // the start of a bar
+        expect(peak.strobe).toBeLessThan(0.5); // softer than a festival's
+        expect(peak.strobeColor).toBe('#ffe7a0');
         expect(clubLook({ ...base, crowd: 1, beatPos: 9.5 }).strobe ?? 0).toBe(0);
     });
 
@@ -100,11 +102,18 @@ describe('the warehouse club looks', async () => {
         expect(clubLook(house)).toBe(house);
     });
 
+    it('plays the songs through the club views, none of them inside the truss grid', () => {
+        const st = STAGES.warehouse;
+        for (const [from, to] of Object.entries(st.songShots)) expect(st.shots[to], from).toBeTruthy();
+        for (const shot of Object.values(st.shots)) expect(shot.pos[1]).toBeLessThan(7);
+    });
+
     it('is a warehouse rule only', () => {
         expect(STAGES.warehouse.club).toBe(true);
         for (const key of ['desert', 'mainstage']) {
             expect(STAGES[key].club, key).toBeFalsy();
             expect(STAGES[key].laserPitch, key).toBeUndefined();
+            expect(STAGES[key].songShots, key).toBeUndefined();
             expect(STAGES[key].confetti, key).not.toBe(false);
         }
     });

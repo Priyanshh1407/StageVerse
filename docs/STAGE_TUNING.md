@@ -132,4 +132,7 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
   - `club: true` plays every show as club looks (`lib/show/stages/club.js`): quiet parts a mirror-ball moment, grooves tight single-colour scans, builds a strobe and laser ramp, peaks a strobe hit on every bar and alternating beams. The thresholds are the `e < ...` lines.
   - `laserPitch: { offset, min }` aims the wall lasers down over the crowd (more negative = further down).
   - `confetti: false`: CO2 only, no confetti or streamers.
-  - Extra camera views: `dj`, `djLeft`, `djRight`, `djWide` (from the booth), `crowd` (in the crowd), `rear` (back of the room), `wall` (side wall). They appear as buttons on `/lab/warehouse`, or use `?view=dj`.
+  - Extra camera views: `dj`, `djLeft`, `djRight`, `djWide` (from the booth), `crowd` (in the crowd), `rear` (back of the room), `wall` (side wall). They appear as buttons on `/lab/warehouse`, or use `?view=dj`. In songs, `songShots` turns the shots the shows call into these views (dolly → dj, left → djLeft, right → djRight, drop → crowd, high → rear, finale → djWide, house → wall; wide stays).
+  - Strobes: `STROBE_LEVEL`, `BLINDER_LEVEL` and `STROBE_COLOR` at the top of `club.js` (softer and slightly yellow).
+  - `co2Extra`: two more CO2 nozzles at the stage's front corners, each firing with the outermost floor jet (`follow`: 0 = far left, 5 = far right). Delete the line to remove them.
+- Test pages: the **CO2** hit button fires every floor jet for 3 seconds.

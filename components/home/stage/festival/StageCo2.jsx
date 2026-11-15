@@ -161,13 +161,18 @@ const tintA = new THREE.Color();
 const tintB = new THREE.Color();
 
 /** Each frame: the jets' state into the shader, and the smoke's colour from the rig. */
-function driveCo2(geometry, material, target, time, blinders, key, count, instances) {
+function driveCo2(geometry, material, target, time, blinders, key, count, instances, follow) {
     const state = target[key];
     const active = stateActive(state, count, CO2_FADE);
     geometry.instanceCount = active ? instances : 0;
     if (!active) return;
     const u = material.uniforms;
-    for (let j = 0; j < count; j++) u.uState.value[j].set(state[j * 2], state[j * 2 + 1]);
+    // (extra nozzles fire with the jet they follow; slots without a nozzle stay idle)
+    for (let j = 0; j < count; j++) {
+        const src = follow ? follow[j] : j;
+        if (src === undefined) u.uState.value[j].set(-1, 0);
+        else u.uState.value[j].set(state[src * 2], state[src * 2 + 1]);
+    }
     u.uTime.value = time;
     // White gas, lit by the rig: it takes a little of the show's colour, brightens with the stage
     // light and flares with the strobes and blinders; still visible on a dark stage
@@ -186,7 +191,7 @@ function placeNozzles(material, jets) {
     });
 }
 
-export default function StageCo2({ look, jets, quality = 'low', blinders = 8, mount = 'floor' }) {
+export default function StageCo2({ look, jets, quality = 'low', blinders = 8, mount = 'floor', follow = null }) {
     const m = MOUNTS[mount] ?? MOUNTS.floor;
     const nozzles = useMemo(() => createNozzles(jets, mount), [jets, mount]);
     const noise = useMemo(() => createNoiseTexture(), []);
@@ -240,7 +245,7 @@ export default function StageCo2({ look, jets, quality = 'low', blinders = 8, mo
     useEffect(() => () => { nozzles?.dispose(); }, [nozzles]);
     useEffect(() => () => { material.dispose(); noise.dispose(); }, [material, noise]);
 
-    useFrame(({ clock }) => driveCo2(geometry, material, look.current, clock.elapsedTime, blinders, m.key, n, n * puffs));
+    useFrame(({ clock }) => driveCo2(geometry, material, look.current, clock.elapsedTime, blinders, m.key, n, n * puffs, follow));
 
     return (
         <>
