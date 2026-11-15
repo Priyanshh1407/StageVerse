@@ -26,7 +26,7 @@ export const ROLES = {
     // (the floor fixtures' bodies are smaller, so the performers stand out; the light is the same)
     // (steady: every cue keeps the floor beams close to the direction of 'Peak · hook', out at the crowd and a
     // little down: see FLOOR below; they take no part in the focus or the drop's sideways throw)
-    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.6, speed: 1.3, converge: 0, spread: 0.9, opacity: 1.3, scale: 1.6, noWave: true, steady: true },
+    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.6, speed: 1.3, converge: 0, spread: 0.9, opacity: 1.6, scale: 1.6, noWave: true, steady: true },
     // Washes colour the stage: wide, soft, barely moving, never part of the drop's convergence
     wash: { level: 'wash', colors: ['washColor', 'washColor'], sweep: 0.15, speed: 0.35, converge: 0, spread: 4.5, opacity: 0.3 },
     // spots: hard, medium-width beams on the performers, in the show's colours, barely moving
@@ -154,7 +154,12 @@ function driveRole(u, role, target, state, delta) {
 
     // (the spots follow the washes' level but are show lights: off when the house lights are up)
     const houseOff = role.onPerformer ? 1 - Math.min(1, (target.house ?? 0) * 1.5) : 1;
-    const wanted = target.intensity * (target.master ?? 1) * (target[role.level] ?? 1) * (state.extraLevel ? target[state.extraLevel] ?? 1 : 1) * houseOff;
+    // (the floor beams are never dim: whenever a cue has them on at all, at 85% or more of a nearly full intensity;
+    // off and blackout stay off)
+    const groupLevel = target[role.level] ?? 1;
+    const level = role.steady && groupLevel > 0.05 ? Math.max(0.85, groupLevel) : groupLevel;
+    const intensity = role.steady ? Math.max(0.95, target.intensity) : target.intensity;
+    const wanted = intensity * (target.master ?? 1) * level * (state.extraLevel ? target[state.extraLevel] ?? 1 : 1) * houseOff;
     state.level += (wanted - state.level) * ease;
     const strobe = role === ROLES.wash ? 0 : target.strobe ?? 0; // strobing is the strobes' job; beams flicker with them
     const flash = (u.uTime.value * 12.5) % 1 < 0.3 ? 1.6 : 0.15;
