@@ -92,7 +92,7 @@ function createLaserMaterial(sources, halo = false, shared = null) {
                 // how side-on the camera sees this beam (1 = from the side, 0 = straight down its length)
                 vec4 world = modelMatrix * instanceMatrix * vec4(p, 1.0);
                 vec3 along = normalize(mat3(modelMatrix * instanceMatrix) * vec3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch)));
-                vSideOn = 1.0 - pow(abs(dot(along, normalize(cameraPosition - world.xyz))), 6.0);
+                vSideOn = 1.0 - pow(abs(dot(along, normalize(cameraPosition - world.xyz))), 2.0);
                 gl_Position = projectionMatrix * viewMatrix * world;
             }
         `.replaceAll('${SOURCES}', String(sources)),
@@ -100,6 +100,7 @@ function createLaserMaterial(sources, halo = false, shared = null) {
             uniform vec3 uColor;
             uniform float uLevel;
             uniform float uTime;
+            uniform float uBeams;
             varying float vAlong;
             varying float vOn;
             varying vec2 vAcross;
@@ -115,13 +116,14 @@ function createLaserMaterial(sources, halo = false, shared = null) {
                 // the glow round the beam: brightest at its centre line, soft to its edges
                 vec2 a = abs(vAcross) / ${(0.5 / 2).toFixed(3)};
                 float r = min(a.x, a.y);
-                float glow = exp(-r * r * 4.0) * 0.34;
+                float glow = exp(-r * r * 4.0) * 0.22 / sqrt(max(1.0, uBeams / 4.0));
                 // (it fades in over the first metres, so the glows of a whole fan never pile up at the projector)
-                float away = smoothstep(0.02, 0.12, vAlong);
+                float away = smoothstep(0.05, 0.25, vAlong);
                 gl_FragColor = vec4(uColor * 2.0, glow * away * vSideOn * fade * uLevel * vOn * sparkle);
             #else
-                // the core: white-hot in the middle of the colour, and bright
-                vec3 hot = mix(uColor, vec3(1.0), 0.15) * 4.5;
+                // the core: as bright as it goes while keeping its colour (pushing every channel past full
+                // turned a green laser white): the strongest channel at full, the others in proportion
+                vec3 hot = uColor / max(max(uColor.r, uColor.g), max(uColor.b, 0.001)) * 1.15 + 0.06;
                 gl_FragColor = vec4(hot, fade * uLevel * vOn * sparkle);
             #endif
             }

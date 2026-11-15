@@ -129,6 +129,13 @@ export default function FestivalLab({ stageKey }) {
         setCues(collectCues(shows.filter(Boolean)));
     };
     const [shotName, setShotName] = useState(stage.shots[params?.get('view')] ? params.get('view') : 'wide');
+    // ?cam=x,y,z&target=x,y,z: a camera of your own (a camera button returns to the stage's shots)
+    const [custom, setCustom] = useState(() => {
+        const read = (key) => params?.get(key)?.split(',').map(Number);
+        const cam = read('cam');
+        const target = read('target');
+        return cam?.length === 3 && cam.every(Number.isFinite) ? { pos: cam, target: target?.length === 3 && target.every(Number.isFinite) ? target : stage.shots.wide.target } : null;
+    });
     const [count, setCount] = useState(Number(params?.get('lights')) || null);
     const [perf, setPerf] = useState(params?.get('perf') !== '0');
     const [panel, setPanel] = useState(params?.get('panel') !== '0');
@@ -165,7 +172,7 @@ export default function FestivalLab({ stageKey }) {
     const settings = TIER_SETTINGS[tier === 0 ? 1 : tier];
     const lights = count ?? (tier >= 2 ? 160 : 96);
     const button = (on) => `rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${on ? 'bg-[#ff6a00] text-black' : 'bg-white/10 text-white hover:bg-white/20'}`;
-    const shot = stage.shots[shotName];
+    const shot = custom ?? stage.shots[shotName];
 
     return (
         <div className="relative h-screen w-full bg-[#010208]">
@@ -212,7 +219,7 @@ export default function FestivalLab({ stageKey }) {
                         </div>
                         <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Camera</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
-                            {Object.keys(stage.shots).map((name) => <button key={name} type="button" className={button(shotName === name)} onClick={() => setShotName(name)}>{name}</button>)}
+                            {Object.keys(stage.shots).map((name) => <button key={name} type="button" className={button(shotName === name)} onClick={() => { setCustom(null); setShotName(name); }}>{name}</button>)}
                         </div>
                         <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Moving heads ({stage.heads.length} in the layout)</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
