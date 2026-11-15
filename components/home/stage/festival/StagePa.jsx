@@ -17,13 +17,15 @@ import * as THREE from 'three';
 // Cabinets, grilles and steel are three merged geometries: 3 draw calls for the whole PA.
 // where the arrays hang (just outside the towers) and the sub stacks stand: shared with rigLayout,
 // which places the confetti cannons under the arrays and in the gaps between the middle stacks
-const BOX = { w: 1.5, h: 0.42, d: 0.75 };
+const LINE_BOX = { w: 1.5, h: 0.42, d: 0.75 };
 const SPLAY = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9];  // degrees between boxes: straight at the top, curling at the bottom
 const TOE_IN = 0.14;            // radians, turned toward the centre of the audience
 
 const SUB = { w: 1.35, h: 0.55, d: 0.7 };   // touring sub proportions
 
 function createPa(P) {
+    // the line-array boxes scaled to the stage (P.SCALE: 1 = the homepage's)
+    const BOX = { w: LINE_BOX.w * (P.SCALE ?? 1), h: LINE_BOX.h * (P.SCALE ?? 1), d: LINE_BOX.d * (P.SCALE ?? 1) };
     const cabinets = [];
     const grilles = [];
     const steel = [];

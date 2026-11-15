@@ -24,7 +24,7 @@ const PRESETS = {
     Build: { sweep: 0.45, converge: 0, intensity: 0.95, speed: 1.6, haze: 0.5, crowd: 0.5, tiltWave: 0.25, laser: 0.8, strobeRandom: 0.3 },
     Peak: { sweep: 0.6, converge: 0, intensity: 1.3, speed: 2, haze: 0.4, crowd: 1, laser: 1, laserChase: 1, pixelSparkle: 0.5 },
     Drop: { sweep: 0.1, converge: 1, intensity: 1.4, speed: 2.2, haze: 0.3, crowd: 1, dropFx: 1, strobe: 1, laser: 1 },
-    'House lights': { house: 1, intensity: 0.5, sweep: 0, laser: 0, crowd: undefined },
+    'House lights': { house: 1, intensity: 0.8, beams: 0, sides: 0, floor: 0, wash: 1, washColor: '#ffb347', washDown: 1, washSweep: 0, sweep: 0, laser: 0, pixel: 0, strobe: 0, strobeSteady: 0, strobeRandom: 0, blinder: 0, crowd: undefined },
 };
 const COUNTS = [64, 96, 160, 400];
 

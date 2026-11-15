@@ -140,7 +140,6 @@ function createLaserMaterial(sources, halo = false, shared = null) {
 export default function StageLasers({ look, count = 40, projectors }) {
     const n = projectors.length;
     const material = useMemo(() => createLaserMaterial(n), [n]);
-    const haloMaterial = useMemo(() => createLaserMaterial(n, true, material.uniforms), [n, material]);
     const geometry = useMemo(() => {
         const g = new THREE.BoxGeometry(0.05, 0.05, LENGTH);
         g.translate(0, 0, LENGTH / 2);
@@ -162,19 +161,10 @@ export default function StageLasers({ look, count = 40, projectors }) {
         for (const [name, values] of Object.entries(attr)) g.setAttribute(name, new THREE.InstancedBufferAttribute(values, 1));
         return g;
     }, [n, projectors]);
-    // the glow: the same beams, wider (the same per-beam data)
-    const haloGeometry = useMemo(() => {
-        const g = new THREE.BoxGeometry(HALO, HALO, LENGTH * 0.5);
-        g.translate(0, 0, LENGTH * 0.25);
-        for (const name of ['aFan', 'aRank', 'aSrc', 'aTower', 'aLean']) g.setAttribute(name, geometry.getAttribute(name));
-        return g;
-    }, [geometry]);
     useEffect(() => () => {
         geometry.dispose();
         material.dispose();
-        haloGeometry.dispose();
-        haloMaterial.dispose();
-    }, [geometry, material, haloGeometry, haloMaterial]);
+    }, [geometry, material]);
 
     // The projectors themselves: housings, glowing apertures, and the rods clamping the tower ones on
     const parts = useMemo(() => {
@@ -189,7 +179,6 @@ export default function StageLasers({ look, count = 40, projectors }) {
     useEffect(() => () => Object.values(parts).forEach((p) => p.dispose()), [parts]);
 
     const mesh = useRef();
-    const halo = useRef();
     const housings = useRef();
     const apertures = useRef();
     const rods = useRef();
@@ -291,12 +280,10 @@ export default function StageLasers({ look, count = 40, projectors }) {
         if (apertures.current.instanceColor) apertures.current.instanceColor.needsUpdate = true;
         // Skip the beams' draw call entirely while every projector is off
         mesh.current.visible = u.uLevel.value > 0.01 && st.level.some((l) => l > 0.01);
-        if (halo.current) halo.current.visible = mesh.current.visible;
     });
 
     return (
         <group>
-            <instancedMesh ref={halo} args={[haloGeometry, haloMaterial, n * PER]} frustumCulled={false} />
             <instancedMesh ref={mesh} args={[geometry, material, n * PER]} frustumCulled={false} />
             <instancedMesh ref={housings} args={[parts.housing, parts.housingMat, n]} frustumCulled={false} />
             <instancedMesh ref={apertures} args={[parts.aperture, parts.apertureMat, n]} frustumCulled={false} />

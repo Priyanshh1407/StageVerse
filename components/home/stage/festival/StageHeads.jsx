@@ -89,7 +89,8 @@ function driveRole(u, role, target, state, delta) {
     // stay on the performers; the washes circle smaller.
     const circle = (target.circle ?? 0) > 0.5 && !role.onPerformer;
     const radius = (target.circleSize ?? 0.35) * (role === ROLES.wash ? 0.4 : 1);
-    glide(u.uSweep, circle ? radius * mirrored : target.sweep * sweepScale * mirrored, dt);
+    const breathing = (target.fanBreathe ?? 0) > 0.5 && (role === ROLES.aerial || role === ROLES.floor);
+    glide(u.uSweep, circle ? radius * mirrored : breathing ? 0.04 : target.sweep * sweepScale * mirrored, dt);
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
@@ -114,7 +115,12 @@ function driveRole(u, role, target, state, delta) {
     // Side towers: their pan is their crossing angle times (1 + sidesAim): 0 = crossing (rest),
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
     const fan = role === ROLES.wash || role === ROLES.spot ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0) : target.fan ?? 1;
-    glide(u.uFan, fan, dt);
+    // Fan breathe (look.fanBreathe): the aerial and floor rows open out and close in again, in time with the
+    // song (open on one beat, closed two beats later), the beams held otherwise: the classic fan-in, fan-out
+    // of a festival main stage's rows
+    const breathe = (target.fanBreathe ?? 0) > 0.5 && (role === ROLES.aerial || role === ROLES.floor);
+    if (breathe) u.uFan.value = fan * (0.3 + 1.1 * (0.5 - 0.5 * Math.cos(((target.beatPos ?? state.clock * 2) * Math.PI) / 2)));
+    else glide(u.uFan, fan, dt);
     // the side towers rest a little above level, aimed across at the audience: they take a look's
     // tilt only downward (a "sky" position lifting them into the sky looked wrong)
     // (in a circle the aerials swing up and down 1.5 times as far as side to side: they point out at the crowd, so
@@ -137,7 +143,9 @@ function driveRole(u, role, target, state, delta) {
     u.uColorA.value.lerp(ta, ease);
     u.uColorB.value.lerp(tb, ease);
 
-    const wanted = target.intensity * (target.master ?? 1) * (target[role.level] ?? 1) * (state.extraLevel ? target[state.extraLevel] ?? 1 : 1);
+    // (the spots follow the washes' level but are show lights: off when the house lights are up)
+    const houseOff = role.onPerformer ? 1 - Math.min(1, (target.house ?? 0) * 1.5) : 1;
+    const wanted = target.intensity * (target.master ?? 1) * (target[role.level] ?? 1) * (state.extraLevel ? target[state.extraLevel] ?? 1 : 1) * houseOff;
     state.level += (wanted - state.level) * ease;
     const strobe = role === ROLES.wash ? 0 : target.strobe ?? 0; // strobing is the strobes' job; beams flicker with them
     const flash = (u.uTime.value * 12.5) % 1 < 0.3 ? 1.6 : 0.15;
