@@ -63,6 +63,7 @@ function createLaserMaterial(sources, halo = false, shared = null) {
             varying float vAlong;
             varying float vOn;
             varying vec2 vAcross;
+            varying float vSideOn;
             void main() {
                 vAlong = position.z / ${LENGTH.toFixed(1)};
                 vAcross = position.xy;
@@ -88,7 +89,11 @@ function createLaserMaterial(sources, halo = false, shared = null) {
                 // pitch (around X) then yaw (around Y); beams start along +Z toward the audience
                 p = vec3(p.x, p.y * cos(pitch) + p.z * sin(pitch), -p.y * sin(pitch) + p.z * cos(pitch));
                 p = vec3(p.x * cos(yaw) + p.z * sin(yaw), p.y, -p.x * sin(yaw) + p.z * cos(yaw));
-                gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(p, 1.0);
+                // how side-on the camera sees this beam (1 = from the side, 0 = straight down its length)
+                vec4 world = modelMatrix * instanceMatrix * vec4(p, 1.0);
+                vec3 along = normalize(mat3(modelMatrix * instanceMatrix) * vec3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch)));
+                vSideOn = 1.0 - pow(abs(dot(along, normalize(cameraPosition - world.xyz))), 6.0);
+                gl_Position = projectionMatrix * viewMatrix * world;
             }
         `.replaceAll('${SOURCES}', String(sources)),
         fragmentShader: /* glsl */ `
@@ -98,6 +103,7 @@ function createLaserMaterial(sources, halo = false, shared = null) {
             varying float vAlong;
             varying float vOn;
             varying vec2 vAcross;
+            varying float vSideOn;
             float hash(float n) { return fract(sin(n) * 43758.5453); }
             void main() {
                 if (vOn < 0.01) discard;
@@ -112,7 +118,7 @@ function createLaserMaterial(sources, halo = false, shared = null) {
                 float glow = exp(-r * r * 4.0) * 0.34;
                 // (it fades in over the first metres, so the glows of a whole fan never pile up at the projector)
                 float away = smoothstep(0.02, 0.12, vAlong);
-                gl_FragColor = vec4(uColor * 2.0, glow * away * fade * uLevel * vOn * sparkle);
+                gl_FragColor = vec4(uColor * 2.0, glow * away * vSideOn * fade * uLevel * vOn * sparkle);
             #else
                 // the core: white-hot in the middle of the colour, and bright
                 vec3 hot = mix(uColor, vec3(1.0), 0.15) * 4.5;
