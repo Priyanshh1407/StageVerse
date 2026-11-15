@@ -24,7 +24,9 @@ export const ROLES = {
     sides: { level: 'sides', colors: ['colorB', 'colorA'], sweep: 0.3, speed: 0.7, converge: 1, spread: 1.1, opacity: 1.5, ownAim: true },
     // On the drop the floor fixtures don't focus: they swing fully sideways
     // (the floor fixtures' bodies are smaller, so the performers stand out; the light is the same)
-    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.6, speed: 1.3, converge: 0.8, spread: 0.9, opacity: 1.3, sideways: true, scale: 1.6, noWave: true },
+    // (steady: every cue keeps the floor beams close to the direction of 'Peak · hook', out at the crowd and a
+    // little down: see FLOOR below; they take no part in the focus or the drop's sideways throw)
+    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.6, speed: 1.3, converge: 0, spread: 0.9, opacity: 1.3, scale: 1.6, noWave: true, steady: true },
     // Washes colour the stage: wide, soft, barely moving, never part of the drop's convergence
     wash: { level: 'wash', colors: ['washColor', 'washColor'], sweep: 0.15, speed: 0.35, converge: 0, spread: 4.5, opacity: 0.3 },
     // spots: hard, medium-width beams on the performers, in the show's colours, barely moving
@@ -63,6 +65,10 @@ function createGlowGeometry(fixtures) {
 // started each change at full speed (from standing still in one frame), which read as jerky
 // whenever a cue snapped (a solo, a slam, a new phrase's look).
 const MOVE_TIME = 0.3; // seconds
+// The floor beams' limits in every cue, around 'Peak · hook' (fan 0.9, tilt shift -0.3): how far a cue may fan
+// them (never mirrored: a crossing fan threw them outwards), raise or lower them, and swing them side to side
+const FLOOR = { fan: [0.8, 1.0], tiltShift: [-0.4, -0.2], sweep: 0.25 };
+const clamp = (v, [lo, hi]) => Math.min(hi, Math.max(lo, v));
 // The aerial beams' wave (radians): it may swing up and down by up to AERIAL_MAX_WAVE, but the top of the
 // swing never rises more than AERIAL_MAX_LIFT above where the beams rest, so they never go over the truss:
 // a bigger wave swings further down into the crowd instead
@@ -90,7 +96,8 @@ function driveRole(u, role, target, state, delta) {
     const circle = (target.circle ?? 0) > 0.5 && !role.onPerformer;
     const radius = (target.circleSize ?? 0.35) * (role === ROLES.wash ? 0.4 : 1);
     const breathing = (target.fanBreathe ?? 0) > 0.5 && (role === ROLES.aerial || role === ROLES.floor);
-    glide(u.uSweep, circle ? radius * mirrored : breathing ? 0.04 : target.sweep * sweepScale * mirrored, dt);
+    const sweepWanted = role.steady ? Math.min(FLOOR.sweep, target.sweep * sweepScale) : target.sweep * sweepScale;
+    glide(u.uSweep, circle ? radius * mirrored : breathing ? 0.04 : sweepWanted * mirrored, dt);
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
@@ -114,7 +121,8 @@ function driveRole(u, role, target, state, delta) {
     u.uPhase.value = state.phase;
     // Side towers: their pan is their crossing angle times (1 + sidesAim): 0 = crossing (rest),
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
-    const fan = role === ROLES.wash || role === ROLES.spot ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0) : target.fan ?? 1;
+    const fan = role === ROLES.wash || role === ROLES.spot ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0)
+        : role.steady ? clamp(Math.abs(target.fan ?? 1), FLOOR.fan) : target.fan ?? 1;
     // Fan breathe (look.fanBreathe): the aerial and floor rows open out and close in again, in time with the
     // song (open on one beat, closed two beats later), the beams held otherwise: the classic fan-in, fan-out
     // of a festival main stage's rows
@@ -132,6 +140,7 @@ function driveRole(u, role, target, state, delta) {
         : circle && role.ownAim ? -radius * 0.85
         : circle && role === ROLES.aerial ? -Math.max(0, aerialWave - AERIAL_MAX_LIFT)
         : role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0))
+        : role.steady && !circle ? clamp(target.tiltShift ?? 0, FLOOR.tiltShift)
         : role === ROLES.aerial ? Math.min(0, target.tiltShift ?? 0) - Math.max(0, aerialWave - AERIAL_MAX_LIFT)
             : target.tiltShift ?? 0;
     glide(u.uTiltShift, shift, dt);
