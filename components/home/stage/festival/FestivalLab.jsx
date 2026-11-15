@@ -158,7 +158,8 @@ export default function FestivalLab({ stageKey }) {
         const show = prepareSongShow(await (await fetch(demo.show)).json());
         const audio = new Audio(encodeURI(show.audio));
         if (startAt > 0) audio.addEventListener('loadedmetadata', () => { audio.currentTime = Math.min(startAt, audio.duration - 1); }, { once: true });
-        audio.addEventListener('ended', () => setPlaying(null));
+        // the last note: the house lights come up (the washes only, warm yellow), as at the end of a concert
+        audio.addEventListener('ended', () => { setPlaying(null); setPreset('House lights'); setCueKindOn(null); source.current = { ...source.current, look: PRESETS['House lights'], shot: null, hit: null }; });
         song.current = { show, audio };
         await audio.play().catch(() => {});
         setPlaying(demo.slug);
