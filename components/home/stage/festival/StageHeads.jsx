@@ -90,7 +90,7 @@ function driveRole(u, role, target, state, delta) {
     const circle = (target.circle ?? 0) > 0.5 && !role.onPerformer;
     const radius = (target.circleSize ?? 0.35) * (role === ROLES.wash ? 0.4 : 1);
     const breathing = (target.fanBreathe ?? 0) > 0.5 && (role === ROLES.aerial || role === ROLES.floor);
-    glide(u.uSweep, circle ? radius * mirrored : breathing ? (state.extraLevel === 'sideScreenBeams' ? 0 : 0.04) : target.sweep * sweepScale * mirrored, dt);
+    glide(u.uSweep, circle ? radius * mirrored : breathing ? 0.04 : target.sweep * sweepScale * mirrored, dt);
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
@@ -119,10 +119,8 @@ function driveRole(u, role, target, state, delta) {
     // song (open on one beat, closed two beats later), the beams held otherwise: the classic fan-in, fan-out
     // of a festival main stage's rows
     const breathe = (target.fanBreathe ?? 0) > 0.5 && (role === ROLES.aerial || role === ROLES.floor);
-    // (the beams under the side screens take no part: they point straight out while the rows breathe)
-    const underScreens = state.extraLevel === 'sideScreenBeams';
-    if (breathe && !underScreens) u.uFan.value = fan * (0.3 + 1.1 * (0.5 - 0.5 * Math.cos(((target.beatPos ?? state.clock * 2) * Math.PI) / 2)));
-    else glide(u.uFan, (target.fanBreathe ?? 0) > 0.5 && underScreens ? 0 : fan, dt);
+    if (breathe) u.uFan.value = fan * (0.3 + 1.1 * (0.5 - 0.5 * Math.cos(((target.beatPos ?? state.clock * 2) * Math.PI) / 2)));
+    else glide(u.uFan, fan, dt);
     // the side towers rest a little above level, aimed across at the audience: they take a look's
     // tilt only downward (a "sky" position lifting them into the sky looked wrong)
     // (in a circle the aerials swing up and down 1.5 times as far as side to side: they point out at the crowd, so
@@ -136,10 +134,7 @@ function driveRole(u, role, target, state, delta) {
         : role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0))
         : role === ROLES.aerial ? Math.min(0, target.tiltShift ?? 0) - Math.max(0, aerialWave - AERIAL_MAX_LIFT)
             : target.tiltShift ?? 0;
-    // (while the rows breathe, the beams under the side screens point straight up: aimed out at the crowd from
-    // the far sides they looked slanted; about 1.2 rad lifts them from their rest to vertical)
-    const straightUp = state.extraLevel === 'sideScreenBeams' && (target.fanBreathe ?? 0) > 0.5;
-    glide(u.uTiltShift, straightUp ? 1.2 : shift, dt);
+    glide(u.uTiltShift, shift, dt);
     const tiltWave = circle ? (role === ROLES.aerial ? aerialWave : radius)
         : role.ownAim || role.noWave || role.onPerformer ? 0 : role === ROLES.aerial ? aerialWave : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
     glide(u.uTiltWave, tiltWave, dt);
