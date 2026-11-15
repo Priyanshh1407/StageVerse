@@ -25,6 +25,8 @@ import StageCrowd from './StageCrowd';
 import StagePa from './StagePa';
 import StageBarrier from './StageBarrier';
 import StageLedWall from './StageLedWall';
+import StageLogo from './StageLogo';
+import { clubLook } from '@/lib/show/stages/club';
 
 // One festival stage, lit and running, for use inside a <Canvas>: built entirely from its definition
 // (lib/show/stages). The homepage does not use this yet: it renders on the /lab stage pages only.
@@ -178,6 +180,16 @@ function IndoorPyro({ look }) {
     return null;
 }
 
+/** The warehouse: every moment of the show as a club look (lib/show/stages/club.js). */
+function toClub(look) {
+    look.current = clubLook(look.current);
+}
+
+function ClubLooks({ look }) {
+    useFrame(() => toClub(look));
+    return null;
+}
+
 export default function FestivalScene({ stage, look, count = 96, bloom = true, quality = 'low', control }) {
     const heads = useMemo(() => rigHeads(stage, count), [stage, count]);
     const mounts = useMemo(() => stageMounts(stage), [stage]);
@@ -194,6 +206,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
     return (
         <>
+            {stage.club && <ClubLooks look={look} />}
             {stage.indoor && <IndoorPyro look={look} />}
             <color attach="background" args={[stage.indoor ? '#010103' : '#010208']} />
             {!stage.indoor && <Sky kind={stage.sky} look={look} />}
@@ -217,7 +230,8 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
                 <StageHeads heads={heads} look={look} focus={stage.focus} screenBeamsX={stage.screenBeamsX} />
                 <StageStrobes positions={mounts.strobes} look={look} blinders={Math.min(16, blinders)} />
             </Suspense>
-            <StageLasers look={look} projectors={mounts.lasers} />
+            <StageLasers look={look} projectors={mounts.lasers} pitch={stage.laserPitch ?? null} />
+            {stage.logo && <StageLogo position={stage.logo.position} size={stage.logo.size} logoFonts={LOGO_FONTS} />}
             <group position={[0, 0, stage.focus[2] + 8 * hazeScale[2]]} scale={hazeScale}>
                 <Haze look={look} blinders={Math.min(16, blinders)} />
             </group>
@@ -228,9 +242,13 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
             <StageCo2 look={look} jets={mounts.floorJets} quality={quality} blinders={blinders} mount="floor" />
             <StageCo2 look={look} jets={mounts.highJets} quality={quality} blinders={blinders} mount="truss" />
-            <StageConfetti look={look} cannons={mounts.cannons} quality={quality} blinders={blinders} />
-            <StageCo2 look={look} jets={mounts.cannons} quality={quality} blinders={blinders} mount="confetti" />
-            <StageStreamers look={look} launchers={mounts.launchers} quality={quality} blinders={blinders} />
+            {stage.confetti !== false && (
+                <>
+                    <StageConfetti look={look} cannons={mounts.cannons} quality={quality} blinders={blinders} />
+                    <StageCo2 look={look} jets={mounts.cannons} quality={quality} blinders={blinders} mount="confetti" />
+                    <StageStreamers look={look} launchers={mounts.launchers} quality={quality} blinders={blinders} />
+                </>
+            )}
             {stage.fireworks && <StageFireworks look={look} spots={mounts.mines} place={place} quality={quality} />}
 
             <CameraFlash look={look} blinders={blinding} />

@@ -125,3 +125,11 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
   - **Camera follows the show**: cuts between the cue's shots and looks up for fireworks.
 - `/lab/stage`: the homepage stage on its own.
 - `npm test` after changing anything in `lib/`.
+
+## Logo sign and the warehouse club rules
+- The StageVerse logo sign on each stage: `logo: { position, size }` in its definition in `lib/show/stages/index.js` (desert: on the roof's front edge; mainstage: under the crown; warehouse: above the back LED screen). Drawn by `components/home/stage/festival/StageLogo.jsx`.
+- Warehouse only:
+  - `club: true` plays every show as club looks (`lib/show/stages/club.js`): quiet parts a mirror-ball moment, grooves tight single-colour scans, builds a strobe and laser ramp, peaks beat-hit strobes and alternating beams. The thresholds are the `e < ...` lines.
+  - `laserPitch: { offset, min }` aims the wall lasers down over the crowd (more negative = further down).
+  - `confetti: false`: CO2 only, no confetti or streamers.
+  - Extra camera views: `dj`, `djLeft`, `djRight`, `djWide` (from the booth), `crowd` (in the crowd), `rear` (back of the room), `wall` (side wall). They appear as buttons on `/lab/warehouse`, or use `?view=dj`.

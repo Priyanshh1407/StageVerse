@@ -21,7 +21,8 @@ describe.each(Object.values(STAGES))('the $key stage', (stage) => {
     });
 
     it('has the effect mounts it claims (fireworks only outdoors)', () => {
-        for (const type of ['co2', 'confetti', 'streamer', 'haze']) expect(stage.effects[type].length, type).toBeGreaterThan(0);
+        for (const type of ['co2', 'haze']) expect(stage.effects[type].length, type).toBeGreaterThan(0);
+        for (const type of ['confetti', 'streamer']) expect(stage.effects[type].length > 0, type).toBe(stage.confetti !== false);
         for (const type of ['pyro', 'shell']) expect(stage.effects[type].length > 0, type).toBe(stage.fireworks);
         expect(Object.keys(stage.effects).sort()).toEqual([...EFFECT_TYPES].sort());
     });
@@ -48,6 +49,9 @@ describe.each(Object.values(STAGES))('the $key stage', (stage) => {
     });
 
     it('has every camera shot, all in front of the stage and above the ground', () => {
+        if (stage.key === 'warehouse') expect(stage.shots.dj.pos[2]).toBeLessThan(0); // the DJ view (warehouse only) stands on the stage
+        else expect(stage.shots.dj).toBeUndefined();
+        expect(stage.logo.size[0]).toBeGreaterThan(stage.logo.size[1]);
         for (const name of ['house', 'wide', 'dolly', 'high', 'left', 'right', 'drop', 'finale', 'sky']) {
             const shot = stage.shots[name];
             expect(shot, name).toBeTruthy();

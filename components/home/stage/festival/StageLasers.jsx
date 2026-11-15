@@ -46,6 +46,8 @@ function createLaserMaterial(sources, halo = false, shared = null) {
             uChase: { value: 0 },
             uSpread: { value: 1 },
             uTilt: { value: 0 },
+            uPitchOffset: { value: 0 },                   // the stage's own aim (the warehouse: down over the crowd)
+            uMinPitch: { value: LASER_MIN_PITCH },
         },
         vertexShader: /* glsl */ `
             attribute float aFan;    // -1..1 position in the fan
@@ -60,6 +62,8 @@ function createLaserMaterial(sources, halo = false, shared = null) {
             uniform float uChase;
             uniform float uSpread;
             uniform float uTilt;
+            uniform float uPitchOffset;
+            uniform float uMinPitch;
             varying float vAlong;
             varying float vOn;
             varying vec2 vAcross;
@@ -84,9 +88,9 @@ function createLaserMaterial(sources, halo = false, shared = null) {
                 float yaw = 0.1 + aFan * 0.38 * uSpread - aLean * mix(0.18, 0.4, aTower) + sin(t * 0.5 + aSrc * 0.9) * 0.42 + sin(t * 1.7 + aFan * 2.0) * 0.05;
                 // Up and down is only a gentle drift, and no sheet ever points lower than 0.14 rad above
                 // horizontal (tilt can lift them, never take them below that)
-                float centre = mix(0.3, 0.26, aTower) + uTilt * 0.5;
+                float centre = mix(0.3, 0.26, aTower) + uTilt * 0.5 + uPitchOffset;
                 float travel = mix(0.07, 0.1, aTower);
-                float pitch = max(centre + sin(t * 0.45 + aSrc * 1.3) * travel, ${LASER_MIN_PITCH.toFixed(2)});
+                float pitch = max(centre + sin(t * 0.45 + aSrc * 1.3) * travel, uMinPitch);
                 vec3 p = position;
                 // pitch (around X) then yaw (around Y); beams start along +Z toward the audience
                 p = vec3(p.x, p.y * cos(pitch) + p.z * sin(pitch), -p.y * sin(pitch) + p.z * cos(pitch));
@@ -137,9 +141,13 @@ function createLaserMaterial(sources, halo = false, shared = null) {
     });
 }
 
-export default function StageLasers({ look, count = 40, projectors }) {
+export default function StageLasers({ look, count = 40, projectors, pitch = null }) {
     const n = projectors.length;
-    const material = useMemo(() => createLaserMaterial(n), [n]);
+    const material = useMemo(() => {
+        const m = createLaserMaterial(n);
+        if (pitch) { m.uniforms.uPitchOffset.value = pitch.offset; m.uniforms.uMinPitch.value = pitch.min; }
+        return m;
+    }, [n, pitch]);
     const geometry = useMemo(() => {
         const g = new THREE.BoxGeometry(0.05, 0.05, LENGTH);
         g.translate(0, 0, LENGTH / 2);
