@@ -17,7 +17,7 @@ import * as THREE from 'three';
 // per projector on every beat. One instanced draw call for every beam; each beam's angle is computed
 // in the vertex shader. The housings, apertures and rods are three more instanced draw calls.
 // (festival: more beams, longer, hotter, with a glow round each one: real lasers in haze, not lines)
-const PER = 32;                    // most beams one projector throws
+const PER = 24;                    // most beams one projector throws
 const LENGTH = 80;
 const HALO = 0.6;                  // how wide each beam's glow is (m)
 const HOUSING = [0.75, 0.42, 0.62];
@@ -25,7 +25,7 @@ const HOUSING = [0.75, 0.42, 0.62];
 const LASER_MIN_PITCH = 0.14;
 // The most beams on stage at once, across every projector: with all of them on, a full rig of
 // ~100 beams felt overwhelming, so the fans share this (all 8 on: ~8 each; one group of 4: ~12 each)
-const TOTAL_CAP = 160;
+const TOTAL_CAP = 110;
 // Beam-count mode: the fans breathe. The count steps one beam at a time toward a target (twice a
 // beat), and each target sits on the other side of the fan from the last: down to a few beams,
 // back up to (nearly) the full fan, down again...
@@ -101,7 +101,7 @@ function createLaserMaterial(sources, halo = false, shared = null) {
             float hash(float n) { return fract(sin(n) * 43758.5453); }
             void main() {
                 if (vOn < 0.01) discard;
-                float fade = (1.0 - vAlong) * smoothstep(0.0, 0.015, vAlong);
+                float fade = (1.0 - vAlong) * smoothstep(0.0, 0.03, vAlong);
                 // the beam catching the haze: it sparkles along its length
                 float grain = floor(vAlong * 160.0);
                 float sparkle = 0.75 + 0.5 * hash(grain + floor(uTime * 24.0) * 7.13);
@@ -110,7 +110,9 @@ function createLaserMaterial(sources, halo = false, shared = null) {
                 vec2 a = abs(vAcross) / ${(0.5 / 2).toFixed(3)};
                 float r = min(a.x, a.y);
                 float glow = exp(-r * r * 4.0) * 0.34;
-                gl_FragColor = vec4(uColor * 2.0, glow * fade * uLevel * vOn * sparkle);
+                // (it fades in over the first metres, so the glows of a whole fan never pile up at the projector)
+                float away = smoothstep(0.02, 0.12, vAlong);
+                gl_FragColor = vec4(uColor * 2.0, glow * away * fade * uLevel * vOn * sparkle);
             #else
                 // the core: white-hot in the middle of the colour, and bright
                 vec3 hot = mix(uColor, vec3(1.0), 0.15) * 4.5;
