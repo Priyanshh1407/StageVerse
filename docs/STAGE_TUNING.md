@@ -54,7 +54,7 @@ Which group a head belongs to (aerial, sides, floor, wash; spots are their own g
 - **`SOLOS`**: each solo's look (which group is on, which position, which movement).
 - Section looks (intro, groove, build, peak, breakdown, outro) and the hits (drop, strobe, blinder, burst) are built further down from these.
 
-After changing `program.js`, rebuild the demo shows: `npm run demos` (it rewrites `public/shows/*.show.json`), then `npm test`.
+**After changing `program.js` (or `look.js`), rebuild the demo shows: `npm run demos`.** The songs' shows are built once into `public/shows/*.show.json`; the pages play those files, so a change in `program.js` shows up nowhere until they are rebuilt. Then reload the page and run `npm test`.
 
 Every key a look can have, with its meaning and default, is in `lib/show/look.js` (`DEFAULT_LOOK`).
 
@@ -73,7 +73,10 @@ Every key a look can have, with its meaning and default, is in `lib/show/look.js
 | `scale` | size of the fixture's body (default 2.3; the floor's 1.6 is smaller, the light is unchanged) |
 
 Also in that file:
-- `AERIAL_MAX_WAVE` (0.12): the most the aerial beams may swing up and down.
+- `AERIAL_MAX_WAVE` (0.4): the most the aerial beams may swing up and down; `AERIAL_MAX_LIFT` (0.12): how far the top of that swing may rise above their rest angle (a bigger wave swings further down into the crowd instead, so they never go over the truss).
+- The floor group has `noWave: true`: it sweeps side to side only (a sweep plus an up-and-down wave made it go round in circles). Remove it to bring the wave back.
+- Side towers: the left and right towers are separate groups; with `sidesMirror: 1` in a look the right one sweeps the opposite way (both point in at the centre and move as mirror images). The shows pick one type per song (`sidesMirror` in the side towers solo in `program.js`).
+- `sideScreenBeams` (desert): the moving heads under the side screens. `program.js` sets it to 0 in every riser into a peak and every peak's pinch (the `cues: cues.map(...)` line near the end), 1 everywhere else; the stage's `screenBeamsX` (28) says which heads count.
 - In `driveRole`, the line `const shift = ...`: aerials take a cue's `tiltShift` only downwards (`Math.min(0, ...)`), so they never lift above the truss; the side towers only downwards and at most 0.3.
 
 **Homepage stage**: the same `ROLES` in `components/home/stage/Fixtures.jsx` (without the festival limits).
@@ -81,6 +84,7 @@ Also in that file:
 ## 5. Lasers, strobes, screens, pixel bars
 
 - **Lasers**: `components/home/stage/Lasers.jsx` (homepage) and `festival/StageLasers.jsx`: `PER` (most beams per projector), `LENGTH`, `LOW`/`HIGH` (fan shares). Positions: the layout's `fx('laser', ...)` lines.
+  - Festival lasers' intensity (`festival/StageLasers.jsx`): the core's thickness `new THREE.BoxGeometry(0.05, 0.05, LENGTH)`, its brightness `vec3 hot = mix(uColor, vec3(1.0), 0.15) * 4.5` (the 0.15 is how white the centre is, the 4.5 how bright), the glow's width `HALO` and strength `* 0.34`, the sparkle along the beam (`sparkle`), `TOTAL_CAP` (most beams on stage at once), and the sweep `* 0.42` in the `yaw` line.
 - **Strobes and blinders**: `Strobes.jsx` / `festival/StageStrobes.jsx`: `WIDTH`, `BLINDER_WHITE`, `GLOW_TOTAL`, `GLOW_SPREAD`. The flash over the whole view and the room is `components/home/stage/flash.js` (`FLASH_BRIGHTNESS`, `REFERENCE_BLINDERS`).
 - **LED screens (festival)**: which animation plays when, `lib/show/stages/screenFx.js`; the animations themselves, `SCREEN_FRAGMENT` in `festival/StageBuild.jsx` (patterns 0 to 5). The walls with the wordmark use the homepage's wall shader (`festival/StageLedWall.jsx`).
 - **Pixel bars (festival)**: `BAR_FRAGMENT` in `festival/StageBuild.jsx` (chase speed `uBeat * 0.25`, sparkle, colour bands).

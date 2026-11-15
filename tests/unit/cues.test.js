@@ -17,7 +17,8 @@ describe('the cue tester', () => {
         const cues = collectCues(shows);
         const kinds = cues.map((c) => c.kind);
         expect(new Set(kinds).size).toBe(kinds.length);
-        for (const kind of ['Intro', 'Groove', 'Build', 'Peak · chorus', 'Breakdown', 'Solo · aerial beams', 'Solo · CO2']) expect(kinds, kind).toContain(kind);
+        for (const kind of ['Intro', 'Groove', 'Build', 'Peak · chorus', 'Breakdown', 'Solo · aerial beams', 'Solo · CO2', 'Solo · side towers', 'Solo · side towers · mirrored']) expect(kinds, kind).toContain(kind);
+        expect(cues.find((c) => c.kind === 'Solo · side towers · mirrored').look.sidesMirror).toBe(1);
         for (const cue of cues) expect(typeof cue.look.intensity, cue.kind).toBe('number');
     });
 

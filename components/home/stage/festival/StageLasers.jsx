@@ -16,23 +16,27 @@ import * as THREE from 'three';
 // look.laserSeq they come on one by one, left to right; look.laserCount 1 picks a new number of beams
 // per projector on every beat. One instanced draw call for every beam; each beam's angle is computed
 // in the vertex shader. The housings, apertures and rods are three more instanced draw calls.
-const PER = 20;                    // most beams one projector throws
-const LENGTH = 48;
+// (festival: more beams, longer, hotter, with a glow round each one: real lasers in haze, not lines)
+const PER = 32;                    // most beams one projector throws
+const LENGTH = 80;
+const HALO = 0.6;                  // how wide each beam's glow is (m)
 const HOUSING = [0.75, 0.42, 0.62];
 // The lowest any laser sheet points: 0.14 rad above horizontal, so they never sweep down into the crowd
 const LASER_MIN_PITCH = 0.14;
 // The most beams on stage at once, across every projector: with all of them on, a full rig of
 // ~100 beams felt overwhelming, so the fans share this (all 8 on: ~8 each; one group of 4: ~12 each)
-const TOTAL_CAP = 64;
+const TOTAL_CAP = 160;
 // Beam-count mode: the fans breathe. The count steps one beam at a time toward a target (twice a
 // beat), and each target sits on the other side of the fan from the last: down to a few beams,
 // back up to (nearly) the full fan, down again...
 const LOW = [0.15, 0.3];   // share of the full fan for a 'down' target (12 beams: 2-4)
 const HIGH = [0.75, 1];    // ...and for an 'up' target (12 beams: 9-12)
 
-function createLaserMaterial(sources) {
+// `halo`: the soft glow drawn round every beam (it shares the core's uniforms, so they always match)
+function createLaserMaterial(sources, halo = false, shared = null) {
     return new THREE.ShaderMaterial({
-        uniforms: {
+        defines: { HALO: halo ? 1 : 0 },
+        uniforms: shared ?? {
             uTime: { value: 0 },
             uColor: { value: new THREE.Color('#39ff14') },
             uLevel: { value: 0 },
@@ -58,8 +62,10 @@ function createLaserMaterial(sources) {
             uniform float uTilt;
             varying float vAlong;
             varying float vOn;
+            varying vec2 vAcross;
             void main() {
                 vAlong = position.z / ${LENGTH.toFixed(1)};
+                vAcross = position.xy;
                 float on = 0.0;
                 for (int i = 0; i < ${'${SOURCES}'}; i++) if (float(i) == aSrc) on = uOn[i];
                 // Only the first uBeams beams of each fan (from the centre out)
@@ -72,7 +78,7 @@ function createLaserMaterial(sources) {
                 // Fan spread over the audience, each projector leaning in toward the middle of the room
                 // (the tower ones more), +0.1 turns the whole show slightly to the audience's right.
                 // The main movement is side to side: each sheet sweeps left and right across the room
-                float yaw = 0.1 + aFan * 0.38 * uSpread - aLean * mix(0.18, 0.4, aTower) + sin(t * 0.5 + aSrc * 0.9) * 0.32;
+                float yaw = 0.1 + aFan * 0.38 * uSpread - aLean * mix(0.18, 0.4, aTower) + sin(t * 0.5 + aSrc * 0.9) * 0.42 + sin(t * 1.7 + aFan * 2.0) * 0.05;
                 // Up and down is only a gentle drift, and no sheet ever points lower than 0.14 rad above
                 // horizontal (tilt can lift them, never take them below that)
                 float centre = mix(0.3, 0.26, aTower) + uTilt * 0.5;
@@ -88,12 +94,28 @@ function createLaserMaterial(sources) {
         fragmentShader: /* glsl */ `
             uniform vec3 uColor;
             uniform float uLevel;
+            uniform float uTime;
             varying float vAlong;
             varying float vOn;
+            varying vec2 vAcross;
+            float hash(float n) { return fract(sin(n) * 43758.5453); }
             void main() {
                 if (vOn < 0.01) discard;
-                float fade = (1.0 - vAlong) * smoothstep(0.0, 0.02, vAlong);
-                gl_FragColor = vec4(uColor * 1.6, fade * uLevel * vOn);
+                float fade = (1.0 - vAlong) * smoothstep(0.0, 0.015, vAlong);
+                // the beam catching the haze: it sparkles along its length
+                float grain = floor(vAlong * 160.0);
+                float sparkle = 0.75 + 0.5 * hash(grain + floor(uTime * 24.0) * 7.13);
+            #if HALO
+                // the glow round the beam: brightest at its centre line, soft to its edges
+                vec2 a = abs(vAcross) / ${(0.5 / 2).toFixed(3)};
+                float r = min(a.x, a.y);
+                float glow = exp(-r * r * 4.0) * 0.34;
+                gl_FragColor = vec4(uColor * 2.0, glow * fade * uLevel * vOn * sparkle);
+            #else
+                // the core: white-hot in the middle of the colour, and bright
+                vec3 hot = mix(uColor, vec3(1.0), 0.15) * 4.5;
+                gl_FragColor = vec4(hot, fade * uLevel * vOn * sparkle);
+            #endif
             }
         `,
         transparent: true,
@@ -106,8 +128,9 @@ function createLaserMaterial(sources) {
 export default function StageLasers({ look, count = 40, projectors }) {
     const n = projectors.length;
     const material = useMemo(() => createLaserMaterial(n), [n]);
+    const haloMaterial = useMemo(() => createLaserMaterial(n, true, material.uniforms), [n, material]);
     const geometry = useMemo(() => {
-        const g = new THREE.BoxGeometry(0.035, 0.035, LENGTH);
+        const g = new THREE.BoxGeometry(0.05, 0.05, LENGTH);
         g.translate(0, 0, LENGTH / 2);
         const total = n * PER;
         const attr = { aFan: new Float32Array(total), aRank: new Float32Array(total), aSrc: new Float32Array(total), aTower: new Float32Array(total), aLean: new Float32Array(total) };
@@ -127,10 +150,19 @@ export default function StageLasers({ look, count = 40, projectors }) {
         for (const [name, values] of Object.entries(attr)) g.setAttribute(name, new THREE.InstancedBufferAttribute(values, 1));
         return g;
     }, [n, projectors]);
+    // the glow: the same beams, wider (the same per-beam data)
+    const haloGeometry = useMemo(() => {
+        const g = new THREE.BoxGeometry(HALO, HALO, LENGTH);
+        g.translate(0, 0, LENGTH / 2);
+        for (const name of ['aFan', 'aRank', 'aSrc', 'aTower', 'aLean']) g.setAttribute(name, geometry.getAttribute(name));
+        return g;
+    }, [geometry]);
     useEffect(() => () => {
         geometry.dispose();
         material.dispose();
-    }, [geometry, material]);
+        haloGeometry.dispose();
+        haloMaterial.dispose();
+    }, [geometry, material, haloGeometry, haloMaterial]);
 
     // The projectors themselves: housings, glowing apertures, and the rods clamping the tower ones on
     const parts = useMemo(() => {
@@ -145,6 +177,7 @@ export default function StageLasers({ look, count = 40, projectors }) {
     useEffect(() => () => Object.values(parts).forEach((p) => p.dispose()), [parts]);
 
     const mesh = useRef();
+    const halo = useRef();
     const housings = useRef();
     const apertures = useRef();
     const rods = useRef();
@@ -245,10 +278,12 @@ export default function StageLasers({ look, count = 40, projectors }) {
         if (apertures.current.instanceColor) apertures.current.instanceColor.needsUpdate = true;
         // Skip the beams' draw call entirely while every projector is off
         mesh.current.visible = u.uLevel.value > 0.01 && st.level.some((l) => l > 0.01);
+        if (halo.current) halo.current.visible = mesh.current.visible;
     });
 
     return (
         <group>
+            <instancedMesh ref={halo} args={[haloGeometry, haloMaterial, n * PER]} frustumCulled={false} />
             <instancedMesh ref={mesh} args={[geometry, material, n * PER]} frustumCulled={false} />
             <instancedMesh ref={housings} args={[parts.housing, parts.housingMat, n]} frustumCulled={false} />
             <instancedMesh ref={apertures} args={[parts.aperture, parts.apertureMat, n]} frustumCulled={false} />
