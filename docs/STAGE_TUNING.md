@@ -79,11 +79,15 @@ Also in that file:
 - `sideScreenBeams` (desert): the moving heads under the side screens. `program.js` sets it to 0 in every riser into a peak and every peak's pinch (the `cues: cues.map(...)` line near the end), 1 everywhere else; the stage's `screenBeamsX` (28) says which heads count.
 - In `driveRole`, the line `const shift = ...`: aerials take a cue's `tiltShift` only downwards (`Math.min(0, ...)`), so they never lift above the truss; the side towers only downwards and at most 0.3.
 
+- Spots have `onPerformer: true`: no look's lift or wave moves them, so they stay on the performers (the follow spots from the front-of-house tower included).
+- **The circle** (`look.circle: 1`, radius `look.circleSize`, 0.35 rad): every beam traces a circle, each a little behind the last, so the rig rolls round like a ring. The aerials' and side towers' circles are lowered so their top stays where they rest (below the truss); the washes circle at 0.4 of the radius; spots don't. `program.js` puts it in every peak's "all in" (the `cues: cues.map(...)` line near the end).
+
 **Homepage stage**: the same `ROLES` in `components/home/stage/Fixtures.jsx` (without the festival limits).
 
 ## 5. Lasers, strobes, screens, pixel bars
 
 - **Lasers**: `components/home/stage/Lasers.jsx` (homepage) and `festival/StageLasers.jsx`: `PER` (most beams per projector), `LENGTH`, `LOW`/`HIGH` (fan shares). Positions: the layout's `fx('laser', ...)` lines.
+  - **How many laser beams the peaks light** (festival stages): `PEAK_LASERS` near the top of `lib/show/program.js` (0.4 = 40% of each fan; 1 = every beam), passed to the lasers as `look.laserMax`. Rebuild the shows after changing it. The homepage's lasers ignore it.
   - Festival lasers' intensity (`festival/StageLasers.jsx`): the core's thickness `new THREE.BoxGeometry(0.05, 0.05, LENGTH)`, its brightness `vec3 hot = ... * 1.15 + 0.06` (the colour scaled so its strongest channel is full: pushing every channel past full turns a coloured laser white), the glow's width `HALO`, strength `* 0.22` (divided by how many beams the fan has lit, so overlapping glows never pile into a blob), where it starts (`away`, from 5% of the beam's length) and how fast it fades as a beam turns to the camera (`vSideOn`), the sparkle along the beam (`sparkle`), `TOTAL_CAP` (most beams on stage at once), and the sweep `* 0.42` in the `yaw` line.
 - **Strobes and blinders**: `Strobes.jsx` / `festival/StageStrobes.jsx`: `WIDTH`, `BLINDER_WHITE`, `GLOW_TOTAL`, `GLOW_SPREAD`. The flash over the whole view and the room is `components/home/stage/flash.js` (`FLASH_BRIGHTNESS`, `REFERENCE_BLINDERS`).
 - **LED screens (festival)**: which animation plays when, `lib/show/stages/screenFx.js`; the animations themselves, `SCREEN_FRAGMENT` in `festival/StageBuild.jsx` (patterns 0 to 5). The walls with the wordmark use the homepage's wall shader (`festival/StageLedWall.jsx`).
@@ -112,6 +116,7 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 - `/lab/desert`, `/lab/warehouse` (`?layout=1` for the grey layout with every fixture marked):
   - **Look**: quick presets.
   - **Hits**: Drop, Strobe, Blinder, Burst, on top of whatever is showing.
+  - `?cue=<name>` holds a cue straight away, e.g. `?cue=Circle · all beams` or `?cue=Solo · washes`.
   - **Every cue in the shows**: all 44 kinds of cue from the nine demo songs (intros, grooves, builds, every peak, every solo, focus, outros...). Click one to hold it on the stage.
   - **Play a song through it**; `?song=<slug>&t=<seconds>` starts one at a moment (e.g. `?song=yellow&t=222` for Yellow's finale).
   - **Camera follows the show**: cuts between the cue's shots and looks up for fireworks.

@@ -28,7 +28,9 @@ export const ROLES = {
     // Washes colour the stage: wide, soft, barely moving, never part of the drop's convergence
     wash: { level: 'wash', colors: ['washColor', 'washColor'], sweep: 0.15, speed: 0.35, converge: 0, spread: 4.5, opacity: 0.3 },
     // spots: hard, medium-width beams on the performers, in the show's colours, barely moving
-    spot: { level: 'wash', colors: ['colorA', 'colorB'], sweep: 0.08, speed: 0.4, converge: 0, spread: 1.7, opacity: 0.9 },
+    // (they stay on the performers: a look's lift and wave never move them, so the follow spots from the
+    // front-of-house tower never end up in the sky)
+    spot: { level: 'wash', colors: ['colorA', 'colorB'], sweep: 0.08, speed: 0.4, converge: 0, spread: 1.7, opacity: 0.9, onPerformer: true },
 };
 
 function withFixtureAttributes(geometry, fixtures) {
@@ -82,7 +84,12 @@ function driveRole(u, role, target, state, delta) {
     // washes barely move, except when a cue lifts them (the washes solo)
     const sweepScale = role === ROLES.wash ? (target.washSweep ?? role.sweep) : role.sweep;
     const mirrored = state.mirror && (target.sidesMirror ?? 0) > 0.5 ? -1 : 1;
-    glide(u.uSweep, target.sweep * sweepScale * mirrored, dt);
+    // The circle (look.circle): every beam traces a circle of radius look.circleSize (side to side and up
+    // and down together), each a little behind the last, so the whole rig rolls round like a ring. Spots
+    // stay on the performers; the washes circle smaller.
+    const circle = (target.circle ?? 0) > 0.5 && !role.onPerformer;
+    const radius = (target.circleSize ?? 0.35) * (role === ROLES.wash ? 0.4 : 1);
+    glide(u.uSweep, circle ? radius * mirrored : target.sweep * sweepScale * mirrored, dt);
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
@@ -109,14 +116,17 @@ function driveRole(u, role, target, state, delta) {
     glide(u.uFan, fan, dt);
     // the side towers rest a little above level, aimed across at the audience: they take a look's
     // tilt only downward (a "sky" position lifting them into the sky looked wrong)
-    const aerialWave = Math.min(AERIAL_MAX_WAVE, target.tiltWave ?? 0);
-    const shift = role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0))
+    const aerialWave = Math.min(AERIAL_MAX_WAVE, circle ? radius : target.tiltWave ?? 0);
+    // (in a circle the side towers' circle is lowered by its radius, so its top is where they rest: below the truss)
+    const shift = role.onPerformer ? 0
+        : role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0)) - (circle ? radius : 0)
         : role === ROLES.aerial ? Math.min(0, target.tiltShift ?? 0) - Math.max(0, aerialWave - AERIAL_MAX_LIFT)
             : target.tiltShift ?? 0;
     glide(u.uTiltShift, shift, dt);
-    const tiltWave = role.ownAim || role.noWave ? 0 : role === ROLES.aerial ? aerialWave : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
+    const tiltWave = circle ? (role === ROLES.aerial ? aerialWave : radius)
+        : role.ownAim || role.noWave || role.onPerformer ? 0 : role === ROLES.aerial ? aerialWave : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
     glide(u.uTiltWave, tiltWave, dt);
-    glide(u.uPhaseSpread, target.phaseSpread ?? 0.25, dt);
+    glide(u.uPhaseSpread, circle ? 1 : target.phaseSpread ?? 0.25, dt);
     u.uHaze.value += (Math.min(1, target.haze + (role.haze ?? 0)) - u.uHaze.value) * ease;
     u.uColorA.value.lerp(ta, ease);
     u.uColorB.value.lerp(tb, ease);

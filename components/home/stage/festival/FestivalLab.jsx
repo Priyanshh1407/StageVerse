@@ -164,6 +164,16 @@ export default function FestivalLab({ stageKey }) {
             setDemos(index.demos ?? []);
             const demo = index.demos?.find((d) => d.slug === asked);
             if (demo) play(demo, Number(params.get('t')) || 0);
+            // ?cue=<name> holds one of the shows' cues (e.g. ?cue=Circle · all beams)
+            const askedCue = params?.get('cue');
+            if (askedCue && !demo) {
+                Promise.all((index.demos ?? []).map((d) => fetch(d.show).then((r) => r.json()).catch(() => null))).then((shows) => {
+                    const all = collectCues(shows.filter(Boolean));
+                    setCues(all);
+                    const cue = all.find((c) => c.kind.toLowerCase() === askedCue.toLowerCase());
+                    if (cue) chooseCue(cue);
+                });
+            }
         }).catch(() => {});
         return () => song.current?.audio?.pause();
     }, []);

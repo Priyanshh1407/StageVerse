@@ -242,7 +242,8 @@ export default function StageLasers({ look, count = 40, projectors }) {
         // Each projector's full fan: the desk count (40 by default) gives ~12 beams each, so with eight
         // projectors the sheets fill the room
         const active = Math.max(1, st.on.filter(Boolean).length);
-        const most = Math.max(2, Math.min(PER, Math.round(count * 0.3), Math.floor(TOTAL_CAP / active)));
+        // look.laserMax: the share of each full fan a look may light (the peaks use about half)
+        const most = Math.max(2, Math.round(Math.min(PER, Math.round(count * 0.3), Math.floor(TOTAL_CAP / active)) * Math.min(1, target.laserMax ?? 1)));
         if ((target.laserCount ?? 0) > 0.5) {
             const pulse = target.pulse ?? 0;
             st.sinceBeat += delta;
