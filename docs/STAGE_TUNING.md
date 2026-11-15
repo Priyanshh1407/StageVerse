@@ -80,7 +80,7 @@ Also in that file:
 - In `driveRole`, the line `const shift = ...`: aerials take a cue's `tiltShift` only downwards (`Math.min(0, ...)`), so they never lift above the truss; the side towers only downwards and at most 0.3.
 
 - Spots have `onPerformer: true`: no look's lift or wave moves them, so they stay on the performers (the follow spots from the front-of-house tower included).
-- **The circle** (`look.circle: 1`, radius `look.circleSize`, 0.35 rad): every beam traces a circle, each a little behind the last, so the rig rolls round like a ring. The aerials' and side towers' circles are lowered so their top stays where they rest (below the truss); the washes circle at 0.4 of the radius; spots don't. `program.js` puts it in every peak's "all in" (the `cues: cues.map(...)` line near the end).
+- **The circle** (`look.circle: 1`, radius `look.circleSize`, 0.35 rad): every beam traces a circle, each a little behind the last, so the rig rolls round like a ring. In a circle every beam stays on (alternate and sparkle are ignored) and the aerials and side towers ignore the cue's lift: their circle's top stays just under where they rest (below the truss). The aerials swing up and down 1.5 times the radius (their up-and-down is foreshortened from the crowd); the washes circle at 0.4 of the radius; spots don't. `program.js` puts it in every peak's "all in" (the `cues: cues.map(...)` line near the end).
 
 **Homepage stage**: the same `ROLES` in `components/home/stage/Fixtures.jsx` (without the festival limits).
 
@@ -116,6 +116,7 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 - `/lab/desert`, `/lab/warehouse` (`?layout=1` for the grey layout with every fixture marked):
   - **Look**: quick presets.
   - **Hits**: Drop, Strobe, Blinder, Burst, on top of whatever is showing.
+  - `?only=aerial` (or `sides`, `floor`, `wash`) keeps one group on and everything else off (lasers and pixel bars too), to look at it alone.
   - `?cue=<name>` holds a cue straight away, e.g. `?cue=Circle · all beams` or `?cue=Solo · washes`.
   - **Every cue in the shows**: all 44 kinds of cue from the nine demo songs (intros, grooves, builds, every peak, every solo, focus, outros...). Click one to hold it on the stage.
   - **Play a song through it**; `?song=<slug>&t=<seconds>` starts one at a moment (e.g. `?song=yellow&t=222` for Yellow's finale).

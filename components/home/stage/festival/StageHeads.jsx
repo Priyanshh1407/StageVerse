@@ -103,8 +103,9 @@ function driveRole(u, role, target, state, delta) {
     // Beat-locked effects: the song's beat when one is playing, otherwise 120 BPM
     state.clock += delta;
     u.uBeat.value = target.beatPos ?? state.clock * 2;
-    u.uAlternate.value += ((target.alternate ?? 0) - u.uAlternate.value) * ease;
-    u.uSparkle.value += ((target.sparkle ?? 0) - u.uSparkle.value) * ease;
+    // (in a circle every beam stays on: alternate and sparkle switched half of them off on every beat)
+    u.uAlternate.value += ((circle ? 0 : target.alternate ?? 0) - u.uAlternate.value) * ease;
+    u.uSparkle.value += ((circle ? 0 : target.sparkle ?? 0) - u.uSparkle.value) * ease;
     glide(u.uSpeed, target.speed * role.speed, dt);
     // Accumulate the movement position: a speed change alters how fast it moves from where it is
     // (computing sin(time * speed) made beams leap whenever a cue changed the speed)
@@ -116,10 +117,15 @@ function driveRole(u, role, target, state, delta) {
     glide(u.uFan, fan, dt);
     // the side towers rest a little above level, aimed across at the audience: they take a look's
     // tilt only downward (a "sky" position lifting them into the sky looked wrong)
-    const aerialWave = Math.min(AERIAL_MAX_WAVE, circle ? radius : target.tiltWave ?? 0);
-    // (in a circle the side towers' circle is lowered by its radius, so its top is where they rest: below the truss)
+    // (in a circle the aerials swing up and down 1.5 times as far as side to side: they point out at the crowd, so
+    // from the audience their up-and-down is foreshortened, and an even circle read as a flat ellipse)
+    const aerialWave = circle ? Math.min(0.6, radius * 1.5) : Math.min(AERIAL_MAX_WAVE, target.tiltWave ?? 0);
+    // (in a circle the aerials and side towers ignore the cue's lift: the circle alone sets their height,
+    // its top just under where they rest, so they stay below the truss and draw whole circles over the crowd)
     const shift = role.onPerformer ? 0
-        : role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0)) - (circle ? radius : 0)
+        : circle && role.ownAim ? -radius * 0.85
+        : circle && role === ROLES.aerial ? -Math.max(0, aerialWave - AERIAL_MAX_LIFT)
+        : role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0))
         : role === ROLES.aerial ? Math.min(0, target.tiltShift ?? 0) - Math.max(0, aerialWave - AERIAL_MAX_LIFT)
             : target.tiltShift ?? 0;
     glide(u.uTiltShift, shift, dt);

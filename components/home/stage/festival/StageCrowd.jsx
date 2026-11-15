@@ -133,7 +133,7 @@ const FRAGMENT = /* glsl */ `
 export default function StageCrowd({ look, area, quality = 'low', blinders = 8 }) {
     const AREA = area;
     // as dense as the homepage's crowd (its area is about 34 x 9.4 m), on a bigger floor up to three times as many
-    const count = Math.round((PEOPLE[quality] ?? PEOPLE.low) * Math.min(3, (2 * AREA.x * (AREA.z1 - AREA.z0)) / (34 * 9.4)));
+    const count = Math.round((PEOPLE[quality] ?? PEOPLE.low) * Math.min(quality === 'high' ? 3 : 2, (2 * AREA.x * (AREA.z1 - AREA.z0)) / (34 * 9.4)));
     const mesh = useRef();
     const state = useRef({ hands: 0, torch: 0, bands: 0, energy: 0, beat: 0 });
 

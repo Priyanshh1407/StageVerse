@@ -19,7 +19,7 @@ import * as THREE from 'three';
 // (festival: more beams, longer, hotter, with a glow round each one: real lasers in haze, not lines)
 const PER = 24;                    // most beams one projector throws
 const LENGTH = 80;
-const HALO = 0.6;                  // how wide each beam's glow is (m)
+const HALO = 0.45;                  // how wide each beam's glow is (m)
 const HOUSING = [0.75, 0.42, 0.62];
 // The lowest any laser sheet points: 0.14 rad above horizontal, so they never sweep down into the crowd
 const LASER_MIN_PITCH = 0.14;
@@ -74,6 +74,8 @@ function createLaserMaterial(sources, halo = false, shared = null) {
                 // Chase: a window of beams runs across each fan, the rest switch off
                 float slot = aFan * 0.5 + 0.5 + aSrc * 0.37;
                 on *= mix(1.0, step(fract(uTime * 1.8 - slot), 0.3), uChase);
+                // a beam that is off costs nothing: it collapses to a point and no pixel of it is drawn
+                if (on < 0.01) { vOn = 0.0; gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
                 vOn = on;
                 float t = uPhase; // accumulated in JS, so speed changes never make the fan leap
                 // Fan spread over the audience, each projector leaning in toward the middle of the room
@@ -162,8 +164,8 @@ export default function StageLasers({ look, count = 40, projectors }) {
     }, [n, projectors]);
     // the glow: the same beams, wider (the same per-beam data)
     const haloGeometry = useMemo(() => {
-        const g = new THREE.BoxGeometry(HALO, HALO, LENGTH);
-        g.translate(0, 0, LENGTH / 2);
+        const g = new THREE.BoxGeometry(HALO, HALO, LENGTH * 0.5);
+        g.translate(0, 0, LENGTH * 0.25);
         for (const name of ['aFan', 'aRank', 'aSrc', 'aTower', 'aLean']) g.setAttribute(name, geometry.getAttribute(name));
         return g;
     }, [geometry]);

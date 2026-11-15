@@ -37,7 +37,7 @@ function driveLook(look, source, song, clock, delta) {
     const s = song.current;
     if (s?.audio && !s.audio.paused) {
         const sample = sampleSongShow(s.show, s.audio.currentTime);
-        look.current = sample.look;
+        look.current = onlyGroup(sample.look, source.current.only);
         look.shot = sample.shot;
         return;
     }
@@ -50,8 +50,16 @@ function driveLook(look, source, song, clock, delta) {
         if (progress < 1) next = { ...next, ...HITS[hit.kind].apply(next, Math.max(0, progress)) };
         else source.current.hit = null;
     }
-    look.current = next;
+    look.current = onlyGroup(next, source.current.only);
     look.shot = shot ?? null;
+}
+
+const GROUP_LEVEL = { aerial: 'beams', sides: 'sides', floor: 'floor', wash: 'wash' };
+/** With ?only=<group>, every other group, the lasers and the pixel bars are off. */
+function onlyGroup(look, only) {
+    if (!GROUP_LEVEL[only]) return look;
+    const off = Object.fromEntries(Object.values(GROUP_LEVEL).filter((k) => k !== GROUP_LEVEL[only]).map((k) => [k, 0]));
+    return { ...look, ...off, laser: 0, pixel: 0, [GROUP_LEVEL[only]]: Math.max(0.8, look[GROUP_LEVEL[only]] ?? 0) };
 }
 
 function Driver({ look, source, song, clock }) {
@@ -115,12 +123,12 @@ export default function FestivalLab({ stageKey }) {
     const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const [preset, setPreset] = useState(PRESETS[params?.get('look')] ? params.get('look') : 'Build');
     // what the stage shows when no song plays: a preset or one of the shows' cues (and a hit on top)
-    const source = useRef({ look: PRESETS[preset], shot: null, hit: null });
+    const source = useRef({ look: PRESETS[preset], shot: null, hit: null, only: params?.get('only') });
     const clock = useRef({ t: 0 });
     const [cues, setCues] = useState(null);
     const [cueKindOn, setCueKindOn] = useState(null);
-    const choosePreset = (name) => { setPreset(name); setCueKindOn(null); source.current = { look: PRESETS[name], shot: null, hit: null }; };
-    const chooseCue = (cue) => { setCueKindOn(cue.kind); source.current = { look: cue.look, shot: cue.shot, hit: null }; };
+    const choosePreset = (name) => { setPreset(name); setCueKindOn(null); source.current = { ...source.current, look: PRESETS[name], shot: null, hit: null }; };
+    const chooseCue = (cue) => { setCueKindOn(cue.kind); source.current = { ...source.current, look: cue.look, shot: cue.shot, hit: null }; };
     const fireHit = (kind) => { source.current = { ...source.current, hit: { kind, at: clock.current.t } }; };
     // the cues of every demo song, loaded the first time the list is opened
     const loadCues = async () => {
