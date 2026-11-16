@@ -338,13 +338,30 @@ describe('the festival ground', async () => {
     const a = { pos: [-200, 4, 0], target: [-240, 9, 0] };
     const b = { pos: [0, 5, -170], target: [0, 15, -250] };
 
-    it('gives each kind of user a stage of their own, facing the plaza', () => {
-        expect(FESTIVAL.map((s) => `${s.persona}:${s.stage}`)).toEqual(['Fan:desert', 'Artist:mainstage', 'Organizer:warehouse', 'Crew:live']);
+    it('gives each kind of user a stage of their own, laid out like a festival site', async () => {
+        const { GROUNDS } = await import('@/lib/show/stages/festival');
+        // the live stage first (the homepage walks in through it), then the other three
+        expect(FESTIVAL.map((s) => `${s.persona}:${s.stage}`)).toEqual(['Crew:live', 'Fan:desert', 'Artist:mainstage', 'Organizer:warehouse']);
+        const by = Object.fromEntries(FESTIVAL.map((s) => [s.key, s]));
+        // the mainstage across the far end of the avenue, facing back down it toward the gate
+        expect(by.artist.position[0]).toBe(0);
+        expect(by.artist.turn).toBe(0);
+        expect(GROUNDS.gate[1]).toBeGreaterThan(200);
+        for (const s of FESTIVAL) if (s.key !== 'artist') expect(s.position[2]).toBeGreaterThan(by.artist.position[2] + 100);
+        // stages on both sides of the avenue, each turned toward it, none of them in a cross
+        expect(by.fan.position[0]).toBeLessThan(-100);
+        expect(by.crew.position[0]).toBeGreaterThan(100);
+        // the live stage is the nearest to the gate
+        const toGate = (s) => Math.hypot(s.position[0] - GROUNDS.gate[0], s.position[2] - GROUNDS.gate[1]);
+        for (const s of FESTIVAL) if (s.key !== 'crew') expect(toGate(by.crew)).toBeLessThan(toGate(s));
         for (const s of FESTIVAL) {
             const front = toGround(s, [0, 0, 50]); // 50 m in front of the stage
-            expect(Math.hypot(front[0], front[2])).toBeLessThan(Math.hypot(s.position[0], s.position[2]));
+            expect(Math.abs(front[0]), s.key).toBeLessThanOrEqual(Math.abs(s.position[0])); // toward the avenue
         }
-        expect(groundShot(FESTIVAL[1], { pos: [0, 2, 60], target: [0, 9, 0] }).pos).toEqual([0, 2, -180]);
+        expect(new Set(FESTIVAL.map((s) => Math.round(s.turn * 100))).size).toBe(4);
+        // no two stages close enough to overlap
+        for (const p of FESTIVAL) for (const q of FESTIVAL) if (p !== q) expect(Math.hypot(p.position[0] - q.position[0], p.position[2] - q.position[2])).toBeGreaterThan(150);
+        expect(groundShot(by.artist, { pos: [0, 2, 60], target: [0, 9, 0] }).pos).toEqual([0, 2, -240]);
     });
 
     it('backs away, turns to the next stage, then moves forward to it, at eye level and smoothly', () => {
