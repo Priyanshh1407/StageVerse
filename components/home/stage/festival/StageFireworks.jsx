@@ -398,7 +398,7 @@ const colour = new THREE.Color();
 const glowColour = new THREE.Color();
 
 /** Each frame: the launches in the air into the slots, the sky's light, and the booms. */
-function driveFireworks(geometry, material, target, time, pool, spots, place) {
+function driveFireworks(geometry, material, target, time, pool, spots, place, silent = false) {
     const list = target.fireworks;
     const u = material.uniforms;
     if (!list?.length) {
@@ -495,7 +495,7 @@ export default function StageFireworks({ look, spots, place, quality = 'low', si
     useEffect(() => () => { geometry.dispose(); }, [geometry]);
     useEffect(() => () => { material.dispose(); }, [material]);
 
-    useFrame(({ clock }) => driveFireworks(geometry, material, look.current, clock.elapsedTime, pool, spots, place));
+    useFrame(({ clock }) => driveFireworks(geometry, material, look.current, clock.elapsedTime, pool, spots, place, silent));
 
     return <mesh geometry={geometry} material={material} frustumCulled={false} renderOrder={4} />;
 }

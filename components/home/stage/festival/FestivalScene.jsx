@@ -1,7 +1,7 @@
 'use client';
 
-import { Suspense, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { Suspense, useEffect, useMemo, useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing';
 import { Orbitron } from 'next/font/google';
 import * as THREE from 'three';
@@ -182,6 +182,28 @@ function IndoorPyro({ look }) {
     return null;
 }
 
+/**
+ * Compile every shader before it is needed. three.js compiles a material the first time its object is drawn,
+ * and its warm-up (renderer.compile) skips hidden objects: the lasers, the strobes' glows and shafts and the
+ * camera's flash veil start hidden, so each compiled the moment it first appeared, freezing the screen for a
+ * moment mid-show. A few times in the first seconds (the models load in after the first frame), every hidden
+ * object is shown for the compile and hidden again.
+ */
+function prewarm(gl, scene, camera) {
+    const hidden = [];
+    scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
+    try { gl.compile(scene, camera); } finally { for (const o of hidden) o.visible = false; }
+}
+
+function Prewarm() {
+    const { gl, scene, camera } = useThree();
+    useEffect(() => {
+        const timers = [300, 1500, 4000, 9000].map((ms) => setTimeout(() => prewarm(gl, scene, camera), ms));
+        return () => timers.forEach(clearTimeout);
+    }, [gl, scene, camera]);
+    return null;
+}
+
 // The finale's fireworks doubled (stage.finaleEcho): while three or more shells fly at once (only the finale
 // fires that many), each shell gets a twin mirrored to the other side, further back, a little higher and a
 // moment later. Stage pyro (mines, comets, candles) is not doubled.
@@ -239,6 +261,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
     return (
         <>
             {stage.indoor && <IndoorPyro look={look} />}
+            <Prewarm />
             {stage.club && <ClubLooks look={look} />}
             <color attach="background" args={[stage.indoor ? '#010103' : '#010208']} />
             {!stage.indoor && <Sky kind={stage.sky} look={look} />}
