@@ -176,12 +176,12 @@ describe('the mainstage cues', async () => {
 
     it('swaps them in where they fit and leaves the landings, solos and named moments alone', () => {
         const kindAt = (name) => plan[names.indexOf(name)]?.kind ?? null;
-        for (const kept of ['Colours', 'Intro 1', 'Groove 3', 'Peak 5', 'Peak 7', 'Solo · floor', 'Peak 7 · hook', 'Outro 8', 'Peak 5 · lasers', 'Peak 5 · all in']) expect(kindAt(kept), kept).toBeNull();
+        for (const kept of ['Colours', 'Intro 1', 'Groove 3', 'Peak 5', 'Peak 7', 'Solo · floor', 'Peak 7 · hook', 'Outro 8', 'Peak 7 · lasers', 'Peak 5 · all in']) expect(kindAt(kept), kept).toBeNull();
         expect(kindAt('Calm 2')).toBe('Mainstage · silhouette');
         expect(kindAt('Build 4')).toBe('Mainstage · sunrise');
         expect(kindAt('Build 4 · phrase 3')).toBe('Mainstage · the pyramid');
         expect(kindAt('Breakdown 6')).toBe('Mainstage · lone sweeper');
-        expect(kindAt('Peak 7 · lasers')).toBe('Mainstage · laser cathedral');
+        expect(kindAt('Peak 5 · lasers')).toBe('Mainstage · laser cathedral');
         for (const peak of ['Peak 5 · phrase 2', 'Peak 7 · all in', 'Peak 7 · phrase 3']) expect(plan[names.indexOf(peak)].fits, peak).toBe('peak');
         expect(plan[names.indexOf('Groove 3 · phrase 2')].fits).toBe('groove');
         expect(new Set(['Peak 5 · phrase 2', 'Peak 7 · all in', 'Peak 7 · phrase 3'].map(kindAt)).size).toBe(3); // no repeats in a row
@@ -304,5 +304,20 @@ describe('the festival colours', async () => {
 
     it('adds at least 20 new pairs', () => {
         expect(Object.values(FESTIVAL_PALETTES).flat().length).toBeGreaterThanOrEqual(20);
+    });
+});
+
+describe('the mainstage cues in the songs', () => {
+    it('plays every one of them somewhere in the demo songs', async () => {
+        const fs = await import('node:fs');
+        const { prepareSongShow } = await import('@/lib/show/timeline');
+        const { planMainstageCues, MAINSTAGE_CUES } = await import('@/lib/show/stages/mainstageCues');
+        const index = JSON.parse(fs.readFileSync('public/shows/index.json', 'utf8'));
+        const used = new Set();
+        for (const d of index.demos) {
+            const show = prepareSongShow(JSON.parse(fs.readFileSync(`public${d.show}`, 'utf8')));
+            for (const c of planMainstageCues(show.sheet.cues)) if (c) used.add(c.kind);
+        }
+        for (const c of MAINSTAGE_CUES) expect(used.has(c.kind), c.kind).toBe(true);
     });
 });
