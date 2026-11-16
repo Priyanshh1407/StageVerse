@@ -116,7 +116,7 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 - `npm test` after changing anything in `lib/`.
 
 ## Mainstage-only settings (in its definition, lib/show/stages/index.js)
-- `frame`: the box (centre, half width and height in metres) every view is fitted to, so the whole stage and its PA fill the window (`fitShot`). `glossFloor: false` drops the glossy floor in front of the crowd.
+- `frame`: the box (centre, half width and height in metres, and `margin`: how much room round it, 1 = edge to edge; now 1.38) every view is fitted to, so the whole stage and its PA fill the window (`fitShot`). `glossFloor: false` drops the glossy floor in front of the crowd.
 - `headTune`: per group multipliers. `aerial` / `sides` / `floor` take `opacity`, `spread` and `length` (the floor beams 1.6 times longer); `washOnStage` keeps every wash on the stage (never lifted, barely moving); `floorCircleLift` centres the floor's circle higher.
 - `laserStrength`: `width` (thicker beams), `fade` (below 1 = they keep their strength further out), `boost`.
 - `pa`: `SCALE` and `BOXES` size the line arrays to the stage; they hang in front of a straight truss tower each side, with the tower's washes behind them facing the stage.
