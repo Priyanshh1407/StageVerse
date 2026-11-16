@@ -22,6 +22,7 @@ const SPLAY = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 8, 9];  // degrees betw
 const TOE_IN = 0.14;            // radians, turned toward the centre of the audience
 
 const SUB = { w: 1.35, h: 0.55, d: 0.7 };   // touring sub proportions
+const TOP_BOX = { w: 1.05, h: 0.38, d: 0.62 }; // a club's full-range box (on the sub stacks and in the small hangs)
 
 function createPa(P) {
     // the line-array boxes scaled to the stage (P.SCALE: 1 = the homepage's)
@@ -32,7 +33,8 @@ function createPa(P) {
     const place = (g, matrix) => { g.applyMatrix4(matrix); g.deleteAttribute('uv'); return g; };
     const at = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z);
 
-    for (const side of [-1, 1]) {
+    // (a stage without ARRAY_X has no line arrays: a club, see STACKS and HANGS below)
+    for (const side of P.ARRAY_X === undefined ? [] : [-1, 1]) {
         const turn = new THREE.Matrix4().makeRotationY(-side * TOE_IN);
         const toWorld = (local) => at(side * P.ARRAY_X, P.TOP, P.ARRAY_Z).multiply(turn).multiply(local);
 
@@ -79,6 +81,52 @@ function createPa(P) {
             for (const s of [-1, 1]) steel.push(place(new THREE.BoxGeometry(0.05, SUB.h - 0.03, 0.08), on(s * (SUB.w / 2 - 0.025), 0, front - 0.02)));
         }
     }
+    // A club's PA: at each side of the stage a stack of subs on the floor with a few full-range boxes on top,
+    // turned in at the dance floor (STACKS: { x, z, subs, tops, turn }, mirrored left and right) ...
+    for (const stack of P.STACKS ?? []) {
+        for (const side of [-1, 1]) {
+            const base = at(side * stack.x, 0, stack.z).multiply(new THREE.Matrix4().makeRotationY(-side * (stack.turn ?? 0.3)));
+            const on = (dx, dy, dz) => base.clone().multiply(at(dx, dy, dz));
+            for (let j = 0; j < stack.subs; j++) {
+                const y = SUB.h / 2 + j * SUB.h;
+                cabinets.push(place(new THREE.BoxGeometry(SUB.w, SUB.h - 0.02, SUB.d), on(0, y, 0)));
+                grilles.push(place(new THREE.BoxGeometry(SUB.w - 0.14, SUB.h - 0.08, 0.012), on(0, y, front + 0.006)));
+                for (const dx of [-0.31, 0.31]) {
+                    cabinets.push(place(new THREE.CircleGeometry(0.2, 28), on(dx, y, front + 0.014)));
+                    grilles.push(place(new THREE.CircleGeometry(0.065, 16), on(dx, y, front + 0.016)));
+                }
+                for (const e of [-1, 1]) steel.push(place(new THREE.BoxGeometry(0.05, SUB.h - 0.03, 0.08), on(e * (SUB.w / 2 - 0.025), y, front - 0.02)));
+            }
+            for (let j = 0; j < stack.tops; j++) {
+                const y = stack.subs * SUB.h + TOP_BOX.h / 2 + j * TOP_BOX.h;
+                cabinets.push(place(new THREE.BoxGeometry(TOP_BOX.w, TOP_BOX.h - 0.015, TOP_BOX.d), on(0, y, 0)));
+                grilles.push(place(new THREE.BoxGeometry(TOP_BOX.w - 0.1, TOP_BOX.h - 0.06, 0.012), on(0, y, TOP_BOX.d / 2 + 0.006)));
+                for (const e of [-1, 1]) steel.push(place(new THREE.BoxGeometry(0.035, TOP_BOX.h - 0.02, TOP_BOX.d * 0.9), on(e * (TOP_BOX.w / 2 - 0.018), y, -0.01)));
+            }
+        }
+    }
+    // ... and a small cluster hung from the grid on each side, a few boxes curving down at the floor
+    // (HANGS: { x, y (the top), z, boxes, grid (the height it hangs from) }, mirrored)
+    for (const hang of P.HANGS ?? []) {
+        for (const side of [-1, 1]) {
+            const base = at(side * hang.x, hang.y, hang.z).multiply(new THREE.Matrix4().makeRotationY(-side * (hang.turn ?? 0.35)));
+            let angle = 0.12;
+            const hinge = new THREE.Vector3(0, 0, -TOP_BOX.d / 2);
+            for (let j = 0; j < hang.boxes; j++) {
+                angle += THREE.MathUtils.degToRad(5);
+                const rot = new THREE.Matrix4().makeRotationX(angle);
+                const centre = hinge.clone().add(new THREE.Vector3(0, -TOP_BOX.h / 2, TOP_BOX.d / 2).applyMatrix4(rot));
+                const local = base.clone().multiply(at(centre.x, centre.y, centre.z)).multiply(rot);
+                cabinets.push(place(new THREE.BoxGeometry(TOP_BOX.w, TOP_BOX.h - 0.015, TOP_BOX.d), local));
+                grilles.push(place(new THREE.BoxGeometry(TOP_BOX.w - 0.1, TOP_BOX.h - 0.06, 0.012), local.clone().multiply(at(0, 0, TOP_BOX.d / 2 + 0.006))));
+                for (const e of [-1, 1]) steel.push(place(new THREE.BoxGeometry(0.035, TOP_BOX.h - 0.02, TOP_BOX.d * 0.9), local.clone().multiply(at(e * (TOP_BOX.w / 2 - 0.018), 0, -0.01))));
+                hinge.add(new THREE.Vector3(0, -TOP_BOX.h, 0).applyMatrix4(rot));
+            }
+            steel.push(place(new THREE.BoxGeometry(TOP_BOX.w + 0.08, 0.08, TOP_BOX.d + 0.08), base.clone().multiply(at(0, 0.05, 0))));
+            const len = Math.max(0.1, hang.grid - hang.y - 0.09);
+            for (const z of [-0.2, 0.2]) steel.push(place(new THREE.CylinderGeometry(0.02, 0.02, len, 6), base.clone().multiply(at(0, 0.09 + len / 2, z))));
+        }
+    }
     return { cabinets: mergeGeometries(cabinets), grilles: mergeGeometries(grilles), steel: mergeGeometries(steel) };
 }
 
@@ -86,6 +134,7 @@ function createPa(P) {
 /**
  * `settings`: TOWER_X (the column the arrays hang off), TOP_Y (its top), TOWER_FRONT_Z, ARRAY_X, ARRAY_Z,
  * TOP (the top of each array), SUB_Z (the subs' centre line), SUB_PITCH, SUB_COUNT, SUB_STACK.
+ * A club (no ARRAY_X): STACKS (subs with boxes on top at the sides) and HANGS (small clusters from the grid).
  */
 export default function StagePa({ settings }) {
     const pa = useMemo(() => createPa(settings), [settings]);

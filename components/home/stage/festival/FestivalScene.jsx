@@ -228,7 +228,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             <StagePixelBars stage={stage} look={look} />
             <Suspense fallback={null}>
                 <StageHeads heads={heads} look={look} focus={stage.focus} screenBeamsX={stage.screenBeamsX} />
-                <StageStrobes positions={mounts.strobes} look={look} blinders={Math.min(16, blinders)} />
+                <StageStrobes positions={mounts.strobes} look={look} blinders={Math.min(16, blinders)} scale={stage.strobeScale ?? 1} floorY={stage.deck + 1} />
             </Suspense>
             <StageLasers look={look} projectors={mounts.lasers} pitch={stage.laserPitch ?? null} />
             {stage.logo && <StageLogo position={stage.logo.position} size={stage.logo.size} logoFonts={LOGO_FONTS} />}

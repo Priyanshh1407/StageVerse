@@ -142,3 +142,7 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 - `planMainstageCues` decides where they play in a song: the later phrases of a peak and every second "all in" (the peak list, in turn), every second laser moment (laser cathedral), the later phrases of a groove (the groove list), a build's first and third phrase (sunrise, the pyramid), every second calm section (silhouette) and plain breakdown (lone sweeper). A peak's landing, the named moments, the solos and the focus cues stay as the show has them.
 - Their own keys: `aerialTilt` lifts (+) or lowers (-) the aerial beams freely, `floorFan` / `floorTilt` / `floorSweep` move the floor beams outside their usual limits (see `FLOOR`).
 - They appear at the end of "Every cue in the shows" on `/lab/mainstage`, or hold one with `?cue=Mainstage · sky spears`.
+
+## The warehouse's PA and strobes
+- `pa` in the warehouse's definition is a club's PA, with no line arrays: `SUB_*` are the subs along the stage front (`SUB_STACK` high, `SUB_COUNT` stacks, `SUB_PITCH` apart), `STACKS` the stack at each side of the stage (`subs` on the floor with `tops` full-range boxes on them, `turn` = how far they face in), `HANGS` the small cluster hung from the grid on each side (`boxes`, `y` = its top, `grid` = the height it hangs from). `barrier` is the crowd barrier in front of the subs.
+- `strobeScale: 0.7` makes the warehouse's strobe fixtures smaller (1 = a festival's). The strobe model is drawn two-sided on the festival stages, so a camera behind it sees a solid housing.

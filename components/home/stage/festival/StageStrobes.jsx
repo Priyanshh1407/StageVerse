@@ -201,11 +201,14 @@ function createStrobeMaterial() {
                 vec3 face = mix(vec3(0.16) + uTint * 0.08, uFlashColor * 7.0, uFlash);
                 // A random strobe: a coloured box, far softer than the white flash
                 face += randomColor(vSeed) * 2.2 * randomLit(vSeed) * (1.0 - uFlash);
-                gl_FragColor = vec4(mix(body, face, vFlashFace), 1.0);
+                // (seen from behind or inside, a face is plain housing: the model is drawn two-sided so the camera
+                // never sees through it, and only the front of the panel lights)
+                gl_FragColor = vec4(mix(body, face, gl_FrontFacing ? vFlashFace : 0.0), 1.0);
             }
         `,
         vertexColors: true,
         toneMapped: false,
+        side: THREE.DoubleSide,
     });
 }
 
@@ -215,7 +218,7 @@ function createStrobeMaterial() {
  * panels blaze and throw a wide flood of light, and many of them firing together blind the room.
  * How bright the room gets is set in flash.js (unchanged); these show where the light comes from.
  */
-export default function StageStrobes({ positions, look, blinders = 8 }) {
+export default function StageStrobes({ positions, look, blinders = 8, scale = 1, floorY = -Infinity }) {
     const { scene } = useGLTF(STROBE_URL);
     const geometry = useMemo(() => bakeStrobe(scene), [scene]);
     const material = useMemo(() => createStrobeMaterial(), []);
@@ -238,11 +241,16 @@ export default function StageStrobes({ positions, look, blinders = 8 }) {
         glowGeometry.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seeds.slice(), 1));
     }, [positions, geometry, glowGeometry]);
     // Truss strobes hang under the tube (lifted to the model's real height); tower strobes stand on end
-    const placement = useMemo(() => positions.map(([x, y, z, rot = 0]) => {
-        const m = new THREE.Matrix4().makeRotationZ(rot);
-        m.setPosition(x, rot ? y : y + lift, z);
-        return m;
-    }), [positions, lift]);
+    // (`scale` makes them smaller: a hanging one keeps its top where it was, one standing on the stage (at or
+    // below `floorY`) keeps its foot)
+    const placement = useMemo(() => {
+        const half = ((geometry.boundingBox.max.y - geometry.boundingBox.min.y) / 2) * (1 - scale);
+        return positions.map(([x, y, z, rot = 0]) => {
+            const m = new THREE.Matrix4().makeRotationZ(rot).scale(new THREE.Vector3(scale, scale, scale));
+            m.setPosition(x, rot ? y : y + lift + (y <= floorY ? -half : half), z);
+            return m;
+        });
+    }, [positions, lift, scale, floorY, geometry]);
     const glow = useRef();
     // each panel's light sits just in front of its face
     useLayoutEffect(() => {
