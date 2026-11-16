@@ -120,7 +120,7 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 - `headTune`: per group multipliers. `aerial` / `sides` / `floor` take `opacity`, `spread` and `length` (the floor beams 1.6 times longer); `washOnStage` keeps every wash on the stage (never lifted, barely moving); `floorCircleLift` centres the floor's circle higher.
 - `laserStrength`: `width` (thicker beams), `fade` (below 1 = they keep their strength further out), `boost`.
 - `pa`: `SCALE` and `BOXES` size the line arrays to the stage, `CURVE` sets how much they curl at the bottom (1 = the homepage's J, 0.3 = nearly straight); they hang in front of a straight truss tower each side, with the tower's washes behind them facing the stage.
-- `moreEffects`: every confetti cannon and streamer launcher fires (in sets); `co2Extra`: extra CO2 nozzles, each firing with the floor jet it `follow`s.
+- `moreEffects`: every confetti cannon fires (in sets of four, each blasting its CO2 too), and `streamerSets` sets of three streamer launchers (2: six launchers); `co2Extra`: extra CO2 nozzles, each firing with the floor jet it `follow`s.
 - Cue patches (`PATCHES` in `mainstageCues.js`): Focus without the floor beams; Focus · two colours with the colours meeting `focusSplit` metres either side of the centre.
 - Look keys of its own cues: `mirrorSweep` (scissors: each side sweeps the opposite way), `floorWave` (the floor rides the aerials' wave).
 

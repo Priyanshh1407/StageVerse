@@ -227,6 +227,9 @@ describe('the mainstage changes', async () => {
         expect(cannons.length).toBe(STAGES.mainstage.effects.confetti.length);
         const launchers = [m.launchers, ...m.moreLaunchers].flat().map((l) => l.base[0]);
         expect(new Set(launchers).size).toBe(launchers.length);
+        expect(launchers.length).toBe(6); // two sets of three: twelve at once were too many
+        expect(Math.min(...launchers)).toBeLessThan(-10); // still spread across the stage
+        expect(Math.max(...launchers)).toBeGreaterThan(10);
     });
 
     it('changes nothing on the other stages', () => {

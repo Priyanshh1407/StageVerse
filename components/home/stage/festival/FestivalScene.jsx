@@ -306,6 +306,8 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
                     <StageCo2 look={look} jets={mounts.cannons} quality={quality} blinders={blinders} mount="confetti" />
                     <StageStreamers look={look} launchers={mounts.launchers} quality={quality} blinders={blinders} />
                     {mounts.moreCannons.map((set, i) => <StageConfetti key={`confetti-${i}`} look={look} cannons={set} quality={quality} blinders={blinders} />)}
+                    {/* (every cannon blasts its CO2 with the confetti, the extra sets too: without it some cannons fired dry) */}
+                    {mounts.moreCannons.map((set, i) => <StageCo2 key={`confetti-co2-${i}`} look={look} jets={set} quality={quality} blinders={blinders} mount="confetti" />)}
                     {mounts.moreLaunchers.map((set, i) => <StageStreamers key={`streamers-${i}`} look={look} launchers={set} quality={quality} blinders={blinders} />)}
                 </>
             )}
