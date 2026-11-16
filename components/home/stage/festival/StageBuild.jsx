@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three';
+import { driveVisuals, visualsUniforms, VISUALS_SCREEN_FRAGMENT } from './mainstageVisuals';
 import { COLORS } from '@/lib/show/stages/blockoutKit';
 import { screenFxFor } from '@/lib/show/stages/screenFx';
 
@@ -196,6 +197,15 @@ export function StageScreens({ stage, look }) {
     const material = useMemo(() => {
         geometry.computeBoundingBox();
         const { min, max } = geometry.boundingBox;
+        // (a stage with visuals of its own plays them across all its screens as one canvas: the mainstage)
+        if (stage.visuals) {
+            return new THREE.ShaderMaterial({
+                vertexShader: SCREEN_VERTEX,
+                fragmentShader: VISUALS_SCREEN_FRAGMENT,
+                toneMapped: false,
+                uniforms: { ...visualsUniforms(stage.visuals.centre, stage.visuals.scale), uLevel: { value: 0 }, uPitch: { value: 0.22 } },
+            });
+        }
         return new THREE.ShaderMaterial({
             vertexShader: SCREEN_VERTEX,
             fragmentShader: SCREEN_FRAGMENT,
@@ -215,10 +225,13 @@ export function StageScreens({ stage, look }) {
         const u = mesh.current.material.uniforms;
         clock.current += delta;
         u.uTime.value = clock.current;
-        u.uBeat.value = target.beatPos ?? clock.current * 2;
-        u.uPulse.value = target.pulse ?? 0;
-        u.uStrobe.value = (target.strobe ?? 0) > 0.05 ? ((clock.current * 12.5) % 1 < 0.35 ? 1 : 0) : Math.max(0, target.blinder ?? 0);
-        u.uPattern.value = screenFxFor(target);
+        if (stage.visuals) driveVisuals(u, target, clock.current);
+        else {
+            u.uBeat.value = target.beatPos ?? clock.current * 2;
+            u.uPulse.value = target.pulse ?? 0;
+            u.uStrobe.value = (target.strobe ?? 0) > 0.05 ? ((clock.current * 12.5) % 1 < 0.35 ? 1 : 0) : Math.max(0, target.blinder ?? 0);
+            u.uPattern.value = screenFxFor(target);
+        }
         const house = target.house ?? 0;
         u.uLevel.value += ((target.master ?? 1) * Math.min(1.3, target.intensity ?? 1) * (1 - 0.7 * house) - u.uLevel.value) * Math.min(1, delta * 6);
         u.uColorA.value.set(target.colorA);

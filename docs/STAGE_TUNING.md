@@ -127,3 +127,6 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 The layout (lib/show/stages/mainstageLayout.js): `FLARE` is how far each aerial is flared left or right in turn; the floor row leans out at the crowd (`aim(x * 0.006, 1, 0.5)`); every wash is aimed at the deck (`onStage`).
 
 All festival stages: an idle strobe shows a clear dark front (no grey box); a faint leftover of the room flash no longer lights the panels.
+
+## The mainstage's screen visuals
+`components/home/stage/festival/mainstageVisuals.js`: the wall, the fins and the crown play one picture together (`visuals: { centre, scale }` in the mainstage's definition: the canvas centre [x, y] and half-height in metres). Eleven visuals: tunnel, kaleido, warp, horizon, spectrum, plasma, hexes, shockwave, glitch, chevrons, starfield. `SETS` says which ones each part of a song takes turns with and how many beats each plays (peaks every 16 beats, grooves every 32...); a drop plays the glitch with strobe frames. Each visual is one GLSL function in `VISUALS_GLSL`. On the test page `?visual=tunnel` (any name) holds one. The other stages keep their screens as they were.

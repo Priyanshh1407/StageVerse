@@ -231,3 +231,23 @@ describe('the mainstage changes', async () => {
         }
     });
 });
+
+describe('the mainstage screen visuals', async () => {
+    const { mainstageVisualFor, MAINSTAGE_VISUALS } = await import('@/components/home/stage/festival/mainstageVisuals');
+    const name = (look) => MAINSTAGE_VISUALS[mainstageVisualFor(look).index];
+
+    it('picks visuals by the part of the song and changes them on the beat', () => {
+        expect(['starfield', 'plasma']).toContain(name({ crowd: 0.12, beatPos: 4 }));
+        expect(['plasma', 'kaleido']).toContain(name({ crowd: 0.15, beatPos: 4 }));
+        expect(['chevrons', 'warp']).toContain(name({ crowd: 0.5, beatPos: 4 }));
+        const peaks = new Set([0, 16, 32, 48, 64].map((beatPos) => name({ crowd: 1, beatPos })));
+        expect(peaks.size).toBeGreaterThanOrEqual(4);
+        expect(name({ crowd: 1, beatPos: 3, dropFx: 1 })).toBe('glitch');
+        expect(name({ crowd: 1, screenVisual: 'horizon' })).toBe('horizon');
+    });
+
+    it('is the mainstage\'s alone', () => {
+        expect(STAGES.mainstage.visuals).toBeTruthy();
+        for (const key of ['desert', 'warehouse']) expect(STAGES[key].visuals, key).toBeUndefined();
+    });
+});

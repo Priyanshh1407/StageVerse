@@ -58,6 +58,7 @@ function driveLook(look, source, song, clock, delta, stage) {
         if (progress < 1) next = { ...next, ...HITS[hit.kind].apply(next, Math.max(0, progress)) };
         else source.current.hit = null;
     }
+    if (source.current.visual) next = { ...next, screenVisual: source.current.visual };
     look.current = onlyGroup(next, source.current.only);
     look.shot = shot ?? null;
 }
@@ -133,7 +134,8 @@ export default function FestivalLab({ stageKey }) {
     const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const [preset, setPreset] = useState(PRESETS[params?.get('look')] ? params.get('look') : 'Build');
     // what the stage shows when no song plays: a preset or one of the shows' cues (and a hit on top)
-    const source = useRef({ look: PRESETS[preset], shot: null, hit: null, only: params?.get('only') });
+    // (?visual=<name>: hold one of the mainstage's screen visuals, e.g. ?visual=tunnel)
+    const source = useRef({ look: PRESETS[preset], shot: null, hit: null, only: params?.get('only'), visual: params?.get('visual') });
     const clock = useRef({ t: 0 });
     const [cues, setCues] = useState(null);
     const [cueKindOn, setCueKindOn] = useState(null);

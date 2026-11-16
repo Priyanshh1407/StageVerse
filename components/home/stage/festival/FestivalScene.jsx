@@ -224,7 +224,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
             <StageStructure stage={stage} />
             <StageScreens stage={stage} look={look} />
-            {walls.length > 0 && <StageLedWall screens={walls} look={look} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} />}
+            {walls.length > 0 && <StageLedWall screens={walls} look={look} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} visuals={stage.visuals ?? null} />}
             {stage.glossFloor !== false && <Floor look={look} blinders={blinding} width={Math.max(120, width * 2.6)} z={stage.crowd.z0 + 30} />}
             {stage.pa && <StagePa settings={stage.pa} />}
             {stage.barrier && <StageBarrier width={stage.barrier.width} z={stage.barrier.z} />}

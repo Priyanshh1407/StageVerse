@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { createLedMaterial, createScreenContent } from '../stageMaterials';
+import { createVisualsWallMaterial, driveVisuals } from './mainstageVisuals';
 
 // Main wall plus two angled side screens, behind the truss. The wall fills the frame the structure
 // gives it: from the stage floor (deck top) up to just under the lowest truss row (y = 13),
@@ -34,10 +35,13 @@ function showContent(material, texture, slots) {
  * The LED screens. Colours and brightness follow the show's look; the main wall shows the
  * StageVerse wordmark or the current role (`screen`), in the `font` display face.
  */
-export default function StageLedWall({ screens: SCREENS, look, events = [], screen = { kind: 'brand' }, font, logoFonts }) {
+export default function StageLedWall({ screens: SCREENS, look, events = [], screen = { kind: 'brand' }, font, logoFonts, visuals = null }) {
+    // (`visuals`: the stage's own content on its walls, centred and scaled as one canvas with its other screens)
     const materials = useMemo(
-        () => SCREENS.map((s) => createLedMaterial({ textTexture: s.text ? blankTexture() : null, grid: s.grid, seed: s.seed })),
-        [SCREENS],
+        () => SCREENS.map((s) => (visuals
+            ? createVisualsWallMaterial({ textTexture: s.text ? blankTexture() : null, grid: s.grid, centre: visuals.centre, scale: visuals.scale })
+            : createLedMaterial({ textTexture: s.text ? blankTexture() : null, grid: s.grid, seed: s.seed }))),
+        [SCREENS, visuals],
     );
     useEffect(() => () => materials.forEach((m) => m.dispose()), [materials]);
     const slots = useRef({ current: null, prev: null });
@@ -79,6 +83,7 @@ export default function StageLedWall({ screens: SCREENS, look, events = [], scre
             u.uBrightness.value += (brightness - u.uBrightness.value) * ease;
             u.uStars.value += ((target.stars ?? 0.2) - u.uStars.value) * ease;
             u.uTextMix.value = Math.min(1, u.uTextMix.value + delta * 1.6); // ~0.6 s crossfade
+            if (visuals) driveVisuals(u, target, u.uTime.value);
         }
     });
 
