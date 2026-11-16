@@ -43,7 +43,8 @@ function createPa(P) {
         const hinge = new THREE.Vector3(0, 0, -BOX.d / 2);   // rear top corner of the current box (array space)
         // (P.BOXES: more boxes on a bigger stage, the splay's last angle repeated)
         for (const deg of Array.from({ length: P.BOXES ?? SPLAY.length }, (_, k) => SPLAY[Math.min(k, SPLAY.length - 1)] * (P.BOXES > SPLAY.length ? SPLAY.length / P.BOXES : 1))) {
-            angle += THREE.MathUtils.degToRad(deg);
+            // (P.CURVE scales the curl: below 1 the array hangs nearly straight, its bottom boxes not turned in so far)
+            angle += THREE.MathUtils.degToRad(deg * (P.CURVE ?? 1));
             const rot = new THREE.Matrix4().makeRotationX(angle);
             const centre = hinge.clone().add(new THREE.Vector3(0, -BOX.h / 2, BOX.d / 2).applyMatrix4(rot));
             const local = at(centre.x, centre.y, centre.z).multiply(rot);
