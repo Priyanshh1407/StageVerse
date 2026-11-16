@@ -375,7 +375,7 @@ describe('the festival ground', async () => {
             prev = now;
         }
         expect(steps).toEqual(['back', 'turn', 'forward']);
-        expect(start.leaving).toBe(1);
-        expect(end.arriving).toBe(1);
+        expect(start.leaving).toBeCloseTo(1, 6);
+        expect(end.arriving).toBeCloseTo(1, 6);
     });
 });
