@@ -332,3 +332,35 @@ describe('the mainstage streamers', () => {
         expect(limitStreamers(hits, STAGES.desert.maxStreamers)).toBe(hits); // the other stages keep theirs
     });
 });
+
+describe('the festival ground', async () => {
+    const { FESTIVAL, flightAt, groundShot, toGround } = await import('@/lib/show/stages/festival');
+    const a = { pos: [-200, 4, 0], target: [-240, 9, 0] };
+    const b = { pos: [0, 5, -170], target: [0, 15, -250] };
+
+    it('gives each kind of user a stage of their own, facing the plaza', () => {
+        expect(FESTIVAL.map((s) => `${s.persona}:${s.stage}`)).toEqual(['Fan:desert', 'Artist:mainstage', 'Organizer:warehouse', 'Crew:live']);
+        for (const s of FESTIVAL) {
+            const front = toGround(s, [0, 0, 50]); // 50 m in front of the stage
+            expect(Math.hypot(front[0], front[2])).toBeLessThan(Math.hypot(s.position[0], s.position[2]));
+        }
+        expect(groundShot(FESTIVAL[1], { pos: [0, 2, 60], target: [0, 9, 0] }).pos).toEqual([0, 2, -180]);
+    });
+
+    it('flies from one view to the other in an arc, smoothly, and only ever lights one stage', () => {
+        const start = flightAt(a, b, 0);
+        const end = flightAt(a, b, 1);
+        for (let i = 0; i < 3; i++) { expect(start.pos[i]).toBeCloseTo(a.pos[i], 5); expect(end.pos[i]).toBeCloseTo(b.pos[i], 5); expect(end.target[i]).toBeCloseTo(b.target[i], 5); }
+        expect(flightAt(a, b, 0.5).pos[1]).toBeGreaterThan(40);
+        let prev = start;
+        for (let t = 0.01; t <= 1.0001; t += 0.01) {
+            const now = flightAt(a, b, t);
+            expect(Math.hypot(...now.pos.map((v, i) => v - prev.pos[i]))).toBeLessThan(8); // no jumps
+            expect(Math.min(now.leaving, now.arriving)).toBeLessThan(0.001); // never both lit
+            expect(now.pos[1]).toBeGreaterThan(3.9);
+            prev = now;
+        }
+        expect(start.leaving).toBe(1);
+        expect(end.arriving).toBe(1);
+    });
+});
