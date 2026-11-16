@@ -321,3 +321,14 @@ describe('the mainstage cues in the songs', () => {
         for (const c of MAINSTAGE_CUES) expect(used.has(c.kind), c.kind).toBe(true);
     });
 });
+
+describe('the mainstage streamers', () => {
+    it('fire at most twice a song: the first moment and the finale', async () => {
+        const { limitStreamers } = await import('@/lib/show/stages/rig');
+        const hits = [10, 80, 150, 220].flatMap((t) => [{ t, kind: 'streamers' }, { t, kind: 'confetti' }]);
+        const out = limitStreamers(hits, STAGES.mainstage.maxStreamers);
+        expect(out.filter((h) => h.kind === 'streamers').map((h) => h.t)).toEqual([10, 220]);
+        expect(out.filter((h) => h.kind === 'confetti')).toHaveLength(4);
+        expect(limitStreamers(hits, STAGES.desert.maxStreamers)).toBe(hits); // the other stages keep theirs
+    });
+});

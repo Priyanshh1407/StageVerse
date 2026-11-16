@@ -11,6 +11,7 @@ import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
 import { onlyGroup } from '@/lib/show/stages/club';
 import { orbitShot } from '@/lib/show/stages/orbit';
 import { festivalColours } from '@/lib/show/stages/palettes';
+import { limitStreamers } from '@/lib/show/stages/rig';
 import { fitShot } from '@/lib/show/stages';
 import { STAGES } from '@/lib/show/stages';
 import { HITS, collectCues } from '@/lib/show/stages/cues';
@@ -218,7 +219,8 @@ export default function FestivalLab({ stageKey }) {
         // (a demo's show is fetched; your own song's comes with it, already analysed)
         const prepared = prepareSongShow(typeof demo.show === 'string' ? await (await fetch(demo.show)).json() : demo.show);
         // (the festival stages' extra colours: every second change of colour from FESTIVAL_PALETTES)
-        const show = { ...prepared, sheet: festivalColours(prepared.sheet, Math.round(prepared.duration ?? 0)) };
+        // (and a stage may fire streamers less often: the mainstage twice a song)
+        const show = { ...prepared, sheet: festivalColours(prepared.sheet, Math.round(prepared.duration ?? 0)), hits: limitStreamers(prepared.hits, stage.maxStreamers) };
         const audio = new Audio(encodeURI(show.audio));
         if (startAt > 0) audio.addEventListener('loadedmetadata', () => { audio.currentTime = Math.min(startAt, audio.duration - 1); }, { once: true });
         // the last note: the house lights come up (the washes only, warm yellow), as at the end of a concert
