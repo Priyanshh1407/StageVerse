@@ -341,7 +341,7 @@ describe('the festival ground', async () => {
     it('gives each kind of user a stage of their own, laid out like a festival site', async () => {
         const { GROUNDS } = await import('@/lib/show/stages/festival');
         // the live stage first (the homepage walks in through it), then the other three
-        expect(FESTIVAL.map((s) => `${s.persona}:${s.stage}`)).toEqual(['Crew:live', 'Fan:desert', 'Artist:mainstage', 'Organizer:warehouse']);
+        expect(FESTIVAL.map((s) => `${s.persona}:${s.stage}`)).toEqual(['Crew:live', 'Organizer:warehouse', 'Fan:desert', 'Artist:mainstage']);
         const by = Object.fromEntries(FESTIVAL.map((s) => [s.key, s]));
         // the mainstage across the far end of the avenue, facing back down it toward the gate
         expect(by.artist.position[0]).toBe(0);
