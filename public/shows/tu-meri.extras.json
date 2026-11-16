@@ -1,0 +1,36 @@
+{
+  "title": "Tu Meri",
+  "artist": "Vishal-Shekhar (Bang Bang!)",
+  "co2": true,
+  "_note": "Hand-marked structure (bars of 1.875 s at 128 BPM, from npm run song:bars, by the loudness of each bar): a rising intro; build 0:13; first hook 0:22; quieter verse 0:37; build 0:48; second hook 0:52; groove 1:07; build 1:15; long chorus 1:22; dense instrumental groove 1:52 (the beat drops out for a bar at 2:05); climbing 2:22; big chorus 2:37; bass-heavy breakdown 3:07, quietest at 3:22; long climb 3:30; final chorus 3:54; the end 4:09. Colours: fiery red, gold and electric blue. Re-run npm run demos after editing.",
+  "sections": [
+    { "fromBar": 0, "kind": "intro" },
+    { "fromBar": 6, "kind": "build" },
+    { "fromBar": 11, "kind": "peak" },
+    { "fromBar": 19, "kind": "groove" },
+    { "fromBar": 25, "kind": "build" },
+    { "fromBar": 27, "kind": "peak" },
+    { "fromBar": 35, "kind": "groove" },
+    { "fromBar": 39, "kind": "build" },
+    { "fromBar": 43, "kind": "peak" },
+    { "fromBar": 59, "kind": "groove" },
+    { "fromBar": 75, "kind": "build" },
+    { "fromBar": 83, "kind": "peak" },
+    { "fromBar": 99, "kind": "breakdown" },
+    { "fromBar": 111, "kind": "build" },
+    { "fromBar": 124, "kind": "peak" },
+    { "fromBar": 132, "kind": "outro" }
+  ],
+  "paletteSpans": [
+    {
+      "from": 0,
+      "palettes": [
+        ["#ff1e1e", "#ffd700"],
+        ["#ff6a00", "#00c2ff"],
+        ["#ffd700", "#7b00ff"],
+        ["#ffffff", "#ff1e1e"],
+        ["#ff0055", "#19d9ff"]
+      ]
+    }
+  ]
+}

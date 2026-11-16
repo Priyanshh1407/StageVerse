@@ -158,12 +158,13 @@ shows, with their hand-marked structures (below):
 | Rap | BAND4BAND (Central Cee & Lil Baby) | 69.9 | 2:21 | 4 | 25 | 13 |
 | Rap | goosebumps (Travis Scott) | 130.2 | 4:04 | 13 | 58 | 46 |
 | Bollywood | Subha Hone Na De (Pritam, *Desi Boyz*) | 131.8 | 4:49 | 11 | 52 | 26 |
+| Bollywood | Tu Meri (Vishal-Shekhar, *Bang Bang!*) | 128.0 | 4:17 | 16 | 56 | 76 |
 | Bollywood | Uff Teri Adaa (Shankar-Ehsaan-Loy, *Karthik Calling Karthik*) | 132.2 | 5:04 | 12 | 62 | 38 |
 
 ### Demo songs
 
 The demo songs are the tracks in the genre folders, `public/audio/<genre>/` (up to 3 per genre,
-`MAX_PER_GENRE` in `scripts/build-demos.mjs`), grouped by genre in the playground: the 9 above. They're the only tracks committed (`.gitignore` ignores audio loose in
+`MAX_PER_GENRE` in `scripts/build-demos.mjs`), grouped by genre in the playground: the 10 above. They're the only tracks committed (`.gitignore` ignores audio loose in
 `public/audio/`), so the live site can play them. They're commercial recordings used for educational,
 non-commercial purposes only: the playground, the now-playing bar during a demo song (with the song's
 artist), the site footer and the README all say so, with a takedown contact. Any other song stays local.
@@ -489,7 +490,7 @@ shaped shells.
     bar is; the genre picks the shells (EDM palms and crossettes, pop peonies and willows, rap crossettes and
     glitter, Bollywood chrysanthemums and rings); the tempo picks the pace (only fast songs rush);
   - bars 7-8 build (roll, rush), then the closing volley, sized by how hard the song ends, with mines;
-  - every firework is snapped to the song's real eighth-note grid (within 1 ms in all nine demos).
+  - every firework is snapped to the song's real eighth-note grid (within 1 ms in all the demos).
 - **Every song and every upload gets every effect**: a song without a peak uses its loudest section as the
   climax. Uploads get the same programming (`analysisWorker.js` passes `extras: { co2: true }`).
 - **Effects finish after the song**: whatever is in the air when a song ends or is stopped (streamers,

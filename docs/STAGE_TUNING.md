@@ -109,7 +109,7 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 - `/lab/desert`, `/lab/warehouse` (`?layout=1` for the grey layout with every fixture marked):
   - **Look**: quick presets.
   - **Hits**: Drop, Strobe, Blinder, Burst, on top of whatever is showing.
-  - **Every cue in the shows**: all 44 kinds of cue from the nine demo songs (intros, grooves, builds, every peak, every solo, focus, outros...). Click one to hold it on the stage.
+  - **Every cue in the shows**: every kind of cue from the ten demo songs (intros, grooves, builds, every peak, every solo, focus, outros...). Click one to hold it on the stage.
   - **Play a song through it**; `?song=<slug>&t=<seconds>` starts one at a moment (e.g. `?song=yellow&t=222` for Yellow's finale).
   - **Camera follows the show**: cuts between the cue's shots and looks up for fireworks.
 - `/lab/stage`: the homepage stage on its own.

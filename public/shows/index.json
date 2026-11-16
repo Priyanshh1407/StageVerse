@@ -58,6 +58,13 @@
       "show": "/shows/subha-hone-na-de.show.json"
     },
     {
+      "slug": "tu-meri",
+      "title": "Tu Meri",
+      "artist": "Vishal-Shekhar (Bang Bang!)",
+      "genre": "bollywood",
+      "show": "/shows/tu-meri.show.json"
+    },
+    {
       "slug": "uff-teri-adaa",
       "title": "Uff Teri Adaa",
       "artist": "Shankar-Ehsaan-Loy (Karthik Calling Karthik)",
