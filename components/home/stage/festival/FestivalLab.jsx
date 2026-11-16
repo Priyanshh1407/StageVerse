@@ -10,6 +10,7 @@ import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
 import { onlyGroup } from '@/lib/show/stages/club';
 import { orbitShot } from '@/lib/show/stages/orbit';
+import { festivalColours } from '@/lib/show/stages/palettes';
 import { fitShot } from '@/lib/show/stages';
 import { STAGES } from '@/lib/show/stages';
 import { HITS, collectCues } from '@/lib/show/stages/cues';
@@ -169,7 +170,9 @@ export default function FestivalLab({ stageKey }) {
 
     const play = async (demo, startAt = 0) => {
         song.current?.audio?.pause();
-        const show = prepareSongShow(await (await fetch(demo.show)).json());
+        const prepared = prepareSongShow(await (await fetch(demo.show)).json());
+        // (the festival stages' extra colours: every second change of colour from FESTIVAL_PALETTES)
+        const show = { ...prepared, sheet: festivalColours(prepared.sheet, Math.round(prepared.duration ?? 0)) };
         const audio = new Audio(encodeURI(show.audio));
         if (startAt > 0) audio.addEventListener('loadedmetadata', () => { audio.currentTime = Math.min(startAt, audio.duration - 1); }, { once: true });
         // the last note: the house lights come up (the washes only, warm yellow), as at the end of a concert

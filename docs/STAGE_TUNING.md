@@ -133,3 +133,6 @@ All festival stages: an idle strobe shows a clear dark front (no grey box); a fa
 - The wordmark on the mainstage's wall takes turns with the visuals: shown 4 bars in every 8 of a song (`Math.floor(beat / 16) % 2` in `driveVisuals`), always in quiet parts and with no song playing, never on a drop; when shown, the visuals behind it go dark.
 - `finaleEcho`: in the finale (three or more shells in the air at once) every shell gets a mirrored twin further back and higher (`finaleEcho` in `FestivalScene.jsx`). `co2TrussExtra`: the two roof CO2 nozzles on the ends of the wall top.
 - With the house lights up, the mainstage's washes keep lighting the stage (`washOnStage`), not turned straight down.
+
+## More colours (festival stages)
+`lib/show/stages/palettes.js`: `FESTIVAL_PALETTES` holds the extra colour pairs (quiet, groove, peak). On the festival test pages every second change of the programme's colours in a song takes the next pair from these, by the kind of moment; a song's own colours (palette spans, tints) are kept. The show files and the homepage are unchanged. Add or remove pairs in the lists.

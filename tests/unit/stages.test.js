@@ -281,3 +281,25 @@ describe('the mainstage strobes on the subs', () => {
         }
     });
 });
+
+describe('the festival colours', async () => {
+    const { festivalColours, FESTIVAL_PALETTES } = await import('@/lib/show/stages/palettes');
+    const { PALETTES } = await import('@/lib/show/program');
+    const cue = (name, a, b) => ({ name, t: 0, look: { colorA: a, colorB: b, washColor: a }, from: { colorA: a, colorB: b } });
+    const [p1, p2, p3] = PALETTES.peak;
+
+    it('takes every second change of the programme colours from the new pairs, and keeps a song\'s own colours', () => {
+        const sheet = { cues: [cue('Peak 1', ...p1), cue('Peak 1 · lasers', ...p1), cue('Peak 2', ...p2), cue('Groove 3', '#ffd400', '#ffaa00'), cue('Peak 4', ...p3)] };
+        const out = festivalColours(sheet, 0).cues;
+        expect([out[0].look.colorA, out[0].look.colorB]).toEqual(p1);
+        const fresh = FESTIVAL_PALETTES.peak.map(([a, b]) => `${a}|${b}`);
+        expect(fresh).toContain(`${out[2].look.colorA}|${out[2].look.colorB}`);
+        expect(out[2].look.washColor).toBe(out[2].look.colorA); // the wash swapped with it
+        expect([out[3].look.colorA, out[3].look.colorB]).toEqual(['#ffd400', '#ffaa00']); // a song's own colours stay
+        expect(sheet.cues[2].look.colorA).toBe(p2[0]); // the show itself is not changed
+    });
+
+    it('adds at least 20 new pairs', () => {
+        expect(Object.values(FESTIVAL_PALETTES).flat().length).toBeGreaterThanOrEqual(20);
+    });
+});
