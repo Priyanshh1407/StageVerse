@@ -1,8 +1,8 @@
 'use client';
 
-// The festival ground's camera flight, on a test page (/lab/festival): the four stages as rough builds (their
-// structure and screens, a few plain beams), standing round a plaza. Pick a user's stage and the camera lifts
-// off, arcs over the grounds and lands there; the stage it leaves goes dark first, then the new one lights up.
+// The festival ground's camera travel (back, turn, forward), on a test page (/lab/festival): the four stages as rough builds (their
+// structure and screens, a few plain beams), standing round a plaza. Pick a user's stage and the camera backs
+// away, turns to face it and moves forward to it; the stage it leaves goes dark first, then the new one lights up.
 // The homepage does not use this yet: it is here to judge the motion.
 
 import Link from 'next/link';
@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { STAGES, fitShot } from '@/lib/show/stages';
 import { COLORS } from '@/lib/show/stages/blockoutKit';
-import { FESTIVAL, LIVE_STAGE, flightAt, groundShot } from '@/lib/show/stages/festival';
+import { FESTIVAL, LIVE_STAGE, groundShot, walkAt } from '@/lib/show/stages/festival';
 import { StagePixelBars, StageScreens, StageStructure } from './StageBuild';
 
 const stageOf = (stop) => (stop.stage === 'live' ? LIVE_STAGE : STAGES[stop.stage]);
@@ -115,7 +115,7 @@ function pilot(camera, time, flight, levels, at, settings, onLanded) {
     const t = Math.min(1, (time - f.start) / f.seconds);
     const from = shotOf(FESTIVAL.find((s) => s.key === f.fromKey), camera.aspect);
     const to = shotOf(FESTIVAL.find((s) => s.key === f.toKey), camera.aspect);
-    const now = flightAt(from, to, t, { lift: settings.current.lift || undefined });
+    const now = walkAt(from, to, t, { back: settings.current.back });
     camera.position.set(...now.pos);
     camera.lookAt(gaze.set(...now.target));
     for (const s of FESTIVAL) levels.current[s.key] = s.key === f.fromKey ? now.leaving : s.key === f.toKey ? now.arriving : 0;
@@ -132,11 +132,11 @@ export default function FestivalGround() {
     const flight = useRef(null);
     const levels = useRef({});
     const at = useRef(FESTIVAL[0].key);
-    const settings = useRef({ lift: 0 });
+    const settings = useRef({ back: 45 });
     const [here, setHere] = useState(FESTIVAL[0].key);
     const [flying, setFlying] = useState(null);
-    const [seconds, setSeconds] = useState(5);
-    const [lift, setLift] = useState(0);
+    const [seconds, setSeconds] = useState(8);
+    const [back, setBack] = useState(45);
     const tour = useRef(null);
 
     const flyTo = (key) => {
@@ -159,7 +159,7 @@ export default function FestivalGround() {
         tour.current = [1, 2, 3, 4].map((n) => FESTIVAL[(i + n) % FESTIVAL.length].key);
         flyTo(tour.current.shift());
     };
-    useEffect(() => { settings.current.lift = lift; }, [lift]);
+    useEffect(() => { settings.current.back = back; }, [back]);
 
     const button = (on) => `rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${on ? 'bg-[#ff6a00] text-black' : 'bg-white/10 text-white hover:bg-white/20'}`;
     const current = FESTIVAL.find((s) => s.key === (flying ?? here));
@@ -191,9 +191,9 @@ export default function FestivalGround() {
             </Canvas>
 
             <div className="pointer-events-none absolute left-3 top-3 w-72 rounded-xl border border-white/10 bg-black/70 p-3 text-white backdrop-blur">
-                <p className="text-sm font-bold">Festival ground <span className="font-normal text-white/50">· camera flight test</span></p>
+                <p className="text-sm font-bold">Festival ground <span className="font-normal text-white/50">· camera travel test</span></p>
                 <p className="mt-1 text-[11px] leading-snug text-white/60">Rough stages. The homepage does not use this yet.</p>
-                <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Fly to a user&apos;s stage</p>
+                <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Go to a user&apos;s stage</p>
                 <div className="pointer-events-auto mt-1 flex flex-col gap-1.5">
                     {FESTIVAL.map((s) => (
                         <button key={s.key} type="button" disabled={Boolean(flying)} className={`${button(here === s.key && !flying)} text-left disabled:opacity-50`} onClick={() => flyTo(s.key)}>
@@ -202,11 +202,11 @@ export default function FestivalGround() {
                     ))}
                     <button type="button" disabled={Boolean(flying)} className={`${button(false)} disabled:opacity-50`} onClick={startTour}>Tour all four</button>
                 </div>
-                <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Flight time: {seconds} s</p>
-                <input className="pointer-events-auto w-full" type="range" min="3" max="9" step="0.5" value={seconds} onChange={(e) => setSeconds(Number(e.target.value))} />
-                <p className="mt-2 text-[11px] uppercase tracking-wider text-white/50">Height of the arc: {lift ? `${lift} m` : 'automatic'}</p>
-                <input className="pointer-events-auto w-full" type="range" min="0" max="140" step="10" value={lift} onChange={(e) => setLift(Number(e.target.value))} />
-                <p className="mt-3 text-[11px] text-white/60">{flying ? `Flying to the ${current.title}...` : `At the ${current.title} (${current.persona})`}</p>
+                <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Travel time: {seconds} s</p>
+                <input className="pointer-events-auto w-full" type="range" min="4" max="14" step="0.5" value={seconds} onChange={(e) => setSeconds(Number(e.target.value))} />
+                <p className="mt-2 text-[11px] uppercase tracking-wider text-white/50">Steps back: {back} m</p>
+                <input className="pointer-events-auto w-full" type="range" min="10" max="120" step="5" value={back} onChange={(e) => setBack(Number(e.target.value))} />
+                <p className="mt-3 text-[11px] text-white/60">{flying ? `Going to the ${current.title}...` : `At the ${current.title} (${current.persona})`}</p>
                 <div className="pointer-events-auto mt-2 flex gap-2 text-[11px]">
                     {['desert', 'mainstage', 'warehouse'].map((k) => <Link key={k} href={`/lab/${k}`} className="text-amber-300 hover:underline">{k}</Link>)}
                 </div>

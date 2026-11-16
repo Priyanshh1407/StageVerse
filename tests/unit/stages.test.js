@@ -334,7 +334,7 @@ describe('the mainstage streamers', () => {
 });
 
 describe('the festival ground', async () => {
-    const { FESTIVAL, flightAt, groundShot, toGround } = await import('@/lib/show/stages/festival');
+    const { FESTIVAL, walkAt, groundShot, toGround } = await import('@/lib/show/stages/festival');
     const a = { pos: [-200, 4, 0], target: [-240, 9, 0] };
     const b = { pos: [0, 5, -170], target: [0, 15, -250] };
 
@@ -347,19 +347,34 @@ describe('the festival ground', async () => {
         expect(groundShot(FESTIVAL[1], { pos: [0, 2, 60], target: [0, 9, 0] }).pos).toEqual([0, 2, -180]);
     });
 
-    it('flies from one view to the other in an arc, smoothly, and only ever lights one stage', () => {
-        const start = flightAt(a, b, 0);
-        const end = flightAt(a, b, 1);
+    it('backs away, turns to the next stage, then moves forward to it, at eye level and smoothly', () => {
+        const start = walkAt(a, b, 0);
+        const end = walkAt(a, b, 1);
         for (let i = 0; i < 3; i++) { expect(start.pos[i]).toBeCloseTo(a.pos[i], 5); expect(end.pos[i]).toBeCloseTo(b.pos[i], 5); expect(end.target[i]).toBeCloseTo(b.target[i], 5); }
-        expect(flightAt(a, b, 0.5).pos[1]).toBeGreaterThan(40);
+        // 1: further from the old stage, still looking at it
+        const backed = walkAt(a, b, 0.28);
+        expect(backed.step).toBe('back');
+        expect(backed.pos[0] - a.pos[0]).toBeCloseTo(45, 3);
+        expect(backed.target).toEqual(a.target);
+        // 2: standing still while the gaze swings round
+        const turning = walkAt(a, b, 0.4);
+        expect(turning.step).toBe('turn');
+        expect(turning.pos).toEqual(backed.pos);
+        // 3: on the way, looking at the new stage
+        expect(walkAt(a, b, 0.7).step).toBe('forward');
+        expect(walkAt(a, b, 0.7).target).toEqual(b.target);
         let prev = start;
-        for (let t = 0.01; t <= 1.0001; t += 0.01) {
-            const now = flightAt(a, b, t);
-            expect(Math.hypot(...now.pos.map((v, i) => v - prev.pos[i]))).toBeLessThan(8); // no jumps
+        const steps = [];
+        for (let t = 0.005; t <= 1.0001; t += 0.005) {
+            const now = walkAt(a, b, t);
+            expect(Math.hypot(...now.pos.map((v, k) => v - prev.pos[k]))).toBeLessThan(6); // no jumps
+            expect(Math.hypot(...now.target.map((v, k) => v - prev.target[k]))).toBeLessThan(30); // the gaze swings, never snaps
             expect(Math.min(now.leaving, now.arriving)).toBeLessThan(0.001); // never both lit
-            expect(now.pos[1]).toBeGreaterThan(3.9);
+            expect(now.pos[1]).toBeLessThan(6); // eye level: no flying
+            if (steps.at(-1) !== now.step) steps.push(now.step);
             prev = now;
         }
+        expect(steps).toEqual(['back', 'turn', 'forward']);
         expect(start.leaving).toBe(1);
         expect(end.arriving).toBe(1);
     });
