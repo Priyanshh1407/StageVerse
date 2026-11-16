@@ -54,7 +54,8 @@ Which group a head belongs to (aerial, sides, floor, wash; spots are their own g
 - **`SOLOS`**: each solo's look (which group is on, which position, which movement).
 - Section looks (intro, groove, build, peak, breakdown, outro) and the hits (drop, strobe, blinder, burst) are built further down from these.
 
-**After changing `program.js` (or `look.js`), rebuild the demo shows: `npm run demos`.** The songs' shows are built once into `public/shows/*.show.json`; the pages play those files, so a change in `program.js` shows up nowhere until they are rebuilt. Then reload the page and run `npm test`.
+
+After changing `program.js`, rebuild the demo shows: `npm run demos` (it rewrites `public/shows/*.show.json`), then `npm test`.
 
 Every key a look can have, with its meaning and default, is in `lib/show/look.js` (`DEFAULT_LOOK`).
 
@@ -73,24 +74,14 @@ Every key a look can have, with its meaning and default, is in `lib/show/look.js
 | `scale` | size of the fixture's body (default 2.3; the floor's 1.6 is smaller, the light is unchanged) |
 
 Also in that file:
-- `AERIAL_MAX_WAVE` (0.4): the most the aerial beams may swing up and down; `AERIAL_MAX_LIFT` (0.12): how far the top of that swing may rise above their rest angle (a bigger wave swings further down into the crowd instead, so they never go over the truss).
-- The floor group has `noWave: true`: it sweeps side to side only (a sweep plus an up-and-down wave made it go round in circles). Remove it to bring the wave back.
-- The floor group is `steady`: in every cue its direction stays close to "Peak · hook". `FLOOR` near the top of `StageHeads.jsx` sets the limits: `fan` (how far a cue may spread them, never mirrored), `tiltShift` (how far up or down), `sweep` (the most side-to-side swing). It takes no part in the focus or the drop's sideways throw (`converge: 0`). The fan breathe and the circle still move it. It is never dim: whenever a cue has it on at all, it runs at 85% or more of a nearly full intensity (the `groupLevel` / `intensity` lines in `driveRole`; in songs the brightness also follows the music's loudness, down to 40%, which made quiet bars dim).
-- Side towers: the left and right towers are separate groups; with `sidesMirror: 1` in a look the right one sweeps the opposite way (both point in at the centre and move as mirror images). The shows pick one type per song (`sidesMirror` in the side towers solo in `program.js`).
-- `sideScreenBeams` (desert): the moving heads under the side screens. `program.js` sets it to 0 in every riser into a peak and every peak's pinch (the `cues: cues.map(...)` line near the end), 1 everywhere else; the stage's `screenBeamsX` (28) says which heads count.
+- `AERIAL_MAX_WAVE` (0.12): the most the aerial beams may swing up and down.
 - In `driveRole`, the line `const shift = ...`: aerials take a cue's `tiltShift` only downwards (`Math.min(0, ...)`), so they never lift above the truss; the side towers only downwards and at most 0.3.
-
-- Spots have `onPerformer: true`: no look's lift or wave moves them, so they stay on the performers (the follow spots from the front-of-house tower included).
-- **The fan breathe** (`look.fanBreathe: 1`, in every "peak after solo"): the aerial and floor rows open out and close in on the beat (open, then closed two beats later), the beams otherwise held. Its range is the `0.3 + 1.1 * ...` in `StageHeads.jsx` (the fan goes from 0.3 to 1.4 times the cue's).
-- **The circle** (`look.circle: 1`, radius `look.circleSize`, 0.35 rad): every beam traces a circle, each a little behind the last, so the rig rolls round like a ring. In a circle every beam stays on (alternate and sparkle are ignored) and the aerials and side towers ignore the cue's lift: their circle's top stays just under where they rest (below the truss). The aerials swing up and down 1.5 times the radius (their up-and-down is foreshortened from the crowd); the washes circle at 0.4 of the radius; spots don't. `program.js` puts it only where it fits (the `circleAt` block near the end): every peak's "all in"; a song without one gets a single circle in the second phrase of its longest peak, if that peak runs three phrases or more (BAND4BAND, Smack That and Yellow have none).
 
 **Homepage stage**: the same `ROLES` in `components/home/stage/Fixtures.jsx` (without the festival limits).
 
 ## 5. Lasers, strobes, screens, pixel bars
 
 - **Lasers**: `components/home/stage/Lasers.jsx` (homepage) and `festival/StageLasers.jsx`: `PER` (most beams per projector), `LENGTH`, `LOW`/`HIGH` (fan shares). Positions: the layout's `fx('laser', ...)` lines.
-  - **How many laser beams the peaks light** (festival stages): `PEAK_LASERS` near the top of `lib/show/program.js` (0.4 = 40% of each fan; 1 = every beam), passed to the lasers as `look.laserMax`. Rebuild the shows after changing it. The homepage's lasers ignore it.
-  - Festival lasers' intensity (`festival/StageLasers.jsx`, the glow layer is removed): the core's thickness `new THREE.BoxGeometry(0.05, 0.05, LENGTH)`, its brightness `vec3 hot = ... * 1.15 + 0.06` (the colour scaled so its strongest channel is full: pushing every channel past full turns a coloured laser white), the glow's width `HALO`, strength `* 0.22` (divided by how many beams the fan has lit, so overlapping glows never pile into a blob), where it starts (`away`, from 5% of the beam's length) and how fast it fades as a beam turns to the camera (`vSideOn`), the sparkle along the beam (`sparkle`), `TOTAL_CAP` (most beams on stage at once), and the sweep `* 0.42` in the `yaw` line.
 - **Strobes and blinders**: `Strobes.jsx` / `festival/StageStrobes.jsx`: `WIDTH`, `BLINDER_WHITE`, `GLOW_TOTAL`, `GLOW_SPREAD`. The flash over the whole view and the room is `components/home/stage/flash.js` (`FLASH_BRIGHTNESS`, `REFERENCE_BLINDERS`).
 - **LED screens (festival)**: which animation plays when, `lib/show/stages/screenFx.js`; the animations themselves, `SCREEN_FRAGMENT` in `festival/StageBuild.jsx` (patterns 0 to 5). The walls with the wordmark use the homepage's wall shader (`festival/StageLedWall.jsx`).
 - **Pixel bars (festival)**: `BAR_FRAGMENT` in `festival/StageBuild.jsx` (chase speed `uBeat * 0.25`, sparkle, colour bands).
@@ -118,37 +109,21 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 - `/lab/desert`, `/lab/warehouse` (`?layout=1` for the grey layout with every fixture marked):
   - **Look**: quick presets.
   - **Hits**: Drop, Strobe, Blinder, Burst, on top of whatever is showing.
-  - `?only=aerial` (or `sides`, `floor`, `wash`) keeps one group on and everything else off (lasers and pixel bars too), to look at it alone.
-  - `?cue=<name>` holds a cue straight away, e.g. `?cue=Circle · all beams` or `?cue=Solo · washes`.
   - **Every cue in the shows**: all 44 kinds of cue from the nine demo songs (intros, grooves, builds, every peak, every solo, focus, outros...). Click one to hold it on the stage.
   - **Play a song through it**; `?song=<slug>&t=<seconds>` starts one at a moment (e.g. `?song=yellow&t=222` for Yellow's finale).
   - **Camera follows the show**: cuts between the cue's shots and looks up for fireworks.
 - `/lab/stage`: the homepage stage on its own.
 - `npm test` after changing anything in `lib/`.
 
-## Logo sign and the warehouse club rules
-- The StageVerse logo sign on each stage: `logo: { position, size }` in its definition in `lib/show/stages/index.js` (desert: on the roof's front edge; mainstage: under the crown; the warehouse has none, only the wordmark on its back LED screen). Drawn by `components/home/stage/festival/StageLogo.jsx`.
-- Warehouse only:
-  - `club: true` plays every show as club looks (`lib/show/stages/club.js`): quiet parts a mirror-ball moment, grooves tight single-colour scans, builds a strobe and laser ramp, peaks a strobe hit on every bar and alternating beams. The thresholds are the `e < ...` lines.
-  - `laserPitch: { offset, min }` aims the wall lasers down over the crowd (more negative = further down).
-  - `confetti: false`: CO2 only, no confetti or streamers.
-  - Extra camera views: `dj`, `djLeft`, `djRight`, `djWide` (from the booth), `crowd` (in the crowd), `rear` (back of the room), `wall` (side wall). They appear as buttons on `/lab/warehouse`, or use `?view=dj`. In songs (with "Camera follows the show" on) the camera does not cut between views: it circles the room one way, once or twice a song, and ends where it began (`orbit` in the warehouse's definition, `lib/show/stages/orbit.js`). `centre` and `radius` set the circle (x, z), `height` the camera's height at the back of the room and behind the DJ, `stage` and `crowd` what it looks at from the room and from behind the DJ, `lapSeconds` the shortest a lap may take (a song shorter than two of them gets one lap). One lap passes behind the DJ once, so never more than twice a song.
-  - Strobes: `STROBE_LEVEL`, `BLINDER_LEVEL` and `STROBE_COLOR` at the top of `club.js` (softer and slightly yellow).
-  - `co2Extra`: two more CO2 nozzles at the stage's front corners, each firing with the outermost floor jet (`follow`: 0 = far left, 5 = far right). Delete the line to remove them.
-- Test pages: the **CO2** hit button fires every floor jet for 3 seconds.
+## Mainstage-only settings (in its definition, lib/show/stages/index.js)
+- `frame`: the box (centre, half width and height in metres) every view is fitted to, so the whole stage and its PA fill the window (`fitShot`). `glossFloor: false` drops the glossy floor in front of the crowd.
+- `headTune`: per group multipliers. `aerial` / `sides` / `floor` take `opacity`, `spread` and `length` (the floor beams 1.6 times longer); `washOnStage` keeps every wash on the stage (never lifted, barely moving); `floorCircleLift` centres the floor's circle higher.
+- `laserStrength`: `width` (thicker beams), `fade` (below 1 = they keep their strength further out), `boost`.
+- `pa`: `SCALE` and `BOXES` size the line arrays to the stage; they hang in front of a straight truss tower each side, with the tower's washes behind them facing the stage.
+- `moreEffects`: every confetti cannon and streamer launcher fires (in sets); `co2Extra`: extra CO2 nozzles, each firing with the floor jet it `follow`s.
+- Cue patches (`PATCHES` in `mainstageCues.js`): Focus without the floor beams; Focus · two colours with the colours meeting `focusSplit` metres either side of the centre.
+- Look keys of its own cues: `mirrorSweep` (scissors: each side sweeps the opposite way), `floorWave` (the floor rides the aerials' wave).
 
-## The mainstage's own cues
-- `lib/show/stages/mainstageCues.js` holds 16 cues that only the mainstage has (sky spears, crossed swords, wide wings, starburst, scissors, pixel storm, wall of light, laser cathedral, crowd rake, ripple, low tide, odd-even chop, sunrise, the pyramid, silhouette, lone sweeper). Each is a `look` laid over the show's cue at that moment; the show files are not changed.
-- `planMainstageCues` decides where they play in a song: the later phrases of a peak and every second "all in" (the peak list, in turn), every second laser moment (laser cathedral), the later phrases of a groove (the groove list), a build's first and third phrase (sunrise, the pyramid), every second calm section (silhouette) and plain breakdown (lone sweeper). A peak's landing, the named moments, the solos and the focus cues stay as the show has them.
-- Their own keys: `aerialTilt` lifts (+) or lowers (-) the aerial beams freely, `floorFan` / `floorTilt` / `floorSweep` move the floor beams outside their usual limits (see `FLOOR`).
-- They appear at the end of "Every cue in the shows" on `/lab/mainstage`, or hold one with `?cue=Mainstage · sky spears`.
+The layout (lib/show/stages/mainstageLayout.js): `FLARE` is how far each aerial is flared left or right in turn; the floor row leans out at the crowd (`aim(x * 0.006, 1, 0.5)`); every wash is aimed at the deck (`onStage`).
 
-## The warehouse's PA and strobes
-- `pa` in the warehouse's definition is a club's PA, with no line arrays: `SUB_*` are the subs along the stage front (`SUB_STACK` high, `SUB_COUNT` stacks, `SUB_PITCH` apart), `STACKS` the stack at each side of the stage (`subs` on the floor with `tops` full-range boxes on them, `turn` = how far they face in), `HANGS` the small cluster hung from the grid on each side (`boxes`, `y` = its top, `grid` = the height it hangs from). `barrier` is the crowd barrier in front of the subs.
-- `strobeScale: 0.7` makes the warehouse's strobe fixtures smaller (1 = a festival's). The strobe model is drawn two-sided on the festival stages, so a camera behind it sees a solid housing.
-
-## Strobes as light sources (festival stages)
-In `components/home/stage/festival/StageStrobes.jsx`:
-- The panel blazes at full brightness on any flash (`lit` in the panel shader; `* 11.0` is how bright), so a softened strobe (the warehouse) dims the room's flash, not the lamp.
-- `GLOW_EACH` is each firing strobe's own glow round its panel, `GLOW_SPREAD` how far it reaches (metres).
-- `THROW_LENGTH` / `THROW_OPEN` shape the shaft of light out of each panel into the haze (`* 0.32` in the shaft shader is its strength). The random coloured strobes light their panel, glow and shaft in their own colour.
+All festival stages: an idle strobe shows a clear dark front (no grey box); a faint leftover of the room flash no longer lights the panels.

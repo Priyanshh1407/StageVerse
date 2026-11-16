@@ -26,6 +26,7 @@ import StagePa from './StagePa';
 import StageBarrier from './StageBarrier';
 import StageLedWall from './StageLedWall';
 import StageLogo from './StageLogo';
+import { CO2_JETS } from '@/lib/show/co2';
 import { clubLook, onlyGroup } from '@/lib/show/stages/club';
 
 // One festival stage, lit and running, for use inside a <Canvas>: built entirely from its definition
@@ -34,6 +35,7 @@ import { clubLook, onlyGroup } from '@/lib/show/stages/club';
 // The wall's wordmark is drawn in the logo's faces (as on the homepage's LED wall)
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['700', '900'], display: 'swap' });
 const LOGO_FONTS = { tag: logoTag.style.fontFamily, script: logoScript.style.fontFamily };
+const NO_TUNE = {};
 const PIXEL = 0.11; // LED pixel pitch on the walls (m), as on the homepage
 
 /** The stage's LED walls that carry the wordmark and visuals (the homepage's wall shader), from its pieces. */
@@ -196,6 +198,10 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
     const place = useMemo(() => (f) => placeFirework(stage, f), [stage]);
     const width = widthOf(stage);
     const blinders = mounts.strobes.length;
+    const co2Sets = useMemo(() => {
+        const list = stage.co2Extra ?? [];
+        return Array.from({ length: Math.ceil(list.length / CO2_JETS) }, (_, i) => list.slice(i * CO2_JETS, (i + 1) * CO2_JETS));
+    }, [stage]);
     // the homepage's haze is sized for its 40 m stage: stretched to this one's width and depth
     const hazeScale = [width / 40, stage.indoor ? 0.6 : 1, Math.max(1, -stage.focus[2] / 8)];
     const walls = useMemo(() => ledWalls(stage), [stage]);
@@ -219,7 +225,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             <StageStructure stage={stage} />
             <StageScreens stage={stage} look={look} />
             {walls.length > 0 && <StageLedWall screens={walls} look={look} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} />}
-            <Floor look={look} blinders={blinding} width={Math.max(120, width * 2.6)} z={stage.crowd.z0 + 30} />
+            {stage.glossFloor !== false && <Floor look={look} blinders={blinding} width={Math.max(120, width * 2.6)} z={stage.crowd.z0 + 30} />}
             {stage.pa && <StagePa settings={stage.pa} />}
             {stage.barrier && <StageBarrier width={stage.barrier.width} z={stage.barrier.z} />}
             <group position={[0, stage.deck - 1.8, stage.focus[2] + 8]} scale={[width / 40, 1, 1]}>
@@ -227,10 +233,10 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             </group>
             <StagePixelBars stage={stage} look={look} />
             <Suspense fallback={null}>
-                <StageHeads heads={heads} look={look} focus={stage.focus} screenBeamsX={stage.screenBeamsX} />
-                <StageStrobes positions={mounts.strobes} look={look} blinders={Math.min(16, blinders)} scale={stage.strobeScale ?? 1} floorY={stage.deck + 1} />
+                <StageHeads heads={heads} look={look} focus={stage.focus} screenBeamsX={stage.screenBeamsX} tune={stage.headTune ?? NO_TUNE} />
+                <StageStrobes positions={mounts.strobes} look={look} blinders={Math.min(16, blinders)} scale={stage.strobeScale ?? 1} floorY={stage.deck + 1} clearFront />
             </Suspense>
-            <StageLasers look={look} projectors={mounts.lasers} pitch={stage.laserPitch ?? null} />
+            <StageLasers look={look} projectors={mounts.lasers} pitch={stage.laserPitch ?? null} strength={stage.laserStrength ?? null} />
             {stage.logo && <StageLogo position={stage.logo.position} size={stage.logo.size} logoFonts={LOGO_FONTS} />}
             <group position={[0, 0, stage.focus[2] + 8 * hazeScale[2]]} scale={hazeScale}>
                 <Haze look={look} blinders={Math.min(16, blinders)} />
@@ -242,12 +248,15 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
             <StageCo2 look={look} jets={mounts.floorJets} quality={quality} blinders={blinders} mount="floor" />
             <StageCo2 look={look} jets={mounts.highJets} quality={quality} blinders={blinders} mount="truss" />
-            {stage.co2Extra && <StageCo2 look={look} jets={stage.co2Extra.map((j) => ({ pos: j.pos, dir: [0, 0.999, 0.05] }))} follow={stage.co2Extra.map((j) => j.follow)} quality={quality} blinders={blinders} mount="floor" />}
+            {/* extra CO2 nozzles, in sets of up to 6 (one set holds as many as the floor jets) */}
+            {co2Sets.map((set, i) => <StageCo2 key={`co2-extra-${i}`} look={look} jets={set.map((j) => ({ pos: j.pos, dir: [0, 0.999, 0.05] }))} follow={set.map((j) => j.follow)} quality={quality} blinders={blinders} mount="floor" />)}
             {stage.confetti !== false && (
                 <>
                     <StageConfetti look={look} cannons={mounts.cannons} quality={quality} blinders={blinders} />
                     <StageCo2 look={look} jets={mounts.cannons} quality={quality} blinders={blinders} mount="confetti" />
                     <StageStreamers look={look} launchers={mounts.launchers} quality={quality} blinders={blinders} />
+                    {mounts.moreCannons.map((set, i) => <StageConfetti key={`confetti-${i}`} look={look} cannons={set} quality={quality} blinders={blinders} />)}
+                    {mounts.moreLaunchers.map((set, i) => <StageStreamers key={`streamers-${i}`} look={look} launchers={set} quality={quality} blinders={blinders} />)}
                 </>
             )}
             {stage.fireworks && <StageFireworks look={look} spots={mounts.mines} place={place} quality={quality} />}

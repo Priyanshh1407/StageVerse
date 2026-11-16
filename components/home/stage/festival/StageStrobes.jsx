@@ -238,7 +238,7 @@ function bakeStrobe(scene) {
 
 function createStrobeMaterial() {
     return new THREE.ShaderMaterial({
-        uniforms: { uFlash: { value: 0 }, uTint: { value: new THREE.Color('#19d9ff') }, uFlashColor: { value: new THREE.Color('#fff8ee') }, ...randomUniforms() },
+        uniforms: { uFlash: { value: 0 }, uTint: { value: new THREE.Color('#19d9ff') }, uFlashColor: { value: new THREE.Color('#fff8ee') }, uIdle: { value: 0.16 }, ...randomUniforms() },
         vertexShader: /* glsl */ `
             attribute float aFlash;
             attribute float aSeed;
@@ -258,6 +258,7 @@ function createStrobeMaterial() {
             uniform float uFlash;
             uniform vec3 uTint;
             uniform vec3 uFlashColor;
+            uniform float uIdle;
             varying vec3 vColor;
             varying float vFlashFace;
             varying vec3 vNormalW;
@@ -273,13 +274,16 @@ function createStrobeMaterial() {
                 // Off: grey frosted panel catching a little rig colour. Firing: blinding white.
                 // (the lamp is at full brightness on any flash: a softer strobe, as in the warehouse, dims the room's
                 // flash, not the lamp itself; before, a soft one left the panel a grey blur)
-                float lit = smoothstep(0.0, 0.25, uFlash);
-                vec3 face = mix(vec3(0.16) + uTint * 0.08, uFlashColor * 11.0, lit);
+                // (below 0.06 it is off: a faint leftover of the room flash lit an idle panel grey)
+                float lit = smoothstep(0.06, 0.3, uFlash);
+                // (off: frosted grey, or with uIdle near 0 a clear front showing the dark lamp behind it)
+                vec3 face = mix(vec3(uIdle) + uTint * mix(0.03, 0.08, uIdle / 0.16), uFlashColor * 11.0, lit);
                 // A random strobe: a coloured box, far softer than the white flash
                 face += randomColor(vSeed) * 5.0 * randomLit(vSeed) * (1.0 - lit);
-                // (seen from behind or inside, a face is plain housing: the model is drawn two-sided so the camera
-                // never sees through it, and only the front of the panel lights)
-                gl_FragColor = vec4(mix(body, face, gl_FrontFacing ? vFlashFace : 0.0), 1.0);
+                // (the model is drawn two-sided, so the camera never sees through the housing; the front panel is
+                // the lamp whichever way its plane faces: the model's panel faces inward, and drawn as housing it
+                // showed its white material as a grey box)
+                gl_FragColor = vec4(mix(body, face, vFlashFace), 1.0);
             }
         `,
         vertexColors: true,
@@ -294,10 +298,15 @@ function createStrobeMaterial() {
  * panels blaze and throw a wide flood of light, and many of them firing together blind the room.
  * How bright the room gets is set in flash.js (unchanged); these show where the light comes from.
  */
-export default function StageStrobes({ positions, look, blinders = 8, scale = 1, floorY = -Infinity }) {
+// (clearFront: the panel is clear dark glass when off, on every festival stage; frosted grey otherwise)
+export default function StageStrobes({ positions, look, blinders = 8, scale = 1, floorY = -Infinity, clearFront = false }) {
     const { scene } = useGLTF(STROBE_URL);
     const geometry = useMemo(() => bakeStrobe(scene), [scene]);
-    const material = useMemo(() => createStrobeMaterial(), []);
+    const material = useMemo(() => {
+        const m = createStrobeMaterial();
+        if (clearFront) m.uniforms.uIdle.value = 0.015;
+        return m;
+    }, [clearFront]);
     const face = useMemo(() => faceOf(geometry), [geometry]);
     // Hang each strobe right under its truss tube: the layout assumes a 0.72 m tall strobe; use the
     // model's real height so its top sits the same small gap under the tube
@@ -365,7 +374,7 @@ export default function StageStrobes({ positions, look, blinders = 8, scale = 1,
         // The panels fire on strobes and on blinder hits, or glow steadily as work lights with the house lights
         u.uFlash.value = Math.max(strobe, blinder, (target.strobeSteady ?? 0) * 0.3);
         // how lit each lamp is (full on any real flash, as the panel itself)
-        const lamp = Math.min(1, Math.max(strobe, blinder) / 0.25);
+        const lamp = Math.min(1, Math.max(0, Math.max(strobe, blinder) - 0.06) / 0.24);
         u.uTint.value.set(target.colorA);
         // Blinder hits are warm white, strobe hits the look's strobe colour; mixed by which is stronger
         strobeColor.current.set(target.strobeColor ?? '#fff8ee');
@@ -385,7 +394,9 @@ export default function StageStrobes({ positions, look, blinders = 8, scale = 1,
         }
         // The flood of light round each panel
         if (glow.current) {
-            const level = Math.max(lamp * GLOW_EACH, Math.max(Math.min(f.blinder, 1.5), f.strobe) * (GLOW_TOTAL / Math.max(8, positions.length)));
+            // (a faint leftover of the room flash, under 0.06, is off: it lit the glow's face as a grey box over every panel)
+            const room = Math.max(0, Math.max(Math.min(f.blinder, 1.5), f.strobe) - 0.06);
+            const level = Math.max(lamp * GLOW_EACH, room * (GLOW_TOTAL / Math.max(8, positions.length)));
             glow.current.material.uniforms.uLevel.value = level;
             glow.current.material.uniforms.uColor.value.copy(flashColor.current);
             glow.current.visible = level > 0.01 || rand > 0.01;

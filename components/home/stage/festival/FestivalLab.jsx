@@ -10,6 +10,7 @@ import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
 import { onlyGroup } from '@/lib/show/stages/club';
 import { orbitShot } from '@/lib/show/stages/orbit';
+import { fitShot } from '@/lib/show/stages';
 import { STAGES } from '@/lib/show/stages';
 import { HITS, collectCues } from '@/lib/show/stages/cues';
 import { useQualityTier, TIER_SETTINGS } from '../useQualityTier';
@@ -88,8 +89,10 @@ function followShow(stage, look, camera, controls, aim, delta) {
     const up = look.current.fireworks?.some((f) => f.type !== 'mines');
     // (the warehouse: during a song the camera circles the room instead of cutting between the show's shots)
     const circling = stage.orbit && look.song?.duration > 0;
-    const shot = circling ? orbitShot(stage.orbit, look.song.t, look.song.duration)
+    const called = circling ? orbitShot(stage.orbit, look.song.t, look.song.duration)
         : (up ? stage.shots.sky : stage.shots[look.shot]) ?? stage.shots.wide;
+    // (a stage with a frame keeps all of itself in view: the mainstage)
+    const shot = stage.frame && !up && !circling ? fitShot(called, stage.frame, camera.aspect, camera.fov) : called;
     aim.pos.set(...shot.pos);
     aim.look.set(...shot.target);
     const ease = circling ? 0.9 : up ? 0.6 : 1.8;
@@ -106,14 +109,17 @@ function AutoCamera({ stage, look, controls }) {
     return null;
 }
 
-function ViewRig({ shot, controls }) {
+function ViewRig({ shot, controls, frame = null }) {
     const camera = useThree((s) => s.camera);
+    const size = useThree((s) => s.size);
     useEffect(() => {
         if (!shot) return;
-        camera.position.set(...shot.pos);
-        controls.current?.target.set(...shot.target);
+        // (a stage with a frame: the view moved along its line of sight until the whole stage fills the window)
+        const view = frame ? fitShot(shot, frame, size.width / Math.max(1, size.height), camera.fov) : shot;
+        camera.position.set(...view.pos);
+        controls.current?.target.set(...view.target);
         controls.current?.update();
-    }, [shot, camera, controls]);
+    }, [shot, camera, controls, frame, size]);
     return null;
 }
 
@@ -132,7 +138,8 @@ export default function FestivalLab({ stageKey }) {
     const [cues, setCues] = useState(null);
     const [cueKindOn, setCueKindOn] = useState(null);
     const choosePreset = (name) => { setPreset(name); setCueKindOn(null); source.current = { ...source.current, look: PRESETS[name], shot: null, hit: null }; };
-    const chooseCue = (cue) => { setCueKindOn(cue.kind); source.current = { ...source.current, look: cue.look, shot: cue.shot, hit: null }; };
+    // (a stage's own take on a cue, e.g. the mainstage's focus without the floor beams)
+    const chooseCue = (cue) => { setCueKindOn(cue.kind); source.current = { ...source.current, look: { ...cue.look, ...(stage.cuePatch?.(cue.kind) ?? {}) }, shot: cue.shot, hit: null }; };
     const fireHit = (kind) => { source.current = { ...source.current, hit: { kind, at: clock.current.t } }; };
     // the cues of every demo song, loaded the first time the list is opened
     const loadCues = async () => {
@@ -206,7 +213,7 @@ export default function FestivalLab({ stageKey }) {
                 <Driver look={look} source={source} song={song} clock={clock} stage={stage} />
                 <FestivalScene stage={stage} look={look} count={lights} bloom={settings.bloom} quality={tier >= 2 ? 'high' : 'low'} control={control} />
                 <OrbitControls ref={controls} makeDefault target={shot.target} />
-                <ViewRig shot={shot} controls={controls} />
+                <ViewRig shot={shot} controls={controls} frame={custom ? null : stage.frame ?? null} />
                 {follow && <AutoCamera stage={stage} look={look} controls={controls} />}
                 {perf && <FpsMeter meter={meter} />}
             </Canvas>

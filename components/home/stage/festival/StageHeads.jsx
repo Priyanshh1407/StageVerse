@@ -8,7 +8,7 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { easing } from 'maath';
-import { createBeamGeometry, createBeamMaterial, createGlowMaterial, createPartMaterial, createRoleUniforms } from '../fixtureShader';
+import { createBeamGeometry, createBeamMaterial, createGlowMaterial, createPartMaterial, createRoleUniforms } from './fixtureShader';
 
 export const MOVING_HEAD_URL = '/fixtures/moving-head.glb';
 
@@ -99,7 +99,13 @@ function driveRole(u, role, target, state, delta) {
     // (a cue with floor keys of its own, floorFan / floorTilt / floorSweep, moves the floor beams outside their
     // usual limits, and aerialTilt lifts or lowers the aerial beams freely: the mainstage's own cues)
     const sweepWanted = role.steady ? (target.floorSweep ?? Math.min(FLOOR.sweep, target.sweep * sweepScale)) : target.sweep * sweepScale;
-    glide(u.uSweep, circle ? radius * mirrored : breathing ? 0.04 : sweepWanted * mirrored, dt);
+    // (washes that light the stage (state.tune.washOnStage) barely move: they never swing off it)
+    const washCap = role === ROLES.wash && state.tune.washOnStage ? 0.1 : Infinity;
+    glide(u.uSweep, Math.min(washCap, circle ? radius * mirrored : breathing ? 0.04 : sweepWanted * mirrored), dt);
+    // scissors (look.mirrorSweep): the right side sweeps the opposite way to the left
+    glide(u.uMirrorSweep, circle ? 0 : target.mirrorSweep ?? 0, dt);
+    // a focus in two colours (look.focusSplit, metres): the two colours meet side by side, not on one white point
+    glide(u.uSplit, target.focusSplit ?? 0, dt);
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
@@ -120,7 +126,10 @@ function driveRole(u, role, target, state, delta) {
     // Accumulate the movement position: a speed change alters how fast it moves from where it is
     // (computing sin(time * speed) made beams leap whenever a cue changed the speed)
     state.phase += delta * u.uSpeed.value;
-    u.uPhase.value = state.phase;
+    // (look.floorWave: the floor beams ride the aerials' wave in step with them, one ripple through the rig)
+    const rippling = role.steady && (target.floorWave ?? 0) > 0.5;
+    if (role === ROLES.aerial) state.shared.phase = state.phase;
+    u.uPhase.value = rippling ? state.shared.phase : state.phase;
     // Side towers: their pan is their crossing angle times (1 + sidesAim): 0 = crossing (rest),
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
     const fan = role === ROLES.wash || role === ROLES.spot ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0)
@@ -142,12 +151,17 @@ function driveRole(u, role, target, state, delta) {
         : circle && role.ownAim ? -radius * 0.85
         : circle && role === ROLES.aerial ? -Math.max(0, aerialWave - AERIAL_MAX_LIFT)
         : role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0))
-        : role.steady && !circle ? (target.floorTilt ?? clamp(target.tiltShift ?? 0, FLOOR.tiltShift))
+        // (in a circle the floor beams circle round a centre a little up from where they lean, so the whole circle stays
+        // in the air over the crowd: from their lean the bottom of the circle came down flat over the heads)
+        : role.steady && circle ? (state.tune.floorCircleLift ?? 0)
+        : role.steady ? (target.floorTilt ?? clamp(target.tiltShift ?? 0, FLOOR.tiltShift))
         : role === ROLES.aerial && target.aerialTilt !== undefined && !circle ? target.aerialTilt
         : role === ROLES.aerial ? Math.min(0, target.tiltShift ?? 0) - Math.max(0, aerialWave - AERIAL_MAX_LIFT)
             : target.tiltShift ?? 0;
-    glide(u.uTiltShift, shift, dt);
+    glide(u.uTiltShift, role === ROLES.wash && state.tune.washOnStage ? Math.min(0, shift) : shift, dt);
     const tiltWave = circle ? (role === ROLES.aerial ? aerialWave : radius)
+        : rippling ? target.tiltWave ?? 0
+        : role === ROLES.wash && state.tune.washOnStage ? 0
         : role.ownAim || role.noWave || role.onPerformer ? 0 : role === ROLES.aerial ? aerialWave : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
     glide(u.uTiltWave, tiltWave, dt);
     glide(u.uPhaseSpread, circle ? 1 : target.phaseSpread ?? 0.25, dt);
@@ -172,13 +186,16 @@ function driveRole(u, role, target, state, delta) {
     u.uIntensity.value = state.level * (1 + (target.pulse ?? 0) * 0.7 * pulseGain) * (1 + (flash - 1) * strobe * 0.12);
 }
 
-function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false, extraLevel = null }) {
+function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false, extraLevel = null, tune = {}, shared }) {
     const role = ROLES[roleName];
+    // (a stage may tune a group: tune[role] = { opacity, length, spread } multipliers, e.g. the mainstage's bigger beams)
+    const own = tune[roleName] ?? {};
     const uniforms = useMemo(() => {
-        const u = createRoleUniforms({ spread: role.spread, opacity: role.opacity, scale: role.scale ?? 2.3 });
+        const u = createRoleUniforms({ spread: role.spread * (own.spread ?? 1), opacity: role.opacity * (own.opacity ?? 1), scale: role.scale ?? 2.3 });
         u.uMap.value = map;
+        u.uLength.value = own.length ?? 1;
         return u;
-    }, [role, map]);
+    }, [role, map, own.spread, own.opacity, own.length]);
     const materials = useMemo(() => ({
         base: createPartMaterial(uniforms, 'base'),
         yoke: createPartMaterial(uniforms, 'yoke'),
@@ -208,7 +225,7 @@ function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false
         });
     }, [fixtures]);
 
-    const state = useRef({ focus, mirror, extraLevel, level: 1, phase: 0, clock: 0, colors: { a: {}, b: {}, ta: new THREE.Color(), tb: new THREE.Color() } });
+    const state = useRef({ focus, mirror, extraLevel, tune, shared, level: 1, phase: 0, clock: 0, colors: { a: {}, b: {}, ta: new THREE.Color(), tb: new THREE.Color() } });
     useFrame((_, delta) => {
         const mesh = group.current?.children[0];
         if (mesh) driveRole(mesh.material.uniforms, role, look.current, state.current, delta);
@@ -230,7 +247,9 @@ function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false
  * Every moving head on the rig, grouped by job. Five draw calls per group (base, yoke, head,
  * beam, lens glow), whatever the fixture count.
  */
-export default function StageHeads({ heads, look, focus = [0, 1.8, -8], screenBeamsX = null }) {
+export default function StageHeads({ heads, look, focus = [0, 1.8, -8], screenBeamsX = null, tune = {} }) {
+    // the aerials' movement position, shared so the floor can ride their wave in step (look.floorWave)
+    const shared = useMemo(() => ({ phase: 0 }), []);
     const { nodes, materials } = useGLTF(MOVING_HEAD_URL);
     const parts = useMemo(() => ({ base: nodes.Base_0.geometry, yoke: nodes.Support_0.geometry, head: nodes.Head_0.geometry }), [nodes]);
     const map = Object.values(materials)[0].map;
@@ -252,7 +271,7 @@ export default function StageHeads({ heads, look, focus = [0, 1.8, -8], screenBe
     }), [heads, screenBeamsX]);
 
     return groups.map((g) => (
-        <RoleGroup key={`${g.key}-${g.list.length}`} roleName={g.role} fixtures={g.list} parts={parts} map={map} look={look} focus={focus} mirror={g.mirror} extraLevel={g.extraLevel} />
+        <RoleGroup key={`${g.key}-${g.list.length}`} roleName={g.role} fixtures={g.list} parts={parts} map={map} look={look} focus={focus} mirror={g.mirror} extraLevel={g.extraLevel} tune={tune} shared={shared} />
     ));
 }
 

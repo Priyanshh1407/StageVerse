@@ -51,8 +51,9 @@ describe.each(Object.values(STAGES))('the $key stage', (stage) => {
     it('has every camera shot, all in front of the stage and above the ground', () => {
         if (stage.key === 'warehouse') expect(stage.shots.dj.pos[2]).toBeLessThan(0); // the DJ view (warehouse only) stands on the stage
         else expect(stage.shots.dj).toBeUndefined();
-        if (stage.key === 'warehouse') expect(stage.logo).toBeUndefined(); // only the wordmark on its wall
-        else expect(stage.logo.size[0]).toBeGreaterThan(stage.logo.size[1]);
+        // the desert keeps its logo sign; the warehouse and the mainstage have only the wordmark on their walls
+        if (stage.key === 'desert') expect(stage.logo.size[0]).toBeGreaterThan(stage.logo.size[1]);
+        else expect(stage.logo).toBeUndefined();
         for (const name of ['house', 'wide', 'dolly', 'high', 'left', 'right', 'drop', 'finale', 'sky']) {
             const shot = stage.shots[name];
             expect(shot, name).toBeTruthy();
@@ -190,5 +191,43 @@ describe('the mainstage cues', async () => {
         const tested = mainstageTestCues([{ kind: 'Peak · all in', look: { intensity: 1.3, colorA: '#ff0000' } }]);
         expect(tested).toHaveLength(MAINSTAGE_CUES.length);
         expect(tested[0].look.colorA).toBe('#ff0000');
+    });
+});
+
+describe('the mainstage changes', async () => {
+    const { fitShot } = await import('@/lib/show/stages');
+    const { stageMounts } = await import('@/lib/show/stages/rig');
+
+    it('frames the whole stage and its PA in any window', () => {
+        const frame = STAGES.mainstage.frame;
+        for (const aspect of [1.2, 1.78, 4.7]) {
+            const view = fitShot(STAGES.mainstage.shots.wide, frame, aspect, 55);
+            const dist = Math.hypot(...view.pos.map((v, i) => v - frame.centre[i]));
+            const tan = Math.tan((55 * Math.PI) / 360);
+            expect(dist * tan).toBeGreaterThanOrEqual(frame.half[1]);
+            expect(dist * tan * aspect).toBeGreaterThanOrEqual(frame.half[0]);
+        }
+        expect(frame.half[0]).toBeGreaterThan(48); // the PA (47.6) inside
+    });
+
+    it('points every wash at the stage and the floor row out at the crowd', () => {
+        const st = STAGES.mainstage;
+        for (const w of st.heads.filter((h) => h.type === 'wash')) expect(w.aim[1], `wash at ${w.pos}`).toBeLessThan(0.15); // level or down onto the stage, never into the sky
+        for (const f of st.heads.filter((h) => h.role === 'floor')) expect(f.aim[2]).toBeGreaterThan(0.3);
+    });
+
+    it('fires every confetti cannon and streamer launcher, and has more CO2', () => {
+        const m = stageMounts(STAGES.mainstage);
+        expect(m.moreCannons.length).toBeGreaterThanOrEqual(1);
+        expect(m.moreLaunchers.length).toBeGreaterThanOrEqual(1);
+        expect(STAGES.mainstage.co2Extra.length).toBeGreaterThanOrEqual(5);
+    });
+
+    it('changes nothing on the other stages', () => {
+        for (const key of ['desert', 'warehouse']) {
+            const st = STAGES[key];
+            for (const k of ['frame', 'headTune', 'laserStrength', 'moreEffects']) expect(st[k], `${key}.${k}`).toBeUndefined();
+            expect(stageMounts(st).moreCannons).toEqual([]);
+        }
     });
 });
