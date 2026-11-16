@@ -16,6 +16,31 @@ import { STAGES } from '@/lib/show/stages';
 import { HITS, collectCues } from '@/lib/show/stages/cues';
 import { useQualityTier, TIER_SETTINGS } from '../useQualityTier';
 import FestivalScene from './FestivalScene';
+import { GENRES, GENRE_KEYS } from '@/lib/show/genres';
+
+/**
+ * Your own song on a test page: decoded in the browser at 22.05 kHz stereo and analysed in the homepage's worker
+ * (../../show/analysisWorker.js), as the homepage does with an uploaded song. Nothing leaves the browser.
+ */
+async function analyseUpload(file, genre) {
+    const ctx = new AudioContext();
+    const decoded = await ctx.decodeAudioData(await file.arrayBuffer());
+    ctx.close();
+    const rate = 22050;
+    const offline = new OfflineAudioContext(2, Math.ceil(decoded.duration * rate), rate);
+    const source = offline.createBufferSource();
+    source.buffer = decoded;
+    source.connect(offline.destination);
+    source.start();
+    const rendered = await offline.startRendering();
+    const channels = [rendered.getChannelData(0).slice(), rendered.getChannelData(1).slice()];
+    return new Promise((resolve, reject) => {
+        const worker = new Worker(new URL('../../show/analysisWorker.js', import.meta.url), { type: 'module' });
+        worker.onmessage = ({ data }) => { worker.terminate(); if (data.ok) resolve(data.show); else reject(new Error(data.error)); };
+        worker.onerror = (e) => { worker.terminate(); reject(new Error(e.message || 'Analysis failed')); };
+        worker.postMessage({ channels, sampleRate: rate, title: file.name.replace(/\.[^.]+$/, ''), genre }, channels.map((c) => c.buffer));
+    });
+}
 
 // The test page for a built festival stage: the stage lit and running, with looks to switch between,
 // the demo songs to play through it, camera shots, the light count and the FPS overlay. The homepage
@@ -168,9 +193,30 @@ export default function FestivalLab({ stageKey }) {
     // the performer: a band on the desert stage, a DJ elsewhere (the Performer component reads the genre)
     const control = useRef({ mode: 'song', song: { genre: stage.performer === 'band' ? 'pop' : 'edm' } });
 
+    // your own song: its genre (the stage's home genre to begin with), the analysis status, and the song once analysed
+    const [uploadGenre, setUploadGenre] = useState(stage.homeGenres?.[0] ?? 'edm');
+    const [upload, setUpload] = useState({ status: null, error: null, song: null });
+    const uploadInput = useRef(null);
+    const onUpload = async (file) => {
+        if (!file) return;
+        stop();
+        if (upload.song?.url) URL.revokeObjectURL(upload.song.url);
+        setUpload({ status: `Analysing ${file.name}...`, error: null, song: null });
+        try {
+            const show = await analyseUpload(file, uploadGenre);
+            const url = URL.createObjectURL(file);
+            const mine = { slug: 'your-song', title: file.name.replace(/\.[^.]+$/, ''), show: { ...show, audio: url }, url };
+            setUpload({ status: `${mine.title}: ${Math.round(show.bpm)} BPM, ${show.sections?.length ?? 0} sections`, error: null, song: mine });
+            play(mine);
+        } catch (e) {
+            setUpload({ status: null, error: `Could not analyse it: ${e.message}`, song: null });
+        }
+    };
+
     const play = async (demo, startAt = 0) => {
         song.current?.audio?.pause();
-        const prepared = prepareSongShow(await (await fetch(demo.show)).json());
+        // (a demo's show is fetched; your own song's comes with it, already analysed)
+        const prepared = prepareSongShow(typeof demo.show === 'string' ? await (await fetch(demo.show)).json() : demo.show);
         // (the festival stages' extra colours: every second change of colour from FESTIVAL_PALETTES)
         const show = { ...prepared, sheet: festivalColours(prepared.sheet, Math.round(prepared.duration ?? 0)) };
         const audio = new Audio(encodeURI(show.audio));
@@ -253,7 +299,16 @@ export default function FestivalLab({ stageKey }) {
                         <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Play a song through it</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
                             {demos.map((d) => <button key={d.slug} type="button" className={button(playing === d.slug)} onClick={() => (playing === d.slug ? stop() : play(d))}>{d.title}</button>)}
+                            {upload.song && <button type="button" className={button(playing === 'your-song')} onClick={() => (playing === 'your-song' ? stop() : play(upload.song))}>{upload.song.title}</button>}
                         </div>
+                        <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Your own song (analysed in this browser)</p>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            {GENRE_KEYS.map((g) => <button key={g} type="button" className={button(uploadGenre === g)} onClick={() => setUploadGenre(g)}>{GENRES[g].label}</button>)}
+                            <button type="button" className={button(false)} onClick={() => uploadInput.current?.click()}>Choose a song...</button>
+                            <input ref={uploadInput} type="file" accept="audio/*" className="hidden" onChange={(e) => { onUpload(e.target.files?.[0]); e.target.value = ''; }} />
+                        </div>
+                        {upload.status && <p className="mt-1 text-[11px] text-white/60">{upload.status}</p>}
+                        {upload.error && <p className="mt-1 text-[11px] text-red-300">{upload.error}</p>}
                         <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Camera</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
                             {Object.keys(stage.shots).map((name) => <button key={name} type="button" className={button(shotName === name)} onClick={() => { setCustom(null); setShotName(name); }}>{name}</button>)}

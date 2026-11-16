@@ -136,3 +136,6 @@ All festival stages: an idle strobe shows a clear dark front (no grey box); a fa
 
 ## More colours (festival stages)
 `lib/show/stages/palettes.js`: `FESTIVAL_PALETTES` holds the extra colour pairs (quiet, groove, peak). On the festival test pages every second change of the programme's colours in a song takes the next pair from these, by the kind of moment; a song's own colours (palette spans, tints) are kept. The show files and the homepage are unchanged. Add or remove pairs in the lists.
+
+## Your own song on the test pages
+Under "Your own song" on `/lab/desert`, `/lab/mainstage` and `/lab/warehouse`: pick its genre (the stage's home genre to begin with), then "Choose a song...". It is decoded and analysed in the browser with the homepage's analysis worker (nothing is uploaded anywhere), then plays with everything the demo songs get on that stage: the mainstage's own cues and visuals, the warehouse's club looks and circling camera, the festival colours. It stays in the song list until the page is reloaded.
