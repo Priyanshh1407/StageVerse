@@ -221,6 +221,12 @@ describe('the mainstage changes', async () => {
         expect(m.moreCannons.length).toBeGreaterThanOrEqual(1);
         expect(m.moreLaunchers.length).toBeGreaterThanOrEqual(1);
         expect(STAGES.mainstage.co2Extra.length).toBeGreaterThanOrEqual(5);
+        // every cannon its own: no two sets share one, and every one fires
+        const cannons = [m.cannons, ...m.moreCannons].flat().map((c) => c.base[0]);
+        expect(new Set(cannons).size).toBe(cannons.length);
+        expect(cannons.length).toBe(STAGES.mainstage.effects.confetti.length);
+        const launchers = [m.launchers, ...m.moreLaunchers].flat().map((l) => l.base[0]);
+        expect(new Set(launchers).size).toBe(launchers.length);
     });
 
     it('changes nothing on the other stages', () => {
