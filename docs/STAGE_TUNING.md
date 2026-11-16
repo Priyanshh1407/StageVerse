@@ -146,3 +146,9 @@ Festival test pages: the "Moving heads" buttons (64, 96, 160, all). `lib/show/st
 ## The warehouse's PA and strobes
 - `pa` in the warehouse's definition is a club's PA, with no line arrays: `SUB_*` are the subs along the stage front (`SUB_STACK` high, `SUB_COUNT` stacks, `SUB_PITCH` apart), `STACKS` the stack at each side of the stage (`subs` on the floor with `tops` full-range boxes on them, `turn` = how far they face in), `HANGS` the small cluster hung from the grid on each side (`boxes`, `y` = its top, `grid` = the height it hangs from). `barrier` is the crowd barrier in front of the subs.
 - `strobeScale: 0.7` makes the warehouse's strobe fixtures smaller (1 = a festival's). The strobe model is drawn two-sided on the festival stages, so a camera behind it sees a solid housing.
+
+## Strobes as light sources (festival stages)
+In `components/home/stage/festival/StageStrobes.jsx`:
+- The panel blazes at full brightness on any flash (`lit` in the panel shader; `* 11.0` is how bright), so a softened strobe (the warehouse) dims the room's flash, not the lamp.
+- `GLOW_EACH` is each firing strobe's own glow round its panel, `GLOW_SPREAD` how far it reaches (metres).
+- `THROW_LENGTH` / `THROW_OPEN` shape the shaft of light out of each panel into the haze (`* 0.32` in the shaft shader is its strength). The random coloured strobes light their panel, glow and shaft in their own colour.
