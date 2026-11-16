@@ -251,3 +251,27 @@ describe('the mainstage screen visuals', async () => {
         for (const key of ['desert', 'warehouse']) expect(STAGES[key].visuals, key).toBeUndefined();
     });
 });
+
+describe('the mainstage strobes on the subs', () => {
+    it('stand on the sub stacks, none in front of a strobe on the deck lip or of each other', () => {
+        const strobes = STAGES.mainstage.strobes;
+        const onSubs = strobes.filter((s) => s.pos[2] > 0);
+        const lip = strobes.filter((s) => Math.abs(s.pos[2] + 0.5) < 0.01);
+        expect(onSubs.length).toBe(12);
+        for (const s of onSubs) {
+            for (const l of lip) expect(Math.abs(s.pos[0] - l.pos[0]), `${s.pos[0]} vs ${l.pos[0]}`).toBeGreaterThanOrEqual(2.2);
+            expect(Math.abs((s.pos[0] / 2.4) % 1)).toBeCloseTo(0.5, 5); // centred on a stack
+        }
+        const xs = onSubs.map((s) => s.pos[0]).sort((a, b) => a - b);
+        for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1]).toBeGreaterThan(1.6);
+    });
+
+    it('adds two roof CO2 nozzles and the finale twins on the mainstage alone', () => {
+        expect(STAGES.mainstage.co2TrussExtra).toHaveLength(2);
+        expect(STAGES.mainstage.finaleEcho).toBe(true);
+        for (const key of ['desert', 'warehouse']) {
+            expect(STAGES[key].co2TrussExtra, key).toBeUndefined();
+            expect(STAGES[key].finaleEcho, key).toBeUndefined();
+        }
+    });
+});

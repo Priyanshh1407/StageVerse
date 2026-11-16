@@ -112,7 +112,8 @@ function driveRole(u, role, target, state, delta) {
     if (drop > 0.5) u.uConverge.value += (converge - u.uConverge.value) * Math.min(1, delta * 9); // the drop hits on the beat
     else glide(u.uConverge, converge, dt);
     u.uSideways.value = role.sideways ? drop : 0;
-    glide(u.uDown, role === ROLES.wash ? target.washDown ?? 0 : 0, dt);
+    // (washes that light the stage keep to it with the house lights up too, not turned straight down)
+    glide(u.uDown, role === ROLES.wash && !state.tune.washOnStage ? target.washDown ?? 0 : 0, dt);
     // Converging beams meet mid-air over the stage, or (focus) on the centre of the stage floor
     const ff = target.focusFloor ?? 0;
     u.uTarget.value.set(state.focus[0], state.focus[1] + 4 - 4 * ff, state.focus[2] - 0.5 * ff);

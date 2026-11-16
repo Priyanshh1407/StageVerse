@@ -434,7 +434,7 @@ function driveFireworks(geometry, material, target, time, pool, spots, place) {
         seen.add(f.id);
         const last = heard.get(f.id);
         const moment = shell ? RISE : 0;
-        if ((last === undefined || last < moment) && f.age >= moment && f.age < moment + 0.5) fireworkBoom(f.type);
+        if ((last === undefined || last < moment) && f.age >= moment && f.age < moment + 0.5) if (!silent) fireworkBoom(f.type);
         heard.set(f.id, f.age);
     });
     for (const id of heard.keys()) if (!seen.has(id)) heard.delete(id);
@@ -445,7 +445,8 @@ function driveFireworks(geometry, material, target, time, pool, spots, place) {
     if (light > 0) fireworkLight.color.copy(glowColour.multiplyScalar(1 / light));
 }
 
-export default function StageFireworks({ look, spots, place, quality = 'low' }) {
+// (silent: no booms of its own, for the finale's doubled shells)
+export default function StageFireworks({ look, spots, place, quality = 'low', silent = false }) {
     const pool = POOL[quality] ?? POOL.low;
 
     const geometry = useMemo(() => {

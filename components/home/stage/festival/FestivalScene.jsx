@@ -182,6 +182,31 @@ function IndoorPyro({ look }) {
     return null;
 }
 
+// The finale's fireworks doubled (stage.finaleEcho): while three or more shells fly at once (only the finale
+// fires that many), each shell gets a twin mirrored to the other side, further back, a little higher and a
+// moment later. Stage pyro (mines, comets, candles) is not doubled.
+const STAGE_PYRO = new Set(['mines', 'comets', 'candles', 'chase']);
+function finaleEcho(look, echo) {
+    const shells = (look.current.fireworks ?? []).filter((f) => !STAGE_PYRO.has(f.type));
+    if (shells.length < 3) { echo.current = {}; return; }
+    const twins = shells.filter((f) => f.age > 0.35).map((f) => ({
+        ...f, id: `echo-${f.id}`, age: f.age - 0.35, x: -f.x + (f.x >= 0 ? -5 : 5), z: (f.z ?? 0) - 10, h: (f.h ?? 0) * 1.12, seed: (f.seed ?? 0) + 0.37,
+    }));
+    echo.current = { ...look.current, fireworks: twins };
+}
+
+function FinaleEcho({ look, echo }) {
+    useFrame(() => finaleEcho(look, echo));
+    return null;
+}
+
+/** The high CO2 jets' direction (as lib/show/stages/rig.js): out over the crowd and 40 degrees down. */
+const trussDir = (pos) => {
+    const d = [(pos[0] / 30) * 0.12, -Math.sin((40 * Math.PI) / 180), Math.cos((40 * Math.PI) / 180)];
+    const l = Math.hypot(...d);
+    return d.map((v) => v / l);
+};
+
 /** The warehouse: every moment of the show as a club look (lib/show/stages/club.js). */
 function toClub(look) {
     look.current = onlyGroup(clubLook(look.current), look.current.only);
@@ -198,6 +223,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
     const place = useMemo(() => (f) => placeFirework(stage, f), [stage]);
     const width = widthOf(stage);
     const blinders = mounts.strobes.length;
+    const echo = useRef({});
     const co2Sets = useMemo(() => {
         const list = stage.co2Extra ?? [];
         return Array.from({ length: Math.ceil(list.length / CO2_JETS) }, (_, i) => list.slice(i * CO2_JETS, (i + 1) * CO2_JETS));
@@ -248,6 +274,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
             <StageCo2 look={look} jets={mounts.floorJets} quality={quality} blinders={blinders} mount="floor" />
             <StageCo2 look={look} jets={mounts.highJets} quality={quality} blinders={blinders} mount="truss" />
+            {stage.co2TrussExtra && <StageCo2 look={look} jets={stage.co2TrussExtra.map((j) => ({ pos: j.pos, dir: trussDir(j.pos) }))} follow={stage.co2TrussExtra.map((j) => j.follow)} quality={quality} blinders={blinders} mount="truss" />}
             {/* extra CO2 nozzles, in sets of up to 6 (one set holds as many as the floor jets) */}
             {co2Sets.map((set, i) => <StageCo2 key={`co2-extra-${i}`} look={look} jets={set.map((j) => ({ pos: j.pos, dir: [0, 0.999, 0.05] }))} follow={set.map((j) => j.follow)} quality={quality} blinders={blinders} mount="floor" />)}
             {stage.confetti !== false && (
@@ -260,6 +287,8 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
                 </>
             )}
             {stage.fireworks && <StageFireworks look={look} spots={mounts.mines} place={place} quality={quality} />}
+            {stage.fireworks && stage.finaleEcho && <FinaleEcho look={look} echo={echo} />}
+            {stage.fireworks && stage.finaleEcho && <StageFireworks look={echo} spots={mounts.mines} place={place} quality={quality} silent />}
 
             <CameraFlash look={look} blinders={blinding} />
             {bloom && (

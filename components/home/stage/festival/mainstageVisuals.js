@@ -196,6 +196,13 @@ export function driveVisuals(u, target, clock) {
     u.uEnergy.value += (energy - u.uEnergy.value) * 0.05;
     u.uBeat.value = target.beatPos ?? clock * 2;
     u.uPulse.value = target.pulse ?? 0;
+    // the wordmark (the wall only): 4 bars in every 8 of a song, always in its quiet parts and when no song plays,
+    // never on a drop; fading in and out
+    if (u.uLogo) {
+        const beat = target.beatPos;
+        const want = (target.dropFx ?? 0) > 0.3 ? 0 : beat === undefined || energy < 0.25 || Math.floor(beat / 16) % 2 === 0 ? 1 : 0;
+        u.uLogo.value += (want - u.uLogo.value) * 0.06;
+    }
     u.uStrobe.value = (target.strobe ?? 0) > 0.5 || (target.dropFx ?? 0) > 0.6 ? ((clock * 12.5) % 1 < 0.3 ? 0.85 : 0) : Math.max(0, Math.min(0.8, (target.blinder ?? 0) * 0.6));
 }
 
@@ -214,6 +221,7 @@ export function createVisualsWallMaterial({ textTexture = null, grid = [300, 180
             uHasText: { value: textTexture ? 1 : 0 },
             uGrid: { value: new THREE.Vector2(...grid) },
             uStars: { value: 0.2 },
+            uLogo: { value: 1 },
         },
         vertexShader: /* glsl */ `
             varying vec2 vUv;
@@ -232,6 +240,7 @@ export function createVisualsWallMaterial({ textTexture = null, grid = [300, 180
             uniform float uTextMix;
             uniform float uHasText;
             uniform vec2 uGrid;
+            uniform float uLogo;
             varying vec2 vUv;
             varying vec3 vWorld;
             void main() {
@@ -241,13 +250,15 @@ export function createVisualsWallMaterial({ textTexture = null, grid = [300, 180
                 vec2 w = vWorld.xy + (cellUv - uv) * (fwidth(vWorld.xy) / max(fwidth(uv), vec2(1e-6)));
                 vec3 color = visual(w) * 1.35;
                 if (uHasText > 0.5) {
-                    vec3 m = mix(texture2D(uTextPrev, uv).rgb, texture2D(uText, uv).rgb, uTextMix);
+                    // (the wordmark takes turns with the visuals: uLogo 1 = shown, the visuals behind it dark so it reads)
+                    vec3 m = mix(texture2D(uTextPrev, uv).rgb, texture2D(uText, uv).rgb, uTextMix) * uLogo;
                     float s = fract(uTime * 0.12) * 1.8 - 0.4;
                     float shine = smoothstep(0.07, 0.0, abs(uv.x - s + (uv.y - 0.5) * 0.35));
                     vec3 headline = mix(mix(uColorA, vec3(1.0), 0.3), mix(uColorB, vec3(1.0), 0.3), smoothstep(0.15, 0.85, uv.x)) * 1.9 + vec3(shine) * 1.6;
                     vec3 glow = mix(uColorB, uColorA, 0.35) * 1.5;
-                    color *= 1.0 - clamp(m.r + m.g * 0.4 + m.b, 0.0, 0.85);
-                    color += headline * m.r + glow * m.g * (1.0 - m.r) + vec3(1.5) * m.b;
+                    color *= 1.0 - clamp(m.r + m.g * 0.8 + m.b, 0.0, 0.97);
+                    color *= 1.0 - 0.45 * uLogo;
+                    color += (headline * m.r + glow * m.g * (1.0 - m.r) + vec3(1.5) * m.b) * 1.25;
                 }
                 vec2 f = fract(uv * uGrid);
                 float pixel = smoothstep(0.0, 0.18, f.x) * smoothstep(1.0, 0.82, f.x) * smoothstep(0.0, 0.18, f.y) * smoothstep(1.0, 0.82, f.y);
