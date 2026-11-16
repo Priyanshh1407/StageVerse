@@ -102,10 +102,8 @@ describe('the warehouse club looks', async () => {
         expect(clubLook(house)).toBe(house);
     });
 
-    it('plays the songs through the club views, none of them inside the truss grid', () => {
-        const st = STAGES.warehouse;
-        for (const [from, to] of Object.entries(st.songShots)) expect(st.shots[to], from).toBeTruthy();
-        for (const shot of Object.values(st.shots)) expect(shot.pos[1]).toBeLessThan(7);
+    it('keeps every view under the truss grid', () => {
+        for (const shot of Object.values(STAGES.warehouse.shots)) expect(shot.pos[1]).toBeLessThan(7);
     });
 
     it('is a warehouse rule only', () => {
@@ -113,8 +111,84 @@ describe('the warehouse club looks', async () => {
         for (const key of ['desert', 'mainstage']) {
             expect(STAGES[key].club, key).toBeFalsy();
             expect(STAGES[key].laserPitch, key).toBeUndefined();
-            expect(STAGES[key].songShots, key).toBeUndefined();
+            expect(STAGES[key].orbit, key).toBeUndefined();
             expect(STAGES[key].confetti, key).not.toBe(false);
         }
+    });
+});
+
+describe('the warehouse song camera', async () => {
+    const { orbitShot, orbitLaps } = await import('@/lib/show/stages/orbit');
+    const orbit = STAGES.warehouse.orbit;
+    const room = STAGES.warehouse.shots;
+
+    it('circles the room one way and ends where it began', () => {
+        const start = orbitShot(orbit, 0, 240);
+        const end = orbitShot(orbit, 240, 240);
+        for (let i = 0; i < 3; i++) expect(end.pos[i]).toBeCloseTo(start.pos[i], 5);
+        let last = -1;
+        for (let t = 0; t <= 240; t += 1) { const a = orbitShot(orbit, t, 240).angle; expect(a).toBeGreaterThan(last); last = a; }
+    });
+
+    it('goes behind the DJ at most twice a song, and only once in a short one', () => {
+        const passes = (duration) => {
+            let n = 0; let was = false;
+            for (let t = 0; t <= duration; t += 0.25) { const behind = orbitShot(orbit, t, duration).pos[2] < -7.5; if (behind && !was) n++; was = behind; }
+            return n;
+        };
+        expect(passes(240)).toBe(2);
+        expect(passes(420)).toBe(2);
+        expect(passes(100)).toBe(1);
+        expect(orbitLaps(orbit, 30)).toBe(1);
+    });
+
+    it('moves smoothly, inside the room and under the truss grid, looking at the crowd from behind the DJ', () => {
+        let prev = orbitShot(orbit, 0, 240);
+        for (let t = 0.5; t <= 240; t += 0.5) {
+            const s = orbitShot(orbit, t, 240);
+            expect(Math.hypot(...s.pos.map((v, i) => v - prev.pos[i]))).toBeLessThan(1); // under 2 m/s
+            expect(Math.hypot(...s.target.map((v, i) => v - prev.target[i]))).toBeLessThan(1.5);
+            expect(Math.abs(s.pos[0])).toBeLessThan(18);
+            expect(s.pos[2]).toBeGreaterThan(-11);
+            expect(s.pos[1]).toBeLessThan(7);
+            prev = s;
+        }
+        const behind = orbitShot(orbit, 60, 240); // half a lap
+        expect(behind.pos[2]).toBeLessThan(-8);
+        expect(behind.target[2]).toBeGreaterThan(10);
+        expect(room.dj).toBeTruthy();
+    });
+});
+
+describe('the mainstage cues', async () => {
+    const { MAINSTAGE_CUES, planMainstageCues, mainstageTestCues } = await import('@/lib/show/stages/mainstageCues');
+    const names = ['Colours', 'Intro 1', 'Calm 2', 'Groove 3', 'Groove 3 · phrase 2', 'Build 4', 'Build 4 · phrase 2', 'Build 4 · phrase 3', 'Peak 5', 'Peak 5 · lasers', 'Peak 5 · all in',
+        'Peak 5 · phrase 2', 'Solo · floor', 'Breakdown 6', 'Peak 7', 'Peak 7 · lasers', 'Peak 7 · all in', 'Peak 7 · hook', 'Peak 7 · phrase 3', 'Outro 8'];
+    const plan = planMainstageCues(names.map((name) => ({ name })));
+
+    it('adds at least 11 cues with names of their own, for the mainstage alone', () => {
+        expect(MAINSTAGE_CUES.length).toBeGreaterThanOrEqual(11);
+        expect(new Set(MAINSTAGE_CUES.map((c) => c.kind)).size).toBe(MAINSTAGE_CUES.length);
+        expect(STAGES.mainstage.cuePlan).toBe(planMainstageCues);
+        for (const key of ['desert', 'warehouse']) expect(STAGES[key].cuePlan, key).toBeUndefined();
+    });
+
+    it('swaps them in where they fit and leaves the landings, solos and named moments alone', () => {
+        const kindAt = (name) => plan[names.indexOf(name)]?.kind ?? null;
+        for (const kept of ['Colours', 'Intro 1', 'Groove 3', 'Peak 5', 'Peak 7', 'Solo · floor', 'Peak 7 · hook', 'Outro 8', 'Peak 5 · lasers', 'Peak 5 · all in']) expect(kindAt(kept), kept).toBeNull();
+        expect(kindAt('Calm 2')).toBe('Mainstage · silhouette');
+        expect(kindAt('Build 4')).toBe('Mainstage · sunrise');
+        expect(kindAt('Build 4 · phrase 3')).toBe('Mainstage · the pyramid');
+        expect(kindAt('Breakdown 6')).toBe('Mainstage · lone sweeper');
+        expect(kindAt('Peak 7 · lasers')).toBe('Mainstage · laser cathedral');
+        for (const peak of ['Peak 5 · phrase 2', 'Peak 7 · all in', 'Peak 7 · phrase 3']) expect(plan[names.indexOf(peak)].fits, peak).toBe('peak');
+        expect(plan[names.indexOf('Groove 3 · phrase 2')].fits).toBe('groove');
+        expect(new Set(['Peak 5 · phrase 2', 'Peak 7 · all in', 'Peak 7 · phrase 3'].map(kindAt)).size).toBe(3); // no repeats in a row
+    });
+
+    it('gives the cue tester a complete look for each', () => {
+        const tested = mainstageTestCues([{ kind: 'Peak · all in', look: { intensity: 1.3, colorA: '#ff0000' } }]);
+        expect(tested).toHaveLength(MAINSTAGE_CUES.length);
+        expect(tested[0].look.colorA).toBe('#ff0000');
     });
 });

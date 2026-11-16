@@ -96,7 +96,9 @@ function driveRole(u, role, target, state, delta) {
     const circle = (target.circle ?? 0) > 0.5 && !role.onPerformer;
     const radius = (target.circleSize ?? 0.35) * (role === ROLES.wash ? 0.4 : 1);
     const breathing = (target.fanBreathe ?? 0) > 0.5 && (role === ROLES.aerial || role === ROLES.floor);
-    const sweepWanted = role.steady ? Math.min(FLOOR.sweep, target.sweep * sweepScale) : target.sweep * sweepScale;
+    // (a cue with floor keys of its own, floorFan / floorTilt / floorSweep, moves the floor beams outside their
+    // usual limits, and aerialTilt lifts or lowers the aerial beams freely: the mainstage's own cues)
+    const sweepWanted = role.steady ? (target.floorSweep ?? Math.min(FLOOR.sweep, target.sweep * sweepScale)) : target.sweep * sweepScale;
     glide(u.uSweep, circle ? radius * mirrored : breathing ? 0.04 : sweepWanted * mirrored, dt);
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
@@ -122,7 +124,7 @@ function driveRole(u, role, target, state, delta) {
     // Side towers: their pan is their crossing angle times (1 + sidesAim): 0 = crossing (rest),
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
     const fan = role === ROLES.wash || role === ROLES.spot ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0)
-        : role.steady ? clamp(Math.abs(target.fan ?? 1), FLOOR.fan) : target.fan ?? 1;
+        : role.steady ? (target.floorFan ?? clamp(Math.abs(target.fan ?? 1), FLOOR.fan)) : target.fan ?? 1;
     // Fan breathe (look.fanBreathe): the aerial and floor rows open out and close in again, in time with the
     // song (open on one beat, closed two beats later), the beams held otherwise: the classic fan-in, fan-out
     // of a festival main stage's rows
@@ -140,7 +142,8 @@ function driveRole(u, role, target, state, delta) {
         : circle && role.ownAim ? -radius * 0.85
         : circle && role === ROLES.aerial ? -Math.max(0, aerialWave - AERIAL_MAX_LIFT)
         : role.ownAim ? Math.max(-0.3, Math.min(0, target.tiltShift ?? 0))
-        : role.steady && !circle ? clamp(target.tiltShift ?? 0, FLOOR.tiltShift)
+        : role.steady && !circle ? (target.floorTilt ?? clamp(target.tiltShift ?? 0, FLOOR.tiltShift))
+        : role === ROLES.aerial && target.aerialTilt !== undefined && !circle ? target.aerialTilt
         : role === ROLES.aerial ? Math.min(0, target.tiltShift ?? 0) - Math.max(0, aerialWave - AERIAL_MAX_LIFT)
             : target.tiltShift ?? 0;
     glide(u.uTiltShift, shift, dt);

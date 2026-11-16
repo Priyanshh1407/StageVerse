@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
 import { onlyGroup } from '@/lib/show/stages/club';
+import { orbitShot } from '@/lib/show/stages/orbit';
 import { STAGES } from '@/lib/show/stages';
 import { HITS, collectCues } from '@/lib/show/stages/cues';
 import { useQualityTier, TIER_SETTINGS } from '../useQualityTier';
@@ -33,16 +34,21 @@ const COUNTS = [64, 96, 160, 400];
  * One frame: the song's look when one is playing; otherwise the chosen preset or cue (`source`) on a
  * 120 BPM beat, with any hit fired from the panel on top while it runs.
  */
-function driveLook(look, source, song, clock, delta) {
+function driveLook(look, source, song, clock, delta, stage) {
     clock.t += delta;
     const s = song.current;
     if (s?.audio && !s.audio.paused) {
         const sample = sampleSongShow(s.show, s.audio.currentTime);
-        look.current = onlyGroup(sample.look, source.current.only);
+        // (a stage with cues of its own plays some of the show's cues as those: the mainstage)
+        if (stage.cuePlan) s.plan ??= stage.cuePlan(s.show.sheet.cues);
+        const own = s.plan?.[sample.index];
+        look.current = onlyGroup(own ? { ...sample.look, ...own.look } : sample.look, source.current.only);
         look.shot = sample.shot;
+        look.song = { t: s.audio.currentTime, duration: s.audio.duration || s.show.duration || 0 };
         return;
     }
     look.shot = null;
+    look.song = null;
     const beat = clock.t * 2;
     const { look: p, shot, hit } = source.current;
     let next = { ...DEFAULT_LOOK, ...p, beatPos: p.house ? undefined : beat, pulse: p.house ? 0 : Math.exp(-(beat % 1) * 9) * (p.pulseAmount ?? 0.4) };
@@ -56,8 +62,8 @@ function driveLook(look, source, song, clock, delta) {
 }
 
 
-function Driver({ look, source, song, clock }) {
-    useFrame((_, delta) => driveLook(look, source, song, clock.current, delta));
+function Driver({ look, source, song, clock, stage }) {
+    useFrame((_, delta) => driveLook(look, source, song, clock.current, delta, stage));
     return null;
 }
 
@@ -80,13 +86,16 @@ function FpsMeter({ meter }) {
 /** The camera following the show: the cue's shot, the sky shot while fireworks are up (not for mines). */
 function followShow(stage, look, camera, controls, aim, delta) {
     const up = look.current.fireworks?.some((f) => f.type !== 'mines');
-    // (a stage may play a show's shots as its own views: the warehouse's DJ and room views)
-    const shot = (up ? stage.shots.sky : stage.shots[stage.songShots?.[look.shot] ?? look.shot]) ?? stage.shots.wide;
+    // (the warehouse: during a song the camera circles the room instead of cutting between the show's shots)
+    const circling = stage.orbit && look.song?.duration > 0;
+    const shot = circling ? orbitShot(stage.orbit, look.song.t, look.song.duration)
+        : (up ? stage.shots.sky : stage.shots[look.shot]) ?? stage.shots.wide;
     aim.pos.set(...shot.pos);
     aim.look.set(...shot.target);
-    easing.damp3(camera.position, aim.pos, up ? 0.6 : 1.8, delta);
+    const ease = circling ? 0.9 : up ? 0.6 : 1.8;
+    easing.damp3(camera.position, aim.pos, ease, delta);
     if (controls.current) {
-        easing.damp3(controls.current.target, aim.look, up ? 0.6 : 1.8, delta);
+        easing.damp3(controls.current.target, aim.look, ease, delta);
         controls.current.update();
     }
 }
@@ -129,7 +138,8 @@ export default function FestivalLab({ stageKey }) {
     const loadCues = async () => {
         if (cues) return;
         const shows = await Promise.all(demos.map((d) => fetch(d.show).then((r) => r.json()).catch(() => null)));
-        setCues(collectCues(shows.filter(Boolean)));
+        const all = collectCues(shows.filter(Boolean));
+        setCues([...all, ...(stage.extraCues?.(all) ?? [])]);
     };
     const [shotName, setShotName] = useState(stage.shots[params?.get('view')] ? params.get('view') : 'wide');
     // ?cam=x,y,z&target=x,y,z: a camera of your own (a camera button returns to the stage's shots)
@@ -172,7 +182,8 @@ export default function FestivalLab({ stageKey }) {
             const askedCue = params?.get('cue');
             if (askedCue && !demo) {
                 Promise.all((index.demos ?? []).map((d) => fetch(d.show).then((r) => r.json()).catch(() => null))).then((shows) => {
-                    const all = collectCues(shows.filter(Boolean));
+                    const shared = collectCues(shows.filter(Boolean));
+                    const all = [...shared, ...(stage.extraCues?.(shared) ?? [])];
                     setCues(all);
                     const cue = all.find((c) => c.kind.toLowerCase() === askedCue.toLowerCase());
                     if (cue) chooseCue(cue);
@@ -192,7 +203,7 @@ export default function FestivalLab({ stageKey }) {
         <div className="relative h-screen w-full bg-[#010208]">
             <Canvas camera={{ position: shot.pos, fov: 55, near: 0.5, far: 1200 }} dpr={settings.dpr} gl={{ antialias: !settings.bloom, powerPreference: 'high-performance' }}
                 onCreated={({ gl }) => { gl.debug.checkShaderErrors = true; }}>
-                <Driver look={look} source={source} song={song} clock={clock} />
+                <Driver look={look} source={source} song={song} clock={clock} stage={stage} />
                 <FestivalScene stage={stage} look={look} count={lights} bloom={settings.bloom} quality={tier >= 2 ? 'high' : 'low'} control={control} />
                 <OrbitControls ref={controls} makeDefault target={shot.target} />
                 <ViewRig shot={shot} controls={controls} />
