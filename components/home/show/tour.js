@@ -83,8 +83,10 @@ const chainShot = (index, aspect, home = null) => {
 };
 
 export const WALK_SECONDS = 8;
-// passing through a stage on the way to another (a fast scroll), the camera stops there this long first
-export const PAUSE_SECONDS = 1.5;
+// (kept for the tests and the guide: walks are direct now, so the camera never passes through a stage)
+export const PAUSE_SECONDS = 0;
+// turned round mid-walk, the camera steps back only this far before it turns (it is already out on the grounds)
+const TURN_BACK = 6;
 
 /**
  * One frame of the camera's walk (`state` is kept between frames: { at, leg }): the scroll says which stop it
@@ -94,22 +96,32 @@ export const PAUSE_SECONDS = 1.5;
  */
 export function stepTour(state, p, delta, aspect = 1.78, { wanted: asked = null, home = null } = {}) {
     // (`asked`: a stop chosen in the playground instead of by the scroll; `home`: this stage's shot there)
-    let wanted = asked ?? wantedStop(p);
+    const wanted = asked ?? wantedStop(p);
     if (state.at === undefined) state.at = wanted; // the page opened part-way down: start where the scroll is
-    // the live stage is at both ends of the chain: at one end the camera is already at the other
-    if (CHAIN[wanted] === 'home' && !state.leg && CHAIN[state.at] === 'home') state.at = wanted;
+    const same = (a, b) => a === b || (CHAIN[a] === 'home' && CHAIN[b] === 'home'); // the live stage is at both ends
+    // where a walk is now (its start: a stop, or the spot it was turned from when the visitor changed their mind)
+    const poseOf = (leg) => walkAt(leg.fromShot ?? chainShot(leg.from, aspect, home), chainShot(leg.to, aspect, home), leg.t, { back: leg.back ?? BACK });
     if (state.leg) {
-        state.leg.t = Math.min(1, state.leg.t + delta / WALK_SECONDS);
-        if (state.leg.t >= 1) { state.at = state.leg.to; state.leg = null; state.pause = PAUSE_SECONDS; }
+        // asked for somewhere else mid-walk: turn from where the camera is, now, and walk straight there
+        if (!same(state.leg.to, wanted)) {
+            const old = state.leg;
+            const now = poseOf(old);
+            const lit = now.arriving > now.leaving ? old.to : old.fromKeyIndex ?? old.from;
+            state.leg = { fromShot: { pos: now.pos, target: now.target }, fromKeyIndex: lit, to: wanted, t: 0, back: TURN_BACK };
+        } else {
+            state.leg.t = Math.min(1, state.leg.t + delta / WALK_SECONDS);
+            if (state.leg.t >= 1) { state.at = state.leg.to; state.leg = null; }
+        }
     }
-    if (!state.leg && state.pause > 0) state.pause = Math.max(0, state.pause - delta);
+    // already there (the live stage counts at either end of the chain)
+    if (!state.leg && same(state.at, wanted)) state.at = wanted;
     // straight to the stage asked for, from wherever the camera is: one walk, never through the stages between
-    if (!state.leg && !(state.pause > 0) && wanted !== state.at) state.leg = { from: state.at, to: wanted, t: 0 };
+    if (!state.leg && state.at !== wanted) state.leg = { from: state.at, to: wanted, t: 0 };
     if (state.leg) {
-        const { from, to, t } = state.leg;
-        const now = walkAt(chainShot(from, aspect, home), chainShot(to, aspect, home), t, { back: BACK });
-        const a = CHAIN[from];
-        const b = CHAIN[to];
+        const leg = state.leg;
+        const now = poseOf(leg);
+        const a = CHAIN[leg.fromKeyIndex ?? leg.from];
+        const b = CHAIN[leg.to];
         return { where: 'walk', pos: now.pos, target: now.target, step: now.step, levels: levels({ [a]: now.leaving, [b]: now.arriving }) };
     }
     const key = CHAIN[state.at];

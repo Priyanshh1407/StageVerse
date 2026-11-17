@@ -236,8 +236,11 @@ function ShowExperience({ events = [], isPhone = false }) {
             const c = control.current;
             if (index === c.dot && c.dotMove) return;
             const from = c.smoothProgress ?? STOPS[c.dot ?? index].at;
+            // (`jump`: past other dots, e.g. Crew to the encore: the lights fade straight to the new dot's look, from
+            // the one on stage now, instead of playing every section between)
+            const jump = c.dot !== undefined && Math.abs(index - c.dot) > 1;
             c.dot = index;
-            c.dotMove = { from, to: STOPS[index].at, t0: performance.now(), ms };
+            c.dotMove = { from, to: STOPS[index].at, t0: performance.now(), ms, jump, fromLook: jump ? c.tourLook ?? null : null };
             showDot(index);
         };
         c0.moveToDot = moveToDot;

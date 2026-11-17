@@ -10,6 +10,7 @@ import { useQualityTier, TIER_SETTINGS } from '@/components/home/stage/useQualit
 import { ConcertLights } from '@/components/ConcertLights';
 import { SHOTS } from '@/lib/show/shots';
 import { currentState, songTime } from './director';
+import { mixLooks } from '@/lib/show/look';
 import { HOME_ONLY, SITE, siteSongShot, stepTour } from './tour';
 import { PLAY_FROM } from './scrollShow';
 import { STAGES } from '@/lib/show/stages';
@@ -54,21 +55,26 @@ function directFrame(control, look, camera, aim, delta) {
     // Scrolling the show: it plays the move to its dot (control.dotMove, set by the page), in a set time with an
     // ease in and out, whatever the scroll does; otherwise (a song, the desk) the raw progress
     const move = control.mode === 'scroll' ? control.dotMove : null;
+    let eased = 1;
     if (move) {
         const k = Math.min(1, Math.max(0, (performance.now() - move.t0) / move.ms));
-        const eased = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
-        control.smoothProgress = move.from + (move.to - move.from) * eased;
+        eased = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
+        // a jump past other dots is at the new dot at once (its look fades in below); a step plays the way there
+        control.smoothProgress = move.jump ? move.to : move.from + (move.to - move.from) * eased;
     } else {
         const raw = control.progress;
         if (control.smoothProgress === undefined) control.smoothProgress = raw;
         else easing.damp(control, 'smoothProgress', raw, 0.55, Math.min(delta, 1 / 30));
     }
     const state = currentState(control);
+    // a jump: the look on stage when it started, fading to the new dot's
+    const look0 = move?.jump && move.fromLook && eased < 1 ? mixLooks(move.fromLook, state.look, eased) : state.look;
     // In full screen the show runs ~30% brighter (a page can't raise the screen's own brightness)
-    const shown = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;
+    const shown = control.fullscreen ? { ...look0, intensity: look0.intensity * 1.3 } : look0;
     // The festival grounds (scrolling, from the personas to the drop): the camera walks to each persona's stage;
     // the stages' light levels follow it, this stage dark while it is away (components/home/show/tour.js)
-    const p = control.smoothProgress ?? control.progress ?? 0;
+    // (the stage follows the dot being gone to, not the sections passed on the way: Crew to the encore stays put)
+    const p = move ? move.to : control.smoothProgress ?? control.progress ?? 0;
     // The festival grounds. Scrolling through the personas: the scroll says which stage to go to and the camera
     // walks there in its own time (components/home/show/tour.js). In the playground (and its songs and desk), the
     // stage is the one the visitor walked to with the arrows (control.playWanted). The stages' light levels follow

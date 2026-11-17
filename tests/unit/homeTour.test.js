@@ -143,4 +143,45 @@ describe('the homepage tour of the festival grounds', () => {
         const warehouse = [0, 30, 60].map((t) => siteSongShot('organizer', 'wide', t, 240).pos);
         expect(new Set(warehouse.map((q) => q.map((v) => v.toFixed(1)).join())).size).toBe(3); // its camera circles
     });
+
+    it('turns straight to a new stage when asked mid-walk, without finishing the old walk first', () => {
+        const by = Object.fromEntries(ROLES.map((r) => [r.key, r]));
+        const state = { at: 0 };
+        play(state, by.Fan.at + 0.01, 3); // walking to the desert stage
+        expect(state.leg).toMatchObject({ to: 2 });
+        const before = stepTour(state, by.Fan.at + 0.01, 0).pos;
+        const turned = stepTour(state, by.Artist.at + 0.01, 1 / 60); // asked for the Artist: the mainstage
+        expect(state.leg.to).toBe(3);
+        expect(Math.hypot(...turned.pos.map((v, i) => v - before[i]))).toBeLessThan(1); // from where it was, no jump
+        const visited = [];
+        play(state, by.Artist.at + 0.01, WALK_SECONDS + 1, (t) => { if (t.where !== 'walk' && visited.at(-1) !== t.where) visited.push(t.where); });
+        expect(visited).toEqual(['artist']); // never reached the desert stage
+    });
+
+    it('keeps clear of the gate and the stages when it turns mid-walk, wherever it turns', () => {
+        const stops = [0, 1, 2, 3, 4];
+        const clear = (pos, label) => {
+            if (Math.abs(pos[2] - 34) < 0.8) expect(Math.abs(pos[0]) < 4.2 || Math.abs(pos[0]) > 48.5, `gate wall ${label}`).toBe(true);
+            expect(Math.abs(pos[0]) < 25 && pos[2] > -16 && pos[2] < 3, `this stage ${label}`).toBe(false);
+            for (const [key, st] of Object.entries(SITE)) {
+                const [lx, lz] = local(st, pos);
+                const [hw, z0, z1] = FOOT[st.stage];
+                const inside = Math.abs(lx) < hw && lz > z0 && lz < z1;
+                if (st.stage === 'warehouse') expect(inside && Math.abs(lx) > 18.6 && lz < 45, `warehouse wall ${label}`).toBe(false);
+                else expect(inside, `${key} ${label}`).toBe(false);
+            }
+        };
+        const pAt = (i) => (CHAIN[i] === 'home' ? (i === 0 ? 0.47 : 0.875) : ROLES.find((r) => ({ organizer: 'Organizer', fan: 'Fan', artist: 'Artist' })[CHAIN[i]] === r.key).at + 0.01);
+        for (const a of stops) for (const b of stops) for (const c of stops) {
+            if (a === b || CHAIN[a] === CHAIN[b] || CHAIN[b] === CHAIN[c]) continue;
+            for (const turnAt of [0.2, 0.5, 0.8]) {
+                const state = { at: a };
+                for (let f = 0; f < WALK_SECONDS * 60 * turnAt; f++) stepTour(state, pAt(b), 1 / 60);
+                for (let f = 0; f < WALK_SECONDS * 60 + 5; f += 2) {
+                    const w = stepTour(state, pAt(c), 2 / 60);
+                    if (w.pos) clear(w.pos, `${a}>${b} turned at ${turnAt} to ${c}`); // (at the live stage the director films it)
+                }
+            }
+        }
+    });
 });
