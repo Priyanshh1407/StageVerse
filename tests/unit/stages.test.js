@@ -411,3 +411,16 @@ describe('the festival ground', async () => {
         expect(end.arriving).toBeCloseTo(1, 6);
     });
 });
+
+describe('the floor row', () => {
+    it('is never thinned: every floor beam is drawn, however few lights the page draws', async () => {
+        const { rigHeads } = await import('@/lib/show/stages/rig');
+        for (const stage of Object.values(STAGES)) {
+            const all = stage.heads.filter((h) => h.role === 'floor' && h.type !== 'spot').length;
+            for (const n of [64, 96, 160]) expect(rigHeads(stage, n).filter((h) => h.role === 'floor').length, `${stage.key} at ${n}`).toBe(all);
+        }
+        // the mainstage's beam in front of its right fins, at 14.8 m, is there
+        const xs = rigHeads(STAGES.mainstage, 160).filter((h) => h.role === 'floor').map((h) => Math.round(h.position[0] * 10) / 10);
+        expect(xs).toContain(14.8);
+    });
+});
