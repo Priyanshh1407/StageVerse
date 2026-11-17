@@ -51,9 +51,8 @@ describe.each(Object.values(STAGES))('the $key stage', (stage) => {
     it('has every camera shot, all in front of the stage and above the ground', () => {
         if (stage.key === 'warehouse') expect(stage.shots.dj.pos[2]).toBeLessThan(0); // the DJ view (warehouse only) stands on the stage
         else expect(stage.shots.dj).toBeUndefined();
-        // the desert keeps its logo sign; the warehouse and the mainstage have only the wordmark on their walls
-        if (stage.key === 'desert') expect(stage.logo.size[0]).toBeGreaterThan(stage.logo.size[1]);
-        else expect(stage.logo).toBeUndefined();
+        // no logo signs: every stage has only the wordmark on its wall
+        expect(stage.logo).toBeUndefined();
         for (const name of ['house', 'wide', 'dolly', 'high', 'left', 'right', 'drop', 'finale', 'sky']) {
             const shot = stage.shots[name];
             expect(shot, name).toBeTruthy();
