@@ -11,6 +11,7 @@ import { ConcertLights } from '@/components/ConcertLights';
 import { SHOTS } from '@/lib/show/shots';
 import { currentState, songTime } from './director';
 import { mixLooks } from '@/lib/show/look';
+import { STAGE_HOUSE_LIGHTS } from '@/lib/show/stages/houseLights';
 import { HOME_ONLY, SITE, siteSongShot, stepTour } from './tour';
 import { PLAY_FROM } from './scrollShow';
 import { STAGES } from '@/lib/show/stages';
@@ -31,6 +32,9 @@ const skyward = (look) => look.fireworks?.some((f) => f.type !== 'mines') ?? fal
  * club looks itself.)
  */
 function siteLookFor(control, key, state, shown) {
+    // the house lights coming up (after a song there): the stage's own house lights, as on its test page, fading in
+    const house = Math.min(1, shown.house ?? 0);
+    if (house > 0.001) return mixLooks(shown, { ...shown, ...STAGE_HOUSE_LIGHTS }, house);
     if (control.mode !== 'song' || !control.song) return shown;
     const stage = STAGES[SITE[key].stage];
     if (control.song.festivalFor !== key) {
