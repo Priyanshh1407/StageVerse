@@ -276,17 +276,18 @@ describe('the mainstage screen visuals', async () => {
 });
 
 describe('the mainstage strobes on the subs', () => {
-    it('stand on the sub stacks, none in front of a strobe on the deck lip or of each other', () => {
+    it('stand in one line on top of the sub stacks, centred on a stack, evenly spaced and mirrored, none left on the deck lip', () => {
         const strobes = STAGES.mainstage.strobes;
-        const onSubs = strobes.filter((s) => s.pos[2] > 0);
-        const lip = strobes.filter((s) => Math.abs(s.pos[2] + 0.5) < 0.01);
-        expect(onSubs.length).toBe(12);
-        for (const s of onSubs) {
-            for (const l of lip) expect(Math.abs(s.pos[0] - l.pos[0]), `${s.pos[0]} vs ${l.pos[0]}`).toBeGreaterThanOrEqual(2.2);
-            expect(Math.abs((s.pos[0] / 2.4) % 1)).toBeCloseTo(0.5, 5); // centred on a stack
-        }
+        const front = strobes.filter((s) => s.pos[2] > -1);
+        const onSubs = front.filter((s) => s.pos[2] > 0);
+        expect(front).toEqual(onSubs); // none on the deck lip behind the subs
+        expect(onSubs.length).toBe(16);
+        expect(new Set(onSubs.map((s) => s.pos[1])).size).toBe(1); // one height
+        expect(new Set(onSubs.map((s) => s.pos[2])).size).toBe(1); // one line
+        for (const s of onSubs) expect(Math.abs((s.pos[0] / 2.4) % 1)).toBeCloseTo(0.5, 5); // centred on a stack
         const xs = onSubs.map((s) => s.pos[0]).sort((a, b) => a - b);
-        for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1]).toBeGreaterThan(1.6);
+        for (let i = 1; i < xs.length; i++) if (i !== 8) expect(xs[i] - xs[i - 1]).toBeCloseTo(4.8, 5);
+        xs.forEach((x, i) => expect(x).toBeCloseTo(-xs[xs.length - 1 - i], 5)); // matched left and right
     });
 
     it('adds two roof CO2 nozzles and the finale twins on the mainstage alone', () => {
