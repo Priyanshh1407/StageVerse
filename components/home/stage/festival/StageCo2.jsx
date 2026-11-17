@@ -98,7 +98,9 @@ const vertexFor = (n) => /* glsl */ `
         vec2 q = mat2(cos(a), -sin(a), sin(a), cos(a)) * position.xy * size;
         vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
         vec3 camUp = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-        gl_Position = projectionMatrix * viewMatrix * vec4(centre + right * q.x + camUp * q.y, 1.0);
+        // (positions are worked out in the stage's own frame, then placed with its group: a stage standing out on the
+        // homepage's festival grounds fires its effects there, not at the centre of the world)
+        gl_Position = projectionMatrix * viewMatrix * vec4((modelMatrix * vec4(centre, 1.0)).xyz + right * q.x + camUp * q.y, 1.0);
     }
 `;
 

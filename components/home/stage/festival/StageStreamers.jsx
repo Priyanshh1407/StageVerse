@@ -137,12 +137,15 @@ const VERTEX = /* glsl */ `
             p.xz += vec2(cos(a), sin(a)) * under;
             p.y = 0.02 + u * 0.002;
         }
-        vec3 toCam = normalize(cameraPosition - p);
-        vec3 side = normalize(cross(tangent, toCam) + vec3(1e-4, 0.0, 0.0));
+        // (positions are worked out in the stage's own frame, then placed with its group: a stage standing out on the
+        // homepage's festival grounds fires its effects there, not at the centre of the world)
+        vec3 pW = (modelMatrix * vec4(p, 1.0)).xyz;
+        vec3 toCam = normalize(cameraPosition - pW);
+        vec3 side = normalize(cross(mat3(modelMatrix) * tangent, toCam) + vec3(1e-4, 0.0, 0.0));
         // the ribbon twists along its length: edge-on it narrows, face-on it flashes
         float twist = cos(u * 14.0 + t * 3.0 + r1 * 10.0);
         float width = 0.055 * (0.2 + 0.8 * abs(twist));
-        gl_Position = projectionMatrix * viewMatrix * vec4(p + side * position.x * width, 1.0);
+        gl_Position = projectionMatrix * viewMatrix * vec4(pW + side * position.x * width, 1.0);
 
         vGlint = pow(abs(twist), 6.0);
         vFade = 1.0 - smoothstep(life - 1.5, life, t);

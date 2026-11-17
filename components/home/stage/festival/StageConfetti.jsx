@@ -94,10 +94,12 @@ const VERTEX = /* glsl */ `
         // (larger than real confetti, so it reads from the audience)
         vec3 corner = R * vec3(position.x * 0.14, position.y * 0.1, 0.0);
         vec3 normal = R * vec3(0.0, 0.0, 1.0);
-        gl_Position = projectionMatrix * viewMatrix * vec4(pos + corner, 1.0);
+        // (positions are worked out in the stage's own frame, then placed with its group: a stage standing out on the
+        // homepage's festival grounds fires its effects there, not at the centre of the world)
+        gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(pos + corner, 1.0);
 
         // glints when its face turns to the camera (the light comes from behind the viewer's shoulder)
-        vec3 toCam = normalize(cameraPosition - pos);
+        vec3 toCam = transpose(mat3(modelMatrix)) * normalize(cameraPosition - (modelMatrix * vec4(pos, 1.0)).xyz); // (in the stage's frame)
         vGlint = pow(abs(dot(normal, toCam)), 8.0);
         vFade = (1.0 - smoothstep(life - 1.5, life, t)) * (1.0 - 0.4 * landed);
     }

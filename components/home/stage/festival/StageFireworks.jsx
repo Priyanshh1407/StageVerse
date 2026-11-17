@@ -104,7 +104,7 @@ const VERTEX = /* glsl */ `
             vKind = 1.0;
             vGlow = level;
             vColor = mix(colA, colB, 0.3);
-            gl_Position = projectionMatrix * viewMatrix * vec4(c + (right * position.x + camUp * position.y) * size, 1.0);
+            gl_Position = projectionMatrix * viewMatrix * vec4((modelMatrix * vec4(c, 1.0)).xyz + (right * position.x + camUp * position.y) * size, 1.0);
             return;
         }
         // Particles 1-6: the shell's smoke, drifting and spreading in the sky, lit by the bursts
@@ -120,7 +120,7 @@ const VERTEX = /* glsl */ `
             // faint: a haze the bursts light up (in a finale dozens of puffs overlap, and brighter smoke summed to a white cloud)
             vGlow = level * (0.01 + 0.03 * uSkyLight);
             vColor = mix(vec3(0.55, 0.58, 0.66), colA, 0.25);
-            gl_Position = projectionMatrix * viewMatrix * vec4(c + (right * position.x + camUp * position.y) * size, 1.0);
+            gl_Position = projectionMatrix * viewMatrix * vec4((modelMatrix * vec4(c, 1.0)).xyz + (right * position.x + camUp * position.y) * size, 1.0);
             return;
         }
 
@@ -331,14 +331,18 @@ const VERTEX = /* glsl */ `
         // a streak along the star's flight, facing the camera
         float speed = length(vel);
         vec3 axis = speed > 0.001 ? vel / speed : vec3(0.0, 1.0, 0.0);
-        vec3 toCam = normalize(cameraPosition - pos);
-        vec3 side = normalize(cross(axis, toCam) + vec3(1e-4, 0.0, 0.0));
+        // (positions are worked out in the stage's own frame, then placed with its group: a stage standing out on the
+        // homepage's festival grounds fires its effects there, not at the centre of the world)
+        vec3 posW = (modelMatrix * vec4(pos, 1.0)).xyz;
+        vec3 axisW = mat3(modelMatrix) * axis;
+        vec3 toCam = normalize(cameraPosition - posW);
+        vec3 side = normalize(cross(axisW, toCam) + vec3(1e-4, 0.0, 0.0));
         float streak = clamp(speed * streakK, 0.12, streakMax);
         // shells burst 60-70 m from the audience: their stars need to be wider to read at that distance
         // fine stars (a real star is a small, intense point); the quad is a little wider than the star
         // to hold the glow around its head
         float width = (shell ? 0.22 : 0.07) * 1.8;
-        gl_Position = projectionMatrix * viewMatrix * vec4(pos + axis * (position.y * streak) + side * (position.x * width), 1.0);
+        gl_Position = projectionMatrix * viewMatrix * vec4(posW + axisW * (position.y * streak) + side * (position.x * width), 1.0);
         vKind = 0.0;
         vGlow = bright;
         vColor = col;
