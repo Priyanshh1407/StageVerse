@@ -161,29 +161,44 @@ describe('the warehouse song camera', async () => {
 });
 
 describe('the mainstage cues', async () => {
-    const { MAINSTAGE_CUES, planMainstageCues, mainstageTestCues } = await import('@/lib/show/stages/mainstageCues');
+    const { MAINSTAGE_CUES, planMainstageCues, planDesertCues, mainstageTestCues, withCircle } = await import('@/lib/show/stages/mainstageCues');
     const names = ['Colours', 'Intro 1', 'Calm 2', 'Groove 3', 'Groove 3 · phrase 2', 'Build 4', 'Build 4 · phrase 2', 'Build 4 · phrase 3', 'Peak 5', 'Peak 5 · lasers', 'Peak 5 · all in',
         'Peak 5 · phrase 2', 'Solo · floor', 'Breakdown 6', 'Peak 7', 'Peak 7 · lasers', 'Peak 7 · all in', 'Peak 7 · hook', 'Peak 7 · phrase 3', 'Outro 8'];
-    const plan = planMainstageCues(names.map((name) => ({ name })));
+    // (the song has its own circle on Peak 7 · all in)
+    const cues = names.map((name, i) => ({ name, t: i * 10, look: name === 'Peak 7 · all in' ? { circle: 1 } : {} }));
+    const plan = planMainstageCues(cues);
+    const kindAt = (name) => plan[names.indexOf(name)]?.kind ?? null;
 
-    it('adds at least 11 cues with names of their own, for the mainstage alone', () => {
+    it('adds at least 11 cues with names of their own; the desert only adds the circle; the warehouse nothing', () => {
         expect(MAINSTAGE_CUES.length).toBeGreaterThanOrEqual(11);
         expect(new Set(MAINSTAGE_CUES.map((c) => c.kind)).size).toBe(MAINSTAGE_CUES.length);
         expect(STAGES.mainstage.cuePlan).toBe(planMainstageCues);
-        for (const key of ['desert', 'warehouse']) expect(STAGES[key].cuePlan, key).toBeUndefined();
+        expect(STAGES.desert.cuePlan).toBe(planDesertCues);
+        expect(STAGES.warehouse.cuePlan).toBeUndefined();
     });
 
-    it('swaps them in where they fit and leaves the landings, solos and named moments alone', () => {
-        const kindAt = (name) => plan[names.indexOf(name)]?.kind ?? null;
-        for (const kept of ['Colours', 'Intro 1', 'Groove 3', 'Peak 5', 'Peak 7', 'Solo · floor', 'Peak 7 · hook', 'Outro 8', 'Peak 7 · lasers', 'Peak 5 · all in']) expect(kindAt(kept), kept).toBeNull();
+    it('plays them often: every groove, build, all-in, hook and laser moment; the landings, solos, outro and circle stay', () => {
+        for (const kept of ['Colours', 'Intro 1', 'Peak 5', 'Peak 7', 'Solo · floor', 'Outro 8', 'Peak 7 · all in']) expect(kindAt(kept), kept).toBeNull();
         expect(kindAt('Calm 2')).toBe('Mainstage · silhouette');
         expect(kindAt('Build 4')).toBe('Mainstage · sunrise');
-        expect(kindAt('Build 4 · phrase 3')).toBe('Mainstage · the pyramid');
+        expect(kindAt('Build 4 · phrase 2')).toBe('Mainstage · the pyramid');
+        expect(kindAt('Build 4 · phrase 3')).toBe('Mainstage · sunrise');
         expect(kindAt('Breakdown 6')).toBe('Mainstage · lone sweeper');
         expect(kindAt('Peak 5 · lasers')).toBe('Mainstage · laser cathedral');
-        for (const peak of ['Peak 5 · phrase 2', 'Peak 7 · all in', 'Peak 7 · phrase 3']) expect(plan[names.indexOf(peak)].fits, peak).toBe('peak');
-        expect(plan[names.indexOf('Groove 3 · phrase 2')].fits).toBe('groove');
-        expect(new Set(['Peak 5 · phrase 2', 'Peak 7 · all in', 'Peak 7 · phrase 3'].map(kindAt)).size).toBe(3); // no repeats in a row
+        expect(kindAt('Peak 7 · lasers')).toBe('Mainstage · laser cathedral');
+        for (const peak of ['Peak 5 · all in', 'Peak 5 · phrase 2', 'Peak 7 · hook', 'Peak 7 · phrase 3']) expect(plan[names.indexOf(peak)].fits, peak).toBe('peak');
+        for (const groove of ['Groove 3', 'Groove 3 · phrase 2']) expect(plan[names.indexOf(groove)].fits, groove).toBe('groove');
+        expect(plan.filter(Boolean).length).toBeGreaterThan(names.length / 2);
+    });
+
+    it('gives a song without a circle one at its biggest peak, on the mainstage and the desert', () => {
+        const without = cues.map((c) => ({ ...c, look: {} }));
+        for (const p of [planMainstageCues(without), planDesertCues(without)]) {
+            const circles = p.map((c, i) => (c?.look?.circle ? names[i] : null)).filter(Boolean);
+            expect(circles).toHaveLength(1);
+            expect(circles[0]).toMatch(/^Peak \d+ · all in$/);
+        }
+        expect(withCircle(cues).every((c) => c === null)).toBe(true); // it has one: nothing added
     });
 
     it('gives the cue tester a complete look for each', () => {
