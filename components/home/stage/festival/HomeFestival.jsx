@@ -7,7 +7,7 @@
 // - in the playground, the stage the camera is at plays what the playground plays there (the idle show, the
 //   lighting desk, or a song with that stage's own cues: control.siteLook)
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { STAGES } from '@/lib/show/stages';
 import { toGround } from '@/lib/show/stages/festival';
@@ -36,13 +36,26 @@ function dim(own, look, control, key) {
 // every group on, low (the persona looks' own levels), the floor beams allowed to be dim (dimRig), no lasers or strobes
 const LOW = { beams: 0.2, sides: 0.2, floor: 0.2, wash: 0.32, pixel: 0.28, laser: 0, strobe: 0, blinder: 0, strobeRandom: 0, dimRig: 1, house: 0 };
 
+/** Whether the playground is at this stage (it then shows the wordmark): a state change only when it changes. */
+function watchPlay(now, set, control, key) {
+    const at = control.current?.siteKey === key;
+    if (at !== now.current) { now.current = at; set(at); }
+}
+
 function SiteStage({ siteKey, look, control, count, quality }) {
     const place = SITE[siteKey];
     const stage = STAGES[place.stage];
     const own = useRef(look.current);
     useFrame(() => dim(own, look, control, siteKey));
-    // its persona on the LED wall
-    const screen = useMemo(() => { const r = personaAt(siteKey); return r ? { kind: 'role', key: r.key, line: r.line } : { kind: 'brand' }; }, [siteKey]);
+    // its persona on the LED wall during the walk through the personas; the StageVerse wordmark in the playground
+    // and during a song played here
+    const [playing, setPlaying] = useState(false);
+    const playingNow = useRef(false);
+    useFrame(() => watchPlay(playingNow, setPlaying, control, siteKey));
+    const screen = useMemo(() => {
+        const r = personaAt(siteKey);
+        return !playing && r ? { kind: 'role', key: r.key, line: r.line } : { kind: 'brand' };
+    }, [siteKey, playing]);
     // the point the beams focus on, on the grounds (the rig itself is turned with the stage)
     const focus = useMemo(() => toGround(place, stage.focus), [place, stage]);
     return (
