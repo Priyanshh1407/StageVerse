@@ -1,6 +1,7 @@
 // A copy of ../fixtureShader.js for the festival stages (the homepage keeps the original, unchanged), with
 // uMirrorSweep (each side sweeps the opposite way: scissors), uSplit (a focus in two colours meets at two
-// points side by side) and uLength (longer beams on a bigger stage).
+// points side by side), uLength (longer beams on a bigger stage), and a rig whose group is turned (a stage on the
+// homepage's festival grounds facing another way) aims in its own turned frame.
 import * as THREE from 'three';
 
 // Moving heads drawn from a real fixture model (public/fixtures/moving-head.glb) plus fake
@@ -92,17 +93,22 @@ const RIG_GLSL = /* glsl */ `
     // the row by phaseSpread (0 = unison, 1 = a wave). "phase" is the fixture's place in its row.
     // uTiltWave adds an up-and-down swing on the same cycle, a quarter turn behind the pan, so a
     // row with a phase spread rolls like a wave (each beam traces a smooth loop, no reversals).
+    // The stage's own turn: the rig's group may be turned to face another way (the homepage's festival stages);
+    // pan and tilt are in the stage's own frame, so a turned stage's beams turn with it (a lab stage: no turn)
+    mat3 stageTurn() { return mat3(modelMatrix); }
     vec3 aimDirection(vec3 from, vec2 base, float phase) {
+        mat3 R = stageTurn();
+        vec3 fromL = transpose(R) * (from - modelMatrix[3].xyz);
         float t = uPhase + phase * uPhaseSpread * 6.2832;
-        float sideOf = from.x >= 0.0 ? 1.0 : -1.0;
+        float sideOf = fromL.x >= 0.0 ? 1.0 : -1.0;
         float pan = base.x * uFan + sin(t) * uSweep * mix(1.0, sideOf, uMirrorSweep);
         float tilt = base.y + uTiltShift + sin(t * 2.0) * uSweep * 0.12 + cos(t) * uTiltWave;
-        vec3 sweepDir = normalize(vec3(sin(tilt) * sin(pan), -cos(tilt), sin(tilt) * cos(pan)));
-        vec3 focusAt = uTarget + vec3((aColorMix - 0.5) * 2.0 * uSplit, 0.0, 0.0);
+        vec3 sweepDir = R * normalize(vec3(sin(tilt) * sin(pan), -cos(tilt), sin(tilt) * cos(pan)));
+        vec3 focusAt = uTarget + R * vec3((aColorMix - 0.5) * 2.0 * uSplit, 0.0, 0.0);
         vec3 dir = normalize(mix(sweepDir, normalize(focusAt - from), uConverge));
         // The drop: thrown up and out over the audience, splayed to this fixture's side
-        float side = from.x >= 0.0 ? 1.0 : -1.0;
-        dir = normalize(mix(dir, normalize(vec3(side * 0.45, 0.75, 1.0)), uSideways));
+        float side = fromL.x >= 0.0 ? 1.0 : -1.0;
+        dir = normalize(mix(dir, normalize(R * vec3(side * 0.45, 0.75, 1.0)), uSideways));
         // Straight down onto the stage (washes, when the house lights light the venue)
         return normalize(mix(dir, vec3(0.0, -1.0, 0.0), uDown));
     }
@@ -125,8 +131,8 @@ const RIG_GLSL = /* glsl */ `
     float fixtureWhite() { return 0.0; }
 
     // Model (Z up) <-> world, through the fixture's mounting basis (standing, hanging or sideways)
-    vec3 toWorld(vec3 p) { return p.x * aXAxis + p.y * cross(aUp, aXAxis) + p.z * aUp; }
-    vec3 toModel(vec3 w) { return vec3(dot(w, aXAxis), dot(w, cross(aUp, aXAxis)), dot(w, aUp)); }
+    vec3 toWorld(vec3 p) { return stageTurn() * (p.x * aXAxis + p.y * cross(aUp, aXAxis) + p.z * aUp); }
+    vec3 toModel(vec3 w) { vec3 l = transpose(stageTurn()) * w; return vec3(dot(l, aXAxis), dot(l, cross(aUp, aXAxis)), dot(l, aUp)); }
     vec3 rotX(vec3 p, float a) { float c = cos(a); float s = sin(a); return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z); }
     vec3 rotZ(vec3 p, float a) { float c = cos(a); float s = sin(a); return vec3(c * p.x - s * p.y, s * p.x + c * p.y, p.z); }
 

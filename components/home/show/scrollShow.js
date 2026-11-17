@@ -26,14 +26,17 @@ export const ENCORE_CHOICES = [
 // While a role is on the LED wall the moving heads drop to a faint glow (18%, washes 30%) and the
 // lasers are off, so the screen behind them is the focus; the riser brings the rig back.
 export const ROLES = [
-    { key: 'Fan', at: 0.45, hold: 0.045, colors: ['#19d9ff', '#ff3df2'], shot: 'left', line: 'Find shows near you, vote on the setlist live and get closer to the stage.',
-        look: { fan: 1.3, tiltShift: 0.1, sweep: 0.3, speed: 0.45, phaseSpread: 1, washColor: '#3b5bff', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, pixel: 0.25, laser: 0 } },        // wide fan, gentle wave
-    { key: 'Artist', at: 0.54, hold: 0.045, colors: ['#ff0055', '#ffd400'], shot: 'right', line: 'Build setlists with AI insight and read the crowd in real time while you play.',
-        look: { fan: 0.5, tiltShift: -0.28, sweep: 0, speed: 0.3, phaseSpread: 0, washColor: '#ff6a00', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, pixel: 0.25, laser: 0 } },         // tight, straight into the audience, still
-    { key: 'Organizer', at: 0.63, hold: 0.045, colors: ['#a855f7', '#ffffff'], shot: 'high', line: 'Plan the event, assemble the team and keep every department on one timeline.',
-        look: { fan: -0.85, tiltShift: 0.35, sweep: 0.16, speed: 0.3, phaseSpread: 0, washColor: '#a855f7', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, pixel: 0.25, laser: 0 } },     // crossed and lifted, slow unison drift
-    { key: 'Crew', at: 0.72, hold: 0.03, colors: ['#39ff14', '#19d9ff'], shot: 'wide', line: 'Run production: tasks, cue calls and AI-assisted DMX patching in one place.',
+    // (in the order the visitor meets them on the festival grounds: Crew on this stage, then the camera walks out
+    // through the gate to the Organizer's warehouse, the Fan's desert stage and the Artist's mainstage, and back
+    // in to this stage for the drop and the encore: components/home/show/tour.js)
+    { key: 'Crew', at: 0.45, hold: 0.045, colors: ['#39ff14', '#19d9ff'], shot: 'wide', line: 'Run production: tasks, cue calls and AI-assisted DMX patching in one place.',
         look: { fan: 1.1, tiltShift: 0, sweep: 0.35, speed: 0.9, phaseSpread: 0.5, washColor: '#19d9ff', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, pixel: 0.25, laser: 0 } },       // faster wave
+    { key: 'Organizer', at: 0.54, hold: 0.045, colors: ['#a855f7', '#ffffff'], shot: 'high', line: 'Plan the event, assemble the team and keep every department on one timeline.',
+        look: { fan: -0.85, tiltShift: 0.35, sweep: 0.16, speed: 0.3, phaseSpread: 0, washColor: '#a855f7', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, pixel: 0.25, laser: 0 } },     // crossed and lifted, slow unison drift
+    { key: 'Fan', at: 0.63, hold: 0.045, colors: ['#19d9ff', '#ff3df2'], shot: 'left', line: 'Find shows near you, vote on the setlist live and get closer to the stage.',
+        look: { fan: 1.3, tiltShift: 0.1, sweep: 0.3, speed: 0.45, phaseSpread: 1, washColor: '#3b5bff', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, pixel: 0.25, laser: 0 } },        // wide fan, gentle wave
+    { key: 'Artist', at: 0.72, hold: 0.03, colors: ['#ff0055', '#ffd400'], shot: 'right', line: 'Build setlists with AI insight and read the crowd in real time while you play.',
+        look: { fan: 0.5, tiltShift: -0.28, sweep: 0, speed: 0.3, phaseSpread: 0, washColor: '#ff6a00', beams: 0.18, sides: 0.18, floor: 0.18, wash: 0.3, pixel: 0.25, laser: 0 } },         // tight, straight into the audience, still
 ];
 
 // Where each overlay shows (scroll progress)
@@ -105,7 +108,7 @@ export function buildScrollSheet(encore = ENCORE_CHOICES[0]) {
 // The 9 places the scroll can rest (scroll progress), where each section's look holds. The page
 // settles gently on the nearest one when the visitor stops scrolling near it (a quick scroll passes
 // straight through), and the section dots jump to them. The drop isn't a stop: it plays on the way
-// from the Crew section to the encore.
+// from the Artist section (back at this stage) to the encore.
 export const STOPS = [
     { key: 'gate', label: 'The gate', at: 0 },
     { key: 'house', label: 'House lights', at: 0.16 },

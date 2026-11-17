@@ -222,14 +222,18 @@ export function createVisualsWallMaterial({ textTexture = null, grid = [300, 180
             uGrid: { value: new THREE.Vector2(...grid) },
             uStars: { value: 0.2 },
             uLogo: { value: 1 },
+            // the wall's place within its stage (its mesh's own matrix): the visuals are laid out in the stage's own
+            // metres, so they line up with the fins whether or not the stage is turned
+            uLocal: { value: new THREE.Matrix4() },
         },
         vertexShader: /* glsl */ `
+            uniform mat4 uLocal;
             varying vec2 vUv;
             varying vec3 vWorld;
             void main() {
                 vUv = uv;
-                vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
-                gl_Position = projectionMatrix * viewMatrix * vec4(vWorld, 1.0);
+                vWorld = (uLocal * vec4(position, 1.0)).xyz;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
             }
         `,
         fragmentShader: /* glsl */ `

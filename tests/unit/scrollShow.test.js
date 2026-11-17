@@ -41,7 +41,7 @@ describe('scroll show', () => {
 
     it('the LED wall shows the role during its section, the brand otherwise', () => {
         expect(screenAt(0.3)).toEqual({ kind: 'brand' });
-        expect(screenAt(ROLES[1].at)).toMatchObject({ kind: 'role', key: 'Artist' });
+        expect(screenAt(ROLES[1].at)).toMatchObject({ kind: 'role', key: 'Organizer' });
         expect(roleAt(ROLES[0].at - 0.05)).toBeNull();
         expect(phaseAt(0.95)).toBe('play');
         expect(PLAY_FROM).toBeLessThan(0.95);
@@ -136,7 +136,7 @@ describe('role sections and venue-lit washes', () => {
 
 describe('scroll stops (gentle stopping and section dots)', () => {
     it('nine stops in order, each where its section holds', () => {
-        expect(STOPS.map((s) => s.label)).toEqual(['The gate', 'House lights', 'The rig comes up', 'Fan', 'Artist', 'Organizer', 'Crew', 'Encore', 'Your turn']); // the drop plays on the way, it isn't a stop
+        expect(STOPS.map((s) => s.label)).toEqual(['The gate', 'House lights', 'The rig comes up', 'Crew', 'Organizer', 'Fan', 'Artist', 'Encore', 'Your turn']); // the drop plays on the way, it isn't a stop
         for (let i = 1; i < STOPS.length; i++) expect(STOPS[i].at).toBeGreaterThan(STOPS[i - 1].at);
         for (const r of ROLES) expect(roleAt(STOPS.find((s) => s.label === r.key).at)?.key).toBe(r.key); // on the LED wall
         expect(phaseAt(STOPS.find((s) => s.key === 'encore').at)).toBe('encore');
@@ -145,8 +145,8 @@ describe('scroll stops (gentle stopping and section dots)', () => {
 
     it('stopAt lights the dot of the section you are at or just passed', () => {
         expect(stopAt(0).key).toBe('gate');
-        expect(stopAt(0.5625).key).toBe('artist');
-        expect(stopAt(0.6).key).toBe('artist');
+        expect(stopAt(0.5625).key).toBe('organizer');
+        expect(stopAt(0.6).key).toBe('organizer');
         expect(stopAt(1).key).toBe('play');
     });
 });

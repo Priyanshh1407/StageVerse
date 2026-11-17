@@ -22,6 +22,7 @@ import Streamers from './Streamers';
 import Fireworks, { fireworkLight } from './Fireworks';
 import Crowd from './Crowd';
 import Performer from './Performer';
+import HomeFestival from './festival/HomeFestival';
 import { FEATURES } from '@/lib/features';
 import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
@@ -243,10 +244,18 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
             <color attach="background" args={['#010208']} />
             {/* Night sky: deep navy at the horizon, near-black overhead */}
             <mesh>
-                <sphereGeometry args={[180, 24, 12]} />
+                {/* (big enough to hold the festival grounds outside the gate: the mainstage stands 560 m out) */}
+                <sphereGeometry args={[1200, 24, 12]} />
                 <shaderMaterial side={THREE.BackSide} depthWrite={false} vertexShader={SKY_VERTEX} fragmentShader={SKY_FRAGMENT} />
             </mesh>
             <StageLights look={look} blinders={blinders} />
+            {/* the festival grounds' field outside the gate, under the road (the gate scene keeps its own ground) */}
+            {control && FEATURES.festival && (
+                <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 300]}>
+                    <planeGeometry args={[2400, 2000]} />
+                    <meshLambertMaterial color="#0b0d14" />
+                </mesh>
+            )}
 
             <Warm part="stage">
                 <mesh position={[0, 12, SCREEN_Z - 2.8]} material={backdrop}>
@@ -286,6 +295,8 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     {/* the audience and whoever is on stage (each can be switched off: lib/features.js) */}
                     {FEATURES.crowd && <Crowd look={look} quality={effects} blinders={blinders} />}
                     {FEATURES.performer && <Performer look={look} control={control} />}
+                    {/* the other stages on the grounds, where the camera walks to meet each persona */}
+                    {control && FEATURES.festival && <HomeFestival look={look} control={control} screen={screen} font={font} logoFonts={logoFonts} count={effects === 'high' ? 56 : 40} />}
                 </Warm>
             )}
             <CameraFlash look={look} blinders={blinders} />

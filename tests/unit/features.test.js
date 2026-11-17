@@ -8,7 +8,7 @@ describe('feature switches', () => {
     });
 
     it('cover every new feature, on by default except bloom', () => {
-        expect(Object.keys(FEATURES).sort()).toEqual(['bloom', 'crowd', 'dmxMonitor', 'howItWorks', 'liveSections', 'liveStage', 'patchStage', 'performer', 'share']);
+        expect(Object.keys(FEATURES).sort()).toEqual(['bloom', 'crowd', 'dmxMonitor', 'festival', 'howItWorks', 'liveSections', 'liveStage', 'patchStage', 'performer', 'share']);
         // every feature is on by default, except bloom (off for now)
         expect(Object.entries(FEATURES).filter(([, v]) => !v).map(([k]) => k)).toEqual(['bloom']);
     });

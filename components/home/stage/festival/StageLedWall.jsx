@@ -83,7 +83,10 @@ export default function StageLedWall({ screens: SCREENS, look, events = [], scre
             u.uBrightness.value += (brightness - u.uBrightness.value) * ease;
             u.uStars.value += ((target.stars ?? 0.2) - u.uStars.value) * ease;
             u.uTextMix.value = Math.min(1, u.uTextMix.value + delta * 1.6); // ~0.6 s crossfade
-            if (visuals) driveVisuals(u, target, u.uTime.value);
+            if (visuals) {
+                driveVisuals(u, target, u.uTime.value);
+                u.uLocal?.value.copy(mesh.matrix);
+            }
         }
     });
 

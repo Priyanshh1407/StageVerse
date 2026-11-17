@@ -10,6 +10,8 @@ import { useQualityTier, TIER_SETTINGS } from '@/components/home/stage/useQualit
 import { ConcertLights } from '@/components/ConcertLights';
 import { SHOTS } from '@/lib/show/shots';
 import { currentState } from './director';
+import { HOME_ONLY, tourAt } from './tour';
+import { FEATURES } from '@/lib/features';
 import { markReady } from './stageReady';
 import hero from '@/public/images/hero.jpg';
 
@@ -27,7 +29,23 @@ function directFrame(control, look, camera, aim, delta) {
     else easing.damp(control, 'smoothProgress', raw, 0.55, Math.min(delta, 1 / 30));
     const state = currentState(control);
     // In full screen the show runs ~30% brighter (a page can't raise the screen's own brightness)
-    look.current = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;
+    const shown = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;
+    // The festival grounds (scrolling, from the personas to the drop): the camera walks to each persona's stage;
+    // the stages' light levels follow it, this stage dark while it is away (components/home/show/tour.js)
+    const p = control.smoothProgress ?? control.progress ?? 0;
+    const tour = FEATURES.festival && control.mode === 'scroll' ? tourAt(p, camera.aspect) : null;
+    control.levels = tour?.levels ?? HOME_ONLY;
+    control.tourLook = shown;
+    const home = control.levels.home;
+    look.current = home >= 1 ? shown : { ...shown, master: (shown.master ?? 1) * Math.max(0.05, home) };
+    if (tour && tour.where !== 'home') {
+        if (!aim.placed) { camera.position.set(...tour.pos); aim.target.set(...tour.target); aim.placed = true; }
+        // (a light smoothing only: the walk itself follows the scroll, and a long lag would cut its corners)
+        easing.damp3(camera.position, tour.pos, 0.25, delta);
+        easing.damp3(aim.target, tour.target, 0.25, delta);
+        camera.lookAt(aim.target);
+        return;
+    }
     if (control.mode !== 'manual') control.shot = state.shot;
     // While fireworks are in the air the camera stands back and looks up, so the whole sky is in view
     const sky = skyward(state.look);
@@ -100,7 +118,7 @@ function Stage3D({ tier, control, look, visible, counts, events, screen, font, l
         <Canvas
             frameloop={visible ? 'always' : 'never'}   // nothing renders while scrolled away
             dpr={dpr}
-            camera={{ position: SHOTS.house.pos, fov: 55, near: 0.5, far: 200 }}
+            camera={{ position: SHOTS.house.pos, fov: 55, near: 0.5, far: 1600 }} // (far: the festival grounds reach 600 m out)
             gl={{ antialias: !bloom, powerPreference: 'high-performance' }} // MSAA only without bloom (the composer does SMAA)
             // In production, don't check each shader for errors as it's built: the check makes the main
             // thread wait for every compile (over a second of frozen page on integrated graphics), while
