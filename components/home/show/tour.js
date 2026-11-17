@@ -94,14 +94,20 @@ export const PAUSE_SECONDS = 1.5;
  */
 export function stepTour(state, p, delta, aspect = 1.78, { wanted: asked = null, home = null } = {}) {
     // (`asked`: a stop chosen in the playground instead of by the scroll; `home`: this stage's shot there)
-    const wanted = asked ?? wantedStop(p);
+    let wanted = asked ?? wantedStop(p);
     if (state.at === undefined) state.at = wanted; // the page opened part-way down: start where the scroll is
+    // the live stage is at both ends of the chain: at one end the camera is already at the other
+    if (CHAIN[wanted] === 'home' && !state.leg && CHAIN[state.at] === 'home') state.at = wanted;
     if (state.leg) {
         state.leg.t = Math.min(1, state.leg.t + delta / WALK_SECONDS);
         if (state.leg.t >= 1) { state.at = state.leg.to; state.leg = null; state.pause = PAUSE_SECONDS; }
     }
     if (!state.leg && state.pause > 0) state.pause = Math.max(0, state.pause - delta);
-    if (!state.leg && !(state.pause > 0) && wanted !== state.at) state.leg = { from: state.at, to: state.at + Math.sign(wanted - state.at), t: 0 };
+    // one stage at a time between the persona stages; to the live stage, straight there (one walk, not through the
+    // stages between)
+    if (!state.leg && !(state.pause > 0) && wanted !== state.at) {
+        state.leg = { from: state.at, to: CHAIN[wanted] === 'home' ? wanted : state.at + Math.sign(wanted - state.at), t: 0 };
+    }
     if (state.leg) {
         const { from, to, t } = state.leg;
         const now = walkAt(chainShot(from, aspect, home), chainShot(to, aspect, home), t, { back: BACK });

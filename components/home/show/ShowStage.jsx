@@ -51,9 +51,18 @@ function directFrame(control, look, camera, aim, delta) {
     // Glide toward the scroll position instead of jumping a wheel notch at a time: a critically damped
     // spring (~1 s), so a cue change eases in and eases out, at a pace you can watch even after a quick
     // scroll. The step is capped at 1/30 s, so a stalled frame can't turn into a jump.
-    const raw = control.progress;
-    if (control.smoothProgress === undefined) control.smoothProgress = raw;
-    else easing.damp(control, 'smoothProgress', raw, 0.55, Math.min(delta, 1 / 30));
+    // Scrolling the show: it plays the move to its dot (control.dotMove, set by the page), in a set time with an
+    // ease in and out, whatever the scroll does; otherwise (a song, the desk) the raw progress
+    const move = control.mode === 'scroll' ? control.dotMove : null;
+    if (move) {
+        const k = Math.min(1, Math.max(0, (performance.now() - move.t0) / move.ms));
+        const eased = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
+        control.smoothProgress = move.from + (move.to - move.from) * eased;
+    } else {
+        const raw = control.progress;
+        if (control.smoothProgress === undefined) control.smoothProgress = raw;
+        else easing.damp(control, 'smoothProgress', raw, 0.55, Math.min(delta, 1 / 30));
+    }
     const state = currentState(control);
     // In full screen the show runs ~30% brighter (a page can't raise the screen's own brightness)
     const shown = control.fullscreen ? { ...state.look, intensity: state.look.intensity * 1.3 } : state.look;

@@ -58,12 +58,6 @@ const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', b
 const MAX_UPLOAD_MB = 80;
 // The show section's height (vh): the stage scrolls this minus one screen. Taller = more scroll per section
 const SHOW_VH = 800;
-// The drop: the stretch between the Crew and Encore stops where the scroll never rests
-const JOURNEY = (() => {
-    const back = STOPS.find((s) => s.key === 'crew');
-    const next = STOPS.find((s) => s.key === 'encore');
-    return { from: back.at + 0.02, to: next.at - 0.015, back, next };
-})();
 // Moving a section at a time: every glide takes STEP_MS; the one through the riser, the drop and the encore
 // colours takes DROP_MS; scroll events closer together than GESTURE_GAP_MS belong to the same gesture
 const STEP_MS = 1600;
@@ -215,6 +209,39 @@ function ShowExperience({ events = [], isPhone = false }) {
             c.glideFrame = requestAnimationFrame(step);
             c.stopGlide = stop;
         };
+        // The show plays the dot it is at (control.dot, an index into STOPS), not the raw scroll position: each dot is
+        // a fixed moment on a fixed stage (the gate, the house lights, the cues, each persona, the encore, the
+        // playground). Reaching a dot (a scroll gesture, a key, a swipe, a click on it) moves the show there in a
+        // set time (control.dotMove, played by the director) and the camera to that dot's stage, whatever the
+        // scroll does meanwhile. The overlays follow the dot too.
+        const showDot = (index) => {
+            const at = STOPS[index].at;
+            setPhase(phaseAt(at));
+            // (leaving the playground, the camera walks back to the live stage: so does the stage picker)
+            if (phaseAt(at) !== 'play') setPlayStage('home');
+            setStopKey(STOPS[index].key);
+            setRole(roleAt(at)?.key ?? null);
+            setScreen((prev) => {
+                const next = screenAt(at);
+                return prev.kind === next.kind && prev.key === next.key ? prev : next;
+            });
+            const c = control.current;
+            if (c.sheet) {
+                let name = c.sheet.cues[0]?.name ?? '';
+                for (const q of c.sheet.cues) if (q.t + q.fade / 2 <= at) name = q.name;
+                setCueName(name);
+            }
+        };
+        const moveToDot = (index, ms) => {
+            const c = control.current;
+            if (index === c.dot && c.dotMove) return;
+            const from = c.smoothProgress ?? STOPS[c.dot ?? index].at;
+            c.dot = index;
+            c.dotMove = { from, to: STOPS[index].at, t0: performance.now(), ms };
+            showDot(index);
+        };
+        c0.moveToDot = moveToDot;
+        const nearestDot = (p) => STOPS.reduce((best, s, i) => (Math.abs(s.at - p) < Math.abs(STOPS[best].at - p) ? i : best), 0);
         const onScroll = () => {
             const el = section.current;
             if (!el) return;
@@ -222,42 +249,23 @@ function ShowExperience({ events = [], isPhone = false }) {
             const progress = Math.min(1, Math.max(0, -rect.top / (rect.height - window.innerHeight)));
             const c = control.current;
             c.progress = progress;
-            setPhase(phaseAt(progress));
-            // (leaving the playground, the camera walks back to this stage: so does the stage picker)
-            if (phaseAt(progress) !== 'play' && c.mode === 'scroll') setPlayStage('home');
-            setStopKey(stopAt(progress).key);
-            setRole(roleAt(progress)?.key ?? null);
-            setScreen((prev) => {
-                const next = screenAt(progress);
-                return prev.kind === next.kind && prev.key === next.key ? prev : next;
-            });
-            // the cue at the real scroll position (the director's smoothed one trails it, so the label showed the section before)
-            if (c.mode === 'scroll' && c.sheet) {
-                // the last cue at least halfway through its fade: the look you're actually seeing
-                let name = c.sheet.cues[0]?.name ?? '';
-                for (const q of c.sheet.cues) if (q.t + q.fade / 2 <= progress) name = q.name;
-                setCueName(name);
+            if (c.dot === undefined) {
+                // the page opened part-way down: the dot nearest to where it is, with no move to play
+                c.dot = nearestDot(progress);
+                c.dotMove = { from: STOPS[c.dot].at, to: STOPS[c.dot].at, t0: 0, ms: 1 };
+                showDot(c.dot);
             }
-
-            // The drop plays on the way from Crew to the encore, so the scroll never rests in it: if the
-            // visitor stops there, carry on to the next section in the direction they were scrolling.
-            // Down, the page glides there itself at a set pace (the riser, the drop and the encore
-            // colours each get their moment; the browser's smooth scroll crushed them into half a second)
+            // a scroll the page did not glide itself (the scrollbar dragged, a jump): once it rests, the show moves
+            // to the nearest dot and the page settles on it
             if (c.gliding) return;
             clearTimeout(c.settleTimer);
-            const y = window.scrollY;
-            const direction = Math.sign(y - (c.settleFromY ?? y));
             c.settleTimer = setTimeout(() => {
-                c.settleFromY = window.scrollY;
-                if (c.mode !== 'scroll' || !direction || c.gliding) return;
-                const p = c.progress;
-                if (!(p > JOURNEY.from && p < JOURNEY.to)) return;
-                const el = section.current;
-                const top = el.getBoundingClientRect().top + window.scrollY;
-                const stop = direction > 0 ? JOURNEY.next : JOURNEY.back;
-                const share = Math.abs(stop.at - p) / (JOURNEY.next.at - JOURNEY.back.at);
-                glide(top + stop.at * (el.offsetHeight - window.innerHeight), direction > 0 ? Math.max(1200, 4200 * share) : Math.max(700, 1800 * share));
-            }, 200);
+                if (c.mode !== 'scroll' || c.gliding) return;
+                const index = nearestDot(c.progress);
+                if (index !== c.dot) moveToDot(index, STEP_MS);
+                const y = yOf(STOPS[index]);
+                if (Math.abs(window.scrollY - y) > 2) glide(y, 600);
+            }, 180);
         };
         // Section to section: inside the show, every scroll gesture, arrow key or swipe moves exactly one section,
         // as a glide of a set length (STEP_MS), however fast or hard the visitor scrolls; it never rests in between.
@@ -273,28 +281,29 @@ function ShowExperience({ events = [], isPhone = false }) {
             const r = el.getBoundingClientRect();
             return r.top <= 2 && r.bottom >= window.innerHeight - 2;
         };
-        const last = STOPS[STOPS.length - 1];
         // the glide's length: the same for every section, longer only for the riser, the drop and the encore colours
         const msBetween = (from, to) => ((from.key === 'artist' && to.key === 'encore') ? DROP_MS : STEP_MS);
         const stepTo = (to) => {
             const c = control.current;
-            if (!to || c.gliding) return false;
-            const from = stopAt(c.progress ?? 0);
-            setStopKey(to.key); // the dot moves at once (it was lost when a double scroll raced the snapping)
-            glide(yOf(to), msBetween(from, to));
+            if (!to) return false;
+            const from = STOPS[c.dot ?? 0];
+            const ms = msBetween(from, to);
+            moveToDot(STOPS.indexOf(to), ms);
+            c.stopGlide?.();
+            glide(yOf(to), ms);
             return true;
         };
         const step = (dir) => {
-            const p = control.current.progress ?? 0;
-            const next = dir > 0 ? STOPS.find((s) => s.at > p + 0.004) : [...STOPS].reverse().find((s) => s.at < p - 0.004);
-            return stepTo(next);
+            const c = control.current;
+            if (c.gliding) return false;
+            return stepTo(STOPS[(c.dot ?? 0) + dir]);
         };
         c0.stepTo = stepTo;
         c0.step = step;
         // whether this direction stays in the show (down from the last section, or up from the first, leaves it)
         const staysIn = (dir) => {
-            const p = control.current.progress ?? 0;
-            return dir > 0 ? p < last.at - 0.004 : p > 0.0005;
+            const dot = control.current.dot ?? 0;
+            return dir > 0 ? dot < STOPS.length - 1 : dot > 0;
         };
         const onWheel = (e) => {
             const c = control.current;

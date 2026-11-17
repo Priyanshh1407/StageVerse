@@ -55,24 +55,28 @@ describe('the homepage tour of the festival grounds', () => {
         expect(stepTour(state, by.Organizer.at + 0.01, 1 / 60).where).toBe('organizer');
     });
 
-    it('walks one stage at a time, never zapping through, and back up the same way', () => {
+    it('walks one stage at a time between the persona stages, and straight back to the live stage', () => {
+        const by = Object.fromEntries(ROLES.map((r) => [r.key, r]));
+        // from Crew to the Fan's dot: the warehouse first, then the desert stage, a walk each
         const state = { at: 0 };
         const visited = [];
         const note = (t) => { if (t.where !== 'walk' && visited.at(-1) !== t.where) visited.push(t.where); };
-        // a fast scroll from Crew to the encore: every stage in turn, 8 s each
-        play(state, 0.875, 4 * WALK_SECONDS + 3 * PAUSE_SECONDS + 1, note);
-        expect(visited).toEqual(['organizer', 'fan', 'artist', 'home']);
-        expect(state.at).toBe(4);
-        // scrolling back up from the encore to the Artist: a slow walk to the mainstage, not on to Crew
-        const by = Object.fromEntries(ROLES.map((r) => [r.key, r]));
+        play(state, by.Fan.at + 0.01, 2 * WALK_SECONDS + PAUSE_SECONDS + 1, note);
+        expect(visited).toEqual(['organizer', 'fan']);
+        // from the desert stage to the encore (the live stage): one walk straight back, not through the mainstage
+        play(state, 0.875, WALK_SECONDS + 1, note);
+        expect(visited).toEqual(['organizer', 'fan', 'home']);
+        // from Crew to the encore: both on the live stage, no walk at all
+        const still = { at: 0 };
+        expect(stepTour(still, 0.875, 1 / 60).where).toBe('home');
+        expect(still.leg).toBeFalsy();
+        // scrolling back up from the encore to the Artist: a walk to the mainstage
+        const back = { at: 4 };
         expect(wantedStop(by.Artist.at + 0.01)).toBe(3);
-        const before = visited.length;
-        play(state, by.Artist.at + 0.01, 3);
-        expect(state.leg).toMatchObject({ from: 4, to: 3 });
-        play(state, by.Artist.at + 0.01, WALK_SECONDS + PAUSE_SECONDS);
-        expect(state.at).toBe(3);
-        expect(stepTour(state, by.Artist.at + 0.01, 1 / 60).where).toBe('artist');
-        expect(visited.length).toBe(before);
+        play(back, by.Artist.at + 0.01, 3);
+        expect(back.leg).toMatchObject({ from: 4, to: 3 });
+        play(back, by.Artist.at + 0.01, WALK_SECONDS + PAUSE_SECONDS);
+        expect(stepTour(back, by.Artist.at + 0.01, 1 / 60).where).toBe('artist');
     });
 
     it('starts and ends every walk exactly where the camera stands, so nothing jumps', () => {
@@ -88,9 +92,12 @@ describe('the homepage tour of the festival grounds', () => {
     });
 
     it('walks through the gate opening, round the stages, one stage lit at a time', () => {
-        // every walk, both ways
-        for (let a = 0; a < 4; a++) {
-            for (const [from, to] of [[a, a + 1], [a + 1, a]]) {
+        // every walk, both ways, and the straight walks back to the live stage from each of the others
+        const walks = [];
+        for (let a = 0; a < 4; a++) walks.push([a, a + 1], [a + 1, a]);
+        for (const site of [1, 2, 3]) walks.push([site, 0], [site, 4]);
+        {
+            for (const [from, to] of walks) {
                 let prev = null;
                 for (let t = 0; t <= 1; t += 0.0025) {
                     const w = stepTour({ at: from, leg: { from, to, t } }, 0.47, 0);
