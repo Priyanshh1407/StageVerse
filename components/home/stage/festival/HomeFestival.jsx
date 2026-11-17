@@ -4,13 +4,13 @@
 // gate (components/home/show/tour.js SITE), each lit by its own level (control.levels, set by the director as the
 // camera walks between them). A lit stage plays the scroll's look, the same as this stage would (a persona's
 // look: the rig dimmed, the persona on the LED wall); an unlit one keeps a faint standby glow, so it reads as a
-// stage at night from across the grounds. Each stage: its steel, screens, LED wall, pixel bars, moving heads, PA
-// and (the desert) its logo sign; no crowd, effects or lasers.
+// stage at night from across the grounds. Each stage: its steel, screens, LED wall, pixel bars, moving heads,
+// strobes, lasers, PA and (the desert) its logo sign, as many as on its test page.
 
 import { Suspense, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { STAGES } from '@/lib/show/stages';
-import { rigHeads } from '@/lib/show/stages/rig';
+import { rigHeads, stageMounts } from '@/lib/show/stages/rig';
 import { toGround } from '@/lib/show/stages/festival';
 import { SITE, personaAt } from '@/components/home/show/tour';
 import { sampleCueSheet } from '@/lib/show/timeline';
@@ -19,6 +19,8 @@ import StageHeads from './StageHeads';
 import StageLedWall from './StageLedWall';
 import StagePa from './StagePa';
 import StageLogo from './StageLogo';
+import StageStrobes from './StageStrobes';
+import StageLasers from './StageLasers';
 
 const STANDBY = 0.05; // how lit an unlit stage stays
 const PIXEL = 0.11;   // LED pixel pitch on the walls (m)
@@ -60,6 +62,7 @@ function SiteStage({ siteKey, look, control, font, logoFonts, count }) {
     const own = useRef(look.current);
     useFrame(() => dim(own, look, control, siteKey));
     const heads = useMemo(() => rigHeads(stage, count), [stage, count]);
+    const mounts = useMemo(() => stageMounts(stage), [stage]);
     const walls = useMemo(() => ledWalls(stage), [stage]);
     // the point the beams focus on, on the grounds (the rig itself is turned with the stage)
     const focus = useMemo(() => toGround(place, stage.focus), [place, stage]);
@@ -73,13 +76,15 @@ function SiteStage({ siteKey, look, control, font, logoFonts, count }) {
             {stage.logo && <StageLogo position={stage.logo.position} size={stage.logo.size} logoFonts={logoFonts} />}
             <Suspense fallback={null}>
                 <StageHeads heads={heads} look={own} focus={focus} screenBeamsX={stage.screenBeamsX} tune={stage.headTune ?? NO_TUNE} />
+                <StageStrobes positions={mounts.strobes} look={own} blinders={Math.min(16, mounts.strobes.length)} scale={stage.strobeScale ?? 1} floorY={stage.deck + 1} clearFront />
             </Suspense>
+            <StageLasers look={own} projectors={mounts.lasers} pitch={stage.laserPitch ?? null} strength={stage.laserStrength ?? null} />
         </group>
     );
 }
 
-/** The three stages on the grounds outside the gate. `count`: moving heads per stage. */
-export default function HomeFestival({ look, control, font, logoFonts, count = 48 }) {
+/** The three stages on the grounds outside the gate. `count`: moving heads per stage (as on the test pages). */
+export default function HomeFestival({ look, control, font, logoFonts, count = 96 }) {
     return Object.keys(SITE).map((key) => (
         <SiteStage key={key} siteKey={key} look={look} control={control} font={font} logoFonts={logoFonts} count={count} />
     ));

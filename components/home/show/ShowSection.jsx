@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Orbitron } from 'next/font/google';
-import { ChevronDown, Headphones, Music, Square, Upload, Settings2, Loader2, Play, SunMedium, Flame, Zap, Sparkles, SunDim, Lamp, Power, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, Headphones, Music, Square, Upload, Settings2, Loader2, Play, SunMedium, Flame, Zap, Sparkles, SunDim, Lamp, Power, ArrowRight, ArrowLeft } from 'lucide-react';
 import { DEFAULT_LOOK, mixHex } from '@/lib/show/look';
 import { prepareSongShow } from '@/lib/show/timeline';
 import { buildIdleShow } from '@/lib/show/program';
@@ -63,6 +63,11 @@ const JOURNEY = (() => {
     const next = STOPS.find((s) => s.key === 'encore');
     return { from: back.at + 0.02, to: next.at - 0.015, back, next };
 })();
+// Moving a section at a time: every glide takes STEP_MS; the one through the riser, the drop and the encore
+// colours takes DROP_MS; scroll events closer together than GESTURE_GAP_MS belong to the same gesture
+const STEP_MS = 1600;
+const DROP_MS = 4200;
+const GESTURE_GAP_MS = 220;
 // After a song: the house lights come up, hold, then the playground returns (ms, including the fade)
 const AFTER_SHOW_MS = HOUSE_UP_MS + 5000;
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -191,10 +196,11 @@ function ShowExperience({ events = [], isPhone = false }) {
                 c.gliding = false;
                 cancelAnimationFrame(c.glideFrame);
                 html.style.scrollSnapType = '';
-                for (const e of ['wheel', 'touchstart', 'keydown', 'pointerdown']) window.removeEventListener(e, stop);
+                window.removeEventListener('pointerdown', stop);
                 c.settleFromY = window.scrollY;
             };
-            for (const e of ['wheel', 'touchstart', 'keydown', 'pointerdown']) window.addEventListener(e, stop, { passive: true });
+            // (dragging the scrollbar takes over; wheel, keys and touch move a section at a time: see stepTo below)
+            window.addEventListener('pointerdown', stop, { passive: true });
             const step = (now) => {
                 const k = Math.min(1, (now - t0) / ms);
                 const eased = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
@@ -247,12 +253,91 @@ function ShowExperience({ events = [], isPhone = false }) {
                 glide(top + stop.at * (el.offsetHeight - window.innerHeight), direction > 0 ? Math.max(1200, 4200 * share) : Math.max(700, 1800 * share));
             }, 200);
         };
+        // Section to section: inside the show, every scroll gesture, arrow key or swipe moves exactly one section,
+        // as a glide of a set length (STEP_MS), however fast or hard the visitor scrolls; it never rests in between.
+        // The rest of a gesture (a trackpad's coasting, a second flick during the glide) is ignored, so a gesture
+        // can't skip a section. Down past the last section (the playground), the page scrolls on as usual.
+        const yOf = (stop) => {
+            const el = section.current;
+            return el.getBoundingClientRect().top + window.scrollY + stop.at * (el.offsetHeight - window.innerHeight);
+        };
+        const inShow = () => {
+            const el = section.current;
+            if (!el) return false;
+            const r = el.getBoundingClientRect();
+            return r.top <= 2 && r.bottom >= window.innerHeight - 2;
+        };
+        const last = STOPS[STOPS.length - 1];
+        // the glide's length: the same for every section, longer only for the riser, the drop and the encore colours
+        const msBetween = (from, to) => ((from.key === 'artist' && to.key === 'encore') ? DROP_MS : STEP_MS);
+        const stepTo = (to) => {
+            const c = control.current;
+            if (!to || c.gliding) return false;
+            const from = stopAt(c.progress ?? 0);
+            setStopKey(to.key); // the dot moves at once (it was lost when a double scroll raced the snapping)
+            glide(yOf(to), msBetween(from, to));
+            return true;
+        };
+        const step = (dir) => {
+            const p = control.current.progress ?? 0;
+            const next = dir > 0 ? STOPS.find((s) => s.at > p + 0.004) : [...STOPS].reverse().find((s) => s.at < p - 0.004);
+            return stepTo(next);
+        };
+        c0.stepTo = stepTo;
+        c0.step = step;
+        // whether this direction stays in the show (down from the last section, or up from the first, leaves it)
+        const staysIn = (dir) => {
+            const p = control.current.progress ?? 0;
+            return dir > 0 ? p < last.at - 0.004 : p > 0.0005;
+        };
+        const onWheel = (e) => {
+            const c = control.current;
+            const dir = Math.sign(e.deltaY);
+            if (c.mode !== 'scroll' || !dir || e.ctrlKey || !inShow() || !staysIn(dir)) return;
+            e.preventDefault();
+            const now = performance.now();
+            if (now - (c.lastWheel ?? 0) > GESTURE_GAP_MS) c.gestureStepped = false; // a new gesture
+            c.lastWheel = now;
+            if (c.gliding) { c.gestureStepped = true; return; }
+            if (c.gestureStepped) return;
+            c.gestureStepped = step(dir);
+        };
+        const onKey = (e) => {
+            const c = control.current;
+            if (c.mode !== 'scroll' || !inShow() || e.altKey || e.ctrlKey || e.metaKey) return;
+            if (e.target?.closest?.('input, textarea, select, button, [contenteditable="true"]')) return;
+            const down = e.key === 'ArrowDown' || e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey);
+            const up = e.key === 'ArrowUp' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey);
+            const dir = down ? 1 : up ? -1 : 0;
+            if (!dir || !staysIn(dir)) return;
+            e.preventDefault();
+            if (!c.gliding && !e.repeat) step(dir);
+        };
+        const touch = { y: null, stepped: false };
+        const onTouchStart = (e) => { touch.y = e.touches[0]?.clientY ?? null; touch.stepped = false; };
+        const onTouchMove = (e) => {
+            const c = control.current;
+            if (touch.y === null || c.mode !== 'scroll' || !inShow()) return;
+            const dy = touch.y - (e.touches[0]?.clientY ?? touch.y);
+            const dir = Math.sign(dy);
+            if (!dir || !staysIn(dir)) return;
+            e.preventDefault();
+            if (!touch.stepped && Math.abs(dy) > 40 && !c.gliding) touch.stepped = step(dir);
+        };
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onScroll);
+        window.addEventListener('wheel', onWheel, { passive: false });
+        window.addEventListener('keydown', onKey);
+        window.addEventListener('touchstart', onTouchStart, { passive: true });
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
         return () => {
             window.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', onScroll);
+            window.removeEventListener('wheel', onWheel);
+            window.removeEventListener('keydown', onKey);
+            window.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('touchmove', onTouchMove);
             clearTimeout(c0.settleTimer);
             if (c0.gliding) c0.stopGlide?.();
         };
@@ -298,8 +383,10 @@ function ShowExperience({ events = [], isPhone = false }) {
         control.current.sheet = buildScrollSheet(choice);
     };
 
-    /** Scroll smoothly to one of the show's sections. */
+    /** Glide to one of the show's sections (the same set pace as scrolling a section at a time). */
     const goToStop = (stop) => {
+        const c = control.current;
+        if (c.stepTo) { c.stopGlide?.(); c.stepTo(stop); return; }
         const el = section.current;
         if (!el) return;
         const top = el.getBoundingClientRect().top + window.scrollY;
@@ -661,6 +748,10 @@ function ShowExperience({ events = [], isPhone = false }) {
                 {/* Section dots (small): where you are, and a jump to any section */}
                 {showOverlays && (
                     <nav aria-label="Show sections" className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end gap-2">
+                        <button type="button" onClick={() => control.current.step?.(-1)} disabled={stopKey === STOPS[0].key} aria-label="Previous section"
+                            className="mb-1 grid place-items-center w-7 h-7 rounded-full bg-black/50 border border-white/20 text-white/85 hover:bg-white/15 disabled:opacity-30">
+                            <ChevronUp className="w-4 h-4" aria-hidden />
+                        </button>
                         {STOPS.map((s) => {
                             const active = stopKey === s.key;
                             return (
@@ -671,6 +762,10 @@ function ShowExperience({ events = [], isPhone = false }) {
                                 </button>
                             );
                         })}
+                        <button type="button" onClick={() => control.current.step?.(1)} disabled={stopKey === STOPS[STOPS.length - 1].key} aria-label="Next section"
+                            className="mt-1 grid place-items-center w-7 h-7 rounded-full bg-black/50 border border-white/20 text-white/85 hover:bg-white/15 disabled:opacity-30">
+                            <ChevronDown className="w-4 h-4" aria-hidden />
+                        </button>
                     </nav>
                 )}
 
