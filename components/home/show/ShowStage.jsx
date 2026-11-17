@@ -9,8 +9,12 @@ import StageScene from '@/components/home/stage/StageScene';
 import { useQualityTier, TIER_SETTINGS } from '@/components/home/stage/useQualityTier';
 import { ConcertLights } from '@/components/ConcertLights';
 import { SHOTS } from '@/lib/show/shots';
-import { currentState } from './director';
-import { HOME_ONLY, stepTour } from './tour';
+import { currentState, songTime } from './director';
+import { HOME_ONLY, SITE, siteSongShot, stepTour } from './tour';
+import { PLAY_FROM } from './scrollShow';
+import { STAGES } from '@/lib/show/stages';
+import { festivalColours } from '@/lib/show/stages/palettes';
+import { limitStreamers } from '@/lib/show/stages/rig';
 import { FEATURES } from '@/lib/features';
 import { markReady } from './stageReady';
 import hero from '@/public/images/hero.jpg';
@@ -18,6 +22,29 @@ import hero from '@/public/images/hero.jpg';
 // Fireworks going up into the sky (shells, roman candles, roof comets, the comet chase): the camera
 // looks up. The mines are a low spray from the stage front, so they keep the camera's shot.
 const skyward = (look) => look.fireworks?.some((f) => f.type !== 'mines') ?? false;
+
+/**
+ * What one of the other stages plays while the playground is there: the scroll's look (the idle show, the desk),
+ * or a song with that stage's own touches, as on its test page: the festival colours, its streamer limit and (the
+ * mainstage) its own cues. The song is adapted once, the first time it plays there. (The warehouse turns it into
+ * club looks itself.)
+ */
+function siteLookFor(control, key, state, shown) {
+    if (control.mode !== 'song' || !control.song) return shown;
+    const stage = STAGES[SITE[key].stage];
+    if (control.song.festivalFor !== key) {
+        const song = control.song;
+        control.song = {
+            ...song,
+            sheet: festivalColours(song.sheet, Math.round(song.duration ?? 0)),
+            hits: limitStreamers(song.hits, stage.maxStreamers),
+            plan: stage.cuePlan ? stage.cuePlan(song.sheet.cues) : null,
+            festivalFor: key,
+        };
+    }
+    const own = control.song.plan?.[state.index];
+    return own ? { ...shown, ...own.look } : shown;
+}
 
 /** One frame of the show: put the current look on the rig and fly the camera toward its shot. */
 function directFrame(control, look, camera, aim, delta) {
@@ -33,18 +60,35 @@ function directFrame(control, look, camera, aim, delta) {
     // The festival grounds (scrolling, from the personas to the drop): the camera walks to each persona's stage;
     // the stages' light levels follow it, this stage dark while it is away (components/home/show/tour.js)
     const p = control.smoothProgress ?? control.progress ?? 0;
-    // (the camera walks between stages in its own time, one stage at a time: control.tourState keeps where it is)
-    if (control.mode !== 'scroll') control.tourState = null;
-    const tour = FEATURES.festival && control.mode === 'scroll' ? stepTour(control.tourState ??= {}, p, Math.min(delta, 0.1), camera.aspect) : null;
+    // The festival grounds. Scrolling through the personas: the scroll says which stage to go to and the camera
+    // walks there in its own time (components/home/show/tour.js). In the playground (and its songs and desk), the
+    // stage is the one the visitor walked to with the arrows (control.playWanted). The stages' light levels follow
+    // the camera: this stage is dark while it is away.
+    const inPlay = control.mode !== 'scroll' || p >= PLAY_FROM - 0.005;
+    if (!inPlay) control.playWanted = null;
+    let tour = null;
+    if (FEATURES.festival) {
+        const tourState = (control.tourState ??= {});
+        const opts = inPlay ? { wanted: control.playWanted ?? tourState.at ?? null, home: SHOTS.finale } : {};
+        tour = stepTour(tourState, p, Math.min(delta, 0.1), camera.aspect, opts);
+    }
     control.levels = tour?.levels ?? HOME_ONLY;
     control.tourLook = shown;
+    // the playground at one of the other stages: it plays there what this stage would (a song with that stage's cues)
+    const siteKey = inPlay && tour && SITE[tour.where] ? tour.where : null;
+    control.siteKey = siteKey;
+    control.siteLook = siteKey ? siteLookFor(control, siteKey, state, shown) : null;
     const home = control.levels.home;
     look.current = home >= 1 ? shown : { ...shown, master: (shown.master ?? 1) * Math.max(0.05, home) };
     if (tour && tour.where !== 'home') {
-        if (!aim.placed) { camera.position.set(...tour.pos); aim.target.set(...tour.target); aim.placed = true; }
-        // (a light smoothing only: the walk itself follows the scroll, and a long lag would cut its corners)
-        easing.damp3(camera.position, tour.pos, 0.25, delta);
-        easing.damp3(aim.target, tour.target, 0.25, delta);
+        // a song at that stage: its own camera shots (the warehouse's circling camera); otherwise its view or the walk
+        const song = siteKey && control.mode === 'song' && control.audio;
+        const goal = song ? siteSongShot(siteKey, state.shot, songTime(control), control.audio.duration || control.song?.duration || 0, camera.aspect) : tour;
+        if (!aim.placed) { camera.position.set(...goal.pos); aim.target.set(...goal.target); aim.placed = true; }
+        // (a light smoothing on the walk, which keeps its own pace; a song's shots glide as on this stage)
+        const glide = song ? (STAGES[SITE[siteKey].stage].orbit ? 0.9 : 1.8) : 0.25;
+        easing.damp3(camera.position, goal.pos, glide, delta);
+        easing.damp3(aim.target, goal.target, glide, delta);
         camera.lookAt(aim.target);
         return;
     }

@@ -239,7 +239,13 @@ function ClubLooks({ look }) {
     return null;
 }
 
-export default function FestivalScene({ stage, look, count = 96, bloom = true, quality = 'low', control }) {
+/**
+ * One festival stage, everything on it. `embedded`: inside the homepage's scene (its festival grounds), which
+ * has its own sky, ground, scene lights, camera flash and shader warm-up, so those are left out here; the stage
+ * then stands in a turned group, so `focusWorld` is where its beams focus on the grounds, and `screen` is what
+ * its LED wall shows (a persona) instead of the wordmark alone.
+ */
+export default function FestivalScene({ stage, look, count = 96, bloom = true, quality = 'low', control, embedded = false, focusWorld = null, screen = null }) {
     const heads = useMemo(() => rigHeads(stage, count), [stage, count]);
     const mounts = useMemo(() => stageMounts(stage), [stage]);
     const place = useMemo(() => (f) => placeFirework(stage, f), [stage]);
@@ -261,20 +267,24 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
     return (
         <>
             {stage.indoor && <IndoorPyro look={look} />}
-            <Prewarm />
+            {!embedded && <Prewarm />}
             {stage.club && <ClubLooks look={look} />}
-            <color attach="background" args={[stage.indoor ? '#010103' : '#010208']} />
-            {!stage.indoor && <Sky kind={stage.sky} look={look} />}
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
-                <planeGeometry args={[600, 600]} />
-                <meshLambertMaterial color="#07080b" />
-            </mesh>
-            <Lights look={look} blinders={blinders} />
+            {!embedded && (
+                <>
+                    <color attach="background" args={[stage.indoor ? '#010103' : '#010208']} />
+                    {!stage.indoor && <Sky kind={stage.sky} look={look} />}
+                    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
+                        <planeGeometry args={[600, 600]} />
+                        <meshLambertMaterial color="#07080b" />
+                    </mesh>
+                    <Lights look={look} blinders={blinders} />
+                </>
+            )}
 
             <StageStructure stage={stage} />
             <StageScreens stage={stage} look={look} />
-            {walls.length > 0 && <StageLedWall screens={walls} look={look} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} visuals={stage.visuals ?? null} />}
-            {stage.glossFloor !== false && <Floor look={look} blinders={blinding} width={Math.max(120, width * 2.6)} z={stage.crowd.z0 + 30} />}
+            {walls.length > 0 && <StageLedWall screens={walls} look={look} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} visuals={stage.visuals ?? null} {...(screen ? { screen } : {})} />}
+            {!embedded && stage.glossFloor !== false && <Floor look={look} blinders={blinding} width={Math.max(120, width * 2.6)} z={stage.crowd.z0 + 30} />}
             {stage.pa && <StagePa settings={stage.pa} />}
             {stage.barrier && <StageBarrier width={stage.barrier.width} z={stage.barrier.z} />}
             <group position={[0, stage.deck - 1.8, stage.focus[2] + 8]} scale={[width / 40, 1, 1]}>
@@ -282,7 +292,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             </group>
             <StagePixelBars stage={stage} look={look} />
             <Suspense fallback={null}>
-                <StageHeads heads={heads} look={look} focus={stage.focus} screenBeamsX={stage.screenBeamsX} tune={stage.headTune ?? NO_TUNE} />
+                <StageHeads heads={heads} look={look} focus={focusWorld ?? stage.focus} screenBeamsX={stage.screenBeamsX} tune={stage.headTune ?? NO_TUNE} />
                 <StageStrobes positions={mounts.strobes} look={look} blinders={Math.min(16, blinders)} scale={stage.strobeScale ?? 1} floorY={stage.deck + 1} clearFront />
             </Suspense>
             <StageLasers look={look} projectors={mounts.lasers} pitch={stage.laserPitch ?? null} strength={stage.laserStrength ?? null} />
@@ -315,8 +325,8 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             {stage.fireworks && stage.finaleEcho && <FinaleEcho look={look} echo={echo} />}
             {stage.fireworks && stage.finaleEcho && <StageFireworks look={echo} spots={mounts.mines} place={place} quality={quality} silent />}
 
-            <CameraFlash look={look} blinders={blinding} />
-            {bloom && (
+            {!embedded && <CameraFlash look={look} blinders={blinding} />}
+            {bloom && !embedded && (
                 <EffectComposer multisampling={0}>
                     <Bloom mipmapBlur luminanceThreshold={0.3} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} resolutionScale={0.5} />
                     <SMAA />

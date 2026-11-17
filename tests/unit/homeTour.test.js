@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHAIN, HOME_ONLY, PAUSE_SECONDS, SITE, TOUR_STRETCHES, WALK_SECONDS, homeShot, stepTour, tourAt, wantedStop } from '@/components/home/show/tour';
+import { CHAIN, HOME_ONLY, PAUSE_SECONDS, PLAY_STAGES, SITE, TOUR_STRETCHES, WALK_SECONDS, homeShot, playStep, siteSongShot, stepTour, tourAt, wantedStop } from '@/components/home/show/tour';
 import { ROLES, STOPS } from '@/components/home/show/scrollShow';
 
 // a point in a site stage's own frame (x across it, z toward its audience)
@@ -114,5 +114,28 @@ describe('the homepage tour of the festival grounds', () => {
                 }
             }
         }
+    });
+
+    it('lets the playground walk round the stages with the arrows, either way, one at a time', () => {
+        expect(PLAY_STAGES.map((st) => st.key)).toEqual(['home', 'organizer', 'fan', 'artist']);
+        expect(PLAY_STAGES.find((st) => st.key === 'artist').genres).toEqual(['edm']);
+        const state = { at: 4 }; // this stage, after the encore
+        expect(CHAIN[playStep(state, 1)]).toBe('organizer'); // right from this stage: the warehouse
+        const left = { at: 4 };
+        expect(CHAIN[playStep(left, -1)]).toBe('artist'); // left: the mainstage
+        // walking there takes a walk's time, and the arrows wait for it
+        const walk = { at: 4 };
+        const to = playStep(walk, -1);
+        stepTour(walk, 0.96, 1 / 60, 1.78, { wanted: to, home: homeShot('finale') });
+        expect(playStep(walk, 1)).toBeNull();
+        for (let f = 0; f < WALK_SECONDS * 60 + 5; f++) stepTour(walk, 0.96, 1 / 60, 1.78, { wanted: to, home: homeShot('finale') });
+        expect(CHAIN[walk.at]).toBe('artist');
+    });
+
+    it('films a song at another stage with the shots of that stage', () => {
+        const mainstage = siteSongShot('artist', 'wide', 10, 200);
+        expect(mainstage.pos[2]).toBeGreaterThan(200); // out on the grounds, in front of the mainstage
+        const warehouse = [0, 30, 60].map((t) => siteSongShot('organizer', 'wide', t, 240).pos);
+        expect(new Set(warehouse.map((q) => q.map((v) => v.toFixed(1)).join())).size).toBe(3); // its camera circles
     });
 });

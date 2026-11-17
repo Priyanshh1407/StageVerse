@@ -296,7 +296,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     {FEATURES.crowd && <Crowd look={look} quality={effects} blinders={blinders} />}
                     {FEATURES.performer && <Performer look={look} control={control} />}
                     {/* the other stages on the grounds, where the camera walks to meet each persona */}
-                    {control && FEATURES.festival && <HomeFestival look={look} control={control} font={font} logoFonts={logoFonts} count={effects === 'high' ? 160 : 96} />}
+                    {control && FEATURES.festival && <HomeFestival look={look} control={control} count={effects === 'high' ? 160 : 96} quality={effects} />}
                 </Warm>
             )}
             <CameraFlash look={look} blinders={blinders} />

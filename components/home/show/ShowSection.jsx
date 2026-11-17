@@ -16,6 +16,7 @@ import { HowItWorks, ShareButtons } from './SongExtras';
 import { readSongLink } from '@/lib/show/share';
 import { primeFireworkSound, setFireworkSound } from './fireworkSound';
 import { buildScrollSheet, ENCORE_CHOICES, phaseAt, roleAt, screenAt, STOPS, stopAt } from './scrollShow';
+import { CHAIN, PLAY_STAGES, WALK_SECONDS, playStep as nextPlayStop } from './tour';
 import { currentState, HOUSE_UP_MS, songTime } from './director';
 import LightingDesk from './LightingDesk';
 import { logoTag, logoScript } from '@/components/brand/Logo';
@@ -167,6 +168,9 @@ function ShowExperience({ events = [], isPhone = false }) {
     const [brightnessTip, setBrightnessTip] = useState(false); // shown for the first seconds of a show
     const [screenNotice, setScreenNotice] = useState(false); // phones: the playground is for bigger screens
     const [playStep, setPlayStep] = useState('genre'); // the playground: 'genre', then 'songs', then 'lights'
+    // the playground's stage (the festival grounds): which one, and whether the camera is walking there
+    const [playStage, setPlayStage] = useState('home');
+    const [walkingTo, setWalkingTo] = useState(null);
     const [explain, setExplain] = useState(false); // the "how it works" overlay during a song
     const [linked, setLinked] = useState(null);    // a song and moment asked for by the page's link (?song=&t=)
     const [stopKey, setStopKey] = useState(STOPS[0].key); // the section dot that's lit
@@ -219,6 +223,8 @@ function ShowExperience({ events = [], isPhone = false }) {
             const c = control.current;
             c.progress = progress;
             setPhase(phaseAt(progress));
+            // (leaving the playground, the camera walks back to this stage: so does the stage picker)
+            if (phaseAt(progress) !== 'play' && c.mode === 'scroll') setPlayStage('home');
             setStopKey(stopAt(progress).key);
             setRole(roleAt(progress)?.key ?? null);
             setScreen((prev) => {
@@ -377,6 +383,20 @@ function ShowExperience({ events = [], isPhone = false }) {
             if (c.objectUrl) URL.revokeObjectURL(c.objectUrl);
         };
     }, []);
+
+    /** Walk to the next stage round the grounds (dir -1 or +1); its preferred genre is picked for the songs. */
+    const shiftStage = (dir) => {
+        const c = control.current;
+        if (walkingTo || !c.tourState) return;
+        const next = nextPlayStop(c.tourState, dir);
+        if (next === null) return;
+        c.playWanted = next;
+        const key = CHAIN[next];
+        setWalkingTo(key);
+        setTimeout(() => { setPlayStage(key); setWalkingTo(null); }, WALK_SECONDS * 1000 + 300);
+        const preferred = PLAY_STAGES.find((st) => st.key === key)?.genres[0];
+        if (preferred) setGenre(preferred);
+    };
 
     const pickEncore = (choice) => {
         setEncore(choice);
@@ -819,6 +839,22 @@ function ShowExperience({ events = [], isPhone = false }) {
 
                                 {playStep === 'genre' ? (
                                     <>
+                                        {/* the stage: walk round the grounds with the arrows, then pick a genre and a song to play there */}
+                                        {FEATURES.festival && (() => {
+                                            const here = PLAY_STAGES.find((st) => st.key === (walkingTo ?? playStage)) ?? PLAY_STAGES[0];
+                                            return (
+                                                <div className="mb-4 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2">
+                                                    <button type="button" onClick={() => shiftStage(-1)} disabled={Boolean(walkingTo)} aria-label="Previous stage"
+                                                        className="grid place-items-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40"><ArrowLeft className="w-4 h-4" /></button>
+                                                    <div className="min-w-0 flex-1 text-center">
+                                                        <p className="text-sm font-bold truncate">{walkingTo ? `Walking to the ${here.title}...` : here.title}</p>
+                                                        <p className="text-[11px] text-gray-400 truncate">{here.genres.length ? `Best for ${here.genres.map((g) => GENRES[g]?.label ?? g).join(' and ')}` : 'Any genre'}</p>
+                                                    </div>
+                                                    <button type="button" onClick={() => shiftStage(1)} disabled={Boolean(walkingTo)} aria-label="Next stage"
+                                                        className="grid place-items-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40"><ArrowRight className="w-4 h-4" /></button>
+                                                </div>
+                                            );
+                                        })()}
                                         <h2 className="text-2xl sm:text-3xl font-black mb-1">Play a song.</h2>
                                         <p className="text-sm text-gray-300 mb-4">Pick a genre first: each one is analysed and lit its own way.</p>
                                         <GenrePicker value={genre} counts={Object.fromEntries(GENRE_KEYS.map((g) => [g, song.demos.filter((d) => d.genre === g).length]))}

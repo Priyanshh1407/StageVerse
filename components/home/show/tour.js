@@ -15,6 +15,7 @@
 import { SHOTS } from '@/lib/show/shots';
 import { STAGES, fitShot } from '@/lib/show/stages';
 import { groundShot, walkAt } from '@/lib/show/stages/festival';
+import { orbitShot } from '@/lib/show/stages/orbit';
 import { ROLES } from './scrollShow';
 
 /** Where the other stages stand on the homepage's grounds (this stage at the origin, facing the gate at z 34). */
@@ -74,7 +75,8 @@ export function wantedStop(p) {
     return STRETCHES.filter((s) => p >= s.from).length;
 }
 export const CHAIN = ['home', ...STRETCHES.map((s) => s.b.key)];
-const chainShot = (index, aspect) => {
+const chainShot = (index, aspect, home = null) => {
+    if (home && CHAIN[index] === 'home') return home;
     if (index === 0) return homeShot(STRETCHES[0].a.shot);
     const s = STRETCHES[index - 1];
     return shotAt(s.b, aspect);
@@ -90,8 +92,9 @@ export const PAUSE_SECONDS = 1.5;
  * scroll does (a fast scroll never sends it zapping through the grounds; scrolling back up walks back the same
  * way). A walk under way is finished before the next begins. Returns where the camera is, as tourAt does.
  */
-export function stepTour(state, p, delta, aspect = 1.78) {
-    const wanted = wantedStop(p);
+export function stepTour(state, p, delta, aspect = 1.78, { wanted: asked = null, home = null } = {}) {
+    // (`asked`: a stop chosen in the playground instead of by the scroll; `home`: this stage's shot there)
+    const wanted = asked ?? wantedStop(p);
     if (state.at === undefined) state.at = wanted; // the page opened part-way down: start where the scroll is
     if (state.leg) {
         state.leg.t = Math.min(1, state.leg.t + delta / WALK_SECONDS);
@@ -101,14 +104,14 @@ export function stepTour(state, p, delta, aspect = 1.78) {
     if (!state.leg && !(state.pause > 0) && wanted !== state.at) state.leg = { from: state.at, to: state.at + Math.sign(wanted - state.at), t: 0 };
     if (state.leg) {
         const { from, to, t } = state.leg;
-        const now = walkAt(chainShot(from, aspect), chainShot(to, aspect), t, { back: BACK });
+        const now = walkAt(chainShot(from, aspect, home), chainShot(to, aspect, home), t, { back: BACK });
         const a = CHAIN[from];
         const b = CHAIN[to];
         return { where: 'walk', pos: now.pos, target: now.target, step: now.step, levels: levels({ [a]: now.leaving, [b]: now.arriving }) };
     }
     const key = CHAIN[state.at];
     if (key === 'home') return { where: 'home', levels: HOME_ONLY };
-    const shot = chainShot(state.at, aspect);
+    const shot = chainShot(state.at, aspect, home);
     return { where: key, pos: shot.pos, target: shot.target, levels: levels({ [key]: 1 }) };
 }
 
@@ -125,6 +128,39 @@ export function tourAt(p, aspect = 1.78) {
 export function personaAt(key) {
     const role = ROLES.find((r) => ROLE_STOP[r.key] === key);
     return role ?? null;
+}
+
+// ---- the playground: choosing a stage ----
+
+/** The stages the playground can play on, in the order the arrows go round them. */
+export const PLAY_STAGES = [
+    { key: 'home', title: 'Live stage', genres: [] },
+    { key: 'organizer', title: 'Warehouse', genres: ['rap'] },
+    { key: 'fan', title: 'Desert live stage', genres: ['pop', 'bollywood'] },
+    { key: 'artist', title: 'Mainstage', genres: ['edm'] },
+];
+
+/**
+ * The next stop for a playground arrow (dir -1 or +1), from where the camera stands (`state.at`), or null while
+ * it is walking. This stage is at both ends of the chain, so from it the arrows go either way round.
+ */
+export function playStep(state, dir) {
+    if (state.leg || state.at === undefined) return null;
+    if (CHAIN[state.at] === 'home') state.at = dir > 0 ? 0 : CHAIN.length - 1;
+    return state.at + dir;
+}
+
+/** The camera at one of the other stages during a song there: its own song shots (the warehouse: its circling camera). */
+export function siteSongShot(key, shotName, t, duration, aspect = 1.78) {
+    const place = SITE[key];
+    const stage = STAGES[place.stage];
+    let local;
+    if (stage.orbit && duration > 0) local = orbitShot(stage.orbit, t, duration);
+    else {
+        const shot = stage.shots[stage.songShots?.[shotName] ?? shotName] ?? stage.shots.wide;
+        local = stage.frame ? fitShot(shot, stage.frame, aspect, 55) : shot;
+    }
+    return groundShot(place, local);
 }
 
 export const TOUR_STRETCHES = STRETCHES;
