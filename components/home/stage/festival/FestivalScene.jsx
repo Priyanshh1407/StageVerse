@@ -222,19 +222,20 @@ function FinaleEcho({ look, echo }) {
     return null;
 }
 
-// The finale's fireworks in focus (stage.fireworkFocus: how far the beams come down, e.g. 0.8): while three or
-// more shells are in the air at once (only the finale fires that many), the moving heads' beams are toned down
+// The finale's fireworks in focus (stage.fireworkFocus: { keep, shells }: how far the beams come down, and from how
+// many shells in the air at once): only at the finale's busiest moments (12 or more shells: 10-14 s of a ~28 s
+// finale, not the whole of it), the moving heads' beams are toned down
 // a little, and the floor beams (only they) point straight out at the audience instead of up into the sky, so
 // the eye goes to the fireworks.
-function fireworkFocus(look, keep) {
+function fireworkFocus(look, { keep, shells: many }) {
     const shells = (look.current.fireworks ?? []).filter((f) => !STAGE_PYRO.has(f.type)).length;
-    if (shells < 3) return;
+    if (shells < many) return;
     const l = look.current;
     look.current = { ...l, beams: (l.beams ?? 1) * keep, sides: (l.sides ?? 1) * keep, floor: (l.floor ?? 1) * keep, floorTilt: -0.85, floorFan: 0.9, floorSweep: 0.05 };
 }
 
-function FireworkFocus({ look, keep }) {
-    useFrame(() => fireworkFocus(look, keep));
+function FireworkFocus({ look, focus }) {
+    useFrame(() => fireworkFocus(look, focus));
     return null;
 }
 
@@ -285,7 +286,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             {stage.indoor && <IndoorPyro look={look} />}
             {!embedded && <Prewarm />}
             {stage.club && <ClubLooks look={look} />}
-            {stage.fireworks && stage.fireworkFocus && <FireworkFocus look={look} keep={stage.fireworkFocus} />}
+            {stage.fireworks && stage.fireworkFocus && <FireworkFocus look={look} focus={stage.fireworkFocus} />}
             {!embedded && (
                 <>
                     <color attach="background" args={[stage.indoor ? '#010103' : '#010208']} />
