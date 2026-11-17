@@ -137,19 +137,24 @@ describe('the homepage tour of the festival grounds', () => {
         expect(CHAIN[walk.at]).toBe('artist');
     });
 
-    it('films a song at another stage with the shots of that stage', () => {
-        // the mainstage's shots move round its framing: each one somewhere else
-        const moves = ['wide', 'dolly', 'left', 'right', 'high', 'drop'].map((n) => siteSongShot('artist', n, 10, 200).pos.map((v) => v.toFixed(0)).join());
-        expect(new Set(moves).size).toBe(6);
-        // fireworks: the sky shot looks up
-        for (const key of ['artist', 'fan']) {
-            const sky = siteSongShot(key, 'sky', 10, 200);
-            expect(sky.target[1] - sky.pos[1], key).toBeGreaterThan(10);
+    it('films a song at another stage exactly as its test page does, placed on the grounds', async () => {
+        const { stageCamera } = await import('@/lib/show/stages/camera');
+        const { STAGES } = await import('@/lib/show/stages');
+        const { groundShot } = await import('@/lib/show/stages/festival');
+        for (const [key, stage] of [['artist', 'mainstage'], ['fan', 'desert'], ['organizer', 'warehouse']]) {
+            for (const [shot, t, fireworks] of [['wide', 10, null], ['left', 40, null], ['dolly', 70, [{ type: 'peony' }]]]) {
+                const opts = { look: { fireworks }, shot, t, duration: 240, aspect: 1.78 };
+                const lab = groundShot(SITE[key], stageCamera(STAGES[stage], opts));
+                const home = siteSongShot(key, opts);
+                lab.pos.forEach((v, i) => expect(home.pos[i]).toBeCloseTo(v, 6));
+                lab.target.forEach((v, i) => expect(home.target[i]).toBeCloseTo(v, 6));
+            }
         }
-        const mainstage = siteSongShot('artist', 'wide', 10, 200);
-        expect(mainstage.pos[2]).toBeGreaterThan(200); // out on the grounds, in front of the mainstage
-        const warehouse = [0, 30, 60].map((t) => siteSongShot('organizer', 'wide', t, 240).pos);
-        expect(new Set(warehouse.map((q) => q.map((v) => v.toFixed(1)).join())).size).toBe(3); // its camera circles
+        // the warehouse's camera circles; fireworks: the sky shot looks up
+        const warehouse = [0, 30, 60].map((t) => siteSongShot('organizer', { shot: 'wide', t, duration: 240 }).pos.map((v) => v.toFixed(1)).join());
+        expect(new Set(warehouse).size).toBe(3);
+        const sky = siteSongShot('fan', { look: { fireworks: [{ type: 'peony' }] }, shot: 'wide', t: 0, duration: 240 });
+        expect(sky.target[1] - sky.pos[1]).toBeGreaterThan(10);
     });
 
     it('turns straight to a new stage when asked mid-walk, without finishing the old walk first', () => {

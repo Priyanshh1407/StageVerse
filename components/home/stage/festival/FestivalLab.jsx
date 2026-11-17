@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
 import { onlyGroup } from '@/lib/show/stages/club';
-import { orbitShot } from '@/lib/show/stages/orbit';
+import { stageCamera } from '@/lib/show/stages/camera';
 import { festivalColours } from '@/lib/show/stages/palettes';
 import { limitStreamers } from '@/lib/show/stages/rig';
 import { fitShot } from '@/lib/show/stages';
@@ -114,16 +114,11 @@ function FpsMeter({ meter }) {
 
 /** The camera following the show: the cue's shot, the sky shot while fireworks are up (not for mines). */
 function followShow(stage, look, camera, controls, aim, delta) {
-    const up = look.current.fireworks?.some((f) => f.type !== 'mines');
-    // (the warehouse: during a song the camera circles the room instead of cutting between the show's shots)
-    const circling = stage.orbit && look.song?.duration > 0;
-    const called = circling ? orbitShot(stage.orbit, look.song.t, look.song.duration)
-        : (up ? stage.shots.sky : stage.shots[look.shot]) ?? stage.shots.wide;
-    // (a stage with a frame keeps all of itself in view: the mainstage)
-    const shot = stage.frame && !up && !circling ? fitShot(called, stage.frame, camera.aspect, camera.fov) : called;
+    // (the stage's song camera: lib/show/stages/camera.js, shared with the homepage's festival grounds)
+    const shot = stageCamera(stage, { look: look.current, shot: look.shot, t: look.song?.t ?? 0, duration: look.song?.duration ?? 0, aspect: camera.aspect, fov: camera.fov });
     aim.pos.set(...shot.pos);
     aim.look.set(...shot.target);
-    const ease = circling ? 0.9 : up ? 0.6 : 1.8;
+    const ease = shot.ease;
     easing.damp3(camera.position, aim.pos, ease, delta);
     if (controls.current) {
         easing.damp3(controls.current.target, aim.look, ease, delta);

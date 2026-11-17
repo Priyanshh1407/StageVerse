@@ -98,12 +98,11 @@ function directFrame(control, look, camera, aim, delta) {
     if (tour && tour.where !== 'home') {
         // a song at that stage: its own camera shots (the warehouse's circling camera); otherwise its view or the walk
         const song = siteKey && control.mode === 'song' && control.audio;
-        // (fireworks in the air: its sky shot, standing back and looking up, as on this stage)
-        const up = song && skyward(state.look);
-        const goal = song ? siteSongShot(siteKey, up ? 'sky' : state.shot, songTime(control), control.audio.duration || control.song?.duration || 0, camera.aspect) : tour;
+        // (filmed exactly as on its test page: its song shots, its circling camera, its sky shot for the fireworks)
+        const goal = song ? siteSongShot(siteKey, { look: state.look, shot: state.shot, t: songTime(control), duration: control.audio.duration || control.song?.duration || 0, aspect: camera.aspect }) : tour;
         if (!aim.placed) { camera.position.set(...goal.pos); aim.target.set(...goal.target); aim.placed = true; }
         // (a light smoothing on the walk, which keeps its own pace; a song's shots glide as on this stage)
-        const glide = song ? (up ? 0.6 : STAGES[SITE[siteKey].stage].orbit ? 0.9 : 1.8) : 0.25;
+        const glide = song ? goal.ease : 0.25;
         easing.damp3(camera.position, goal.pos, glide, delta);
         easing.damp3(aim.target, goal.target, glide, delta);
         camera.lookAt(aim.target);

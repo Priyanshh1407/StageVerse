@@ -15,7 +15,7 @@
 import { SHOTS } from '@/lib/show/shots';
 import { STAGES, fitShot } from '@/lib/show/stages';
 import { groundShot, walkAt } from '@/lib/show/stages/festival';
-import { orbitShot } from '@/lib/show/stages/orbit';
+import { stageCamera } from '@/lib/show/stages/camera';
 import { ROLES } from './scrollShow';
 
 /** Where the other stages stand on the homepage's grounds (this stage at the origin, facing the gate at z 34). */
@@ -166,42 +166,14 @@ export function playStep(state, dir) {
 }
 
 /**
- * A stage with a frame (the mainstage) frames every shot to the whole stage, which made its shots all but the
- * same; in a song its shots are moves round that framing instead: closer, lower, from either side, higher.
+ * The camera at one of the other stages during a song there: exactly as on its test page (lib/show/stages/camera.js:
+ * its song shots, the warehouse's circling camera, the sky shot while fireworks are up), placed on the grounds.
+ * Returns { pos, target, ease }.
  */
-const AROUND = {
-    wide: { dist: 1, turn: 0, rise: 0 },
-    house: { dist: 1.05, turn: 0, rise: -0.04 },
-    dolly: { dist: 0.72, turn: 0, rise: 0.02 },
-    drop: { dist: 0.62, turn: 0, rise: -0.06 },
-    left: { dist: 0.85, turn: -0.35, rise: 0.04 },
-    right: { dist: 0.85, turn: 0.35, rise: 0.04 },
-    high: { dist: 0.95, turn: 0.1, rise: 0.28 },
-    finale: { dist: 1.08, turn: -0.08, rise: 0.18 },
-};
-function aroundFrame(stage, name, aspect) {
-    const base = fitShot(stage.shots.wide, stage.frame, aspect, 55);
-    const m = AROUND[name] ?? AROUND.wide;
-    const [cx, cy, cz] = base.target;
-    const d = base.pos.map((v, i) => v - base.target[i]);
-    const flat = Math.hypot(d[0], d[2]) * m.dist;
-    const yaw = Math.atan2(d[0], d[2]) + m.turn;
-    return { pos: [cx + Math.sin(yaw) * flat, cy + d[1] * m.dist + flat * m.rise, cz + Math.cos(yaw) * flat], target: [cx, cy - flat * m.rise * 0.3, cz] };
-}
-
-/**
- * The camera at one of the other stages during a song there: its own song shots (the warehouse: its circling
- * camera; the mainstage: moves round its whole-stage framing), and its sky shot while fireworks are up.
- */
-export function siteSongShot(key, shotName, t, duration, aspect = 1.78) {
+export function siteSongShot(key, { look, shot, t = 0, duration = 0, aspect = 1.78 }) {
     const place = SITE[key];
-    const stage = STAGES[place.stage];
-    let local;
-    if (shotName === 'sky' && stage.shots.sky) local = stage.shots.sky;
-    else if (stage.orbit && duration > 0) local = orbitShot(stage.orbit, t, duration);
-    else if (stage.frame) local = aroundFrame(stage, stage.songShots?.[shotName] ?? shotName, aspect);
-    else local = stage.shots[stage.songShots?.[shotName] ?? shotName] ?? stage.shots.wide;
-    return groundShot(place, local);
+    const cam = stageCamera(STAGES[place.stage], { look, shot, t, duration, aspect });
+    return { ...groundShot(place, cam), ease: cam.ease };
 }
 
 export const TOUR_STRETCHES = STRETCHES;
