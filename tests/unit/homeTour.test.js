@@ -138,6 +138,14 @@ describe('the homepage tour of the festival grounds', () => {
     });
 
     it('films a song at another stage with the shots of that stage', () => {
+        // the mainstage's shots move round its framing: each one somewhere else
+        const moves = ['wide', 'dolly', 'left', 'right', 'high', 'drop'].map((n) => siteSongShot('artist', n, 10, 200).pos.map((v) => v.toFixed(0)).join());
+        expect(new Set(moves).size).toBe(6);
+        // fireworks: the sky shot looks up
+        for (const key of ['artist', 'fan']) {
+            const sky = siteSongShot(key, 'sky', 10, 200);
+            expect(sky.target[1] - sky.pos[1], key).toBeGreaterThan(10);
+        }
         const mainstage = siteSongShot('artist', 'wide', 10, 200);
         expect(mainstage.pos[2]).toBeGreaterThan(200); // out on the grounds, in front of the mainstage
         const warehouse = [0, 30, 60].map((t) => siteSongShot('organizer', 'wide', t, 240).pos);
