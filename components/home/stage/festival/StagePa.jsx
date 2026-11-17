@@ -5,6 +5,7 @@
 import { useMemo } from 'react';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from 'three';
+import { SUB_COLORS, addSub, mergeSubs } from '../subModel';
 
 // The PA (item 13), as at big festivals:
 // - Line arrays: 16 boxes flown just outside each side tower from an outrigger arm off the top of
@@ -28,6 +29,7 @@ function createPa(P) {
     // the line-array boxes scaled to the stage (P.SCALE: 1 = the homepage's)
     const BOX = { w: LINE_BOX.w * (P.SCALE ?? 1), h: LINE_BOX.h * (P.SCALE ?? 1), d: LINE_BOX.d * (P.SCALE ?? 1) };
     const cabinets = [];
+    const subs = { body: [], grille: [], trim: [] };
     const grilles = [];
     const steel = [];
     const place = (g, matrix) => { g.applyMatrix4(matrix); g.deleteAttribute('uv'); return g; };
@@ -70,17 +72,7 @@ function createPa(P) {
     for (let i = 0; i < P.SUB_COUNT; i++) {
         const x = (i - (P.SUB_COUNT - 1) / 2) * P.SUB_PITCH;
         for (let j = 0; j < P.SUB_STACK; j++) {
-            const m = at(x, SUB.h / 2 + j * SUB.h, P.SUB_Z);
-            const on = (dx, dy, dz) => m.clone().multiply(at(dx, dy, dz));
-            cabinets.push(place(new THREE.BoxGeometry(SUB.w, SUB.h - 0.02, SUB.d), m));
-            grilles.push(place(new THREE.BoxGeometry(SUB.w - 0.14, SUB.h - 0.08, 0.012), on(0, 0, front + 0.006)));
-            // The two drivers showing through the grille: dark cones with a lighter dust cap
-            for (const dx of [-0.31, 0.31]) {
-                cabinets.push(place(new THREE.CircleGeometry(0.2, 28), on(dx, 0, front + 0.014)));
-                grilles.push(place(new THREE.CircleGeometry(0.065, 16), on(dx, 0, front + 0.016)));
-            }
-            // Rigging plates down both front edges
-            for (const s of [-1, 1]) steel.push(place(new THREE.BoxGeometry(0.05, SUB.h - 0.03, 0.08), on(s * (SUB.w / 2 - 0.025), 0, front - 0.02)));
+            addSub(subs, at(x, SUB.h / 2 + j * SUB.h, P.SUB_Z), SUB);
         }
     }
     // A club's PA: at each side of the stage a stack of subs on the floor with a few full-range boxes on top,
@@ -90,14 +82,7 @@ function createPa(P) {
             const base = at(side * stack.x, 0, stack.z).multiply(new THREE.Matrix4().makeRotationY(-side * (stack.turn ?? 0.3)));
             const on = (dx, dy, dz) => base.clone().multiply(at(dx, dy, dz));
             for (let j = 0; j < stack.subs; j++) {
-                const y = SUB.h / 2 + j * SUB.h;
-                cabinets.push(place(new THREE.BoxGeometry(SUB.w, SUB.h - 0.02, SUB.d), on(0, y, 0)));
-                grilles.push(place(new THREE.BoxGeometry(SUB.w - 0.14, SUB.h - 0.08, 0.012), on(0, y, front + 0.006)));
-                for (const dx of [-0.31, 0.31]) {
-                    cabinets.push(place(new THREE.CircleGeometry(0.2, 28), on(dx, y, front + 0.014)));
-                    grilles.push(place(new THREE.CircleGeometry(0.065, 16), on(dx, y, front + 0.016)));
-                }
-                for (const e of [-1, 1]) steel.push(place(new THREE.BoxGeometry(0.05, SUB.h - 0.03, 0.08), on(e * (SUB.w / 2 - 0.025), y, front - 0.02)));
+                addSub(subs, on(0, SUB.h / 2 + j * SUB.h, 0), SUB);
             }
             for (let j = 0; j < stack.tops; j++) {
                 const y = stack.subs * SUB.h + TOP_BOX.h / 2 + j * TOP_BOX.h;
@@ -129,7 +114,7 @@ function createPa(P) {
             for (const z of [-0.2, 0.2]) steel.push(place(new THREE.CylinderGeometry(0.02, 0.02, len, 6), base.clone().multiply(at(0, 0.09 + len / 2, z))));
         }
     }
-    return { cabinets: mergeGeometries(cabinets), grilles: mergeGeometries(grilles), steel: mergeGeometries(steel) };
+    return { cabinets: mergeGeometries(cabinets), grilles: mergeGeometries(grilles), steel: mergeGeometries(steel), subs: mergeSubs(subs, mergeGeometries) };
 }
 
 
@@ -150,6 +135,14 @@ export default function StagePa({ settings }) {
                 <meshLambertMaterial color="#4d525c" emissive="#0a0b0e" />
             </mesh>
             {/* Rigging steel: the brightest part, outlining the arrays */}
+            {/* the subs: black cabinets, dark grilles, the drivers' rings, handles and skids (components/home/stage/subModel.js) */}
+            {pa.subs && (
+                <>
+                    <mesh geometry={pa.subs.body}><meshLambertMaterial color={SUB_COLORS.body} emissive="#040506" /></mesh>
+                    <mesh geometry={pa.subs.grille}><meshLambertMaterial color={SUB_COLORS.grille} emissive="#050608" /></mesh>
+                    <mesh geometry={pa.subs.trim}><meshLambertMaterial color={SUB_COLORS.trim} emissive="#06070a" /></mesh>
+                </>
+            )}
             <mesh geometry={pa.steel}>
                 <meshLambertMaterial color="#8d939e" emissive="#0c0d10" />
             </mesh>
