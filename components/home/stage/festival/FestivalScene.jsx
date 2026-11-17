@@ -321,9 +321,9 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
                     {mounts.moreLaunchers.map((set, i) => <StageStreamers key={`streamers-${i}`} look={look} launchers={set} quality={quality} blinders={blinders} />)}
                 </>
             )}
-            {stage.fireworks && <StageFireworks look={look} spots={mounts.mines} place={place} quality={quality} />}
+            {stage.fireworks && <StageFireworks look={look} spots={mounts.mines} place={place} quality={quality} burst={stage.fireworkPlace?.burst ?? null} />}
             {stage.fireworks && stage.finaleEcho && <FinaleEcho look={look} echo={echo} />}
-            {stage.fireworks && stage.finaleEcho && <StageFireworks look={echo} spots={mounts.mines} place={place} quality={quality} silent />}
+            {stage.fireworks && stage.finaleEcho && <StageFireworks look={echo} spots={mounts.mines} place={place} quality={quality} silent burst={stage.fireworkPlace?.burst ?? null} />}
 
             {!embedded && <CameraFlash look={look} blinders={blinding} />}
             {bloom && !embedded && (

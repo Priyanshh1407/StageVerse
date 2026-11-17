@@ -402,7 +402,7 @@ const colour = new THREE.Color();
 const glowColour = new THREE.Color();
 
 /** Each frame: the launches in the air into the slots, the sky's light, and the booms. */
-function driveFireworks(geometry, material, target, time, pool, spots, place, silent = false) {
+function driveFireworks(geometry, material, target, time, pool, spots, place, silent = false, burst = null) {
     const list = target.fireworks;
     const u = material.uniforms;
     if (!list?.length) {
@@ -421,7 +421,9 @@ function driveFireworks(geometry, material, target, time, pool, spots, place, si
         const type = TYPES.indexOf(f.type);
         const at = f.type === 'mines' ? spots[f.unit % spots.length].pos : place(f);
         u.uA.value[s].set(at[0], at[1], at[2], f.age);
-        u.uB.value[s].set(type, f.h ?? 0, f.seed ?? 0, f.len ?? 0);
+        // (a stage may send its shells higher, `burst`: { scale, add }, so they burst clear of a tall stage)
+        const h = burst && type < SHELLS.length ? (f.h ?? 0) * burst.scale + burst.add : f.h ?? 0;
+        u.uB.value[s].set(type, h, f.seed ?? 0, f.len ?? 0);
         colour.set(f.colorA);
         u.uC.value[s].set(colour.r, colour.g, colour.b, f.variant ?? 0);
         colour.set(f.colorB);
@@ -450,7 +452,7 @@ function driveFireworks(geometry, material, target, time, pool, spots, place, si
 }
 
 // (silent: no booms of its own, for the finale's doubled shells)
-export default function StageFireworks({ look, spots, place, quality = 'low', silent = false }) {
+export default function StageFireworks({ look, spots, place, quality = 'low', silent = false, burst = null }) {
     const pool = POOL[quality] ?? POOL.low;
 
     const geometry = useMemo(() => {
@@ -499,7 +501,7 @@ export default function StageFireworks({ look, spots, place, quality = 'low', si
     useEffect(() => () => { geometry.dispose(); }, [geometry]);
     useEffect(() => () => { material.dispose(); }, [material]);
 
-    useFrame(({ clock }) => driveFireworks(geometry, material, look.current, clock.elapsedTime, pool, spots, place, silent));
+    useFrame(({ clock }) => driveFireworks(geometry, material, look.current, clock.elapsedTime, pool, spots, place, silent, burst));
 
     return <mesh geometry={geometry} material={material} frustumCulled={false} renderOrder={4} />;
 }
