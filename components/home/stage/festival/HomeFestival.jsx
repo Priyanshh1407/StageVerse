@@ -12,7 +12,8 @@ import { useFrame } from '@react-three/fiber';
 import { STAGES } from '@/lib/show/stages';
 import { rigHeads } from '@/lib/show/stages/rig';
 import { toGround } from '@/lib/show/stages/festival';
-import { SITE } from '@/components/home/show/tour';
+import { SITE, personaAt } from '@/components/home/show/tour';
+import { sampleCueSheet } from '@/lib/show/timeline';
 import { StagePixelBars, StageScreens, StageStructure } from './StageBuild';
 import StageHeads from './StageHeads';
 import StageLedWall from './StageLedWall';
@@ -36,14 +37,24 @@ function ledWalls(stage) {
     }));
 }
 
-/** This stage's look: the scroll's (before this stage's own dimming, control.tourLook), at its own light level. */
+/**
+ * This stage's look: its persona's own look from the scroll (the role's held look, whatever the scroll is doing
+ * while the camera is still walking), every light group on as on the homepage's stage but kept low, so the
+ * persona on the screen is the focus; at its own light level.
+ */
 function dim(own, look, control, key) {
-    const level = control.current?.levels?.[key] ?? 0;
-    const source = control.current?.tourLook ?? look.current;
-    own.current = { ...source, master: (source.master ?? 1) * Math.max(STANDBY, level) };
+    const c = control.current;
+    const level = c?.levels?.[key] ?? 0;
+    const role = personaAt(key);
+    const base = role && c?.sheet ? sampleCueSheet(c.sheet, role.at + role.hold / 2).look : look.current;
+    own.current = { ...base, ...LOW, master: (base.master ?? 1) * Math.max(STANDBY, level) };
 }
+// every group on, low (the persona looks' own levels), the floor beams allowed to be dim (dimRig), no lasers or strobes
+const LOW = { beams: 0.2, sides: 0.2, floor: 0.2, wash: 0.32, pixel: 0.28, laser: 0, strobe: 0, blinder: 0, strobeRandom: 0, dimRig: 1, house: 0 };
 
-function SiteStage({ siteKey, look, control, screen, font, logoFonts, count }) {
+function SiteStage({ siteKey, look, control, font, logoFonts, count }) {
+    // its persona on the LED wall, always
+    const screen = useMemo(() => { const r = personaAt(siteKey); return r ? { kind: 'role', key: r.key, line: r.line } : { kind: 'brand' }; }, [siteKey]);
     const place = SITE[siteKey];
     const stage = STAGES[place.stage];
     const own = useRef(look.current);
@@ -68,8 +79,8 @@ function SiteStage({ siteKey, look, control, screen, font, logoFonts, count }) {
 }
 
 /** The three stages on the grounds outside the gate. `count`: moving heads per stage. */
-export default function HomeFestival({ look, control, screen, font, logoFonts, count = 48 }) {
+export default function HomeFestival({ look, control, font, logoFonts, count = 48 }) {
     return Object.keys(SITE).map((key) => (
-        <SiteStage key={key} siteKey={key} look={look} control={control} screen={screen} font={font} logoFonts={logoFonts} count={count} />
+        <SiteStage key={key} siteKey={key} look={look} control={control} font={font} logoFonts={logoFonts} count={count} />
     ));
 }

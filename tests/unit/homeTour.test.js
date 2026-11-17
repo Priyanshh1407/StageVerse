@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HOME_ONLY, SITE, TOUR_STRETCHES, homeShot, tourAt } from '@/components/home/show/tour';
+import { CHAIN, HOME_ONLY, PAUSE_SECONDS, SITE, TOUR_STRETCHES, WALK_SECONDS, homeShot, stepTour, tourAt, wantedStop } from '@/components/home/show/tour';
 import { ROLES, STOPS } from '@/components/home/show/scrollShow';
 
 // a point in a site stage's own frame (x across it, z toward its audience)
@@ -36,40 +36,83 @@ describe('the homepage tour of the festival grounds', () => {
         expect(at.home + at.organizer + at.artist).toBe(0);
     });
 
+    // play the camera's walk: the scroll jumps to `p`, then `seconds` pass at 60 frames a second
+    const play = (state, p, seconds, each = () => {}) => {
+        let out;
+        for (let f = 0; f < seconds * 60; f++) { out = stepTour(state, p, 1 / 60); each(out); }
+        return out;
+    };
+
+    it('takes 8 seconds for each walk, whatever the scroll does', () => {
+        expect(WALK_SECONDS).toBe(8);
+        const by = Object.fromEntries(ROLES.map((r) => [r.key, r]));
+        const state = { at: 0 };
+        play(state, by.Organizer.at + 0.01, 7.5);
+        expect(state.leg?.to).toBe(1); // still walking after 7.5 s
+        play(state, by.Organizer.at + 0.01, 0.6);
+        expect(state.at).toBe(1);
+        expect(state.leg).toBeNull();
+        expect(stepTour(state, by.Organizer.at + 0.01, 1 / 60).where).toBe('organizer');
+    });
+
+    it('walks one stage at a time, never zapping through, and back up the same way', () => {
+        const state = { at: 0 };
+        const visited = [];
+        const note = (t) => { if (t.where !== 'walk' && visited.at(-1) !== t.where) visited.push(t.where); };
+        // a fast scroll from Crew to the encore: every stage in turn, 8 s each
+        play(state, 0.875, 4 * WALK_SECONDS + 3 * PAUSE_SECONDS + 1, note);
+        expect(visited).toEqual(['organizer', 'fan', 'artist', 'home']);
+        expect(state.at).toBe(4);
+        // scrolling back up from the encore to the Artist: a slow walk to the mainstage, not on to Crew
+        const by = Object.fromEntries(ROLES.map((r) => [r.key, r]));
+        expect(wantedStop(by.Artist.at + 0.01)).toBe(3);
+        const before = visited.length;
+        play(state, by.Artist.at + 0.01, 3);
+        expect(state.leg).toMatchObject({ from: 4, to: 3 });
+        play(state, by.Artist.at + 0.01, WALK_SECONDS + PAUSE_SECONDS);
+        expect(state.at).toBe(3);
+        expect(stepTour(state, by.Artist.at + 0.01, 1 / 60).where).toBe('artist');
+        expect(visited.length).toBe(before);
+    });
+
     it('starts and ends every walk exactly where the camera stands, so nothing jumps', () => {
-        for (const s of TOUR_STRETCHES) {
-            const start = tourAt(s.from);
-            const end = tourAt(s.to - 1e-7);
-            if (s.a.key === 'home') start.pos.forEach((v, i) => expect(v).toBeCloseTo(homeShot(s.a.shot).pos[i], 4));
-            if (s.b.key === 'home') end.pos.forEach((v, i) => expect(v).toBeCloseTo(homeShot(s.b.shot).pos[i], 2));
+        for (let from = 0; from < 4; from++) {
+            for (const [a, b] of [[from, from + 1], [from + 1, from]]) {
+                const state = { at: a, leg: { from: a, to: b, t: 0 } };
+                const start = stepTour(state, 0.47, 0);
+                const end = stepTour({ at: a, leg: { from: a, to: b, t: 0.999999 } }, 0.47, 0);
+                if (CHAIN[a] === 'home' && a === 0) start.pos.forEach((v, i) => expect(v).toBeCloseTo(homeShot(TOUR_STRETCHES[0].a.shot).pos[i], 3));
+                if (CHAIN[b] === 'home' && b === 4) end.pos.forEach((v, i) => expect(v).toBeCloseTo(homeShot(TOUR_STRETCHES[3].b.shot).pos[i], 2));
+            }
         }
     });
 
-    it('walks through the gate\'s opening, round the stages and never jumps', () => {
-        let prev = null;
-        for (let p = 0.44; p <= 0.8; p += 0.00005) {
-            const t = tourAt(p);
-            if (t.where === 'home') { prev = null; continue; }
-            const pos = t.pos;
-            if (prev) expect(Math.hypot(...pos.map((v, i) => v - prev[i])), `step at ${p}`).toBeLessThan(5); // a jump would be tens of metres
-            prev = pos;
-            // the gate: a wall along z 34 from |x| 4.75 to 48; the arch is open below 10 m
-            if (Math.abs(pos[2] - 34) < 0.8) {
-                expect(Math.abs(pos[0]) < 4.2 || Math.abs(pos[0]) > 48.5, `gate wall at ${p}`).toBe(true);
-                expect(pos[1], `arch top at ${p}`).toBeLessThan(9.5);
+    it('walks through the gate opening, round the stages, one stage lit at a time', () => {
+        // every walk, both ways
+        for (let a = 0; a < 4; a++) {
+            for (const [from, to] of [[a, a + 1], [a + 1, a]]) {
+                let prev = null;
+                for (let t = 0; t <= 1; t += 0.0025) {
+                    const w = stepTour({ at: from, leg: { from, to, t } }, 0.47, 0);
+                    const pos = w.pos;
+                    // (no jumps: each step is 1/400 of a walk)
+                    if (prev) expect(Math.hypot(...pos.map((v, i) => v - prev[i])), `${from}>${to} at ${t}`).toBeLessThan(10);
+                    prev = pos;
+                    if (Math.abs(pos[2] - 34) < 0.8) {
+                        expect(Math.abs(pos[0]) < 4.2 || Math.abs(pos[0]) > 48.5, `gate wall ${from}>${to} at ${t}`).toBe(true);
+                        expect(pos[1], `arch top ${from}>${to} at ${t}`).toBeLessThan(9.5);
+                    }
+                    expect(Math.abs(pos[0]) < 25 && pos[2] > -16 && pos[2] < 3, `this stage ${from}>${to} at ${t}`).toBe(false);
+                    for (const [key, s] of Object.entries(SITE)) {
+                        const [lx, lz] = local(s, pos);
+                        const [hw, z0, z1] = FOOT[s.stage];
+                        const inside = Math.abs(lx) < hw && lz > z0 && lz < z1;
+                        if (s.stage === 'warehouse') expect(inside && Math.abs(lx) > 18.6 && lz < 45, `warehouse wall ${from}>${to} at ${t}`).toBe(false);
+                        else expect(inside, `${key} ${from}>${to} at ${t}`).toBe(false);
+                    }
+                    expect(Object.values(w.levels).filter((v) => v > 0.001).length, `lit ${from}>${to} at ${t}`).toBeLessThanOrEqual(1);
+                }
             }
-            // never through this stage, the others, or the warehouse's walls
-            expect(Math.abs(pos[0]) < 25 && pos[2] > -16 && pos[2] < 3, `this stage at ${p}`).toBe(false);
-            for (const [key, s] of Object.entries(SITE)) {
-                const [lx, lz] = local(s, pos);
-                const [hw, z0, z1] = FOOT[s.stage];
-                const inside = Math.abs(lx) < hw && lz > z0 && lz < z1;
-                if (s.stage === 'warehouse') expect(inside && Math.abs(lx) > 18.6 && lz < 45, `warehouse wall at ${p}`).toBe(false);
-                else expect(inside, `${key} at ${p}`).toBe(false);
-            }
-            // only ever one stage lit
-            const lit = Object.values(t.levels).filter((v) => v > 0.001);
-            expect(lit.length, `lit at ${p}`).toBeLessThanOrEqual(1);
         }
     });
 });

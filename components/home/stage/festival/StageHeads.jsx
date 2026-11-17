@@ -175,8 +175,10 @@ function driveRole(u, role, target, state, delta) {
     // (the floor beams are never dim: whenever a cue has them on at all, at 85% or more of a nearly full intensity;
     // off and blackout stay off)
     const groupLevel = target[role.level] ?? 1;
-    const level = role.steady && groupLevel > 0.05 ? Math.max(0.85, groupLevel) : groupLevel;
-    const intensity = role.steady ? Math.max(0.95, target.intensity) : target.intensity;
+    // (except in a deliberately dimmed rig, look.dimRig: the homepage's persona stages, where the screen is the focus)
+    const keepBright = role.steady && !target.dimRig;
+    const level = keepBright && groupLevel > 0.05 ? Math.max(0.85, groupLevel) : groupLevel;
+    const intensity = keepBright ? Math.max(0.95, target.intensity) : target.intensity;
     const wanted = intensity * (target.master ?? 1) * level * (state.extraLevel ? target[state.extraLevel] ?? 1 : 1) * houseOff;
     state.level += (wanted - state.level) * ease;
     const strobe = role === ROLES.wash ? 0 : target.strobe ?? 0; // strobing is the strobes' job; beams flicker with them

@@ -10,7 +10,7 @@ import { useQualityTier, TIER_SETTINGS } from '@/components/home/stage/useQualit
 import { ConcertLights } from '@/components/ConcertLights';
 import { SHOTS } from '@/lib/show/shots';
 import { currentState } from './director';
-import { HOME_ONLY, tourAt } from './tour';
+import { HOME_ONLY, stepTour } from './tour';
 import { FEATURES } from '@/lib/features';
 import { markReady } from './stageReady';
 import hero from '@/public/images/hero.jpg';
@@ -33,7 +33,9 @@ function directFrame(control, look, camera, aim, delta) {
     // The festival grounds (scrolling, from the personas to the drop): the camera walks to each persona's stage;
     // the stages' light levels follow it, this stage dark while it is away (components/home/show/tour.js)
     const p = control.smoothProgress ?? control.progress ?? 0;
-    const tour = FEATURES.festival && control.mode === 'scroll' ? tourAt(p, camera.aspect) : null;
+    // (the camera walks between stages in its own time, one stage at a time: control.tourState keeps where it is)
+    if (control.mode !== 'scroll') control.tourState = null;
+    const tour = FEATURES.festival && control.mode === 'scroll' ? stepTour(control.tourState ??= {}, p, Math.min(delta, 0.1), camera.aspect) : null;
     control.levels = tour?.levels ?? HOME_ONLY;
     control.tourLook = shown;
     const home = control.levels.home;
