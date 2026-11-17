@@ -12,6 +12,7 @@ import { SHOTS } from '@/lib/show/shots';
 import { currentState, songTime } from './director';
 import { mixLooks } from '@/lib/show/look';
 import { STAGE_HOUSE_LIGHTS } from '@/lib/show/stages/houseLights';
+import { withOwn } from '@/lib/show/stages/mainstageCues';
 import { HOME_ONLY, SITE, siteSongShot, stepTour } from './tour';
 import { PLAY_FROM } from './scrollShow';
 import { STAGES } from '@/lib/show/stages';
@@ -47,8 +48,8 @@ function siteLookFor(control, key, state, shown) {
             festivalFor: key,
         };
     }
-    const own = control.song.plan?.[state.index];
-    return own ? { ...shown, ...own.look } : shown;
+    // (laid over the song's look, its movement kept to the song's tempo)
+    return withOwn(shown, control.song.plan?.[state.index]);
 }
 
 /** One frame of the show: put the current look on the rig and fly the camera toward its shot. */

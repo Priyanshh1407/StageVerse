@@ -178,11 +178,13 @@ describe('the mainstage cues', async () => {
     });
 
     it('plays them often: every groove, build, all-in, hook and laser moment; the landings, solos, outro and circle stay', () => {
-        for (const kept of ['Colours', 'Intro 1', 'Peak 5', 'Peak 7', 'Solo · floor', 'Outro 8', 'Peak 7 · all in']) expect(kindAt(kept), kept).toBeNull();
+        for (const kept of ['Colours', 'Intro 1', 'Solo · floor', 'Outro 8', 'Peak 7 · all in']) expect(kindAt(kept), kept).toBeNull();
+        // a landing takes a peak cue only while one has not played yet in the song
+        expect(plan[names.indexOf('Peak 5')]?.fits).toBe('peak');
         expect(kindAt('Calm 2')).toBe('Mainstage · silhouette');
-        expect(kindAt('Build 4')).toBe('Mainstage · sunrise');
-        expect(kindAt('Build 4 · phrase 2')).toBe('Mainstage · the pyramid');
-        expect(kindAt('Build 4 · phrase 3')).toBe('Mainstage · sunrise');
+        // builds: their first and third phrase, sunrise and the pyramid in turn (the second keeps the song's own look)
+        expect(new Set([kindAt('Build 4'), kindAt('Build 4 · phrase 3')])).toEqual(new Set(['Mainstage · sunrise', 'Mainstage · the pyramid']));
+        expect(kindAt('Build 4 · phrase 2')).toBeNull();
         expect(kindAt('Breakdown 6')).toBe('Mainstage · lone sweeper');
         expect(kindAt('Peak 5 · lasers')).toBe('Mainstage · laser cathedral');
         expect(kindAt('Peak 7 · lasers')).toBe('Mainstage · laser cathedral');
@@ -199,6 +201,25 @@ describe('the mainstage cues', async () => {
             expect(circles[0]).toMatch(/^Peak \d+ · all in$/);
         }
         expect(withCircle(cues).every((c) => c === null)).toBe(true); // it has one: nothing added
+    });
+
+    it('plays every cue it can before any repeats, in any song (a demo or an upload)', () => {
+        // a song with many peaks and grooves: every peak and groove cue plays, and the landings stay once they all have
+        const song = [];
+        for (let p = 1; p <= 6; p++) for (const n of [`Peak ${p}`, `Peak ${p} · all in`, `Peak ${p} · phrase 2`, `Groove ${p}`, `Groove ${p} · phrase 2`]) song.push({ name: n, t: song.length * 8, look: {} });
+        const own = planMainstageCues(song);
+        const played = new Set(own.filter(Boolean).map((c) => c.kind));
+        for (const c of MAINSTAGE_CUES.filter((m) => m.fits === 'peak' || m.fits === 'groove')) expect(played.has(c.kind), c.kind).toBe(true);
+        expect(own[song.findIndex((c) => c.name === 'Peak 6')]).toBeNull();
+    });
+
+    it('keeps the movement of a cue to the tempo of the song', async () => {
+        const { withOwn } = await import('@/lib/show/stages/mainstageCues');
+        const scissors = MAINSTAGE_CUES.find((c) => c.kind === 'Mainstage · scissors');
+        const slow = withOwn({ speed: 0.4 }, scissors).speed;
+        const fast = withOwn({ speed: 0.8 }, scissors).speed;
+        expect(fast).toBeCloseTo(slow * 2, 6); // a song twice as fast moves the cue twice as fast
+        expect(withOwn({ speed: 0.5, colorA: '#ff0000' }, null)).toEqual({ speed: 0.5, colorA: '#ff0000' });
     });
 
     it('gives the cue tester a complete look for each', () => {

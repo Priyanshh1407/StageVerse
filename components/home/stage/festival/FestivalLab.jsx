@@ -11,6 +11,7 @@ import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
 import { onlyGroup } from '@/lib/show/stages/club';
 import { stageCamera } from '@/lib/show/stages/camera';
 import { STAGE_HOUSE_LIGHTS } from '@/lib/show/stages/houseLights';
+import { withOwn } from '@/lib/show/stages/mainstageCues';
 import { festivalColours } from '@/lib/show/stages/palettes';
 import { limitStreamers } from '@/lib/show/stages/rig';
 import { fitShot } from '@/lib/show/stages';
@@ -71,7 +72,7 @@ function driveLook(look, source, song, clock, delta, stage) {
         // (a stage with cues of its own plays some of the show's cues as those: the mainstage)
         if (stage.cuePlan) s.plan ??= stage.cuePlan(s.show.sheet.cues);
         const own = s.plan?.[sample.index];
-        look.current = onlyGroup(own ? { ...sample.look, ...own.look } : sample.look, source.current.only);
+        look.current = onlyGroup(withOwn(sample.look, own), source.current.only);
         look.shot = sample.shot;
         look.song = { t: s.audio.currentTime, duration: s.audio.duration || s.show.duration || 0 };
         return;
