@@ -9,8 +9,8 @@
 // then back in through the gate to this stage for the drop and the encore. Between two stops the camera walks
 // (lib/show/stages/festival.js walkAt): it backs away from the stage it is at, turns to face the next one and
 // moves forward to it, at eye level, over 8 seconds; the stage it leaves goes dark first, then the next one
-// lights up. The scroll says which stage to go to; the camera walks there one stage at a time. Pure: the
-// director and the tests use it.
+// lights up. The dot (or the playground's arrows) says which stage to go to; the camera walks straight there,
+// from wherever it is, in one walk. Pure: the director and the tests use it.
 
 import { SHOTS } from '@/lib/show/shots';
 import { STAGES, fitShot } from '@/lib/show/stages';
@@ -103,11 +103,8 @@ export function stepTour(state, p, delta, aspect = 1.78, { wanted: asked = null,
         if (state.leg.t >= 1) { state.at = state.leg.to; state.leg = null; state.pause = PAUSE_SECONDS; }
     }
     if (!state.leg && state.pause > 0) state.pause = Math.max(0, state.pause - delta);
-    // one stage at a time between the persona stages; to the live stage, straight there (one walk, not through the
-    // stages between)
-    if (!state.leg && !(state.pause > 0) && wanted !== state.at) {
-        state.leg = { from: state.at, to: CHAIN[wanted] === 'home' ? wanted : state.at + Math.sign(wanted - state.at), t: 0 };
-    }
+    // straight to the stage asked for, from wherever the camera is: one walk, never through the stages between
+    if (!state.leg && !(state.pause > 0) && wanted !== state.at) state.leg = { from: state.at, to: wanted, t: 0 };
     if (state.leg) {
         const { from, to, t } = state.leg;
         const now = walkAt(chainShot(from, aspect, home), chainShot(to, aspect, home), t, { back: BACK });
