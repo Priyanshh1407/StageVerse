@@ -4,7 +4,7 @@ A click-by-click checklist for every upgrade made during the audit (see [`FIX_LO
 
 Some protections can only be checked by trying something the UI never lets you do (another user's data, voting twice). For those there's a snippet to paste into the browser's DevTools console (F12 → Console) **while on the app's page**, so it runs with that browser's login.
 
-> Everything here is also covered by the automated suite (`npm test`, 289 tests). This guide is for seeing it work end to end in a real browser.
+> Everything here is also covered by the automated suite (`npm test`, 326 tests). This guide is for seeing it work end to end in a real browser.
 
 ---
 
@@ -177,6 +177,7 @@ await fetch('/api/fan/predict?eventId=9001').then(r => r.json()).then(j => ({ sc
 | 7.5 | No invented data (BUG-10) | Organizer: `/analysis` | Reviews are labelled "Sample Reviews (demo data)" and the copy says sentiment analysis isn't built |
 | 7.6 | Search input is literal (SEC-08) | `/explore` and the create-event venue search: type `(` | No error, just no results |
 | 7.7 | New events save on the first try | Organizer: `/create-event` → fill it in → publish | Saved on the first attempt (it used to fail with a duplicate id until the counter passed the ids older events already used) |
+| 7.8 | grandMA3 export | Crew: a show's patch sheet → **grandMA3** | An `.xml` file downloads with a toast "Exported N fixtures for grandMA3". In the demo show with an address clash, the clashing lines are left out, the toast says how many, and the file lists them at the top. Optional: import it in grandMA3 onPC (not yet verified) |
 
 **Validation (VAL-01).** As the organizer, in the console:
 
@@ -246,7 +247,7 @@ With **level 4** active, repeat 8.1–8.5. Each still answers, with an "AI is bu
 |---|---|---|---|
 | 9.1 | Health endpoint | Open `/api/health` | `{"status":"ok","db":"up","latencyMs":…}`; no connection strings or error details |
 | 9.2 | No tempo invented | Crew live screen on a song without a BPM | Shows "—" (used to show 128) |
-| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 289 tests passing, build succeeds |
+| 9.3 | Lint, tests, build | `npm run lint`, `npm test`, `npm run build` | 0 lint errors (warnings only), 326 tests passing, build succeeds |
 | 9.4 | Benchmark | `npm run bench`, then open `bench/results/live-run.json` | Push p50 of a few ms; setlist lookup examines 1 document |
 | 9.5 | AI eval | `npm run eval:patch -- --provider groq` (~65 Groq calls, ~15 min) | A new file in `evals/patch/results/` with 0% collisions for the new pipeline |
 
@@ -261,43 +262,85 @@ Use the production build (`npm run build && npm start`); dev mode is much slower
 | 10.1 | First paint | Open `/` | The headline appears immediately as HTML; the 3D stage fades in behind it a moment later |
 | 10.2 | Scroll runs the show | Scroll slowly through the section (the stage stays pinned to the screen the whole way) | Warm house lights → house lights down → cue 1 stage washes → cue 2 side towers → cue 3 aerial beams and floor (each with a "CUE · GO" label; camera moves) → one card per role (Fan, Artist, Organizer, Crew), with the rig recoloured for each → a riser (beams tighten) → the drop (strobe and blinders) → "You call the encore". Scrolling back plays it backwards |
 | 10.3 | Encore colour | At the encore, click a colour | The whole rig (beams, lasers, LED screens) changes to it. Nothing is saved (local only) |
-| 10.4 | Lighting desk takes over | Click **Lighting desk**, move any control | The panel says "You have the lights"; scrolling no longer changes the lights. Try Master (blackout), beam count, sweep/speed, colours, lasers (count and colour), blinders, haze |
-| 10.5 | Strobe and DROP | Hold **STROBE**; click **DROP** | Strobe flashes only while held; DROP converges the beams with a flash and releases by itself |
+| 10.4 | Lighting desk takes over | Click **Lighting desk**, move any control | The STAGEVERSE CONSOLE says you have the lights; scrolling no longer changes them. Try the grand master and blackout, each fixture type's ON/OFF and FLASH, Position (spread, tilt), Effects (movement, wave height, haze), Colour, Lasers and Rig |
+| 10.5 | Strobe and the three drops | Playback: hold **STROBE**; click each DROP (**Laser spool**, **Slam**, **Burst**) | Strobe flashes only while held (the truss strobe panels light up). Spool: dark, lasers spool up from the centre, then the rig slams in. Slam: a beat of blackout, then everything. Burst: beams pinch to one point and explode out. Each releases by itself |
 | 10.6 | Resume show | Click **Resume show** | The desk lets go and the scroll show takes over again |
-| 10.7 | Concert mode | Click **Play the show with sound** (only shown if `public/audio/A Sky Full of Stars.mp3` exists) | Music plays; the rig pulses on the beat; the camera cuts every 8 bars; strobe + blinders hit at 0:46, 1:17 and 2:49. The timeline shows the sections and loudness; clicking it seeks and the lights follow |
+| 10.7 | Concert mode | Playground → **EDM** → **A Sky Full of Stars** | Music plays; the rig pulses on the beat; the camera cuts on phrases; each drop opens in one of the three styles (spool, slam, burst). The timeline shows the sections and loudness; clicking it seeks and the lights follow |
 | 10.8 | Desk during a song | While the song plays, touch the desk, then Resume show | The desk takes over; Resume returns to the song's programmed show at the current time |
-| 10.9 | Concert mode hidden without the song | Temporarily rename the MP3, reload | No "Play the show" button (the page checks the file with a HEAD request first) |
-| 10.10 | Quality tiers | Open `/?tier=0`, `/?tier=1`, `/?tier=2` | 0: poster with the 2D lights; 1: 72 beams with bloom; 2: 100 beams with bloom |
+| 10.9 | Demo list follows the folders | Move a song out of `public/audio/<genre>/`, run `npm run demos`, reload | The song is gone from its genre's list and the tile's count drops; put it back and re-run to restore |
+| 10.10 | Quality tiers | Open `/?tier=0`, `/?tier=1`, `/?tier=2` | 0: poster with the 2D lights; 1: 64 moving heads, half-resolution bloom; 2: 64 moving heads, bloom, sharper (DPR up to 1.5) |
 | 10.11 | Reduce motion | DevTools → Rendering → "Emulate CSS prefers-reduced-motion: reduce", reload | The poster without animation; the text, cards and desk still work |
 | 10.12 | Paused off-screen | Scroll down to the events, watch Task Manager → GPU | GPU use drops to about zero (the canvas stops rendering) |
 | 10.13 | Benchmark | Open `/lab/stage` → **Run benchmark** (~40 s, tab in front), then **Copy results** | Average and 1%-low FPS per configuration (full scene at DPR 1 and at native DPR) |
-| 10.14 | Song analysis | `npm run analyse:song -- "public/audio/A Sky Full of Stars.mp3" sky-full-of-stars "A Sky Full of Stars"` | ~125 BPM, 10 sections, ~22 cues; rewrites `public/shows/sky-full-of-stars.show.json` |
+| 10.14 | Song analysis | `npm run demos` | Analyses the 9 songs in `public/audio/<genre>/` with their genre settings and hand-marked extras, and rewrites `public/shows/*.show.json` and `index.json` (A Sky Full of Stars: 125.1 BPM, 14 sections, 63 cues) |
 | 10.15 | Phone width | DevTools device mode, 375 px | Text fits, the desk opens as a full-width panel, no horizontal scroll |
 | 10.16 | No socket on public pages | Open `/` logged out, check the console | No "Socket connection error" warnings (the socket only connects on live-show pages) |
 | 10.17 | Entrance | Open `/` and scroll slowly from the top | You start outside the venue: white beams searching the sky above it, warm light from the doors; scrolling walks you through the doorway; the sky beams go out |
 | 10.18 | Roles on the LED wall | Scroll through the four role sections | The LED wall shows "FOR THE FAN / ARTIST / ORGANIZER / CREW" (no pop-up); each has its own beam position and colour, glides in, holds while you're in the section, then glides to the next |
-| 10.19 | Playground | Scroll to the end of the show | "Run the show yourself": the rig keeps running a looping show by itself; Take the desk / Light up your song / the demo song |
+| 10.19 | Playground | Scroll to the end of the show | "Play a song", step 1 of 3: the rig keeps running a looping show by itself; four genre tiles with their demo-song counts (EDM 3, Pop 2, Rap 2, Bollywood 2), "Which genre is my song?" and "Skip to running the lights" |
 | 10.20 | Your own song | In the playground, click **Light up your song** and pick an MP3/WAV/OGG | "Reading your song…", then "Finding the tempo, beats and sections…", then it plays with a programmed show and its timeline; the network tab shows no upload |
-| 10.21 | Rig sizes | Lighting desk → Moving heads: 52 / 80 / 120 | The rig rebuilds with that many moving heads |
+| 10.21 | Rig sizes | Lighting desk → Rig → Moving heads: 64 / 96 / 140 | The rig rebuilds with that many moving heads (64 is the default on every machine) |
 | 10.22 | Full screen show | In the playground click the demo song (or Light up your song, then **Start the show**) | The browser goes full screen with no navbar; "Press Esc to exit full screen" sits in the top-right corner. Stop (or the song ending) exits full screen and brings the navbar back; Esc mid-song brings the navbar back and the music keeps playing |
 | 10.23 | Yellow | In the playground click **Yellow** | Yellow flash with blinders as the band kicks in (0:13); strong yellow from 1:27; yellow strobes at 1:50, 1:52, 1:54; mostly shades of yellow until 3:15, then only yellows to the end. Uploaded songs never turn yellow |
-| 10.24 | Solos and focus | Play A Sky Full of Stars; jump to 0:54, 1:25, 1:54, 2:17, 3:12, then 3:33 | One fixture type alone at each solo (side towers, aerial beams, floor, washes tilting and changing colour, lasers); at 3:33 the focus section (one colour, beams converging on the stage floor, flickering) |
-| 10.25 | Playground in two steps | Scroll to the end of the show | Step 1 "Play a song" ends with **Next: run the lights yourself →**; step 2 has Drop, Strobe (hold), Lasers, Blinders, House lights, Blackout and colours; **More controls** opens the desk; **Back to songs** returns |
+| 10.24 | Solos and focus | Play any demo song and watch the "CUE · GO" label (or the timeline) for "Solo ·" and "Focus" cues | Each solo has one fixture type alone (side towers, aerial beams, floor, washes tilting and changing colour, floor lasers, tower lasers, random coloured strobes). Focus: beams converging on centre stage, phrases 2 and 4 in two colours; "Vocal focus" phrases pulse on the beat |
+| 10.25 | Playground in three steps | Scroll to the end of the show, pick a genre | Step 1 genres; step 2 that genre's songs plus "Light up your song", ending with **Next: run the lights yourself →**; step 3 has Drop (cycles spool, slam, burst), Strobe (hold), Lasers, Blinders, House lights, Blackout and colours; **More controls** opens the desk; **Back to songs** returns. No pop-up anywhere |
 | 10.26 | House lights light the venue | Step 2 → **House lights** (or the desk's House lights) | Stage washes go full warm amber, strobes glow steadily in it, beams and lasers off, nothing moves; turn them off and the rig comes back |
 | 10.27 | House lights after a song | Play a demo song and jump to its last seconds on the timeline | Fade to black, then the house lights come up over ~3 s with the venue lit, then the playground returns after ~5 s |
 | 10.28 | Phones | Open the homepage on a phone and scroll | The whole scroll show plays; encore colours change the lights; any playground control shows "Best enjoyed on a bigger screen" |
 | 10.29 | LED wall up next | Scroll to the house-lights moment and read the LED wall | "Sunburn Festival 2026: Mumbai · <date>" and "India Sneaker Festival 2026: New Delhi · <date>": city once, date visible |
 | 10.30 | Scroll stops and dots | Scroll slowly and stop between sections; then click the dots on the right edge | The page settles on the nearest of the 9 sections (the drop plays on the way, it isn't a stop) and its look holds; each transition plays out over a couple of seconds; the current section's dot is lit; clicking a dot jumps there; a quick scroll still passes straight through |
 | 10.31 | Role sections and house-light washes | Stop on Fan, Artist, Organizer and Crew; then on House lights | The moving heads are a faint glow and the LED wall leads; with the house lights up the washes point straight down onto the stage |
+| 10.32 | The stage | Stop on "The rig comes up" | Raised deck with a skirt and lit edge; 12 sub stacks of three (with gaps) and the crowd barrier on the ground in front; a 16-box line array outside each side tower; three-column towers; the top truss's aerials and strobes clearly hang below it, and the truss isn't cut by the navbar |
+| 10.33 | Floor light follows the aerials | Desk: aerials OFF, floor and lasers ON; then aerials ON and tilt them down | With the aerials off the floor stays dark; it lights up only as the aerials point down at the audience |
+| 10.34 | Strobes and blinders | Desk: FLASH the strobes, then the blinders | The truss and tower strobe panels themselves light up; blinders are a warm white, coming from the truss strobes (no separate lamps) |
+| 10.35 | Lasers | Play a demo song through a build and a peak | Lasers turn on one by one; sometimes only the floor ones, sometimes only the tower ones; the beam count changes on the beat, up and down; beams never dip into the crowd |
+| 10.36 | Smooth scroll | Scroll from Crew toward the encore and stop | The page glides on through the drop to the encore by itself; any wheel, touch or key stops the glide. The "CUE · GO" label changes as each cue is halfway in, never ahead of the lights |
+| 10.37 | Desk mirrors the show | Let a song play, open the desk without touching it | Its ON/OFF switches match what is lit right now and keep following the show; scrolling inside the desk never scrolls the page, and Resume never jumps |
+| 10.38 | Genre help | Step 1 → **Which genre is my song?** | A list of artists per genre (e.g. The Chainsmokers → EDM; Maroon 5, Shawn Mendes, Justin Bieber → Pop) |
+| 10.39 | Your song with a genre | Pick **Rap** → Light up your song with a rap track | Analysed with rap settings: a sensible tempo (not 2/3 speed), hooks slam in with strobes |
+| 10.40 | Frame rate | Production build on the Iris Xe laptop, plugged in; stop on each section | Smooth, about 56–60 FPS (DevTools → Rendering → Frame rendering stats); no freeze when a section's lights first come on |
+| 10.41 | Logo on the stage | Stop on House lights; then scroll back to the gate | The LED wall shows the white "Stage" tag with "Verse" in a script under it, in the show's colours; the gate sign shows the logo in neon (cyan and orange) |
+
+## 10b. Logo and icon
+
+| # | Check | Steps | Expected |
+|---|---|---|---|
+| 10b.1 | Site pages | Open `/`, `/login`, `/signup`, scroll to the footer | The new logo (sprayed white "Stage" with magenta/cyan offsets, sunset script "Verse") in the navbar, on both auth cards and in the footer |
+| 10b.2 | Dashboards | Log in as each role | Fan and Organizer sidebars, the Artist navbar and the Production studio navbar all show the logo; on the light theme "Stage" turns dark so it stays readable |
+| 10b.3 | Encore screen | Artist → a show's encore screen | The logo with "Live OS" as the corner watermark |
+| 10b.4 | Favicon | Look at the browser tab; on a phone, add to home screen | The sunset "Sv" on a dark rounded square |
 
 ---
+
+## 10c. Special effects, fireworks, live keys and the loading screen
+
+Use a production build (`npm run build`, then `npm start`): shader errors aren't reported there, so a
+broken effect simply doesn't show.
+
+1. Load `/`: the loading screen (logo, progress bar, what's loading) covers the page and the page can't
+   scroll; it fades out onto the finished stage (neon sign lit, LED wall drawn). It must never stay longer
+   than about 20 s.
+2. Playground → EDM → *High On Life*. On each drop: CO2 (floor and truss), confetti, streamers, mines and the
+   comet chase or roman candles. **No shell bursts before the finale.** The camera looks up for the candles,
+   comets and chase, not for the mines.
+3. Near the end (around 3:25): the finale opens with confetti pouring for 5-8 s, streamers and a CO2 blast,
+   then two bars of stage pyro only (candles, roof comets, comet chase), then the shells, building to the
+   closing volley on the last strong bar.
+4. Play two other demos and compare their finale openings: they start differently.
+5. During a song, hold **Space**: floor and truss CO2 fire until you let go; hold **Shift**: confetti pours. The
+   song keeps playing, the lights carry on, the page doesn't scroll, and the two buttons under the player bar
+   light up. Click the buttons: same result. On the scroll show the keys do nothing.
+6. Let a song end with streamers in the air: they keep falling under the house lights and reach the floor.
+7. *Closer*: drops at 1:11, 2:30 and 3:33; the finale runs slowly through 3:33-3:53.
+8. Side towers: in a peak, both towers light (alternating looks run up and down each tower, both sides).
+9. Lighting desk → EFFECTS and FIREWORKS: every button fires; FINALE plays; the colour scheme and sound toggle work.
 
 ## 11. Automated tests (Git Bash)
 
 Run from the project folder (`cd /d/Projects/stageverse`). None of these touch your real database: the tests start an in-memory MongoDB (the first run downloads a ~100 MB `mongod` binary and caches it) and mock every AI provider.
 
 ```bash
-# Everything: 289 tests, about 1-2 minutes
+# Everything: 392 tests in 36 files, about 1-2 minutes
 npm test
 
 # Watch mode while editing (re-runs affected tests on save)
@@ -310,6 +353,8 @@ npm run test:coverage
 npx vitest run tests/security/authz-matrix.test.js    # who may do what on every route (SEC-03)
 npx vitest run tests/security/socket.test.js          # live-show socket auth, rooms, typed protocol (SEC-02, BUG-05, UPG-02)
 npx vitest run tests/unit/show.test.js                # homepage show: song analysis on a synthetic click track, cue engine (UPG-04)
+npx vitest run tests/unit/genres.test.js              # genre analysis on synthetic pop, rap and Bollywood songs
+npx vitest run tests/unit/grandma3.test.js            # grandMA3 patch export
 npx vitest run tests/security/voting.test.js          # one fan one vote, 20 concurrent votes (SEC-04, BUG-04)
 npx vitest run tests/security/predictions.test.js     # prediction scoring and locking (SEC-05)
 npx vitest run tests/security/events.test.js          # event short ids, new-venue shows (BUG-09, BUG-14)
