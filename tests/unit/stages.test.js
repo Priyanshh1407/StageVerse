@@ -486,8 +486,9 @@ describe('the audience and artist views', () => {
         }
     });
 
-    it('fit the whole mainstage edge to edge in its default view', () => {
-        expect(STAGES.mainstage.frame.margin).toBeLessThan(1.1);
+    it('stand the mainstage default view nearer than before, with room for the PA at the sides', () => {
+        expect(STAGES.mainstage.frame.margin).toBeLessThan(1.38);
+        expect(STAGES.mainstage.frame.margin).toBeGreaterThan(1.15);
         expect(STAGES.mainstage.songFrame).toBeUndefined();
     });
 });
