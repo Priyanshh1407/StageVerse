@@ -136,9 +136,9 @@ function directFrame(control, look, camera, aim, delta) {
     aim.look[0] = shot.target[0];
     aim.look[1] = shot.target[1] + lift * 0.4;
     aim.look[2] = shot.target[2];
-    // From the rig coming up (the 3rd section) to the encore (the second to last), the camera
+    // From the rig coming up (the 3rd section) through the drop, the camera
     // stands 5 m further back along its view, so the top truss isn't cut by the navbar; it eases
-    // in before the rig section and back out after the encore (the gate, the house lights and the
+    // in before the rig section and back out on the way to the playground (the gate, the house lights and the
     // playground keep their framing)
     if (control.mode === 'scroll') {
         const p = control.smoothProgress ?? control.progress ?? 0;

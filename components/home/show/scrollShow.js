@@ -45,7 +45,7 @@ export const PHASES = {
     cues: [0.2, 0.4],
     roles: [0.4, 0.76],
     drop: [0.76, 0.84],
-    encore: [0.84, 0.91],
+    // (the encore section is out for now: the drop runs on into the playground)
     play: [0.91, 1.01],
 };
 export const PLAY_FROM = PHASES.play[0];
@@ -66,7 +66,7 @@ export function screenAt(progress) {
     return role ? { kind: 'role', key: role.key, line: role.line } : { kind: 'brand' };
 }
 
-export function buildScrollSheet(encore = ENCORE_CHOICES[0]) {
+export function buildScrollSheet() {
     const HOLD = { sweep: 0, speed: 0.3, phaseSpread: 0 };
     const cues = [
         // Outside the gate: warm light spilling from the doors, and white beams from the aerials
@@ -91,8 +91,6 @@ export function buildScrollSheet(encore = ENCORE_CHOICES[0]) {
         { t: 0.8, snap: true, name: 'The drop', shot: 'drop', look: { intensity: 1.4, converge: 0.15, fan: 1.2, sweep: 0.4, speed: 1.6, phaseSpread: 1, laser: 1, stars: 1, strobe: 1, blinder: 1, dropFx: 1, laserChase: 1 } },
         { t: 0.805, snap: true, name: 'The drop', look: { blinder: 0 } },
         { t: 0.825, snap: true, name: 'The drop', look: { strobe: 0, dropFx: 0, laserChase: 0 } },
-        // Encore in the visitor's colour
-        { t: 0.86, hold: 0.03, name: 'Encore', shot: 'finale', look: { colorA: encore.a, colorB: encore.b, laserColor: encore.a, washColor: encore.b, intensity: 1.1, fan: 1.3, tiltShift: 0.1, sweep: 0.35, speed: 0.8, phaseSpread: 0.6, laser: 0.6, converge: 0 } },
         // Playground: from here the idle show (or the visitor) runs the lights
         { t: PLAY_FROM + 0.01, name: 'Playground', shot: 'finale', look: { intensity: 1, laser: 0.4 } },
     ];
@@ -105,16 +103,15 @@ export function buildScrollSheet(encore = ENCORE_CHOICES[0]) {
     return resolveCueSheet(withFades);
 }
 
-// The 9 places the scroll can rest (scroll progress), where each section's look holds. The page
+// The 8 places the scroll can rest (scroll progress), where each section's look holds. The page
 // settles gently on the nearest one when the visitor stops scrolling near it (a quick scroll passes
 // straight through), and the section dots jump to them. The drop isn't a stop: it plays on the way
-// from the Artist section (back at this stage) to the encore.
+// from the Artist section (back at this stage) to the playground.
 export const STOPS = [
     { key: 'gate', label: 'The gate', at: 0 },
     { key: 'house', label: 'House lights', at: 0.16 },
     { key: 'rig', label: 'The rig comes up', at: 0.375 },
     ...ROLES.map((r) => ({ key: r.key.toLowerCase(), label: r.key, at: Math.round((r.at + r.hold / 2) * 10000) / 10000 })),
-    { key: 'encore', label: 'Encore', at: 0.875 },
     { key: 'play', label: 'Your turn', at: 0.96 },
 ];
 

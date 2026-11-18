@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CircleHelp, Search, ArrowRight } from 'lucide-react';
 import { ARTISTS, findArtists, GENRE_HINTS, GENRE_KEYS, GENRES } from '@/lib/show/genres';
 
@@ -10,8 +10,13 @@ import { ARTISTS, findArtists, GENRE_HINTS, GENRE_KEYS, GENRES } from '@/lib/sho
  * visitors who know the artist but not the genre; picking an artist picks their genre.
  * `counts` is the number of demo songs per genre.
  */
-export default function GenrePicker({ value, onChange, counts = {} }) {
+export default function GenrePicker({ value, onChange, counts = {}, onHelpChange = null }) {
     const [help, setHelp] = useState(false);
+    // (while the help is open the show holds still: only the panel scrolls; let go when it closes or this goes)
+    useEffect(() => {
+        onHelpChange?.(help);
+        return () => onHelpChange?.(false);
+    }, [help, onHelpChange]);
     const [query, setQuery] = useState('');
     const matches = findArtists(query).slice(0, 5);
 
@@ -36,7 +41,7 @@ export default function GenrePicker({ value, onChange, counts = {} }) {
                 <CircleHelp className="w-3.5 h-3.5" aria-hidden /> Which genre is my song?
             </button>
             {help && (
-                <div id="genre-help" className="mt-2 rounded-xl border border-white/10 bg-black/50 p-3 text-xs">
+                <div id="genre-help" data-own-scroll className="mt-2 rounded-xl border border-white/10 bg-black/50 p-3 text-xs">
                     <label className="flex items-center gap-2 rounded-lg bg-white/10 px-2.5 py-1.5 mb-2">
                         <Search className="w-3.5 h-3.5 text-gray-400" aria-hidden />
                         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Artist, e.g. Maroon 5"
@@ -54,7 +59,7 @@ export default function GenrePicker({ value, onChange, counts = {} }) {
                             )) : <li className="text-gray-400 px-2">Not in the list. Pick the closest genre from the descriptions above.</li>}
                         </ul>
                     ) : (
-                        <div className="max-h-32 overflow-y-auto space-y-1.5 pr-1 text-gray-400 leading-snug">
+                        <div className="max-h-32 overflow-y-auto overscroll-contain space-y-1.5 pr-1 text-gray-400 leading-snug">
                             {GENRE_KEYS.map((key) => (
                                 <p key={key}><b className="text-white">{GENRES[key].label}:</b> {ARTISTS[key].join(', ')}</p>
                             ))}

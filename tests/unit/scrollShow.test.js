@@ -135,11 +135,10 @@ describe('role sections and venue-lit washes', () => {
 });
 
 describe('scroll stops (gentle stopping and section dots)', () => {
-    it('nine stops in order, each where its section holds', () => {
-        expect(STOPS.map((s) => s.label)).toEqual(['The gate', 'House lights', 'The rig comes up', 'Crew', 'Organizer', 'Fan', 'Artist', 'Encore', 'Your turn']); // the drop plays on the way, it isn't a stop
+    it('eight stops in order, each where its section holds', () => {
+        expect(STOPS.map((s) => s.label)).toEqual(['The gate', 'House lights', 'The rig comes up', 'Crew', 'Organizer', 'Fan', 'Artist', 'Your turn']); // the drop plays on the way, it isn't a stop
         for (let i = 1; i < STOPS.length; i++) expect(STOPS[i].at).toBeGreaterThan(STOPS[i - 1].at);
         for (const r of ROLES) expect(roleAt(STOPS.find((s) => s.label === r.key).at)?.key).toBe(r.key); // on the LED wall
-        expect(phaseAt(STOPS.find((s) => s.key === 'encore').at)).toBe('encore');
         expect(phaseAt(STOPS.find((s) => s.key === 'play').at)).toBe('play');
     });
 

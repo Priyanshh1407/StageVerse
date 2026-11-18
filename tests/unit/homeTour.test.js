@@ -16,11 +16,11 @@ const FOOT = { desert: [48, -30, 6], mainstage: [52, -32, 4], warehouse: [19.2, 
 describe('the homepage tour of the festival grounds', () => {
     it('meets the personas in the order Crew, Organizer, Fan, Artist', () => {
         expect([...ROLES].sort((a, b) => a.at - b.at).map((r) => r.key)).toEqual(['Crew', 'Organizer', 'Fan', 'Artist']);
-        expect(STOPS.map((s) => s.label)).toEqual(['The gate', 'House lights', 'The rig comes up', 'Crew', 'Organizer', 'Fan', 'Artist', 'Encore', 'Your turn']);
+        expect(STOPS.map((s) => s.label)).toEqual(['The gate', 'House lights', 'The rig comes up', 'Crew', 'Organizer', 'Fan', 'Artist', 'Your turn']);
     });
 
     it('stays on this stage for the gate, the rig, Crew, the drop, the encore and the playground', () => {
-        for (const p of [0, 0.1, 0.16, 0.3, 0.375, 0.47, 0.8, 0.86, 0.96]) expect(tourAt(p).where, `at ${p}`).toBe('home');
+        for (const p of [0, 0.1, 0.16, 0.3, 0.375, 0.47, 0.8, 0.96]) expect(tourAt(p).where, `at ${p}`).toBe('home');
         expect(tourAt(0.47).levels).toEqual(HOME_ONLY);
     });
 
@@ -71,9 +71,9 @@ describe('the homepage tour of the festival grounds', () => {
         // from the mainstage back to Crew: straight to the live stage
         play(state, by.Crew.at + 0.01, WALK_SECONDS + PAUSE_SECONDS + 1, note);
         expect(visited).toEqual(['organizer', 'artist', 'home']);
-        // from Crew to the encore: both on the live stage, no walk at all
+        // from Crew to the playground: both on the live stage, no walk at all
         const still = { at: 0 };
-        expect(stepTour(still, 0.875, 1 / 60).where).toBe('home');
+        expect(stepTour(still, 0.96, 1 / 60).where).toBe('home');
         expect(still.leg).toBeFalsy();
     });
 

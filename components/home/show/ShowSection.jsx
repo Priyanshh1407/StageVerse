@@ -58,7 +58,7 @@ const SECTION_COLORS = { intro: '#3b5bff', calm: '#3b5bff', groove: '#a855f7', b
 const MAX_UPLOAD_MB = 80;
 // The show section's height (vh): the stage scrolls this minus one screen. Taller = more scroll per section
 const SHOW_VH = 800;
-// Moving a section at a time: every glide takes STEP_MS; the one through the riser, the drop and the encore
+// Moving a section at a time: every glide takes STEP_MS; the one through the riser and the drop
 // colours takes DROP_MS; scroll events closer together than GESTURE_GAP_MS belong to the same gesture
 const STEP_MS = 1600;
 const DROP_MS = 4200;
@@ -68,7 +68,7 @@ const AFTER_SHOW_MS = HOUSE_UP_MS + 5000;
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 // A hidden overlay is inert: its buttons can't take taps or focus. pointer-events-none alone isn't enough,
-// because a child with pointer-events-auto (the playground card, the encore swatches) still catches taps,
+// because a child with pointer-events-auto (the playground card) still catches taps,
 // and on a phone those invisible cards cover the overlay that is showing.
 function Fade({ show, children, className = '' }) {
     return (
@@ -133,7 +133,7 @@ function analyseInWorker(channels, sampleRate, title, genre) {
 /**
  * "The Show": the homepage hero. A tall section with a sticky full-screen stage; scrolling runs
  * the cue stack (scrollShow.js): outside the venue, through the doors, the rig coming up, a look
- * per role on the LED wall, the drop, the encore, then the playground (the lighting desk, the
+ * per role on the LED wall, the drop, then the playground (the lighting desk, the
  * demo song, or the visitor's own song, analysed in their browser).
  */
 function ShowExperience({ events = [], isPhone = false }) {
@@ -150,7 +150,6 @@ function ShowExperience({ events = [], isPhone = false }) {
     const [screen, setScreen] = useState({ kind: 'brand' });
     const [cueName, setCueName] = useState('');
     const [visible, setVisible] = useState(true);
-    const [encore, setEncore] = useState(ENCORE_CHOICES[0]);
     const [mode, setMode] = useState('scroll');
     const [desk, setDesk] = useState(DEFAULT_LOOK);
     const [deskOpen, setDeskOpen] = useState(false);
@@ -168,6 +167,8 @@ function ShowExperience({ events = [], isPhone = false }) {
     // during a song: the show's own camera, or the audience's or the artist's view held (control.view)
     const [view, setView] = useState('show');
     const pickView = (v) => { setView(v); control.current.view = v; };
+    // a panel that holds the show still while it is open (the genre help): only the panel scrolls
+    const holdScroll = useCallback((on) => { control.current.scrollHeld = on; }, []);
     const [explain, setExplain] = useState(false); // the "how it works" overlay during a song
     const [linked, setLinked] = useState(null);    // a song and moment asked for by the page's link (?song=&t=)
     const [stopKey, setStopKey] = useState(STOPS[0].key); // the section dot that's lit
@@ -213,7 +214,7 @@ function ShowExperience({ events = [], isPhone = false }) {
             c.stopGlide = stop;
         };
         // The show plays the dot it is at (control.dot, an index into STOPS), not the raw scroll position: each dot is
-        // a fixed moment on a fixed stage (the gate, the house lights, the cues, each persona, the encore, the
+        // a fixed moment on a fixed stage (the gate, the house lights, the cues, each persona, the
         // playground). Reaching a dot (a scroll gesture, a key, a swipe, a click on it) moves the show there in a
         // set time (control.dotMove, played by the director) and the camera to that dot's stage, whatever the
         // scroll does meanwhile. The overlays follow the dot too.
@@ -239,7 +240,7 @@ function ShowExperience({ events = [], isPhone = false }) {
             const c = control.current;
             if (index === c.dot && c.dotMove) return;
             const from = c.smoothProgress ?? STOPS[c.dot ?? index].at;
-            // (`jump`: past other dots, e.g. Crew to the encore: the lights fade straight to the new dot's look, from
+            // (`jump`: past other dots, e.g. Crew to the playground: the lights fade straight to the new dot's look, from
             // the one on stage now, instead of playing every section between)
             const jump = c.dot !== undefined && Math.abs(index - c.dot) > 1;
             c.dot = index;
@@ -267,6 +268,8 @@ function ShowExperience({ events = [], isPhone = false }) {
             clearTimeout(c.settleTimer);
             c.settleTimer = setTimeout(() => {
                 if (c.mode !== 'scroll' || c.gliding) return;
+                // (below the playground the visitor is reading the rest of the page: never pulled back into the show)
+                if (c.progress > STOPS[STOPS.length - 1].at + 0.004) return;
                 const index = nearestDot(c.progress);
                 if (index !== c.dot) moveToDot(index, STEP_MS);
                 const y = yOf(STOPS[index]);
@@ -287,13 +290,14 @@ function ShowExperience({ events = [], isPhone = false }) {
             const r = el.getBoundingClientRect();
             return r.top <= 2 && r.bottom >= window.innerHeight - 2;
         };
-        // the glide's length: the same for every section, longer only for the riser, the drop and the encore colours
-        const msBetween = (from, to) => ((from.key === 'artist' && to.key === 'encore') ? DROP_MS : STEP_MS);
+        // the glide's length: the same for every section, longer only for the riser and the drop
+        const msBetween = (from, to) => ((from.key === 'artist' && to.key === 'play') ? DROP_MS : STEP_MS);
         const stepTo = (to) => {
             const c = control.current;
             if (!to) return false;
             const from = STOPS[c.dot ?? 0];
             const ms = msBetween(from, to);
+            c.glideDir = Math.sign(STOPS.indexOf(to) - STOPS.indexOf(from)) || Math.sign(to.at - (c.progress ?? 0));
             moveToDot(STOPS.indexOf(to), ms);
             c.stopGlide?.();
             glide(yOf(to), ms);
@@ -301,49 +305,77 @@ function ShowExperience({ events = [], isPhone = false }) {
         };
         const step = (dir) => {
             const c = control.current;
-            if (c.gliding) return false;
+            // the other way during a glide (a change of mind, even during the drop's long glide): it turns back
+            if (c.gliding && dir === c.glideDir) return false;
+            const here = STOPS[c.dot ?? 0];
+            const p = c.progress ?? 0;
+            // the page away from its dot in the way it is going (back up from below the show, a scrollbar drag):
+            // that dot first
+            if (!c.gliding && ((dir < 0 && p > here.at + 0.004) || (dir > 0 && p < here.at - 0.004))) return stepTo(here);
             return stepTo(STOPS[(c.dot ?? 0) + dir]);
         };
         c0.stepTo = stepTo;
         c0.step = step;
         // whether this direction stays in the show (down from the last section, or up from the first, leaves it)
         const staysIn = (dir) => {
-            const dot = control.current.dot ?? 0;
-            return dir > 0 ? dot < STOPS.length - 1 : dot > 0;
+            const c = control.current;
+            const dot = c.dot ?? 0;
+            const p = c.progress ?? 0;
+            // (up: also when below the last dot's place, so coming back up from below lands on the playground)
+            return dir > 0 ? dot < STOPS.length - 1 : dot > 0 || p > STOPS[dot].at + 0.004;
+        };
+        // 8: a panel or list under the pointer that can still scroll that way scrolls itself, not the show
+        const scrollsItself = (target, dir) => {
+            for (let el = target; el && el !== section.current && el !== document.body; el = el.parentElement) {
+                const { overflowY } = getComputedStyle(el);
+                if (!/(auto|scroll)/.test(overflowY) || el.scrollHeight <= el.clientHeight + 1) continue;
+                if (dir < 0 ? el.scrollTop > 0 : el.scrollTop + el.clientHeight < el.scrollHeight - 1) return true;
+            }
+            return false;
         };
         const onWheel = (e) => {
             const c = control.current;
             const dir = Math.sign(e.deltaY);
-            if (c.mode !== 'scroll' || !dir || e.ctrlKey || !inShow() || !staysIn(dir)) return;
+            if (!dir || e.ctrlKey || !inShow()) return;
+            // a list that can scroll that way scrolls itself; a panel holding the show (the genre help) or a song
+            // playing (7) keeps the page where it is
+            if (scrollsItself(e.target, dir)) return;
+            if (c.scrollHeld || c.mode === 'song') { e.preventDefault(); return; }
+            if (c.mode !== 'scroll' || !staysIn(dir)) return;
             e.preventDefault();
             const now = performance.now();
-            if (now - (c.lastWheel ?? 0) > GESTURE_GAP_MS) c.gestureStepped = false; // a new gesture
+            // a new gesture: after a pause, or (5) the other way, even mid-coast
+            if (now - (c.lastWheel ?? 0) > GESTURE_GAP_MS || dir !== c.wheelDir) c.gestureStepped = false;
             c.lastWheel = now;
-            if (c.gliding) { c.gestureStepped = true; return; }
+            c.wheelDir = dir;
             if (c.gestureStepped) return;
-            c.gestureStepped = step(dir);
+            c.gestureStepped = step(dir) || c.gliding;
         };
         const onKey = (e) => {
             const c = control.current;
-            if (c.mode !== 'scroll' || !inShow() || e.altKey || e.ctrlKey || e.metaKey) return;
-            if (e.target?.closest?.('input, textarea, select, button, [contenteditable="true"]')) return;
+            if (c.mode !== 'scroll' || c.scrollHeld || !inShow() || e.altKey || e.ctrlKey || e.metaKey) return;
+            // (typing in a field: its own keys; a focused button keeps Space and Enter, the arrows still move sections)
+            if (e.target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
+            if (e.key === ' ' && e.target?.closest?.('button')) return;
             const down = e.key === 'ArrowDown' || e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey);
             const up = e.key === 'ArrowUp' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey);
             const dir = down ? 1 : up ? -1 : 0;
             if (!dir || !staysIn(dir)) return;
             e.preventDefault();
-            if (!c.gliding && !e.repeat) step(dir);
+            if (!e.repeat) step(dir);
         };
         const touch = { y: null, stepped: false };
         const onTouchStart = (e) => { touch.y = e.touches[0]?.clientY ?? null; touch.stepped = false; };
         const onTouchMove = (e) => {
             const c = control.current;
-            if (touch.y === null || c.mode !== 'scroll' || !inShow()) return;
+            if (touch.y === null || !inShow()) return;
             const dy = touch.y - (e.touches[0]?.clientY ?? touch.y);
             const dir = Math.sign(dy);
-            if (!dir || !staysIn(dir)) return;
+            if (!dir || scrollsItself(e.target, dir)) return;
+            if (c.scrollHeld || c.mode === 'song') { e.preventDefault(); return; }
+            if (c.mode !== 'scroll' || !staysIn(dir)) return;
             e.preventDefault();
-            if (!touch.stepped && Math.abs(dy) > 40 && !c.gliding) touch.stepped = step(dir);
+            if (!touch.stepped && Math.abs(dy) > 40) touch.stepped = step(dir);
         };
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
@@ -411,11 +443,6 @@ function ShowExperience({ events = [], isPhone = false }) {
         setTimeout(() => { setPlayStage(key); setWalkingTo(null); }, WALK_SECONDS * 1000 + 300);
         const preferred = PLAY_STAGES.find((st) => st.key === key)?.genres[0];
         if (preferred) setGenre(preferred);
-    };
-
-    const pickEncore = (choice) => {
-        setEncore(choice);
-        control.current.sheet = buildScrollSheet(choice);
     };
 
     /** Glide to one of the show's sections (the same set pace as scrolling a section at a time). */
@@ -832,18 +859,6 @@ function ShowExperience({ events = [], isPhone = false }) {
                             </div>
                         </Fade>
 
-                        <Fade show={phase === 'encore'} className="flex-col items-center justify-end text-center px-4 pb-28 sm:pb-32">
-                            <h2 className="text-4xl sm:text-6xl font-black drop-shadow-2xl">You call the encore.</h2>
-                            <p className="mt-3 text-gray-300">Pick the colour for the finale.</p>
-                            <div className="pointer-events-auto mt-5 flex flex-wrap justify-center gap-3 max-w-md" role="group" aria-label="Encore colour">
-                                {ENCORE_CHOICES.map((c) => (
-                                    <button key={c.label} onClick={() => pickEncore(c)} aria-label={`Encore colour ${c.label}`} aria-pressed={encore.label === c.label}
-                                        className={`w-10 h-10 rounded-full border-2 transition-transform hover:scale-110 ${encore.label === c.label ? 'border-white scale-110' : 'border-white/20'}`}
-                                        style={{ background: `linear-gradient(135deg, ${c.a}, ${c.b})`, boxShadow: `0 0 24px ${c.a}88` }} />
-                                ))}
-                            </div>
-                        </Fade>
-
                         {/* The playground, in three steps: pick a genre, play one of its songs (or your own), run the lights */}
                         <Fade show={phase === 'play'} className="flex-col items-start justify-end px-4 sm:px-12 pb-24 sm:pb-12">
                             <div className="pointer-events-auto w-full max-w-md rounded-2xl bg-black/80 border border-white/10 p-5 sm:p-6">
@@ -872,7 +887,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         })()}
                                         <h2 className="text-2xl sm:text-3xl font-black mb-1">Play a song.</h2>
                                         <p className="text-sm text-gray-300 mb-4">Pick a genre first: each one is analysed and lit its own way.</p>
-                                        <GenrePicker value={genre} counts={Object.fromEntries(GENRE_KEYS.map((g) => [g, song.demos.filter((d) => d.genre === g).length]))}
+                                        <GenrePicker value={genre} onHelpChange={holdScroll} counts={Object.fromEntries(GENRE_KEYS.map((g) => [g, song.demos.filter((d) => d.genre === g).length]))}
                                             onChange={bigScreenOnly2((g) => { setGenre(g); setPlayStep('songs'); })} />
                                         <button onClick={bigScreenOnly(() => setPlayStep('lights'))}
                                             className="mt-4 flex items-center gap-1 text-sm text-gray-300 hover:text-white">
