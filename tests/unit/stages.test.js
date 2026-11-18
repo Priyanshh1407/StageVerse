@@ -445,3 +445,28 @@ describe('the floor row', () => {
         expect(xs).toContain(14.8);
     });
 });
+
+describe('the audience and artist views', () => {
+    it('are on every stage: eye level in the crowd, and from the stage out over it', async () => {
+        const { stageCamera } = await import('@/lib/show/stages/camera');
+        for (const stage of Object.values(STAGES)) {
+            const { audience, artist } = stage.shots;
+            expect(audience.pos[1], stage.key).toBeCloseTo(1.7, 5);
+            expect(audience.pos[2], stage.key).toBeGreaterThan(stage.crowd.z0);
+            expect(artist.pos[2], stage.key).toBeLessThan(0); // on the stage
+            expect(artist.target[2], stage.key).toBeGreaterThan(artist.pos[2]); // looking out at the crowd
+            // a held view holds, whatever the show calls (fireworks, the circling camera, the framing)
+            const held = stageCamera(stage, { look: { fireworks: [{ type: 'peony' }] }, shot: 'drop', t: 30, duration: 200, view: 'audience' });
+            expect(held.pos).toEqual(audience.pos);
+        }
+    });
+
+    it('frame the mainstage closer during a song than its default view', async () => {
+        const { stageCamera } = await import('@/lib/show/stages/camera');
+        const centre = STAGES.mainstage.frame.centre;
+        const dist = (c) => Math.hypot(...c.pos.map((v, i) => v - centre[i]));
+        const song = stageCamera(STAGES.mainstage, { look: {}, shot: 'dolly', t: 10, duration: 200 });
+        const still = stageCamera(STAGES.mainstage, { look: {}, shot: 'dolly' });
+        expect(dist(song)).toBeLessThan(dist(still));
+    });
+});

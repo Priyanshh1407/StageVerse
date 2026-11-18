@@ -170,9 +170,9 @@ export function playStep(state, dir) {
  * its song shots, the warehouse's circling camera, the sky shot while fireworks are up), placed on the grounds.
  * Returns { pos, target, ease }.
  */
-export function siteSongShot(key, { look, shot, t = 0, duration = 0, aspect = 1.78 }) {
+export function siteSongShot(key, { look, shot, t = 0, duration = 0, aspect = 1.78, view = null }) {
     const place = SITE[key];
-    const cam = stageCamera(STAGES[place.stage], { look, shot, t, duration, aspect });
+    const cam = stageCamera(STAGES[place.stage], { look, shot, t, duration, aspect, view });
     return { ...groundShot(place, cam), ease: cam.ease };
 }
 

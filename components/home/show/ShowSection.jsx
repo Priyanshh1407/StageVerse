@@ -165,6 +165,9 @@ function ShowExperience({ events = [], isPhone = false }) {
     // the playground's stage (the festival grounds): which one, and whether the camera is walking there
     const [playStage, setPlayStage] = useState('home');
     const [walkingTo, setWalkingTo] = useState(null);
+    // during a song: the show's own camera, or the audience's or the artist's view held (control.view)
+    const [view, setView] = useState('show');
+    const pickView = (v) => { setView(v); control.current.view = v; };
     const [explain, setExplain] = useState(false); // the "how it works" overlay during a song
     const [linked, setLinked] = useState(null);    // a song and moment asked for by the page's link (?song=&t=)
     const [stopKey, setStopKey] = useState(STOPS[0].key); // the section dot that's lit
@@ -986,6 +989,12 @@ function ShowExperience({ events = [], isPhone = false }) {
                             </div>
                             <div className="flex shrink-0 items-center gap-2 font-mono text-[11px] text-gray-300">
                                 <span className="hidden sm:inline text-gray-400">{now.bpm} BPM · {songSection ? (songSection.label ?? songSection.kind).toUpperCase() : ''}{mode === 'manual' ? ' · DESK' : ''}</span>
+                                <span role="group" aria-label="Camera" className="flex overflow-hidden rounded-full border border-white/15">
+                                    {[['show', 'Show'], ['audience', 'Audience'], ['artist', 'Artist']].map(([v, label]) => (
+                                        <button key={v} type="button" onClick={() => pickView(v)} aria-pressed={view === v}
+                                            className={`px-2 py-0.5 text-[10px] font-sans font-semibold ${view === v ? 'bg-amber-300 text-black' : 'text-gray-300 hover:bg-white/10'}`}>{label}</button>
+                                    ))}
+                                </span>
                                 <span>{fmt(song.time)} / {fmt(now.duration)}</span>
                                 <button onClick={stopSong} aria-label="Stop concert mode" className="p-1.5 rounded-full bg-white/10 hover:bg-white/20"><Square className="w-3 h-3" /></button>
                             </div>

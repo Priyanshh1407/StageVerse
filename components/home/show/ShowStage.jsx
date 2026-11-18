@@ -13,6 +13,7 @@ import { currentState, songTime } from './director';
 import { mixLooks } from '@/lib/show/look';
 import { STAGE_HOUSE_LIGHTS } from '@/lib/show/stages/houseLights';
 import { withOwn } from '@/lib/show/stages/mainstageCues';
+import { FIXED_VIEWS } from '@/lib/show/stages/camera';
 import { HOME_ONLY, SITE, siteSongShot, stepTour } from './tour';
 import { PLAY_FROM } from './scrollShow';
 import { STAGES } from '@/lib/show/stages';
@@ -104,7 +105,7 @@ function directFrame(control, look, camera, aim, delta) {
         // a song at that stage: its own camera shots (the warehouse's circling camera); otherwise its view or the walk
         const song = siteKey && control.mode === 'song' && control.audio;
         // (filmed exactly as on its test page: its song shots, its circling camera, its sky shot for the fireworks)
-        const goal = song ? siteSongShot(siteKey, { look: state.look, shot: state.shot, t: songTime(control), duration: control.audio.duration || control.song?.duration || 0, aspect: camera.aspect }) : tour;
+        const goal = song ? siteSongShot(siteKey, { look: state.look, shot: state.shot, t: songTime(control), duration: control.audio.duration || control.song?.duration || 0, aspect: camera.aspect, view: control.view }) : tour;
         if (!aim.placed) { camera.position.set(...goal.pos); aim.target.set(...goal.target); aim.placed = true; }
         // (a light smoothing on the walk, which keeps its own pace; a song's shots glide as on this stage)
         const glide = song ? goal.ease : 0.25;
@@ -116,7 +117,9 @@ function directFrame(control, look, camera, aim, delta) {
     if (control.mode !== 'manual') control.shot = state.shot;
     // While fireworks are in the air the camera stands back and looks up, so the whole sky is in view
     const sky = skyward(state.look);
-    const shot = (sky ? SHOTS.sky : SHOTS[control.shot]) || SHOTS.wide;
+    // (during a song the visitor can hold the audience's or the artist's view: control.view)
+    const held = control.mode === 'song' && FIXED_VIEWS.has(control.view) ? SHOTS[control.view] : null;
+    const shot = held ?? ((sky ? SHOTS.sky : SHOTS[control.shot]) || SHOTS.wide);
     if (!aim.placed) {
         // First frame: start on the shot instead of flying in from the default camera
         camera.position.set(...shot.pos);
@@ -126,7 +129,7 @@ function directFrame(control, look, camera, aim, delta) {
     // No handheld sway: a constantly moving camera makes every sub-pixel detail (truss bracing,
     // LED pixels, fixture vents) crawl, which reads as flicker
     // During a song's show the camera sits a little higher, over the whole rig
-    const lift = control.mode === 'song' ? 2.2 : 0;
+    const lift = control.mode === 'song' && !held ? 2.2 : 0; // (a held view keeps its own height: eye level in the crowd)
     aim.pos[0] = shot.pos[0];
     aim.pos[1] = shot.pos[1] + lift;
     aim.pos[2] = shot.pos[2];
