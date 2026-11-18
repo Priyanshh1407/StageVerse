@@ -27,6 +27,7 @@ export function createRoleUniforms({ scale = 2.3, spread = 1, opacity = 1 } = {}
         uPhaseSpread: { value: 0.25 },
         uSweep: { value: 0.3 },
         uConverge: { value: 0 },
+        uSplit: { value: 0 },           // metres: a focus in two colours meets this far either side of the target
         uIntensity: { value: 1 },
         uHaze: { value: 0.5 },
         uTarget: { value: new THREE.Vector3(0, 4.5, -6.5) }, // the centre of the stage (where the drop focuses)
@@ -62,6 +63,8 @@ const RIG_GLSL = /* glsl */ `
     uniform float uTiltWave;
     uniform float uPhaseSpread;
     uniform float uConverge;
+    uniform float uSplit;
+    attribute float aColorMix;
     uniform vec3 uTarget;
     uniform float uSideways;
     uniform float uDown;
@@ -88,7 +91,9 @@ const RIG_GLSL = /* glsl */ `
         float pan = base.x * uFan + sin(t) * uSweep;
         float tilt = base.y + uTiltShift + sin(t * 2.0) * uSweep * 0.12 + cos(t) * uTiltWave;
         vec3 sweepDir = normalize(vec3(sin(tilt) * sin(pan), -cos(tilt), sin(tilt) * cos(pan)));
-        vec3 dir = normalize(mix(sweepDir, normalize(uTarget - from), uConverge));
+        // (a focus in two colours: each colour's beams meet on their own point, side by side)
+        vec3 focusAt = uTarget + vec3((aColorMix - 0.5) * 2.0 * uSplit, 0.0, 0.0);
+        vec3 dir = normalize(mix(sweepDir, normalize(focusAt - from), uConverge));
         // The drop: thrown up and out over the audience, splayed to this fixture's side
         float side = from.x >= 0.0 ? 1.0 : -1.0;
         dir = normalize(mix(dir, normalize(vec3(side * 0.45, 0.75, 1.0)), uSideways));
@@ -174,7 +179,6 @@ export function createPartMaterial(uniforms, part) {
         defines: { IS_HEAD: part === 'head' ? 1 : 0 },
         vertexShader: /* glsl */ `
             ${RIG_GLSL}
-            attribute float aColorMix;
             varying vec2 vUv;
             varying vec3 vNormalW;
             varying vec3 vViewDir;
@@ -238,7 +242,6 @@ export function createBeamMaterial(uniforms) {
         vertexShader: /* glsl */ `
             ${RIG_GLSL}
             uniform float uSpread;
-            attribute float aColorMix;
             varying float vAlong;
             varying float vColorMix;
             varying vec3 vNormalV;
@@ -319,7 +322,6 @@ export function createGlowMaterial(uniforms) {
         vertexShader: /* glsl */ `
             ${RIG_GLSL}
             uniform float uSize;
-            attribute float aColorMix;
             varying float vColorMix;
             varying float vFlare;
             varying float vGate;

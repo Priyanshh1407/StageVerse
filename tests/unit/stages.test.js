@@ -492,3 +492,21 @@ describe('the audience and artist views', () => {
         expect(STAGES.mainstage.songFrame).toBeUndefined();
     });
 });
+
+describe('the two-colour focus', () => {
+    it('meets side by side on every stage, for every song', async () => {
+        const { prepareSongShow, FOCUS_SPLIT } = await import('@/lib/show/timeline');
+        const { planDesertCues, PATCHES } = await import('@/lib/show/stages/mainstageCues');
+        const cues = [
+            { t: 0, name: 'Focus', look: { converge: 0.95, focusFloor: 1 } },
+            { t: 4, name: 'Focus \u00b7 phrase 2 \u00b7 two colours', look: { converge: 0.95, colorA: '#19d9ff', colorB: '#ff3df2' } },
+            { t: 8, name: 'Focus \u00b7 phrase 3', look: { converge: 0.95 } },
+            { t: 12, name: 'After focus', look: { converge: 0 } },
+        ];
+        const song = prepareSongShow({ cues, beats: [], hits: [] });
+        expect(song.sheet.cues.map((c) => c.look.focusSplit)).toEqual([0, FOCUS_SPLIT, 0, 0]);
+        // the desert stage and the mainstage: further apart
+        expect(planDesertCues(cues)[1]?.look.focusSplit).toBeGreaterThan(FOCUS_SPLIT);
+        expect(PATCHES['Focus \u00b7 two colours'].focusSplit).toBeGreaterThan(FOCUS_SPLIT);
+    });
+});

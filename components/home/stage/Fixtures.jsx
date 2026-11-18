@@ -76,6 +76,7 @@ function driveRole(u, role, target, state, delta) {
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
     if (drop > 0.5) u.uConverge.value += (converge - u.uConverge.value) * Math.min(1, delta * 9); // the drop hits on the beat
     else glide(u.uConverge, converge, dt);
+    glide(u.uSplit, target.focusSplit ?? 0, dt); // a focus in two colours: side by side, not one white point
     u.uSideways.value = role.sideways ? drop : 0;
     glide(u.uDown, role === ROLES.wash ? target.washDown ?? 0 : 0, dt);
     // Converging beams meet mid-air over the stage, or (focus) on the centre of the stage floor
