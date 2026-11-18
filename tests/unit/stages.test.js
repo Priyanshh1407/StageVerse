@@ -473,7 +473,8 @@ describe('the audience and artist views', () => {
     it('keep the whole stage in the audience view, at eye level, on every stage and screen shape', async () => {
         const { stageCamera } = await import('@/lib/show/stages/camera');
         const tan = Math.tan((55 * Math.PI) / 360);
-        for (const stage of Object.values(STAGES)) {
+        // (the mainstage keeps its own audience view, in the crowd close to the stage)
+        for (const stage of Object.values(STAGES).filter((s) => s.audienceFrame)) {
             for (const aspect of [1.33, 1.78, 2.4]) {
                 const cam = stageCamera(stage, { look: {}, shot: 'wide', aspect, view: 'audience' });
                 const { centre, half } = stage.audienceFrame;
