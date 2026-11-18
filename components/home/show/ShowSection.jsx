@@ -693,6 +693,8 @@ function ShowExperience({ events = [], isPhone = false }) {
         if (c.objectUrl && c.objectUrl !== objectUrl) URL.revokeObjectURL(c.objectUrl);
         c.objectUrl = objectUrl;
         c.song = prepareSongShow(show);
+        // every song starts on the show's own camera (the audience's or the artist's view only when picked)
+        pickView('show');
         c.clock = null;
         c.live = null;
         clearTimeout(c.afterShow);

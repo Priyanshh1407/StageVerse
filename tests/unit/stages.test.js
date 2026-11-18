@@ -510,3 +510,17 @@ describe('the two-colour focus', () => {
         expect(PATCHES['Focus \u00b7 two colours'].focusSplit).toBeGreaterThan(FOCUS_SPLIT);
     });
 });
+
+describe('the three-quarter shots on the desert stage', () => {
+    it('turn left once and right once a song, never more', async () => {
+        const { planQuarterShots } = await import('@/lib/show/stages/mainstageCues');
+        const shots = ['wide', 'left', 'left', 'dolly', 'left', 'drop', 'right', 'dolly', 'left'];
+        const plan = planQuarterShots(shots.map((shot) => ({ shot })));
+        const played = shots.map((s, i) => plan[i] ?? s);
+        expect(played).toEqual(['wide', 'left', 'left', 'dolly', 'right', 'drop', 'dolly', 'dolly', 'dolly']);
+        // a song that turns only once also turns right, on its next dolly shot
+        const once = planQuarterShots(['wide', 'left', 'wide', 'dolly', 'dolly', 'drop'].map((shot) => ({ shot })));
+        expect(once).toEqual([null, 'left', null, 'right', 'right', null]);
+        expect(STAGES.desert.shotPlan).toBe(planQuarterShots);
+    });
+});

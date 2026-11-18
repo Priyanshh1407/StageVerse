@@ -71,9 +71,10 @@ function driveLook(look, source, song, clock, delta, stage) {
         const sample = sampleSongShow(s.show, s.audio.currentTime);
         // (a stage with cues of its own plays some of the show's cues as those: the mainstage)
         if (stage.cuePlan) s.plan ??= stage.cuePlan(s.show.sheet.cues);
+        if (stage.shotPlan) s.shotPlan ??= stage.shotPlan(s.show.sheet.cues);
         const own = s.plan?.[sample.index];
         look.current = onlyGroup(withOwn(sample.look, own), source.current.only);
-        look.shot = sample.shot;
+        look.shot = s.shotPlan?.[sample.index] ?? sample.shot;
         look.song = { t: s.audio.currentTime, duration: s.audio.duration || s.show.duration || 0 };
         return;
     }

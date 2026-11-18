@@ -46,6 +46,7 @@ function siteLookFor(control, key, state, shown) {
             sheet: festivalColours(song.sheet, Math.round(song.duration ?? 0)),
             hits: limitStreamers(song.hits, stage.maxStreamers),
             plan: stage.cuePlan ? stage.cuePlan(song.sheet.cues) : null,
+            shotPlan: stage.shotPlan ? stage.shotPlan(song.sheet.cues) : null,
             festivalFor: key,
         };
     }
@@ -105,7 +106,7 @@ function directFrame(control, look, camera, aim, delta) {
         // a song at that stage: its own camera shots (the warehouse's circling camera); otherwise its view or the walk
         const song = siteKey && control.mode === 'song' && control.audio;
         // (filmed exactly as on its test page: its song shots, its circling camera, its sky shot for the fireworks)
-        const goal = song ? siteSongShot(siteKey, { look: state.look, shot: state.shot, t: songTime(control), duration: control.audio.duration || control.song?.duration || 0, aspect: camera.aspect, view: control.view }) : tour;
+        const goal = song ? siteSongShot(siteKey, { look: state.look, shot: control.song?.shotPlan?.[state.index] ?? state.shot, t: songTime(control), duration: control.audio.duration || control.song?.duration || 0, aspect: camera.aspect, view: control.view }) : tour;
         if (!aim.placed) { camera.position.set(...goal.pos); aim.target.set(...goal.target); aim.placed = true; }
         // (a light smoothing on the walk, which keeps its own pace; a song's shots glide as on this stage)
         const glide = song ? goal.ease : 0.25;
