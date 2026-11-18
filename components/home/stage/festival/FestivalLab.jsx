@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import { DEFAULT_LOOK } from '@/lib/show/look';
 import { prepareSongShow, sampleSongShow } from '@/lib/show/timeline';
 import { onlyGroup } from '@/lib/show/stages/club';
-import { stageCamera } from '@/lib/show/stages/camera';
+import { FIXED_VIEWS, stageCamera } from '@/lib/show/stages/camera';
 import { STAGE_HOUSE_LIGHTS } from '@/lib/show/stages/houseLights';
 import { withOwn } from '@/lib/show/stages/mainstageCues';
 import { festivalColours } from '@/lib/show/stages/palettes';
@@ -263,7 +263,7 @@ export default function FestivalLab({ stageKey }) {
                 <Driver look={look} source={source} song={song} clock={clock} stage={stage} />
                 <FestivalScene stage={stage} look={look} count={lights} bloom={settings.bloom} quality={tier >= 2 ? 'high' : 'low'} control={control} />
                 <OrbitControls ref={controls} makeDefault target={shot.target} />
-                <ViewRig shot={shot} controls={controls} frame={custom ? null : stage.frame ?? null} />
+                <ViewRig shot={shot} controls={controls} frame={custom || FIXED_VIEWS.has(shotName) ? null : stage.frame ?? null} />
                 {follow && <AutoCamera stage={stage} look={look} controls={controls} />}
                 {perf && <FpsMeter meter={meter} />}
             </Canvas>

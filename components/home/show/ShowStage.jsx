@@ -8,12 +8,12 @@ import * as THREE from 'three';
 import StageScene from '@/components/home/stage/StageScene';
 import { useQualityTier, TIER_SETTINGS } from '@/components/home/stage/useQualityTier';
 import { ConcertLights } from '@/components/ConcertLights';
-import { SHOTS } from '@/lib/show/shots';
+import { AUDIENCE_FRAME, SHOTS } from '@/lib/show/shots';
 import { currentState, songTime } from './director';
 import { mixLooks } from '@/lib/show/look';
 import { STAGE_HOUSE_LIGHTS } from '@/lib/show/stages/houseLights';
 import { withOwn } from '@/lib/show/stages/mainstageCues';
-import { FIXED_VIEWS } from '@/lib/show/stages/camera';
+import { FIXED_VIEWS, audienceShot } from '@/lib/show/stages/camera';
 import { HOME_ONLY, SITE, siteSongShot, stepTour } from './tour';
 import { PLAY_FROM } from './scrollShow';
 import { STAGES } from '@/lib/show/stages';
@@ -118,7 +118,8 @@ function directFrame(control, look, camera, aim, delta) {
     // While fireworks are in the air the camera stands back and looks up, so the whole sky is in view
     const sky = skyward(state.look);
     // (during a song the visitor can hold the audience's or the artist's view: control.view)
-    const held = control.mode === 'song' && FIXED_VIEWS.has(control.view) ? SHOTS[control.view] : null;
+    const holding = control.mode === 'song' && FIXED_VIEWS.has(control.view);
+    const held = !holding ? null : control.view === 'audience' ? audienceShot(AUDIENCE_FRAME, camera.aspect) : SHOTS[control.view];
     const shot = held ?? ((sky ? SHOTS.sky : SHOTS[control.shot]) || SHOTS.wide);
     if (!aim.placed) {
         // First frame: start on the shot instead of flying in from the default camera

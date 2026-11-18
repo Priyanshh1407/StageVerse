@@ -41,6 +41,9 @@ const DESK_EFFECTS = {
 };
 // Live during a song's light show (the show carries on): the space bar fires the CO2 (floor and
 // truss), shift the confetti; each fires while held, at least a short burst
+// the camera views during a song, in key order: 1, 2, 3
+const VIEWS = [['show', 'Show'], ['audience', 'Audience'], ['artist', 'Artist']];
+
 const LIVE_FX = {
     co2: { kinds: ['co2', 'co2Truss'], label: 'CO2', key: 'Space' },
     confetti: { kinds: ['confetti'], label: 'Confetti', key: 'Shift' },
@@ -166,7 +169,7 @@ function ShowExperience({ events = [], isPhone = false }) {
     const [walkingTo, setWalkingTo] = useState(null);
     // during a song: the show's own camera, or the audience's or the artist's view held (control.view)
     const [view, setView] = useState('show');
-    const pickView = (v) => { setView(v); control.current.view = v; };
+    const pickView = useCallback((v) => { setView(v); control.current.view = v; }, []);
     // a panel that holds the show still while it is open (the genre help): only the panel scrolls
     const holdScroll = useCallback((on) => { control.current.scrollHeld = on; }, []);
     const [explain, setExplain] = useState(false); // the "how it works" overlay during a song
@@ -640,6 +643,9 @@ function ShowExperience({ events = [], isPhone = false }) {
             return t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
         };
         const down = (e) => {
+            // 1, 2, 3: the show's camera, the audience's view, the artist's view
+            const n = ['1', '2', '3'].indexOf(e.key);
+            if (n >= 0 && !typing(e) && !e.altKey && !e.ctrlKey && !e.metaKey) { pickView(VIEWS[n][0]); return; }
             const w = which(e);
             if (!w || typing(e)) return;
             e.preventDefault(); // the space bar mustn't scroll the page or press a focused button
@@ -661,7 +667,7 @@ function ShowExperience({ events = [], isPhone = false }) {
             window.removeEventListener('blur', release);
             release();
         };
-    }, [mode, song.playing, liveHold]);
+    }, [mode, song.playing, liveHold, pickView]);
 
     // --- Concert mode --------------------------------------------------------------------
     const stopSong = useCallback(() => {
@@ -1004,12 +1010,6 @@ function ShowExperience({ events = [], isPhone = false }) {
                             </div>
                             <div className="flex shrink-0 items-center gap-2 font-mono text-[11px] text-gray-300">
                                 <span className="hidden sm:inline text-gray-400">{now.bpm} BPM · {songSection ? (songSection.label ?? songSection.kind).toUpperCase() : ''}{mode === 'manual' ? ' · DESK' : ''}</span>
-                                <span role="group" aria-label="Camera" className="flex overflow-hidden rounded-full border border-white/15">
-                                    {[['show', 'Show'], ['audience', 'Audience'], ['artist', 'Artist']].map(([v, label]) => (
-                                        <button key={v} type="button" onClick={() => pickView(v)} aria-pressed={view === v}
-                                            className={`px-2 py-0.5 text-[10px] font-sans font-semibold ${view === v ? 'bg-amber-300 text-black' : 'text-gray-300 hover:bg-white/10'}`}>{label}</button>
-                                    ))}
-                                </span>
                                 <span>{fmt(song.time)} / {fmt(now.duration)}</span>
                                 <button onClick={stopSong} aria-label="Stop concert mode" className="p-1.5 rounded-full bg-white/10 hover:bg-white/20"><Square className="w-3 h-3" /></button>
                             </div>
@@ -1028,6 +1028,17 @@ function ShowExperience({ events = [], isPhone = false }) {
                             )}
                             <div className="absolute top-0 bottom-0 w-0.5 bg-white" style={{ left: `${(song.time / now.duration) * 100}%` }} />
                         </div>
+                        {/* the camera: the show's own, or the audience's or the artist's view held (keys 1, 2, 3) */}
+                        {mode === 'song' && (
+                            <div role="group" aria-label="Camera view" className="mt-1.5 grid grid-cols-3 gap-1 rounded-lg bg-white/5 p-0.5">
+                                {VIEWS.map(([v, label], i) => (
+                                    <button key={v} type="button" onClick={() => pickView(v)} aria-pressed={view === v} aria-keyshortcuts={String(i + 1)}
+                                        className={`flex items-center justify-center gap-1.5 rounded-md py-1 text-[11px] font-semibold ${view === v ? 'bg-amber-300 text-black' : 'text-gray-300 hover:bg-white/10'}`}>
+                                        <kbd className={`font-mono text-[9px] px-1 rounded ${view === v ? 'bg-black/15' : 'bg-white/10 text-gray-400'}`}>{i + 1}</kbd>{label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                         {/* one row: share, how it works, and the live effects */}
                         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                         {(FEATURES.share || FEATURES.howItWorks) && (

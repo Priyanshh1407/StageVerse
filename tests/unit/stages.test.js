@@ -456,17 +456,37 @@ describe('the audience and artist views', () => {
             expect(artist.pos[2], stage.key).toBeLessThan(0); // on the stage
             expect(artist.target[2], stage.key).toBeGreaterThan(artist.pos[2]); // looking out at the crowd
             // a held view holds, whatever the show calls (fireworks, the circling camera, the framing)
-            const held = stageCamera(stage, { look: { fireworks: [{ type: 'peony' }] }, shot: 'drop', t: 30, duration: 200, view: 'audience' });
-            expect(held.pos).toEqual(audience.pos);
+            const held = stageCamera(stage, { look: { fireworks: [{ type: 'peony' }] }, shot: 'drop', t: 30, duration: 200, view: 'artist' });
+            expect(held.pos).toEqual(artist.pos);
         }
     });
 
-    it('frame the mainstage closer during a song than its default view', async () => {
+    it('put the artist camera in front of the performers on every stage, so no figure stands in it', () => {
+        // the performer set's frontmost point (the singer's mic stand, 2.8 m in front of the homepage's riser line),
+        // placed and scaled as FestivalScene places it
+        for (const stage of Object.values(STAGES)) {
+            const front = stage.performerAt[2] + (stage.performerScale ?? 1) * -2.8;
+            expect(stage.shots.artist.pos[2], stage.key).toBeGreaterThan(front);
+        }
+    });
+
+    it('keep the whole stage in the audience view, at eye level, on every stage and screen shape', async () => {
         const { stageCamera } = await import('@/lib/show/stages/camera');
-        const centre = STAGES.mainstage.frame.centre;
-        const dist = (c) => Math.hypot(...c.pos.map((v, i) => v - centre[i]));
-        const song = stageCamera(STAGES.mainstage, { look: {}, shot: 'dolly', t: 10, duration: 200 });
-        const still = stageCamera(STAGES.mainstage, { look: {}, shot: 'dolly' });
-        expect(dist(song)).toBeLessThan(dist(still));
+        const tan = Math.tan((55 * Math.PI) / 360);
+        for (const stage of Object.values(STAGES)) {
+            for (const aspect of [1.33, 1.78, 2.4]) {
+                const cam = stageCamera(stage, { look: {}, shot: 'wide', aspect, view: 'audience' });
+                const { centre, half } = stage.audienceFrame;
+                const d = cam.pos[2] - centre[2];
+                expect(cam.pos[1], stage.key).toBeCloseTo(1.7, 5);
+                expect(half[0], `${stage.key} ${aspect}`).toBeLessThanOrEqual(d * tan * aspect); // side to side
+                expect(half[1], `${stage.key} ${aspect}`).toBeLessThanOrEqual(d * tan); // top to bottom
+            }
+        }
+    });
+
+    it('fit the whole mainstage edge to edge in its default view', () => {
+        expect(STAGES.mainstage.frame.margin).toBeLessThan(1.1);
+        expect(STAGES.mainstage.songFrame).toBeUndefined();
     });
 });
