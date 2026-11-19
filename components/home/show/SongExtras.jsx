@@ -58,7 +58,7 @@ export function ShareButtons({ show, time, stage }) {
             setTimeout(() => setCopied(false), 1800);
         } catch { /* clipboard blocked: nothing to do */ }
     };
-    const button = 'flex items-center gap-1 rounded-lg border border-white/15 bg-white/10 px-2 py-1 text-xs font-bold hover:bg-white/20';
+    const button = 'flex shrink-0 items-center gap-1 rounded-lg border border-white/15 bg-white/10 px-2 py-1 text-xs font-bold hover:bg-white/20';
     return (
         <>
             {show.slug && (

@@ -1068,7 +1068,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                 )}
                 {/* Concert mode: now playing, with the programmed timeline (click to seek) */}
                 {mode !== 'scroll' && song.playing && now && (
-                    <div className="absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[30rem] bottom-20 sm:bottom-4 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 px-3 py-2 text-white">
+                    <div className="absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[38rem] bottom-20 sm:bottom-4 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 px-3 py-2 text-white">
                         <div className="flex items-center justify-between gap-3 text-sm mb-1.5">
                             <div className="min-w-0">
                                 <div className="font-bold truncate leading-tight">{now.title}</div>
@@ -1105,14 +1105,14 @@ function ShowExperience({ events = [], isPhone = false }) {
                                 ))}
                             </div>
                         )}
-                        {/* one row: share, how it works, and the live effects */}
-                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        {/* one row: share, how it works, and the live effects (never wrapped; a narrow window scrolls it) */}
+                        <div className="mt-1.5 flex flex-nowrap items-center gap-1.5 overflow-x-auto whitespace-nowrap">
                         {(FEATURES.share || FEATURES.howItWorks) && (
                             <>
                                 {FEATURES.share && <ShareButtons show={now} time={song.time} stage={stage} />}
                                 {FEATURES.howItWorks && (
                                     <button type="button" onClick={() => setExplain((x) => !x)} aria-pressed={explain}
-                                        className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-bold ${explain ? 'border-transparent bg-[#ff6a00] text-black' : 'border-white/15 bg-white/10 hover:bg-white/20'}`}>
+                                        className={`flex shrink-0 items-center gap-1 rounded-lg border px-2 py-1 text-xs font-bold ${explain ? 'border-transparent bg-[#ff6a00] text-black' : 'border-white/15 bg-white/10 hover:bg-white/20'}`}>
                                         How it works
                                     </button>
                                 )}
@@ -1127,7 +1127,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         onPointerUp={() => liveHold(which, false)} onPointerCancel={() => liveHold(which, false)} onLostPointerCapture={() => liveHold(which, false)}
                                         onContextMenu={(e) => e.preventDefault()}
                                         title="Hold to fire. The show carries on."
-                                        className={`select-none touch-none px-2.5 py-1 rounded-lg border text-xs font-black tracking-wider transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
+                                        className={`shrink-0 select-none touch-none px-2.5 py-1 rounded-lg border text-xs font-black tracking-wider transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
                                         {fx.label} <kbd className={`ml-0.5 px-1 py-0.5 rounded font-mono text-xs font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
                                     </button>
                                 ))}
