@@ -1,272 +1,131 @@
 'use client';
-import React, { useState } from 'react';
+
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Import Router
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Building, Wrench, AlertTriangle, Music, ArrowLeft } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, Lock, User, Building, Wrench, Music, ArrowLeft, Loader2, Check } from 'lucide-react';
 import Logo from '@/components/brand/Logo';
+import AuthField from '@/components/auth/AuthField';
+import { ROLES, ROLE_INFO, homeFor, safeNext } from '@/lib/roles';
+import { signIn } from '@/lib/authClient';
 
-const SignupPage = () => {
-  const router = useRouter(); // Initialize Router
-  const [role, setRole] = useState('fan');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // Add Loading State
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD = 8; // (the server's rule: app/api/auth/signup/route.js)
+const ICONS = { fan: User, artist: Music, organizer: Building, production: Wrench };
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    orgName: '',
-    jobTitle: '',
-    genre: ''
-  });
+// (?next= and ?role= are read with useSearchParams, which needs a Suspense boundary)
+export default function SignupPage() {
+  return <Suspense><SignupPageForm /></Suspense>;
+}
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (error) setError('');
+function SignupPageForm() {
+  const router = useRouter();
+  const params = useSearchParams();
+  // (?role= from a "Sign up as …" link picks the role; ?next= is the page to carry on to)
+  const [role, setRole] = useState(() => (ROLES.includes(params.get('role')) ? params.get('role') : 'fan'));
+  const next = safeNext(params.get('next'));
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [errors, setErrors] = useState({});
+  const [failed, setFailed] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const set = (key) => (e) => {
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+    if (errors[key]) setErrors((x) => ({ ...x, [key]: null }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
-    if (!formData.name) { setIsLoading(false); return setError('ERR_MISSING_FIELD: Full_Name is required.'); }
-    if (!formData.email.includes('@')) { setIsLoading(false); return setError('CRITICAL: Invalid_Email_Format.'); }
-    if (formData.password.length < 6) { setIsLoading(false); return setError('SECURITY_WARN: Password too weak.'); }
+    setFailed('');
+    // every problem at once, next to its field
+    const found = {};
+    if (!form.name.trim()) found.name = 'Please enter your name, as you want it shown on StageVerse.';
+    if (!form.email.trim()) found.email = 'Please enter your email address.';
+    else if (!EMAIL.test(form.email.trim())) found.email = 'That email address looks incomplete, for example name@example.com.';
+    if (form.password.length < MIN_PASSWORD) found.password = `Please use at least ${MIN_PASSWORD} characters.`;
+    setErrors(found);
+    if (Object.keys(found).length) return;
 
-    if (role === 'organizer' && !formData.orgName) { setIsLoading(false); return setError('ERR_ENTITY: Organization_Name missing.'); }
-    if (role === 'production' && !formData.jobTitle) { setIsLoading(false); return setError('ERR_ROLE: Job_Title not selected.'); }
-    if (role === 'artist' && !formData.genre) { setIsLoading(false); return setError('ERR_ARTIST: Genre is required.'); }
-
+    setBusy(true);
     try {
-      const payload = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        role: role,
-        ...(role === 'organizer' && { organization: formData.orgName }), // Ensure Schema has this field
-        ...(role === 'production' && { jobTitle: formData.jobTitle }),   // Ensure Schema has this field
-        ...(role === 'artist' && { genre: formData.genre }),             // Ensure Schema has this field
-      };
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload) });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Signup failed');
+        body: JSON.stringify({ name: form.name.trim(), email: form.email.trim(), password: form.password, role }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 409) {
+        setErrors({ email: 'There is already an account with this email. Log in instead, or use another email.' });
+        setBusy(false);
+        return;
       }
-      console.log('Signup Successful!');
-      router.push('/login'); 
-
+      if (!res.ok) throw new Error(data.message || 'Something went wrong. Please try again.');
+      // signed in straight away: no second form to fill in
+      const user = await signIn(form.email.trim(), form.password);
+      router.replace(next ?? homeFor(user.role));
     } catch (err) {
-      console.error('Signup Error:', err);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
+      setFailed(err.message);
+      setBusy(false);
     }
   };
 
   return (
-    <div className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black font-sans">
-      
-      {}
-      <Link 
-        href="/" 
-        className="absolute top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/70 hover:text-white hover:bg-white/10 hover:border-purple-500/30 transition-all duration-300 group"
-      >
-        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-        <span className="text-sm font-medium hidden sm:inline">Home</span>
-      </Link>
-
-      {}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50" />
+    <div className="relative min-h-[100dvh] w-full bg-black font-sans text-white">
+      <div aria-hidden className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-40" />
         <div className="absolute inset-0 bg-black/60" />
-        <div className="absolute top-[-20%] left-[-20%] w-[500px] h-[500px] bg-pink-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
-        <div className="absolute bottom-[-20%] right-[-20%] w-[500px] h-[500px] bg-amber-500/30 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
       </div>
 
-      {}
-      <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{
-          opacity: { duration: 0.5 },
-          layout: { duration: 0.3, type: "spring", stiffness: 300, damping: 30 }
-        }}
-        className="relative z-10 w-[95%] sm:w-[90%] max-w-4xl max-h-[95dvh] overflow-y-auto flex flex-col items-center justify-center p-6 sm:p-12 m-2 scrollbar-hide"
-      >
-        <div
-          className="absolute inset-0 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-purple-500/50"
-          style={{ boxShadow: '0 0 50px 10px rgba(255,106,0, 0.2), inset 0 0 20px rgba(255,106,0, 0.1)' }}
-        />
+      <Link href="/" className="absolute left-4 top-4 z-20 flex min-h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm font-medium text-white/80 backdrop-blur-md hover:bg-white/10 hover:text-white">
+        <ArrowLeft className="h-5 w-5" aria-hidden /> Home
+      </Link>
 
-        <motion.div layout className="relative z-20 flex flex-col items-center w-full max-w-lg h-full justify-center">
+      <main className="relative z-10 flex min-h-[100dvh] items-center justify-center px-4 py-20">
+        <div className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-black/60 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
+          <div className="mb-6 flex justify-center"><Logo size="lg" /></div>
+          <h1 className="mb-1 text-center text-3xl font-bold">Create your account</h1>
+          <p className="mb-6 text-center text-sm text-gray-300">Free, and it takes a minute.</p>
 
-          <div className="flex items-center gap-3 mb-2">
-            <Logo size="lg" />
-          </div>
+          {failed && <p role="alert" className="mb-4 rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{failed}</p>}
 
-          <div className="w-full flex justify-center min-h-[20px] mb-2">
-            <AnimatePresence mode="wait">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -5, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -5, height: 0 }}
-                  className="flex items-center gap-2 px-3 py-0.5 bg-yellow-900/60 border border-dashed border-yellow-500 rounded text-yellow-200 text-[10px] font-mono"
-                >
-                  <AlertTriangle className="w-3 h-3 text-yellow-500" />
-                  <span>{error}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            <fieldset>
+              <legend className="mb-2 text-sm font-semibold text-white/90">I am…</legend>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup">
+                {ROLES.map((key) => {
+                  const Icon = ICONS[key];
+                  const on = role === key;
+                  return (
+                    <button key={key} type="button" role="radio" aria-checked={on} onClick={() => setRole(key)}
+                      className={`relative flex min-h-12 items-start gap-3 rounded-xl border p-3 text-left transition-colors ${on ? 'border-amber-300 bg-amber-300/10' : 'border-white/15 bg-white/5 hover:border-white/40'}`}>
+                      <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${on ? 'text-amber-300' : 'text-gray-300'}`} aria-hidden />
+                      <span>
+                        <span className="block font-bold">{ROLE_INFO[key].label}</span>
+                        <span className="block text-sm leading-snug text-gray-300">{ROLE_INFO[key].blurb}</span>
+                      </span>
+                      {on && <Check className="absolute right-3 top-3 h-4 w-4 text-amber-300" aria-hidden />}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
 
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center drop-shadow-lg">
-            Create your account
-          </h2>
+            <AuthField label="Your name" icon={User} value={form.name} onChange={set('name')} error={errors.name} autoComplete="name" placeholder="As you want it shown" />
+            <AuthField label="Email" type="email" icon={Mail} value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" inputMode="email" placeholder="name@example.com" />
+            <AuthField label="Password" type="password" icon={Lock} value={form.password} onChange={set('password')} error={errors.password} autoComplete="new-password" hint={`At least ${MIN_PASSWORD} characters.`} />
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full mb-4 sm:mb-6 p-1 bg-white/5 rounded-xl border border-white/10">
-            <RoleButton active={role === 'fan'} onClick={() => setRole('fan')} icon={User} label="Fan" />
-            <RoleButton active={role === 'artist'} onClick={() => setRole('artist')} icon={Music} label="Artist" />
-            <RoleButton active={role === 'organizer'} onClick={() => setRole('organizer')} icon={Building} label="Organizer" />
-            <RoleButton active={role === 'production'} onClick={() => setRole('production')} icon={Wrench} label="Production" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="w-full space-y-3 sm:space-y-4">
-
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <InputField name="name" type="text" placeholder="Full Name" icon={User} value={formData.name} onChange={handleChange} />
-              <InputField name="email" type="text" placeholder="Email" icon={Mail} value={formData.email} onChange={handleChange} />
-            </div>
-
-            <AnimatePresence mode="wait">
-              {role === 'artist' && (
-                <motion.div
-                  key="artist"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Music className="h-5 w-5 text-gray-500 group-focus-within:text-amber-400 transition-colors" />
-                    </div>
-                    <select
-                      name="genre"
-                      value={formData.genre}
-                      onChange={handleChange}
-                      className="block w-full pl-11 pr-4 py-3 sm:py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-sm sm:text-base appearance-none backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 cursor-pointer">
-                      <option value="" className="bg-gray-900 text-gray-500">Select Genre...</option>
-                      <option value="Pop" className="bg-gray-900">Pop</option>
-                      <option value="Electronic" className="bg-gray-900">Electronic / EDM</option>
-                      <option value="Rock" className="bg-gray-900">Rock</option>
-                      <option value="Other" className="bg-gray-900">Other</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-500">▼</div>
-                  </div>
-                </motion.div>
-              )}
-
-              {role === 'organizer' && (
-                <motion.div
-                  key="org"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <InputField name="orgName" type="text" placeholder="Organization Name" icon={Building} value={formData.orgName} onChange={handleChange} />
-                </motion.div>
-              )}
-
-              {role === 'production' && (
-                <motion.div
-                  key="prod"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Wrench className="h-5 w-5 text-gray-500 group-focus-within:text-amber-400" />
-                    </div>
-                    <select
-                      name="jobTitle"
-                      value={formData.jobTitle}
-                      onChange={handleChange}
-                      className="block w-full pl-11 pr-4 py-3 sm:py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-sm sm:text-base appearance-none backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 cursor-pointer"
-                    >
-                      <option value="" className="bg-gray-900 text-gray-500">Select Job Title...</option>
-                      <option value="LD" className="bg-gray-900">Lighting Designer (LD)</option>
-                      <option value="FOH" className="bg-gray-900">FOH Audio Engineer</option>
-                      <option value="SM" className="bg-gray-900">Stage Manager</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-500">▼</div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <InputField name="password" type="password" placeholder="Password" icon={Lock} value={formData.password} onChange={handleChange} />
-
-            <button
-              type="submit"
-              disabled={isLoading} // Disable while loading
-              className="w-full py-3 sm:py-3.5 rounded-xl text-white font-bold text-base sm:text-lg tracking-wider uppercase transition-all duration-300 bg-gradient-to-r from-amber-500 to-pink-600 hover:from-amber-400 hover:to-pink-500 hover:shadow-[0_0_20px_rgba(255,106,0,0.6)] active:scale-[0.98] mt-2 disabled:opacity-50"
-            >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+            <button type="submit" disabled={busy}
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-pink-600 text-lg font-bold hover:from-amber-400 hover:to-pink-500 disabled:opacity-60">
+              {busy ? <><Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Creating your account…</> : 'Create account'}
             </button>
-            
-            {}
           </form>
 
-          <p className="mt-4 sm:mt-6 text-gray-400 text-xs">
+          <p className="mt-6 text-center text-sm text-gray-300">
             Already have an account?{' '}
-            <Link href="/login" className="text-amber-400 font-semibold hover:text-amber-300 transition-colors">
-              Log in
-            </Link>
+            <Link href={next ? `/login?next=${encodeURIComponent(next)}` : '/login'} className="font-semibold text-amber-300 hover:underline">Log in</Link>
           </p>
-        </motion.div>
-      </motion.div>
+        </div>
+      </main>
     </div>
   );
-};
-const RoleButton = ({ active, onClick, icon: Icon, label }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all duration-300 ${active
-      ? 'bg-amber-500/20 border border-purple-500 text-white shadow-[0_0_15px_rgba(255,106,0,0.3)]'
-      : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
-      }`}
-  >
-    <Icon className={`w-4 h-4 mb-1 ${active ? 'text-amber-400' : 'text-gray-500'}`} />
-    <span className="text-[10px] font-bold tracking-wide uppercase">{label}</span>
-  </button>
-);
-
-const InputField = ({ name, type, placeholder, icon: Icon, value, onChange }) => (
-  <div className="relative group w-full">
-    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-      <Icon className="h-5 w-5 text-gray-500 group-focus-within:text-amber-400 transition-colors" />
-    </div>
-    <input
-      name={name}
-      type={type}
-      className="block w-full pl-11 pr-4 py-3 sm:py-3.5 bg-black/50 border border-white/10 rounded-xl text-white text-sm sm:text-base placeholder-gray-500 backdrop-blur-sm focus:outline-none focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-    />
-  </div>
-);
-
-export default SignupPage;
+}

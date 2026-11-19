@@ -1,17 +1,11 @@
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import { HOME_FOR as homeFor } from './lib/roles.js';
 
 // Page-level gate (Next 16 "proxy", formerly middleware). It only decides which *pages* a role may open.
 // Every API route still authenticates and authorizes itself (lib/auth.js, lib/authz.js),
 // because the proxy never runs for Socket.IO and is easy to bypass by calling the API directly.
 
-// Home dashboard for each role
-const homeFor = {
-  fan: '/dashboard',
-  artist: '/artist-dashboard',
-  organizer: '/manage/dashboard',
-  production: '/prod-dashboard',
-};
 
 // Pages that belong to one role (mirrors the app/(role) route groups)
 const rolePages = {
@@ -74,7 +68,10 @@ export async function proxy(req) {
 
   const role = await readRole(token);
   if (!role) {
-    const response = NextResponse.redirect(new URL('/login', req.url));
+    // (back to this page once signed in: the login page reads ?next=)
+    const login = new URL('/login', req.url);
+    login.searchParams.set('next', pathname + req.nextUrl.search);
+    const response = NextResponse.redirect(login);
     if (token) response.cookies.delete('token'); // expired or tampered
     return response;
   }

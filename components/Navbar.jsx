@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from '@/components/brand/Logo';
+import { homeFor } from '@/lib/roles';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -53,20 +54,7 @@ export default function Navbar() {
       console.error('Logout failed', err);
     }
   };
-  const getDashboardLink = () => {
-    if (!user) return '/login';
-    const role = (user.role || '').toLowerCase();
-    
-    const roleMap = {
-      artist: '/artist-dashboard',
-      organizer: '/manage/dashboard',
-      production: '/prod-dashboard',
-      fan: '/dashboard',
-      user: '/dashboard'
-    };
-    
-    return roleMap[role] || '/dashboard';
-  };
+  const getDashboardLink = () => (user ? homeFor(user.role) : '/login');
 
   const baseLinks = [
     { label: 'Events', href: '/explore' },
