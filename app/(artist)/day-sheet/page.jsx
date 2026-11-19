@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Loader2, Calendar, MapPin, ChevronRight, Clock, Star, ArrowRight } from 'lucide-react';
-import ArtistNavbar from '@/components/artist/ArtistNavbar';
 
 export default function DaySheetListPage() {
   const [events, setEvents] = useState([]);
@@ -28,7 +27,6 @@ export default function DaySheetListPage() {
 
   return (
     <div className="min-h-screen bg-[#0b1219] font-sans text-white selection:bg-[#ffb000]/30">
-      <ArtistNavbar />
 
       <main className="w-full max-w-7xl mx-auto px-4 lg:px-10 py-12">
 

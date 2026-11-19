@@ -116,7 +116,7 @@ export default function MemoryVaultPage() {
         
         {}
         <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632]">
-          <span className="font-bold text-lg">Concert Passport</span>
+          <span className="font-bold text-lg">StageVerse</span>
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300">
             <Menu className="w-6 h-6" />
           </button>

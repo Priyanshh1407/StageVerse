@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { MessageSquare, Settings, Users, Music } from 'lucide-react';
 import { motion } from 'framer-motion';
-import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import {
   LiveShowCard,
   TicketStatsCard,
@@ -96,7 +95,6 @@ export default function ArtistDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] text-slate-900 dark:text-white font-sans relative">
-      <ArtistNavbar />
 
       {}
       {showAlertModal && data.alert && (
@@ -167,29 +165,9 @@ export default function ArtistDashboard() {
               <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
                 <MessageSquare className="w-4 h-4" />
               </div>
-              <span className="hidden md:inline">Message Crew</span>
+              <span>Message the crew</span>
             </a>
 
-            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-
-            <a href="/tech-rider" className="group flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
-              <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">
-                <Settings className="w-4 h-4" />
-              </div>
-              <span className="hidden md:inline">Rider</span>
-            </a>
-
-            <a href="/guest-list" className="group flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400">
-              <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-                <Users className="w-4 h-4" />
-              </div>
-              <span className="hidden md:inline">Guests</span>
-            </a>
-
-            <a href="/setlist-builder" className="group flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black rounded-xl text-sm font-bold shadow-lg shadow-orange-500/20 transition-all ml-1">
-              <Music className="w-4 h-4" />
-              <span>Setlist Builder</span>
-            </a>
           </div>
         </div>
 

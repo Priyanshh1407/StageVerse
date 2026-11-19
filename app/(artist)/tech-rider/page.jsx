@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { nextShow } from '@/lib/shows';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from "sonner";
-import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import RiderHeader from '@/components/artist/tech-rider/RiderHeader';
 import GearCard from '@/components/artist/tech-rider/GearCard';
 import PlacementForm from '@/components/artist/tech-rider/PlacementForm';
@@ -41,7 +41,8 @@ export default function TechRiderPage() {
         if (json.success) {
           setEvents(json.data);
           if (json.data.length > 0 && !selectedEventId) {
-            setSelectedEventId(json.data[0]._id);
+            // (the next show coming up, not simply the first in the list)
+            setSelectedEventId((nextShow(json.data) ?? json.data[0])._id);
           } else if (json.data.length === 0) {
             setIsLoading(false); // nothing to load a rider for
           }
@@ -211,7 +212,6 @@ export default function TechRiderPage() {
   return (
     <div className="min-h-screen bg-[#101b23] text-white font-sans flex flex-col overflow-x-hidden">
 
-      <ArtistNavbar />
 
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-10 lg:px-20 py-8">
         <div className="flex flex-col max-w-[1200px] mx-auto w-full flex-1">

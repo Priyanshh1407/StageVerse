@@ -21,6 +21,9 @@ const INITIAL_FIXTURES = [
 ];
 
 export default function PatchStudioPage(props) {
+   // the show's own title (the same name everywhere: the picker, the breadcrumb, the rig)
+   const [showTitle, setShowTitle] = useState('');
+
    const params = use(props.params);
    const showId = params.id;
    const [viewMode, setViewMode] = useState('creative'); // 'creative' or 'technical'
@@ -32,6 +35,12 @@ export default function PatchStudioPage(props) {
    const [onStage, setOnStage] = useState(false); // the patch shown as a rig on the 3D stage
    const closeStage = useCallback(() => setOnStage(false), []);
    const rig = patchRig(fixtures);
+   useEffect(() => {
+      if (!showId) return undefined;
+      let alive = true;
+      fetch(`/api/events/${showId}`).then((r) => (r.ok ? r.json() : null)).then((j) => { const t = j?.data?.title ?? j?.event?.title ?? j?.title; if (alive && t) setShowTitle(t); }).catch(() => {});
+      return () => { alive = false; };
+   }, [showId]);
    useEffect(() => {
       if (!showId) return;
       loadPatch();
@@ -228,7 +237,7 @@ export default function PatchStudioPage(props) {
          <header className="flex items-center justify-between border-b border-[#27272A] bg-[#0F0F10] px-6 py-2.5 shrink-0 z-20">
             <div className="flex items-center gap-2 text-sm">
                <FolderOpen className="w-5 h-5 text-gray-600" />
-               <span className="text-gray-500">Project Alpha</span>
+               <span className="text-gray-400">{showTitle || 'Your show'}</span>
                <span className="text-[#27272A]">/</span>
                <span className="text-white font-medium">Patch Studio</span>
                {lastSaved && <span className="text-green-500 text-[10px] ml-2 animate-in fade-in slide-in-from-left-2 transition-all">Saved {lastSaved.toLocaleTimeString()}</span>}
@@ -291,7 +300,7 @@ export default function PatchStudioPage(props) {
                {}
                <div className="flex flex-col md:flex-row items-center justify-between p-6 pb-4 gap-4 z-10 border-b border-[#27272A] bg-[#0F0F10]/95 backdrop-blur-sm sticky top-0">
                   <div className="flex flex-col">
-                     <h2 className="text-white text-xl font-bold tracking-tight">Show Rig: <span className="text-orange-500 font-normal">Neon Nights Tour</span></h2>
+                     <h2 className="text-white text-xl font-bold tracking-tight">Show rig: <span className="text-orange-500 font-normal">{showTitle || 'Your show'}</span></h2>
                      <p className="text-xs text-gray-500 mt-1">
                         {viewMode === 'creative'
                            ? `Creative Mode • ${new Set(filteredFixtures.map(f => f.cue)).size} Groups Defined`

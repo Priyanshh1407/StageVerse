@@ -5,8 +5,7 @@ import { eventImage } from '@/lib/eventImages';
 import Link from 'next/link';
 import { Calendar, MapPin, ArrowRight, Loader2 } from 'lucide-react';
 
-import ArtistNavbar from '@/components/artist/ArtistNavbar';
-import StudioNavbar from '@/components/production/StudioNavbar';
+import { splitShows } from '@/lib/shows';
 
 export default function EventSelectionPage({ role = 'artist' }) {
     const [events, setEvents] = useState([]);
@@ -30,20 +29,19 @@ export default function EventSelectionPage({ role = 'artist' }) {
     }, []);
 
     const linkPrefix = role === 'artist' ? '/live-show' : '/live';
-    const Navbar = role === 'artist' ? ArtistNavbar : StudioNavbar;
+    const { upcoming, past } = splitShows(events);
+    const next = upcoming[0];
 
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1a2c38] via-[#050505] to-[#050505]">
-            <Navbar />
-
             <div className="flex-1 p-4 md:p-8 overflow-y-auto">
                 <div className="max-w-4xl mx-auto space-y-12">
                     <header className="text-center space-y-4">
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-slate-500">
-                            Select Event
+                            Pick a show
                         </h1>
                         <p className="text-slate-400 text-lg max-w-xl mx-auto">
-                            Access the {role === 'artist' ? 'Live Command Center' : 'Production Suite'} for your scheduled shows.
+                            Open the live console for {role === 'artist' ? 'one of your shows' : 'a show you are working on'}.
                         </p>
                     </header>
 
@@ -51,9 +49,10 @@ export default function EventSelectionPage({ role = 'artist' }) {
                         <div className="flex justify-center py-20"><Loader2 className="animate-spin text-orange-500 w-10 h-10" /></div>
                     ) : (
                         <div className="grid grid-cols-1 gap-6">
-                            {events.map(event => (
+                            {events.length === 0 && <p className="text-center text-slate-300">No shows yet. They appear here once an organizer books you.</p>}
+                            {[...upcoming, ...past].map((event, i) => (<div key={event._id}>
+                                {i === upcoming.length && past.length > 0 && <h2 className="mb-4 mt-4 text-lg font-bold text-slate-300">Past shows</h2>}
                                 <Link
-                                    key={event._id}
                                     href={`${linkPrefix}/${event._id}`}
                                     className="group relative flex flex-col md:flex-row w-full bg-[#0d131a]/80 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:border-[#a855f7]/50 transition-all duration-300 hover:shadow-[0_0_40px_-10px_rgba(255,106,0,0.2)]"
                                 >
@@ -85,7 +84,7 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                                     {event.venue?.name || event.city || "TBA"}
                                                 </div>
                                             </div>
-                                            <p className="text-xs text-slate-500 uppercase tracking-widest mt-1">
+                                            <p className="text-sm text-slate-400 uppercase tracking-widest mt-1">
                                                 {event.city}
                                             </p>
                                         </div>
@@ -112,28 +111,15 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                     <div className="w-full md:w-72 bg-white/[0.02] p-6 flex flex-col justify-center items-center text-center space-y-4 relative">
 
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-bold tracking-[0.2em] text-slate-500 uppercase">
-                                                {role === 'artist' ? 'Artist Access' : 'Crew Access'}
-                                            </p>
+                                            {event === next && <p className="text-xs font-bold tracking-[0.2em] text-[#ffb000] uppercase">Next show</p>}
                                             <div className="px-4 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-[#050505] text-sm font-bold rounded shadow-[0_0_15px_rgba(255,106,0,0.4)] group-hover:scale-105 transition-transform flex items-center gap-2">
-                                                {role === 'artist' ? 'LAUNCH SHOW' : 'OPEN CONSOLE'} <ArrowRight className="w-4 h-4" />
-                                            </div>
-                                        </div>
-
-                                        <div className="text-[10px] text-slate-500 font-mono space-y-1 pt-2 border-t border-white/5 w-full">
-                                            <div className="flex justify-between">
-                                                <span>GATE</span>
-                                                <span className="text-white">ACCESS A</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span>ROW</span>
-                                                <span className="text-white">STAGE</span>
+                                                Open the live console <ArrowRight className="w-4 h-4" aria-hidden />
                                             </div>
                                         </div>
 
                                     </div>
                                 </Link>
-                            ))}
+                            </div>))}
                         </div>
                     )}
                 </div>

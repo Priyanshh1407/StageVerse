@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from "sonner";
-import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import GuestListHeader from '@/components/artist/guestlist/Header';
 import StatsGrid from '@/components/artist/guestlist/StatsGrid';
 import AddGuestForm from '@/components/artist/guestlist/AddGuestForm';
@@ -201,7 +200,6 @@ export default function GuestListPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] text-slate-900 dark:text-white font-sans flex flex-col overflow-x-hidden">
-      <ArtistNavbar />
 
       <main className="flex-1 w-full max-w-7xl mx-auto p-6 flex flex-col gap-6">
 

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { nextShow } from '@/lib/shows';
 import { Sparkles, Loader2 } from 'lucide-react';
-import ArtistNavbar from '@/components/artist/ArtistNavbar';
 import BuilderHeader from '@/components/artist/setlist/BuilderHeader';
 import SongBank from '@/components/artist/setlist/SongBank';
 import SetlistCanvas from '@/components/artist/setlist/SetlistCanvas';
@@ -56,6 +56,8 @@ function SetlistBuilderContent() {
         const json = await res.json();
         if (json.success) {
           setEvents(json.events);
+          // (no show in the address: the next one coming up, not a page of cards to pick from; the header switches)
+          setSelectedEventId((current) => current ?? nextShow(json.events)?._id ?? null);
         }
       } catch (e) {
         console.error("Failed to fetch events", e);
@@ -439,7 +441,6 @@ function SetlistBuilderContent() {
 export default function SetlistBuilderPage() {
   return (
     <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] text-slate-900 dark:text-white font-sans flex flex-col overflow-hidden">
-      <ArtistNavbar />
       <Suspense fallback={<div className="text-white text-center p-10">Loading...</div>}>
         <SetlistBuilderContent />
       </Suspense>

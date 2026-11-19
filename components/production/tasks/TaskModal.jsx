@@ -100,8 +100,7 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
                                 {}
                                 {!events.length && (
                                     <>
-                                        <option value="13">Hamlet World Tour</option>
-                                        <option value="project-alpha">Project Alpha</option>
+                                        <option value="" disabled>No shows yet</option>
                                     </>
                                 )}
                             </select>

@@ -125,7 +125,7 @@ export default function GlobalTasksPage() {
             </div>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-white tracking-tight">Global Task Manager</h1>
+                <h1 className="text-3xl font-bold text-white tracking-tight">Tasks</h1>
                 <p className="text-gray-500 text-sm mt-1">Manage deliverables across all active productions.</p>
               </div>
               <button
