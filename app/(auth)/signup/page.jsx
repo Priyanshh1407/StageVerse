@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import { track } from '@vercel/analytics';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, User, Building, Wrench, Music, ArrowLeft, Loader2, Check } from 'lucide-react';
@@ -60,6 +61,7 @@ function SignupPageForm() {
         return;
       }
       if (!res.ok) throw new Error(data.message || 'Something went wrong. Please try again.');
+      track('Sign up', { role });
       // signed in straight away: no second form to fill in
       const user = await signIn(form.email.trim(), form.password);
       router.replace(next ?? homeFor(user.role));

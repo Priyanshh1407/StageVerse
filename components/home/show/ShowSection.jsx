@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { track } from '@vercel/analytics';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Orbitron } from 'next/font/google';
@@ -749,6 +750,7 @@ function ShowExperience({ events = [], isPhone = false }) {
     // A demo's show, fetched the first time it's picked
     const demoShows = useRef(new Map());
     const playDemo = async (demo, startAt = 0) => {
+        track('Play song', { song: demo.title, genre: demo.genre ?? '' });
         try {
             let show = demoShows.current.get(demo.slug);
             if (!show) {
@@ -784,6 +786,7 @@ function ShowExperience({ events = [], isPhone = false }) {
 
     // The visitor's own song: decoded and analysed in their browser, never uploaded anywhere
     const analyseUpload = async (file) => {
+        if (file) track('Light up own song');
         if (!file) return;
         if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
             setSong((s) => ({ ...s, error: `That file is over ${MAX_UPLOAD_MB} MB.` }));
@@ -1144,7 +1147,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                         fwOptions={fwOptions}
                         onFwOptions={changeFwOptions}
                         open={deskOpen}
-                        onOpenChange={(open) => (open ? bigScreenOnly(() => setDeskOpen(true))() : setDeskOpen(false))}
+                        onOpenChange={(open) => (open ? bigScreenOnly(() => { track('Open lighting desk'); setDeskOpen(true); })() : setDeskOpen(false))}
                         desk={desk}
                         counts={deskCounts}
                         manual={mode === 'manual'}

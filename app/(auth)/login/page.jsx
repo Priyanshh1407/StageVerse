@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import { track } from '@vercel/analytics';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, ArrowLeft, User, Music, Building, Wrench, Loader2 } from 'lucide-react';
@@ -55,6 +56,7 @@ function LoginPageForm() {
     setFailed('');
     setErrors({});
     setBusy(demo.role);
+    track('Try demo', { role: demo.role });
     try { go(await signIn(demo.email, DEMO_PASSWORD)); } catch (err) {
       setFailed(`The ${demo.label} demo account isn't available right now. ${err.message}`);
       setBusy(null);

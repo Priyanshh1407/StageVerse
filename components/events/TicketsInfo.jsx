@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { track } from '@vercel/analytics';
 import { createPortal } from 'react-dom';
 import { Ticket, ExternalLink, X, Clock, Calendar, MapPin } from 'lucide-react';
 import { formatPrice } from '@/lib/format';
@@ -46,7 +47,7 @@ export function TicketsButton({ event, className = '' }) {
     const platform = event?.ticketsAt?.name?.trim() || '';
     return (
         <>
-            <button type="button" onClick={() => setOpen(true)}
+            <button type="button" onClick={() => { track('Get tickets', { platform: platform || 'none' }); setOpen(true); }}
                 className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] px-6 font-bold text-black shadow-lg shadow-[#ff6a00]/20 transition-all hover:brightness-110 ${className}`}>
                 <Ticket className="h-5 w-5" aria-hidden />
                 {platform ? `Get tickets on ${platform}` : 'Get tickets'}

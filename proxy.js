@@ -91,6 +91,7 @@ export const config = {
      * - _next/static, _next/image, favicon
      * - public asset folders and static file extensions
      */
-    '/((?!_next/static|_next/image|favicon.ico|images|models|textures|.*\\.glb$|.*\\.gltf$|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.webp$|.*\\.exr$|.*\\.hdr$|.*\\.ico$).*)',
+    // (and _vercel: Vercel's own paths, e.g. the analytics script and its page views)
+    '/((?!_next/static|_next/image|_vercel|favicon.ico|images|models|textures|.*\\.glb$|.*\\.gltf$|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.webp$|.*\\.exr$|.*\\.hdr$|.*\\.ico$).*)',
   ],
 };
