@@ -96,6 +96,8 @@ const EventSchema = new mongoose.Schema({
   images: ImageAssetsSchema, // Stores hero, artist, venue URLs
 
   ticketTiers: [TicketTierSchema],
+  // where the tickets are sold (StageVerse doesn't sell them): the platform's name and, optionally, the event's page there
+  ticketsAt: { name: { type: String, default: '' }, url: { type: String, default: '' } },
   discounts: [DiscountSchema], // Renamed to plural for consistency
 
   status: { type: String, default: 'Scheduled' }, // 'requested', 'active', 'archived'

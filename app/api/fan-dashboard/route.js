@@ -140,7 +140,7 @@ export async function GET(req) {
         const topFriends = (user.following || []).map((f) => ({
             id: String(f._id),
             name: f.name,
-            avatar: f.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+            avatar: f.avatar || '', // (no photo: their initials, not a stranger's photo)
             sharedShows: shared.get(String(f._id))?.size ?? 0,
             role: "Concert Buddy"
         })).sort((x, y) => y.sharedShows - x.sharedShows);
@@ -150,10 +150,11 @@ export async function GET(req) {
                 id: `#${user._id.toString().slice(-5).toUpperCase()}`,
                 level: Math.floor(totalShows / 2) + 1,
                 memberSince: new Date(user.createdAt).getFullYear().toString(),
-                avatar: user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+                // the fan's own details only: no photo shows their initials, an empty city or bio stays empty
+                avatar: user.avatar || '',
                 predictionScore: 1250,
-                location: user.location || "Global Citizen",
-                bio: user.bio || "Music junkie. Festival hopper.",
+                location: user.location || '',
+                bio: user.bio || '',
                 socials: user.socials || { instagram: "", twitter: "" }
             },
             stats: {

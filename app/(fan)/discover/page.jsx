@@ -382,7 +382,7 @@ function RecommendedCard({ event }) {
             From ${event.price}
           </span>
           <span className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-lg hover:opacity-90 transition-opacity">
-            Get Tickets
+            View event
           </span>
         </div>
       </div>

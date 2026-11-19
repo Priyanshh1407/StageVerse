@@ -461,12 +461,15 @@ describe('the audience and artist views', () => {
         }
     });
 
-    it('put the artist camera in front of the performers on every stage, so no figure stands in it', () => {
-        // the performer set's frontmost point (the singer's mic stand, 2.8 m in front of the homepage's riser line),
-        // placed and scaled as FestivalScene places it
+    it('put the artist camera in front of the performers or above their heads on every stage, so no figure stands in it', () => {
+        // the performer set's frontmost point (the singer's mic stand, 2.8 m in front of the homepage's riser line) and
+        // the top of their heads (3.6 m up in the set), placed and scaled as FestivalScene places them
         for (const stage of Object.values(STAGES)) {
-            const front = stage.performerAt[2] + (stage.performerScale ?? 1) * -2.8;
-            expect(stage.shots.artist.pos[2], stage.key).toBeGreaterThan(front);
+            const ps = stage.performerScale ?? 1;
+            const front = stage.performerAt[2] + ps * -2.8;
+            const heads = stage.performerAt[1] + 1.8 - 1.8 * ps + ps * 3.6;
+            const [, y, z] = stage.shots.artist.pos;
+            expect(z > front || y > heads, `${stage.key}: camera at height ${y}, ${z}`).toBe(true);
         }
     });
 

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // Import Router
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Building, Wrench, Chrome, AlertTriangle, Music, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Building, Wrench, AlertTriangle, Music, ArrowLeft } from 'lucide-react';
 import Logo from '@/components/brand/Logo';
 
 const SignupPage = () => {

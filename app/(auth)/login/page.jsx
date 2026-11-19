@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Chrome, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, AlertTriangle, ArrowLeft } from 'lucide-react';
 import Logo from '@/components/brand/Logo';
 const ROLE_PATHS = {
   fan: '/dashboard',
@@ -153,22 +153,6 @@ const LoginPage = () => {
               {isLoading ? 'Verifying...' : 'Login'}
             </button>
 
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-white/10"></div>
-              <span className="flex-shrink mx-4 text-gray-400 text-sm">or</span>
-              <div className="flex-grow border-t border-white/10"></div>
-            </div>
-
-            <button
-              type="button"
-              className="w-full py-3 sm:py-4 rounded-xl text-white font-medium flex items-center justify-center gap-3 transition-all duration-300
-                         bg-white/5 border border-white/10 backdrop-blur-md
-                         hover:bg-white/10 hover:border-purple-500/30
-                         hover:shadow-[0_0_20px_rgba(255,106,0,0.2)]"
-            >
-              <Chrome className="w-5 h-5" />
-              <span>Continue with Google</span>
-            </button>
           </form>
 
           <p className="mt-6 sm:mt-8 text-gray-400 text-sm">

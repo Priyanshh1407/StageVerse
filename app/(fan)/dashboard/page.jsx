@@ -9,6 +9,7 @@ import FanSidebar from '@/components/fan/FanSidebar';
 import TopArtistsModal from '@/components/fan/dashboard/TopArtistModal';
 import TopFriendsModal from '@/components/fan/dashboard/TopFriendsModal';
 import EditProfileModal from '@/components/fan/EditProfileModal';
+import AvatarFill from '@/components/common/AvatarFill';
 import UploadMediaModal from '@/components/fan/dashboard/UploadMediaModal';
 import PredictionModal from '@/components/fan/dashboard/SetListPredictor';
 import ScorecardModal from '@/components/fan/dashboard/ScoreCardModal';
@@ -113,7 +114,7 @@ export default function FanDashboard() {
               <div className="flex items-center gap-6 relative z-10">
                 <div className="relative">
                   <div className="relative h-24 w-24 md:h-32 md:w-32 rounded-full border-4 border-white dark:border-[#1a2632] shadow-xl overflow-hidden bg-gray-700">
-                    <Image src={data.user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde"} alt="User" fill className="object-cover" />
+                    <AvatarFill src={data.user.avatar} name={data.user.name} size="text-3xl md:text-4xl" />
                   </div>
                   <div className="absolute bottom-1 right-1 bg-green-500 h-4 w-4 border-2 border-white dark:border-[#1a2632] rounded-full"></div>
                 </div>
@@ -136,6 +137,12 @@ export default function FanDashboard() {
 
                   {data.user.bio && (
                     <p className="text-sm text-slate-600 dark:text-slate-300 italic mb-3 max-w-md">&quot;{data.user.bio}&quot;</p>
+                  )}
+                  {/* nothing made up: an empty profile asks for the fan's own details */}
+                  {(!data.user.bio || !data.user.location) && (
+                    <button type="button" onClick={() => setIsEditProfileOpen(true)} className="self-start mb-3 text-sm font-semibold text-[#ff6a00] hover:underline">
+                      {!data.user.location && !data.user.bio ? 'Add your city and a line about you' : !data.user.location ? 'Add your city' : 'Add a line about you'}
+                    </button>
                   )}
 
                   <div className="flex items-center gap-2">
@@ -194,7 +201,7 @@ export default function FanDashboard() {
                   <div className="flex items-center -space-x-3">
                     {data.topFriends.slice(0, 3).map((friend, i) => (
                       <div key={i} className="relative h-10 w-10 rounded-full border-2 border-white dark:border-[#1a2632] overflow-hidden">
-                        <Image src={friend.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde"} alt={friend.name} fill className="object-cover" />
+                        <AvatarFill src={friend.avatar} name={friend.name} size="text-xs" />
                       </div>
                     ))}
                     {data.topFriends.length > 3 && (

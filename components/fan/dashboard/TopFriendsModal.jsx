@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, use } from 'react';
 import { X, Search, Users, MessageSquare, ArrowUpRight } from 'lucide-react';
-import Image from 'next/image';
+import AvatarFill from '@/components/common/AvatarFill';
 
 export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -71,11 +71,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
               <div key={friend.name} className="flex items-center gap-4 p-3 hover:bg-slate-100 dark:hover:bg-[#1e2a35] rounded-lg transition-colors group cursor-pointer">
                 {}
                 <div className="relative h-12 w-12 rounded-full shadow-md shrink-0 overflow-hidden border-2 border-white dark:border-slate-700">
-                  <Image
-                    src={friend.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde"}
-                    alt={friend.name}
-                    fill
-                    className="object-cover" />
+                  <AvatarFill src={friend.avatar} name={friend.name} size="text-sm" />
                 </div>
 
                 {}

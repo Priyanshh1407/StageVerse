@@ -11,13 +11,12 @@ import {
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import MainFooter from '@/components/MainFooter';
-import TicketSelection from '@/components/fan/TicketSelection';
-import { useParams, useRouter } from 'next/navigation';
+import TicketsInfo, { TicketsButton } from '@/components/events/TicketsInfo';
+import { useParams } from 'next/navigation';
 
 export default function EventDetailPage() {
     const params = useParams();
     const eventId = params?.id || '1';
-    const router = useRouter();
 
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -56,10 +55,6 @@ export default function EventDetailPage() {
 
         fetchEventData();
     }, [eventId]);
-
-    const handleGetTickets = () => {
-        router.push(`/events/${eventId}/tickets`);
-    };
 
     if (loading) {
         return (
@@ -102,7 +97,6 @@ export default function EventDetailPage() {
     const aboutSection = event.about || (event.description ? [event.description] : ["No details available."]);
     const lineup = event.lineup || [];
     const similarEvents = event.similarEvents || [];
-    const tiers = event.ticketTiers || [];
 
     return (
         <div className="flex flex-col min-h-screen bg-[#050505] text-white font-sans selection:bg-[#ffb000] selection:text-black overflow-x-hidden">
@@ -175,6 +169,7 @@ export default function EventDetailPage() {
                                         <span className="font-bold text-lg md:text-xl">{event.venue.name}</span>
                                     </div>
                                 </div>
+                                <TicketsButton event={event} className="w-full md:w-auto md:ml-auto" />
                             </div>
                         </motion.div>
                     </div>
@@ -300,7 +295,7 @@ export default function EventDetailPage() {
                                     transition={{ delay: 0.5, duration: 0.6 }}
                                     className="bg-[#111] border border-[#a855f7]/20 rounded-3xl p-1 shadow-[0_0_40px_-10px_rgba(255,106,0,0.15)]"
                                 >
-                                    <TicketSelection eventId={event._id} tiers={tiers} />
+                                    <TicketsInfo event={event} formattedDate={formattedDate} />
                                 </motion.div>
 
                                 {}

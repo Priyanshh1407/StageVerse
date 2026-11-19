@@ -1,17 +1,7 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import React from 'react';
-import { useParams } from 'next/navigation';
-import TicketSelection from '@/components/fan/TicketSelection'; 
-
-export default function FanTicketPage() {
-  const params = useParams();
-  const eventId = params.id; 
-
-  return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
-      {}
-      <TicketSelection eventId={eventId} /> 
-    </div>
-  );
+// StageVerse doesn't sell tickets: the event page says where they are sold
+export default async function EventTicketsPage({ params }) {
+    const { id } = await params;
+    redirect(`/events/${id}`);
 }

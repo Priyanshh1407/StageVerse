@@ -41,7 +41,8 @@ export default function EventDetailsForm({
     date: '',
     time: '',
     city: '',
-    description: ''
+    description: '',
+    ticketsAt: { name: '', url: '' }
   });
   const [venueSearch, setVenueSearch] = useState('');
   const [venuesList, setVenuesList] = useState([]);
@@ -72,7 +73,8 @@ export default function EventDetailsForm({
           date: data.date ? new Date(data.date).toISOString().split('T')[0] : '',
           time: data.time || '',
           city: data.city || '',
-          description: data.description || ''
+          description: data.description || '',
+          ticketsAt: { name: data.ticketsAt?.name || '', url: data.ticketsAt?.url || '' }
         });
         if (data.venue) {
           setSelectedVenue(data.venue); // Assuming populate returned the object
@@ -412,6 +414,22 @@ export default function EventDetailsForm({
             )}
           </div>
         )}
+      </div>
+
+      {/* where the tickets are sold (StageVerse doesn't sell them) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="tickets-at-name" className="text-sm font-medium text-[#90a4cb]">Tickets sold on</label>
+          <input id="tickets-at-name" type="text" value={formData.ticketsAt.name} placeholder="e.g. BookMyShow"
+            onChange={(e) => setFormData({ ...formData, ticketsAt: { ...formData.ticketsAt, name: e.target.value } })}
+            className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="tickets-at-url" className="text-sm font-medium text-[#90a4cb]">Link to the tickets (optional)</label>
+          <input id="tickets-at-url" type="url" inputMode="url" value={formData.ticketsAt.url} placeholder="https://"
+            onChange={(e) => setFormData({ ...formData, ticketsAt: { ...formData.ticketsAt, url: e.target.value } })}
+            className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none" />
+        </div>
       </div>
 
       <div className="h-px bg-[#314368]/50 my-2"></div>
