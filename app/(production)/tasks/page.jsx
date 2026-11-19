@@ -12,7 +12,13 @@ import { toast } from 'sonner';
 export default function GlobalTasksPage() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  // the tab is remembered on this device (read after the first paint)
+  const [filter, setFilterState] = useState('all');
+  const setFilter = (f) => { setFilterState(f); try { localStorage.setItem('sv:tasks-tab', f); } catch { /* private mode */ } };
+  useEffect(() => {
+    const id = setTimeout(() => { try { const t = localStorage.getItem('sv:tasks-tab'); if (t) setFilterState(t); } catch { /* nothing saved */ } }, 0);
+    return () => clearTimeout(id);
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);

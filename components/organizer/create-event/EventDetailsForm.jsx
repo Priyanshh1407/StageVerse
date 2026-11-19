@@ -29,6 +29,8 @@ export default function EventDetailsForm({
   const editId = searchParams.get('id');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [restored, setRestored] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false); // Internal State
   const [formData, setFormData] = useState({
@@ -45,6 +47,8 @@ export default function EventDetailsForm({
     ticketsAt: { name: '', url: '' }
   });
   const [venueSearch, setVenueSearch] = useState('');
+  const DRAFT_KEY = 'sv:event-draft';
+  const LAST_VENUE_KEY = 'sv:last-venue';
   const [venuesList, setVenuesList] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -200,9 +204,47 @@ export default function EventDetailsForm({
       setIsGenerating(false);
     }
   };
+  // a new event: bring back an unfinished draft, otherwise start from the last city and venue used
+  const [draftChecked, setDraftChecked] = useState(false);
+  if (!draftChecked && typeof window !== 'undefined') {
+    setDraftChecked(true);
+    if (!editId) {
+      try {
+        const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+        if (draft?.formData && Object.values(draft.formData).some((v) => typeof v === 'string' && v.trim())) {
+          setFormData((f) => ({ ...f, ...draft.formData, ticketsAt: { name: '', url: '', ...(draft.formData.ticketsAt ?? {}) } }));
+          if (draft.venue) { setSelectedVenue(draft.venue); setVenueSearch(draft.venue.name ?? ''); }
+          setRestored(true);
+        } else {
+          const last = JSON.parse(localStorage.getItem(LAST_VENUE_KEY) || 'null');
+          if (last?.venue) { setSelectedVenue(last.venue); setVenueSearch(last.venue.name ?? ''); setFormData((f) => ({ ...f, city: last.city ?? f.city })); }
+        }
+      } catch { /* no saved draft */ }
+    }
+  }
+  // (saved as you type, for a new event only)
+  useEffect(() => {
+    if (editId || !draftChecked) return;
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData, venue: selectedVenue })); } catch { /* private mode */ }
+  }, [formData, selectedVenue, editId, draftChecked]);
+  const startOver = () => {
+    try { localStorage.removeItem(DRAFT_KEY); } catch { /* private mode */ }
+    setFormData({ title: '', artist: '', artistId: null, genre: '', status: 'Scheduled', vibe: 50, date: '', time: '', city: '', description: '', ticketsAt: { name: '', url: '' } });
+    setSelectedVenue(null); setVenueSearch(''); setErrors({}); setRestored(false);
+  };
+
   const handleSubmit = async () => {
-    if (!selectedVenue?._id) return toast.error("Please select a valid venue.");
-    if (!formData.title || !formData.date) return toast.error("Required fields missing.");
+    // (the server needs all of these: say which are missing, next to them, all at once)
+    const found = {};
+    if (!formData.title.trim()) found.title = 'Give the event a name.';
+    if (!String(formData.artist ?? '').trim()) found.artist = 'Pick the artist (start typing their name).';
+    if (!formData.date) found.date = 'Pick the date.';
+    if (!formData.time) found.time = 'Pick the start time.';
+    if (!formData.city.trim()) found.city = 'Which city is it in?';
+    if (!selectedVenue?._id) found.venue = 'Pick the venue from the list (or create it).';
+    if (!formData.description.trim()) found.description = 'Add a short description, or press "Write the description for me".';
+    setErrors(found);
+    if (Object.keys(found).length) { toast.error('A few details are missing: they are marked in red.'); return; }
 
     setIsSubmitting(true);
 
@@ -225,10 +267,14 @@ export default function EventDetailsForm({
       const data = await res.json();
 
       if (res.ok) {
-        toast.success(editId ? "Event Updated Successfully!" : "Event Created Successfully! 🚀");
+        toast.success(editId ? 'Your changes are saved.' : 'Your event is published.');
+        try {
+          localStorage.removeItem(DRAFT_KEY);
+          localStorage.setItem(LAST_VENUE_KEY, JSON.stringify({ city: formData.city, venue: selectedVenue }));
+        } catch { /* private mode */ }
         router.push('/manage/dashboard');
       } else {
-        toast.error(`Failed: ${data.message}`);
+        toast.error(data.message ? `It couldn't be saved: ${data.message}` : "It couldn't be saved. Please try again.");
       }
 
     } catch (error) {
@@ -239,7 +285,7 @@ export default function EventDetailsForm({
     }
   };
   const handleCancelEdit = () => {
-    router.push('/manage/create-event'); // Removes ?id=...
+    router.push('/create-event'); // Removes ?id=...
     setFormData({ title: '', artist: '', genre: '', status: 'Scheduled', vibe: 50, date: '', time: '', city: '', description: '' });
     setSelectedVenue(null);
     setVenueSearch('');
@@ -259,9 +305,11 @@ export default function EventDetailsForm({
 
       {}
       <div className="flex items-center justify-between border-b border-[#314368] pb-4">
-        <h3 className="text-xl font-bold text-white">
-          {editId ? 'Edit Event Details' : 'Create New Event'}
-        </h3>
+        <div>
+          <h2 className="text-xl font-bold text-white">{editId ? 'Edit the event' : 'Event details'}</h2>
+          <p className="mt-1 text-sm text-[#90a4cb]">Fields marked <span className="text-red-300">*</span> are needed. {editId ? '' : 'Your draft is saved as you type.'}</p>
+          {restored && <p className="mt-1 text-sm text-amber-200">We brought back the draft you hadn&apos;t finished. <button type="button" onClick={startOver} className="font-semibold underline">Start over</button></p>}
+        </div>
 
         {editId && (
           <button
@@ -278,13 +326,17 @@ export default function EventDetailsForm({
 
         {}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[#90a4cb]">Event Title</label>
+          <label htmlFor="event-title" className="text-sm font-medium text-[#90a4cb]">Event name <span className="text-red-300">*</span></label>
           <input
+            id="event-title"
             type="text"
             value={formData.title}
+            aria-invalid={Boolean(errors.title)}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none placeholder-[#314368]"
+            placeholder="e.g. Neon Skyline Tour: Pune"
+            className={`w-full h-12 bg-[#182234] border rounded-lg px-4 text-white focus:border-[#a855f7] outline-none placeholder-[#5b6b86] ${errors.title ? 'border-red-400' : 'border-[#314368]'}`}
           />
+        {errors.title && <p role="alert" className="text-sm font-medium text-red-300">{errors.title}</p>}
         </div>
 
         {}
@@ -302,14 +354,16 @@ export default function EventDetailsForm({
             }}
             required
           />
+          {errors.artist && <p role="alert" className="text-sm font-medium text-red-300">{errors.artist}</p>}
         </div>
 
         {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#90a4cb]">Genre</label>
+            <label htmlFor="event-genre" className="text-sm font-medium text-[#90a4cb]">Genre</label>
             <div className="relative">
               <select
+                id="event-genre"
                 value={formData.genre}
                 onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
                 className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none appearance-none cursor-pointer"
@@ -320,9 +374,10 @@ export default function EventDetailsForm({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#90a4cb]">Event Status</label>
+            <label htmlFor="event-status" className="text-sm font-medium text-[#90a4cb]">Status</label>
             <div className="relative">
               <select
+                id="event-status"
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none appearance-none cursor-pointer"
@@ -336,10 +391,11 @@ export default function EventDetailsForm({
 
           <div className="flex flex-col gap-2 md:col-span-2">
             <div className="flex justify-between items-center">
-              <label className="text-sm font-medium text-[#90a4cb]">Vibe</label>
+              <label htmlFor="event-vibe" className="text-sm font-medium text-[#90a4cb]">Vibe</label>
               <span className="text-xs font-bold text-[#ff6a00]">{getVibeLabel(formData.vibe)}</span>
             </div>
             <input
+              id="event-vibe"
               type="range" min="0" max="100" value={formData.vibe}
               onChange={(e) => setFormData({ ...formData, vibe: parseInt(e.target.value) })}
               className="w-full h-2 bg-[#314368] rounded-lg appearance-none cursor-pointer accent-[#ff6a00]"
@@ -352,20 +408,24 @@ export default function EventDetailsForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[#90a4cb]">Date</label>
-          <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none [color-scheme:dark]" />
+          <label htmlFor="event-date" className="text-sm font-medium text-[#90a4cb]">Date <span className="text-red-300">*</span></label>
+          <input id="event-date" type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none [color-scheme:dark]" />
+          {errors.date && <p role="alert" className="text-sm font-medium text-red-300">{errors.date}</p>}
         </div>
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[#90a4cb]">Time</label>
-          <input type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none [color-scheme:dark]" />
+          <label htmlFor="event-time" className="text-sm font-medium text-[#90a4cb]">Start time <span className="text-red-300">*</span></label>
+          <input id="event-time" type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} className="w-full h-12 bg-[#182234] border border-[#314368] rounded-lg px-4 text-white focus:border-[#a855f7] outline-none [color-scheme:dark]" />
+          {errors.time && <p role="alert" className="text-sm font-medium text-red-300">{errors.time}</p>}
         </div>
       </div>
 
       {}
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-[#90a4cb]">Event City</label>
+        <label htmlFor="event-city" className="text-sm font-medium text-[#90a4cb]">City <span className="text-red-300">*</span></label>
         <input
+          id="event-city"
           type="text"
+          autoComplete="address-level2"
           value={formData.city}
           onChange={(e) => {
             setFormData({ ...formData, city: e.target.value });
@@ -373,14 +433,17 @@ export default function EventDetailsForm({
           }}
           className={`w-full h-12 bg-[#182234] border rounded-lg px-4 text-white focus:border-[#a855f7] outline-none ${cityMismatch ? 'border-yellow-500' : 'border-[#314368]'}`}
         />
-        {cityMismatch && <p className="text-xs text-yellow-500 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Warning: Venue is in {selectedVenue?.city}</p>}
+        {cityMismatch && <p className="text-sm text-yellow-300 flex items-center gap-1"><AlertTriangle className="w-4 h-4" aria-hidden /> The venue you picked is in {selectedVenue?.city}.</p>}
+        {errors.city && <p role="alert" className="text-sm font-medium text-red-300">{errors.city}</p>}
+
       </div>
 
       {}
       <div className="flex flex-col gap-2 relative z-50">
-        <label className="text-sm font-medium text-[#90a4cb]">Venue</label>
+        <label htmlFor="event-venue" className="text-sm font-medium text-[#90a4cb]">Venue <span className="text-red-300">*</span></label>
         <div className="relative">
           <input
+            id="event-venue"
             type="text"
             value={venueSearch}
             onChange={(e) => {
@@ -390,11 +453,12 @@ export default function EventDetailsForm({
             }}
             onFocus={() => { if (venueSearch) setShowDropdown(true); }}
             className={`w-full h-12 bg-[#182234] border rounded-lg pl-10 pr-4 text-white focus:border-[#a855f7] outline-none ${selectedVenue ? 'border-green-500/50' : 'border-[#314368]'}`}
-            placeholder="Search for a venue..."
+            placeholder="Start typing the venue's name"
           />
           <Search className="absolute left-3 top-3.5 text-[#90a4cb] w-5 h-5" />
           {selectedVenue && !showDropdown && <div className="absolute right-3 top-3.5 text-green-400"><MapPin className="w-5 h-5" /></div>}
         </div>
+        {errors.venue && <p role="alert" className="text-sm font-medium text-red-300">{errors.venue}</p>}
 
         {}
         {showDropdown && venueSearch && !selectedVenue && (
@@ -435,8 +499,9 @@ export default function EventDetailsForm({
       <div className="h-px bg-[#314368]/50 my-2"></div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-[#90a4cb]">Description</label>
+        <label htmlFor="event-description" className="text-sm font-medium text-[#90a4cb]">Description <span className="text-red-300">*</span></label>
         <textarea
+          id="event-description"
           value={formData.description}
           onChange={(e) => {
             setFormData({ ...formData, description: e.target.value });
@@ -444,6 +509,7 @@ export default function EventDetailsForm({
           }}
           className="w-full h-32 bg-[#182234] border border-[#314368] rounded-lg p-4 text-white focus:border-[#a855f7] outline-none resize-y"
         />
+        {errors.description && <p role="alert" className="text-sm font-medium text-red-300">{errors.description}</p>}
       </div>
 
       <div className="flex gap-4 mt-4">
@@ -452,7 +518,7 @@ export default function EventDetailsForm({
           disabled={isGenerating || isSubmitting}
           className="flex-1 h-12 bg-[#192734] border border-[#2c3b47] rounded-lg font-bold text-white hover:bg-[#233b4a] transition-all flex items-center justify-center gap-2"
         >
-          {isGenerating ? 'Thinking...' : <><Info className="w-4 h-4" /> Generate AI</>}
+          {isGenerating ? 'Writing…' : <><Info className="w-4 h-4" aria-hidden /> Write the description for me</>}
         </button>
 
         <button
@@ -462,7 +528,7 @@ export default function EventDetailsForm({
             }`}
         >
           {isSubmitting ? (editId ? 'Updating...' : 'Publishing...') : (
-            <><Rocket className="w-4 h-4" /> {editId ? 'Update Event' : 'Publish Event'}</>
+            <><Rocket className="w-4 h-4" aria-hidden /> {editId ? 'Save changes' : 'Publish event'}</>
           )}
         </button>
       </div>

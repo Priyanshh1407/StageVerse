@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { History, Zap, ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
 import EventDetailsForm from '@/components/organizer/create-event/EventDetailsForm';
 import AIContentPreview from '@/components/organizer/create-event/AIContentPreview';
@@ -68,20 +68,11 @@ export default function CreateEventPage() {
               <ArrowLeft className="w-4 h-4" /> Dashboard
             </Link>
             <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight text-white">
-              Create New Event
+              Create an event
             </h1>
-            <div className="flex items-center gap-2">
-              <span className="text-[#90b2cb] text-base font-medium">Powered by Gemini</span>
-              <Zap className="text-[#ff6a00] w-4 h-4 fill-current" />
-            </div>
+            <p className="text-[#90b2cb] text-base">Fill in the details; the AI can write the description for you.</p>
           </div>
 
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2c3b47] bg-[#192734] text-white hover:bg-[#233b4a] transition-colors text-sm font-medium">
-              <History className="w-4 h-4" />
-              Load Draft
-            </button>
-          </div>
         </header>
 
         {}

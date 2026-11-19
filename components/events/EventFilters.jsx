@@ -2,7 +2,7 @@
 
 import { RotateCcw, X, Check } from 'lucide-react';
 
-export default function EventsFilter({ filters, setFilters, onReset, isOpen, onClose }) {
+export default function EventsFilter({ filters, setFilters, onReset, isOpen, onClose, genreOptions = [] }) {
   
   const update = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
   const toggleArrayItem = (field, item) => {
@@ -16,7 +16,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
     });
   };
 
-  const GENRES = ['Electronic', 'Rock', 'Indie', 'Jazz', 'Pop', 'Conference'];
+  const GENRES = genreOptions;
 
   return (
     <>
@@ -35,12 +35,12 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
         <div className="lg:sticky lg:top-24 lg:rounded-xl lg:border lg:border-white/10 lg:bg-[#121212]/60 lg:backdrop-blur-md lg:p-6">
           
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white">Filter By</h3>
+            <h2 className="text-lg font-bold text-white">Filters</h2>
             <div className="flex items-center gap-4">
-              <button onClick={onReset} className="flex items-center gap-1 text-xs text-[#ffb000] hover:text-white transition-colors">
-                <RotateCcw className="w-3 h-3" /> Reset
+              <button onClick={onReset} className="flex min-h-11 items-center gap-1 text-sm text-[#ffb000] hover:text-white transition-colors">
+                <RotateCcw className="w-4 h-4" aria-hidden /> Clear filters
               </button>
-              <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-white">
+              <button onClick={onClose} aria-label="Close the filters" className="lg:hidden grid h-11 w-11 place-items-center text-slate-400 hover:text-white">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -58,7 +58,8 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                     <button
                       key={genre}
                       onClick={() => toggleArrayItem('genres', genre)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm border transition-all ${
+                      aria-pressed={isSelected}
+                      className={`w-full min-h-11 flex items-center justify-between px-3 py-2 rounded-lg text-sm border transition-all ${
                         isSelected 
                           ? 'bg-[#ff6a00]/10 border-[#a855f7] text-[#ffb000]' 
                           : 'bg-[#1e1e1e] border-transparent text-slate-400 hover:border-white/20 hover:text-white'

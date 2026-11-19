@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { formatPrice } from '@/lib/format';
 import { eventImage } from '@/lib/eventImages';
 import Navbar from '@/components/Navbar';
 import MainFooter from '@/components/MainFooter';
@@ -41,7 +42,7 @@ export default function EventsPage() {
             venue: e.venue?.name || 'Unknown Venue',
             city: e.venue?.city || e.city || 'Unknown City',
             priceVal: e.ticketTiers?.[0]?.price || 0,
-            priceDisplay: e.ticketTiers?.length > 0 ? `$${e.ticketTiers[0].price}` : 'Free',
+            priceDisplay: e.ticketTiers?.length > 0 ? formatPrice(e.ticketTiers[0].price) : 'Free',
             image: eventImage(e),
             category: e.genre || 'Music',
             vibes: e.vibe ? [e.vibe] : ['Live'],
@@ -57,6 +58,30 @@ export default function EventsPage() {
     }
     init();
   }, []);
+
+  // the genres the events really have (not a fixed list that matches none of them)
+  const genreOptions = useMemo(() => [...new Set(allEvents.map((e) => e.category).filter(Boolean))].sort(), [allEvents]);
+  const toggleGenre = (g) => setFilters((f) => ({ ...f, genres: f.genres.includes(g) ? f.genres.filter((x) => x !== g) : [...f.genres, g] }));
+
+  // remembered between visits (on this device): the filters and the sort order
+  const SAVED = 'sv:explore';
+  const [savedRead, setSavedRead] = useState(false);
+  useEffect(() => {
+    // (after the first paint, so the page renders the same on the server and here first)
+    const id = setTimeout(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SAVED) || 'null');
+        if (saved?.filters) setFilters((f) => ({ ...f, ...saved.filters }));
+        if (saved?.sortOption) setSortOption(saved.sortOption);
+      } catch { /* nothing saved */ }
+      setSavedRead(true);
+    }, 0);
+    return () => clearTimeout(id);
+  }, []);
+  useEffect(() => {
+    if (!savedRead) return;
+    try { localStorage.setItem(SAVED, JSON.stringify({ filters, sortOption })); } catch { /* private mode */ }
+  }, [filters, sortOption, savedRead]);
 
   const filteredEvents = useMemo(() => {
     let result = allEvents.filter(event => {
@@ -109,7 +134,20 @@ export default function EventsPage() {
 
           <div className="mx-auto flex max-w-[1440px] flex-col lg:flex-row gap-8 px-6 py-2 md:py-6 lg:py-12 lg:px-12">
 
+            {/* phones: the genres as chips to tap, above the list (the full filters are a button away) */}
+            {genreOptions.length > 1 && (
+              <div role="group" aria-label="Genres" className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 lg:hidden">
+                {genreOptions.map((g) => (
+                  <button key={g} type="button" onClick={() => toggleGenre(g)} aria-pressed={filters.genres.includes(g)}
+                    className={`min-h-11 shrink-0 rounded-full border px-4 text-sm font-semibold ${filters.genres.includes(g) ? 'border-[#ffb000] bg-[#ff6a00]/15 text-[#ffb000]' : 'border-white/15 text-slate-200'}`}>
+                    {g}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <EventsFilter
+              genreOptions={genreOptions}
               filters={filters}
               setFilters={setFilters}
               onReset={resetFilters}
