@@ -142,9 +142,6 @@ export default function AnalysisPage() {
               <div className="lg:col-span-1 bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col justify-center relative overflow-hidden">
                 <div className="flex justify-between items-center mb-4 z-10">
                   <h3 className="text-white text-lg font-bold">Overall Sentiment</h3>
-                  <button className="text-[#90b2cb] hover:text-white transition-colors" title="More Info">
-                    <Info className="w-5 h-5" />
-                  </button>
                 </div>
                 <div className="flex items-end gap-3 mb-2 z-10">
                   <span className="text-5xl font-bold text-white tracking-tighter">84%</span>

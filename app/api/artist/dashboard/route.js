@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { eventImage } from '@/lib/eventImages';
 import { apiError } from '@/lib/api';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
@@ -142,7 +143,7 @@ export async function GET(req) {
                 localTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 statusLabel: "Live Tonight",
                 isLive: true,
-                image: nextShow.images?.hero || "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=2548&auto=format&fit=crop"
+                image: eventImage(nextShow)
             } : null,
             ticketStats: currentShowStats,
             alert: activeAlert,

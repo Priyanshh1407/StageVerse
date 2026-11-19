@@ -240,13 +240,11 @@ export default function FanDashboard() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold tracking-tight">MOST VISITED VENUES</h3>
-                  <button className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><Filter className="w-4 h-4 text-slate-500" /></button>
                 </div>
                 <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm h-full flex flex-col">
                   <div className="h-32 w-full bg-slate-800 relative bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1514525253440-b393332569ca?q=80&w=800&auto=format&fit=crop")' }}>
                     <div className="absolute inset-0 bg-[#ff6a00]/20 backdrop-brightness-50"></div>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <button className="bg-white dark:bg-[#1a2632] text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 hover:scale-105 transition-transform"><MapPin className="w-3 h-3 text-[#ff6a00]" />View Interactive Map</button>
                     </div>
                   </div>
                   <div className="flex-1 flex flex-col">

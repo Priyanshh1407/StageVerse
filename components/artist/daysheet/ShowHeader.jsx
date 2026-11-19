@@ -54,10 +54,6 @@ export default function ShowHeader({ city, venue, date }) {
           </p>
         </div>
         <div className="flex gap-3 w-full md:w-auto">
-          <button className="flex-1 md:flex-none h-12 px-6 rounded-lg bg-[#223949] hover:bg-[#315168] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all">
-            <MessageSquare className="w-5 h-5" />
-            <span>Tour Manager</span>
-          </button>
           <button
             onClick={() => setIsCalendarOpen(true)}
             className="h-12 w-12 rounded-lg border border-[#315168] text-[#90b2cb] hover:text-white flex items-center justify-center transition-colors"

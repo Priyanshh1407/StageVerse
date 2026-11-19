@@ -93,10 +93,6 @@ export default function GuestTable({ data, onDelete, onEdit, onCheckIn }) {
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Showing {filteredData.length} of {data.length} guests
           </p>
-          <div className="flex gap-1">
-            <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30"><ChevronLeft className="w-5 h-5" /></button>
-            <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30"><ChevronRight className="w-5 h-5" /></button>
-          </div>
         </div>
       </div>
     </div>

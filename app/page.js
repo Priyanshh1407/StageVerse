@@ -8,6 +8,7 @@ import LocalEvents from "@/components/home/LocalEvents";
 import PromoSection from "@/components/home/PromoEvent";
 import MainFooter from "@/components/MainFooter";
 import { FEATURES } from "@/lib/features";
+import { eventImage } from '@/lib/eventImages';
 
 export default function Home() {
   const [trendingData, setTrendingData] = useState([]);
@@ -34,7 +35,7 @@ export default function Home() {
             month: e.date ? new Date(e.date).toLocaleString('default', { month: 'short' }).toUpperCase() : '',
             location: e.venue?.name || e.city || 'Unknown Location',
             price: e.ticketTiers?.[0]?.price || 0,
-            image: e.images?.hero || e.images?.cover || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800",
+            image: eventImage(e),
             color: 'text-[#ffb000] border-[#a855f7]/20 bg-[#ff6a00]/20', // Default styling
             city: e.city || null,
             title: e.title, // For LocalEvents

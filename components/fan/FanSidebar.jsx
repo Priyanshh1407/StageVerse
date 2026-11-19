@@ -28,7 +28,6 @@ const FanSidebar = ({ isOpen, onClose, onOpenNotifications }) => {
     { label: "Discover", href: "/discover", icon: Compass },
     { label: "Memories", href: "/memory-vault", icon: ImageIcon },
     { label: "Friends", href: "/social", icon: Users },
-    { label: "Tickets", href: "/ticket", icon: Ticket },
     { label: "Messages", action: "OPEN_MESSAGES", icon: MessageSquare },
     { label: "Notifications", action: "OPEN_NOTIFICATIONS", icon: Bell },
   ];

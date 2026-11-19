@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { eventImage } from '@/lib/eventImages';
 import Link from 'next/link';
 import { Calendar, MapPin, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -60,8 +61,8 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                     <div className="flex-1 p-6 flex gap-6 relative">
                                         {}
                                         <div className="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-2xl overflow-hidden bg-slate-800 shadow-lg relative group-hover:scale-105 transition-transform duration-500">
-                                            {event.images?.hero ? (
-                                                <img src={event.images.hero} alt={event.title} className="w-full h-full object-cover" />
+                                            {eventImage(event) ? (
+                                                <img src={eventImage(event)} alt={event.title} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-600 font-bold text-2xl">
                                                     {event.venue?.name?.substring(0, 2) || "EV"}

@@ -72,10 +72,6 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
       </div>
 
       <div className="flex gap-3">
-        <button className="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-[#223949] hover:bg-[#2c4a5f] text-[#90b2cb] hover:text-white text-sm font-bold transition-colors">
-          <Trash2 className="w-4 h-4" />
-          <span className="hidden sm:inline">Discard Draft</span>
-        </button>
         <button
           onClick={onSave}
           disabled={!event}

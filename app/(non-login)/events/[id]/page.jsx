@@ -5,13 +5,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
     Search, Bell, Calendar, Clock, MapPin, Info, Map as MapIcon,
-    Navigation, ArrowRight, Heart, Share2, Link as LinkIcon,
+    Navigation, ArrowRight,
     CalendarPlus, BarChart3, Loader2, Sparkles, Flame, Users, Ticket
 } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import MainFooter from '@/components/MainFooter';
 import TicketsInfo, { TicketsButton } from '@/components/events/TicketsInfo';
+import { eventImage } from '@/lib/eventImages';
+import ShareEvent from '@/components/events/ShareEvent';
 import { useParams } from 'next/navigation';
 
 export default function EventDetailPage() {
@@ -90,7 +92,7 @@ export default function EventDetailPage() {
         day: 'numeric'
     });
     const images = event.images || {};
-    const heroImage = images.hero || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1074&auto=format&fit=crop";
+    const heroImage = eventImage(event);
     const artistImage = images.artist || "https://images.unsplash.com/photo-1741036379058-cca704d04101?w=600&auto=format&fit=crop";
     const venueImage = images.venue || "https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=600&auto=format&fit=crop";
 
@@ -275,9 +277,11 @@ export default function EventDetailPage() {
                                             <h4 className="text-xl font-bold text-white">{event.venue.name}</h4>
                                             <p className="text-slate-400 text-sm">{event.venue.address || event.venue.city}</p>
                                         </div>
-                                        <button className="px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors flex items-center gap-2">
-                                            <Navigation className="w-4 h-4" /> Get Directions
-                                        </button>
+                                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([event.venue.name, event.venue.address, event.venue.city || event.city].filter(Boolean).join(', '))}`}
+                                            target="_blank" rel="noopener noreferrer"
+                                            className="min-h-12 px-6 bg-white text-black font-bold rounded-xl hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors flex items-center gap-2">
+                                            <Navigation className="w-4 h-4" aria-hidden /> Get directions
+                                        </a>
                                     </div>
                                 </div>
                             </motion.section>
@@ -302,28 +306,17 @@ export default function EventDetailPage() {
                                 <div className="bg-[#111]/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 flex items-center gap-5 hover:bg-[#111] transition-colors">
                                     <div className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-[#a855f7]" style={{ backgroundImage: `url("${artistImage}")` }} />
                                     <div>
-                                        <h4 className="text-white font-bold text-lg">{event.artist.name}</h4>
-                                        <p className="text-slate-500 text-sm">{event.artist.listeners || 'Top Artist'}</p>
+                                        <h4 className="text-white font-bold text-lg">{typeof event.artist === 'string' ? event.artist : event.artist?.name}</h4>
+                                        <p className="text-slate-400 text-sm">Headliner</p>
                                     </div>
-                                    <div className="ml-auto">
-                                        <button className="w-10 h-10 rounded-full bg-[#1DB954] flex items-center justify-center text-black hover:scale-110 transition-transform">
-                                            <ArrowRight className="w-5 h-5 -rotate-45" />
-                                        </button>
-                                    </div>
+                                    {event.artistId && (
+                                        <Link href={`/artist/${event.artistId}`} aria-label="The artist's page" className="ml-auto grid h-11 w-11 place-items-center rounded-full bg-[#1DB954] text-black hover:scale-110 transition-transform">
+                                            <ArrowRight className="w-5 h-5 -rotate-45" aria-hidden />
+                                        </Link>
+                                    )}
                                 </div>
 
-                                {}
-                                <div className="flex justify-between items-center px-4 py-2 border-t border-white/10 mt-4">
-                                    <span className="text-slate-500 text-sm font-bold uppercase">Share Event</span>
-                                    <div className="flex gap-4">
-                                        {[Share2, LinkIcon, Heart].map((Icon, i) => (
-                                            <button key={i} className="text-slate-400 hover:text-[#ffb000] transition-colors">
-                                                <Icon className="w-5 h-5" />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
+                                <ShareEvent title={event.title} />
                             </div>
                         </div>
 
@@ -370,7 +363,7 @@ function SimilarEventCard({ event }) {
             <div className="h-64 bg-cover bg-center relative overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                    style={{ backgroundImage: `url("${event.image}")` }}
+                    style={{ backgroundImage: `url("${eventImage(event)}")` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute top-4 left-4">

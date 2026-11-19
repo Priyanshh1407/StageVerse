@@ -257,10 +257,6 @@ function Header({ onMenuClick }) {
         </div>
       </div>
       <div className="flex items-center gap-4 md:gap-6">
-        <button className="relative p-2 text-[#90b2cb] hover:text-white">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></span>
-        </button>
         <div className="flex items-center gap-3 pl-4 border-l border-[#2c3b47]">
           <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ffb000] to-purple-500 p-[1px] cursor-pointer hover:scale-105 transition-transform">
             <div className="w-full h-full rounded-full bg-[#101b22] relative overflow-hidden">
@@ -321,12 +317,6 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
           )}
         </div>
 
-        <div className="relative hidden sm:block">
-          <button className="flex items-center gap-2 px-3 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg hover:border-[#3e5060] transition-colors text-sm text-[#90b2cb] hover:text-white">
-            <CalendarDays className="w-4 h-4" />
-            <span>Date Range</span>
-          </button>
-        </div>
       </div>
 
       {}

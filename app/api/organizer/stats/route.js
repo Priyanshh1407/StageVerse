@@ -19,7 +19,7 @@ export async function GET(req) {
         const payload = await verifyAuth(req);
         requireRole(payload, 'organizer');
 
-        const events = await Event.find({ organizerId: payload.userId }).select('_id title date ticketTiers').lean();
+        const events = await Event.find({ organizerId: payload.userId }).select('_id title date city artist artistId productionStatus ticketTiers').lean();
         const ids = events.map((e) => e._id);
         const now = Date.now();
         const upcoming = events.filter((e) => e.date && new Date(e.date).getTime() >= now - DAY / 2)
@@ -51,6 +51,12 @@ export async function GET(req) {
                 capacityPercent: upcomingCapacity > 0 ? Math.min(100, Math.round((soldUpcoming / upcomingCapacity) * 1000) / 10) : 0,
                 upcomingShows: upcoming.length,
                 nextShow: next ? { title: next.title, date: next.date } : null,
+                // (the dashboard without ticketing: the bill, the crew, the cities)
+                artistsBooked: new Set(upcoming.map((e) => (e.artist || '').trim()).filter(Boolean)).size,
+                crewAssigned: upcoming.filter((e) => ['active', 'completed'].includes(e.productionStatus)).length,
+                byCity: Object.entries(upcoming.reduce((m, e) => { if (e.city) m[e.city] = (m[e.city] || 0) + 1; return m; }, {}))
+                    .sort((x, y) => y[1] - x[1]).map(([city, shows]) => ({ city, shows })),
+                nextShows: upcoming.slice(0, 5).map((e) => ({ id: String(e._id), title: e.title, date: e.date, city: e.city || '', artist: e.artist || '', crew: ['active', 'completed'].includes(e.productionStatus) })),
             },
         });
     } catch (error) {

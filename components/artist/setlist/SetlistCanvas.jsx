@@ -210,7 +210,6 @@ export default function SetlistCanvas({ items, setItems }) {
                           <div className="shrink-0 flex flex-col items-end justify-between gap-2">
                             <span className="font-mono text-sm text-[#90b2cb]">{item.duration}</span>
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="text-[#90b2cb] hover:text-white p-1.5 rounded hover:bg-white/10"><Lock className="w-4 h-4" /></button>
                               <button onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 p-1.5 rounded hover:bg-white/10"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           </div>

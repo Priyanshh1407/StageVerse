@@ -1,10 +1,18 @@
 'use client';
 
-import { ScrollText, FileJson, File, Share2 } from 'lucide-react';
+import { ScrollText, FileJson, File } from 'lucide-react';
 
 export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
   const totalItems = gear.reduce((acc, item) => acc + item.count, 0) + (hazer ? 1 : 0);
   const activeGear = gear.filter(g => g.count > 0);
+  // the rider as a file: the gear asked for, and the hazer
+  const downloadJson = () => {
+    const rider = { gear: activeGear.map(({ name, type, count }) => ({ name, type, count })), hazer: Boolean(hazer), totalItems };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(rider, null, 2)], { type: 'application/json' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'tech-rider.json' });
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <aside className="w-full lg:w-80 flex-none">
@@ -64,9 +72,10 @@ export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
         <div className="bg-[#1a2632] rounded-xl border border-[#223949] p-5 shadow-lg">
           <h3 className="text-white text-sm font-bold mb-3 uppercase tracking-wider text-opacity-80">Export Options</h3>
           <div className="flex flex-col gap-2">
-            <button className="flex items-center gap-3 w-full p-2 text-left rounded-lg hover:bg-white/5 text-white/80 hover:text-white transition-colors text-sm font-medium">
-              <FileJson className="w-5 h-5" />
-              Download JSON
+            <button type="button" onClick={downloadJson}
+              className="flex min-h-11 items-center gap-3 w-full p-2 text-left rounded-lg hover:bg-white/5 text-white/80 hover:text-white transition-colors text-sm font-medium">
+              <FileJson className="w-5 h-5" aria-hidden />
+              Download the rider (JSON)
             </button>
             <button
               onClick={onDownloadPDF}
@@ -74,10 +83,6 @@ export default function RiderManifest({ gear, hazer, onDownloadPDF }) {
             >
               <File className="w-5 h-5" />
               Download PDF Rider
-            </button>
-            <button className="flex items-center gap-3 w-full p-2 text-left rounded-lg hover:bg-white/5 text-white/80 hover:text-white transition-colors text-sm font-medium">
-              <Share2 className="w-5 h-5" />
-              Share Live Link
             </button>
           </div>
         </div>

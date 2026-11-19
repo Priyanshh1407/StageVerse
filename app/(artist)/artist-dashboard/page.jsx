@@ -99,35 +99,6 @@ export default function ArtistDashboard() {
       <ArtistNavbar />
 
       {}
-      {showRevenueModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowRevenueModal(false)}>
-          <div className="bg-white dark:bg-[#1e2e38] rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-700/50" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-white">Gross Revenue Breakdown</h3>
-              <button onClick={() => setShowRevenueModal(false)} className="text-slate-400 hover:text-white">✕</button>
-            </div>
-            <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
-              {data.revenueBreakdown && data.revenueBreakdown.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-[#101b23] border border-slate-200 dark:border-slate-700">
-                  <div>
-                    <p className="font-bold text-slate-900 dark:text-white">{item.city}</p>
-                    <p className="text-xs text-slate-500">{new Date(item.date).toLocaleDateString()}</p>
-                  </div>
-                  <p className="font-mono font-bold text-[#ff6a00]">${(item.revenue / 1000).toFixed(1)}k</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 pt-4 border-t border-slate-700 flex justify-between items-center">
-              <span className="text-slate-400 font-medium">Total Tour Gross</span>
-              <span className="text-2xl font-black text-emerald-400">
-                {data.quickStats.find(s => s.label === "Gross Rev")?.value}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {}
       {showAlertModal && data.alert && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowAlertModal(false)}>
           <div
@@ -243,13 +214,11 @@ export default function ArtistDashboard() {
           </div>
 
           {}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-            <TicketStatsCard data={data.ticketStats} />
-            <MerchAlert data={data.alert} onClick={() => setShowAlertModal(true)} />
-          </div>
+          <MerchAlert data={data.alert} onClick={() => setShowAlertModal(true)} />
         </div>
 
-        <StatGrid data={data.quickStats} onAction={handleStatAction} />
+        {/* (no ticket revenue: StageVerse doesn't sell tickets) */}
+        <StatGrid data={data.quickStats.filter((st) => st.label !== 'Gross Rev')} onAction={handleStatAction} />
 
         <UpcomingStops data={data.stops} />
 

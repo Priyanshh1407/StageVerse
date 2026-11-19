@@ -28,7 +28,6 @@ function KanbanColumn({ data, onEditTask, onDeleteTask }) {
           <h3 className="font-bold text-white text-sm">{data.title}</h3>
           <span className="bg-[#27272A] text-gray-400 text-[10px] px-1.5 py-0.5 rounded font-mono">{data.count}</span>
         </div>
-        <button className="text-gray-500 hover:text-white"><Plus className="w-5 h-5" /></button>
       </div>
 
       <Droppable droppableId={data.id}>

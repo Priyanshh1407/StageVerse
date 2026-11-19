@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { eventImage } from '@/lib/eventImages';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -338,15 +339,10 @@ function RecommendedCard({ event }) {
         </div>
 
         { }
-        <div className="absolute top-3 right-3 z-10">
-          <button className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur transition-colors">
-            <Heart className="w-4 h-4" />
-          </button>
-        </div>
 
         { }
         <Image
-          src={event.image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"}
+          src={eventImage(event)}
           alt={event.artist || "Event"}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-110"

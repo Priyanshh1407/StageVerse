@@ -200,9 +200,6 @@ export default function MemoryVaultPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <button className="p-2.5 bg-slate-50 dark:bg-[#151f28] hover:bg-slate-100 dark:hover:bg-[#1e2a35] rounded-lg text-slate-600 dark:text-slate-300 transition-colors" title="Grid View">
-                  <Grid className="w-5 h-5" />
-                </button>
               </div>
             </div>
 
@@ -387,11 +384,6 @@ function MemoryCard({ item, onOpen }) {
         <div className="translate-y-[10px] group-hover:translate-y-0 transition-transform duration-300">
           <h3 className="text-white font-bold text-lg">{item.title}</h3>
           <p className="text-slate-300 text-xs">{item.subtitle}</p>
-          {item.count && (
-            <button className="mt-4 w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white rounded-lg text-xs font-bold transition-colors">
-              View Full Album ({item.count})
-            </button>
-          )}
         </div>
       </div>
     </div>

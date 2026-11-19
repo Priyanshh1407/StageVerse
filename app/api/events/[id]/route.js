@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { eventImage } from '@/lib/eventImages';
 import { apiError } from '@/lib/api';
 import { parseBody, eventUpdateSchema } from '@/lib/schemas';
 import dbConnect from '@/lib/db';
@@ -48,7 +49,7 @@ export async function GET(req, { params }) {
         venue: sim.venue?.name || 'TBA',
         price: minPrice,
         genre: sim.genre,
-        image: sim.images?.hero || "https://images.unsplash.com/photo-1459749411177-2a2965bda36c?q=80&w=500&auto=format&fit=crop"
+        image: eventImage(sim)
       }
     })
 

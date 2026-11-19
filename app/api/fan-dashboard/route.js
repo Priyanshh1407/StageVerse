@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { eventImage } from '@/lib/eventImages';
 import { apiError } from '@/lib/api';
 import { verifyAuth } from '@/lib/auth';
 import dbConnect from "@/lib/db";
@@ -97,7 +98,7 @@ export async function GET(req) {
                 name: name,
                 genre: evt?.genre || "Music",
                 count: artistMap[name],
-                image: evt?.images?.hero || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"
+                image: eventImage(evt)
             };
         });
         const topArtists = allArtists.slice(0, 3);

@@ -17,8 +17,6 @@ const OrganizerSidebar = ({ isOpen, onClose }) => {
   const links = [
     { label: "Dashboard", href: "/manage/dashboard", icon: LayoutDashboard },
     { label: "Events", href: "/events", icon: Calendar },
-    { label: "Ticketing", href: "/ticketing", icon: Ticket },
-    { label: "Reports", href: "/reports", icon: FileText },
     { label: "Analytics", href: "/analysis", icon: BarChart3 },
   ];
 

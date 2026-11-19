@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { eventImage } from '@/lib/eventImages';
 import Navbar from '@/components/Navbar';
 import MainFooter from '@/components/MainFooter';
 import EventsHero from '@/components/events/EventsHero';
@@ -41,7 +42,7 @@ export default function EventsPage() {
             city: e.venue?.city || e.city || 'Unknown City',
             priceVal: e.ticketTiers?.[0]?.price || 0,
             priceDisplay: e.ticketTiers?.length > 0 ? `$${e.ticketTiers[0].price}` : 'Free',
-            image: e.images?.hero || e.images?.cover || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800',
+            image: eventImage(e),
             category: e.genre || 'Music',
             vibes: e.vibe ? [e.vibe] : ['Live'],
             tag: e.status === 'Selling Fast' ? 'Hot' : null

@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { eventImage } from '@/lib/eventImages';
 import { apiError } from '@/lib/api';
 import dbConnect from '@/lib/db';
 import mongoose from 'mongoose';
@@ -29,7 +30,7 @@ export async function GET(req) {
                 originalStatus: event.status, // Keep original for reference
                 type: event.genre || 'General',
                 typeColor: getColorForGenre(event.genre),
-                image: event.images?.hero || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
+                image: eventImage(event)
             };
         });
         const activeShows = shows.filter(s => s.status === 'active' || s.productionStatus === 'active');

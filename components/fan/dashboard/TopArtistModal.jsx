@@ -88,9 +88,6 @@ export default function TopArtistsModal({ isOpen, onClose,artists=[] }) {
                     <Ticket className="w-3 h-3" />
                     <p className="font-bold text-xs">{artist.count} Shows</p>
                   </div>
-                  <button className="text-[10px] text-slate-400 hover:text-[#ff6a00] transition-colors flex items-center gap-0.5">
-                    View Profile <ArrowUpRight className="w-3 h-3" />
-                  </button>
                 </div>
               </div>
             ))

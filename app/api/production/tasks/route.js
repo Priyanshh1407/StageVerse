@@ -30,8 +30,11 @@ function pickTaskFields(body) {
 
 function formatDue(dueDate) {
     if (!dueDate) return 'ASAP';
+    // only a real calendar date (2026-12-02 from the date picker) is reformatted; text such as "Dec 2, 10:00" or
+    // "Tomorrow" stays as written (parsing text without a year gave dates in 2001)
+    if (!/^\d{4}-\d{2}-\d{2}/.test(String(dueDate))) return dueDate;
     const d = new Date(dueDate);
-    return Number.isNaN(d.getTime()) ? dueDate : d.toLocaleDateString(); // free text like "Tomorrow" stays as is
+    return Number.isNaN(d.getTime()) ? dueDate : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export async function GET(req) {

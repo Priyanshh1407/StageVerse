@@ -205,7 +205,8 @@ export function StatGrid({ data, onAction }) {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    // (as many columns as there are stats, up to four: no empty slot)
+    <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 ${data.length >= 4 ? 'lg:grid-cols-4' : data.length === 3 ? 'lg:grid-cols-3' : ''}`}>
       {data.map((stat, i) => {
         const IconComponent = iconMap[stat.iconName] || BarChart3;
         const isActionable = !!stat.action;

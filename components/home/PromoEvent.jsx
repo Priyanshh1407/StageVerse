@@ -2,12 +2,6 @@
 
 import Link from 'next/link';
 import { Sparkles, CalendarClock } from 'lucide-react';
-import { FEATURES } from '@/lib/features';
-
-// the product's own screens (switch off: the stock photos return)
-const PICTURES = FEATURES.liveSections
-  ? { back: '/images/promo-rig.jpg', front: '/images/promo-desk.jpg', backAlt: 'The StageVerse stage', frontAlt: 'The StageVerse lighting desk' }
-  : { back: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop', front: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop', backAlt: 'Dashboard BG', frontAlt: 'Analytics' };
 
 export default function PromoSection() {
   return (
@@ -17,25 +11,8 @@ export default function PromoSection() {
           
           {}
           <div className="lg:w-1/2 w-full">
-            <div className="rounded-xl overflow-hidden aspect-video relative">
-              {}
-              <img 
-                src={PICTURES.back}
-                alt={PICTURES.backAlt}
-                className="w-full h-full object-cover opacity-80" 
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-full h-full bg-gradient-to-r from-[#141414] to-transparent absolute inset-0"></div>
-              </div>
-              
-              {}
-              <img 
-                src={PICTURES.front}
-                alt={PICTURES.frontAlt}
-                className="absolute top-0 right-0 w-2/3 h-full object-cover object-left" 
-                style={{ WebkitMaskImage: 'linear-gradient(to right, transparent, black)' }}
-              />
-            </div>
+            {/* (one of the event photos rendered from StageVerse's own stages) */}
+            <img src="/images/events/mainstage-3.jpg" alt="The StageVerse mainstage in full light" className="w-full aspect-video rounded-xl object-cover" />
           </div>
 
           {}

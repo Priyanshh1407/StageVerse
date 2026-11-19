@@ -2,15 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  DollarSign, Ticket, Hourglass, Calendar,
-  Search, Bell, ChevronDown, MoreHorizontal,
-  Zap, Send, Download, ArrowRight, Menu,
+  Hourglass, Mic2, Wrench, MapPin,
+  Zap, ArrowRight, Menu,
   Sparkles, Wand2, Copy, Check, Rocket, ArrowLeft, Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import OrganizerSidebar from '@/components/organizer/OrganizerSidebar';
-import HypeChart from '@/components/organizer/HypeChart';
 import Link from 'next/link';
 
 function StatsCard({ label, value, icon: Icon, trend, trendLabel, progress }) {
@@ -28,45 +26,22 @@ function StatsCard({ label, value, icon: Icon, trend, trendLabel, progress }) {
       </div>
       <div className="space-y-1">
         <h3 className="text-2xl font-bold text-white">{value}</h3>
-        <p className="text-xs text-[#90b2cb] font-medium">{label}</p>
+        <p className="text-sm text-[#90b2cb] font-medium">{label}</p>
       </div>
       {typeof progress === 'number' && (
         <div className="mt-4">
           <div className="w-full bg-[#101b22] h-2 rounded-full overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-label={`${label}: ${progress}% of capacity`}>
             <div className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] h-full rounded-full transition-[width] duration-700" style={{ width: `${Math.max(progress, progress > 0 ? 2 : 0)}%` }}></div>
           </div>
-          <p className="mt-2 flex justify-between text-[10px] text-[#90b2cb]"><span>Upcoming shows</span><span className="font-bold text-white">{progress}% of capacity sold</span></p>
+          <p className="mt-2 flex justify-between text-xs text-[#90b2cb]"><span>Upcoming shows</span><span className="font-bold text-white">{progress}% of capacity sold</span></p>
         </div>
       )}
-      {trendLabel && <p className="text-[10px] text-[#587386] mt-3">{trendLabel}</p>}
+      {trendLabel && <p className="text-xs text-[#90b2cb] mt-3">{trendLabel}</p>}
     </div>
   );
 }
 
 const IS_COMING_SOON = false;
-
-const dashboardData = {
-  hypeData: [
-    { date: 'Aug 01', velocity: 20 },
-    { date: 'Aug 05', velocity: 35 },
-    { date: 'Aug 10', velocity: 45 },
-    { date: 'Aug 15', velocity: 30 },
-    { date: 'Aug 20', velocity: 50 },
-    { date: 'Aug 25', velocity: 65 },
-    { date: 'Aug 30', velocity: 55 },
-    { date: 'Sep 05', velocity: 80 },
-    { date: 'Sep 10', velocity: 75 },
-    { date: 'Sep 15', velocity: 95 },
-    { date: 'Sep 20', velocity: 85 },
-    { date: 'Sep 25', velocity: 90 },
-  ],
-  locations: [
-    { city: "New York", percent: 42, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
-    { city: "London", percent: 21, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
-    { city: "Berlin", percent: 15, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
-    { city: "Tokyo", percent: 9, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
-  ]
-};
 
 export default function OrganizerDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -76,7 +51,6 @@ export default function OrganizerDashboard() {
     fetch('/api/organizer/stats').then((r) => r.json()).then((j) => { if (alive && j.success) setStats(j.stats); }).catch(() => {});
     return () => { alive = false; };
   }, []);
-  const money = (n) => `$${Math.round(n ?? 0).toLocaleString()}`;
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -125,29 +99,14 @@ export default function OrganizerDashboard() {
               <Menu className="w-6 h-6" />
             </button>
             <div className="flex flex-col">
-              <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white">Command Center</h2>
-              <p className="text-[#90b2cb] text-xs md:text-sm hidden sm:block">Monitoring hype levels</p>
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white">Dashboard</h1>
+              <p className="text-[#90b2cb] text-sm hidden sm:block">Your shows at a glance</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-6">
-            <div className="w-64 relative hidden lg:block">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#90b2cb]" />
-              <input
-                className="w-full pl-10 pr-3 py-2 bg-[#192734] border border-[#2c3b47] rounded-lg text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#a855f7]"
-                placeholder="Search events..."
-              />
-            </div>
-            <button className="flex items-center gap-2 px-3 py-2 bg-[#192734] border border-[#2c3b47] rounded-lg hover:bg-[#223949] text-sm font-medium transition-colors">
-              <Calendar className="w-4 h-4 text-[#90b2cb]" />
-              <span className="hidden sm:inline">Aug 2023</span>
-              <ChevronDown className="w-4 h-4 text-[#90b2cb]" />
-            </button>
-            <button className="relative p-2 text-[#90b2cb] hover:text-white transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></span>
-            </button>
-          </div>
+          <Link href="/create-event" className="hidden sm:flex min-h-11 items-center gap-2 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] px-4 text-sm font-bold text-black hover:brightness-110">
+            Create event <ArrowRight className="w-4 h-4" aria-hidden />
+          </Link>
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
@@ -159,32 +118,24 @@ export default function OrganizerDashboard() {
           >
 
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatsCard label="Gross Revenue" value={stats ? money(stats.revenue) : '…'} icon={DollarSign} trend={stats?.revenueTrend} trendLabel="last 30 days vs the 30 before" />
-              <StatsCard label="Tickets Sold" value={stats ? stats.ticketsSold.toLocaleString() : '…'} icon={Ticket} trend={stats?.ticketsTrend} progress={stats ? stats.capacityPercent : undefined} />
-              <StatsCard label="Upcoming Shows" value={stats ? stats.upcomingShows : '…'} icon={Hourglass} trendLabel={stats?.nextShow ? `Next: ${stats.nextShow.title}, ${new Date(stats.nextShow.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : 'No upcoming shows'} />
-
+              <StatsCard label="Upcoming shows" value={stats ? stats.upcomingShows : '…'} icon={Hourglass} trendLabel={stats?.nextShow ? `Next: ${stats.nextShow.title}, ${new Date(stats.nextShow.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : 'No upcoming shows yet'} />
+              <StatsCard label="Artists booked" value={stats ? stats.artistsBooked : '…'} icon={Mic2} trendLabel="Across your upcoming shows" />
+              <StatsCard label="Shows with a crew" value={stats ? `${stats.crewAssigned} of ${stats.upcomingShows}` : '…'} icon={Wrench} trendLabel="Upcoming shows with production assigned" />
               <div className="bg-[#192734] rounded-xl p-5 border border-[#2c3b47] flex flex-col justify-center gap-3 shadow-lg">
-                <h4 className="text-white font-bold text-sm flex items-center gap-2 mb-1">
-                  <Zap className="w-4 h-4 text-[#ff6a00]" /> Quick Actions
-                </h4>
-                <Link href="/create-event" className="w-full px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black font-bold text-sm hover:brightness-110 transition-colors flex justify-between items-center group">
-                  Create New Event <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <h2 className="text-white font-bold text-sm flex items-center gap-2 mb-1"><Zap className="w-4 h-4 text-[#ff6a00]" aria-hidden /> Quick actions</h2>
+                <Link href="/create-event" className="w-full min-h-11 px-4 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black font-bold text-sm hover:brightness-110 transition-colors flex justify-between items-center group">
+                  Create a new event <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden />
                 </Link>
-                <div className="flex gap-2">
-                  <button className="flex-1 px-3 py-2 rounded-lg bg-[#2c3b47] hover:bg-[#3e5060] text-xs font-medium text-white flex items-center justify-center gap-2 transition-colors">
-                    <Send className="w-3 h-3 text-[#90b2cb]" /> Blast
-                  </button>
-                  <button className="flex-1 px-3 py-2 rounded-lg bg-[#2c3b47] hover:bg-[#3e5060] text-xs font-medium text-white flex items-center justify-center gap-2 transition-colors">
-                    <Download className="w-3 h-3 text-[#90b2cb]" /> Export
-                  </button>
-                </div>
+                <Link href="/events" className="w-full min-h-11 px-4 rounded-lg bg-[#2c3b47] hover:bg-[#3e5060] text-sm font-semibold text-white flex justify-between items-center">
+                  See all your events <ArrowRight className="w-4 h-4" aria-hidden />
+                </Link>
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[450px]">
 
               <div className="lg:col-span-2 h-[300px] lg:h-full">
-                <HypeChart data={dashboardData.hypeData} />
+                <NextShows shows={stats?.nextShows} />
               </div>
 
               <div className="lg:col-span-1 h-[450px] lg:h-full">
@@ -192,60 +143,20 @@ export default function OrganizerDashboard() {
               </div>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
+            <motion.div variants={itemVariants}>
               <div className="bg-[#192734] rounded-xl border border-[#2c3b47] p-6 shadow-sm">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-white">Attendee Profile</h3>
-                  <button className="text-[#90b2cb] hover:text-white"><MoreHorizontal className="w-5 h-5" /></button>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { label: "18 - 24", val: 45, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
-                    { label: "25 - 34", val: 32, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
-                    { label: "35 - 44", val: 15, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
-                    { label: "45+", val: 8, color: "bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" },
-                  ].map((item) => (
-                    <div key={item.label}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-white">{item.label}</span>
-                        <span className="text-[#90b2cb]">{item.val}%</span>
-                      </div>
-                      <div className="w-full bg-[#101b22] h-2 rounded-full overflow-hidden">
-                        <div className={`${item.color} h-full rounded-full`} style={{ width: `${item.val}%` }}></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              { }
-              <div className="bg-[#192734] rounded-xl border border-[#2c3b47] p-6 flex flex-col shadow-sm h-[350px]">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-bold text-white">Top Locations</h3>
-                  <button className="text-xs bg-[#2c3b47] px-2 py-1 rounded text-[#90b2cb] hover:text-white transition-colors">View All</button>
-                </div>
-                <div className="flex-1 flex gap-4">
-                  <div className="relative flex-1 rounded-lg overflow-hidden bg-[#101b22] border border-[#2c3b47]">
-                    <div className="absolute inset-0 opacity-40 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-cover bg-center invert filter brightness-50 contrast-125"></div>
-                    <div className="absolute top-[30%] left-[25%] w-3 h-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full animate-ping"></div>
-                    <div className="absolute top-[30%] left-[25%] w-3 h-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></div>
-                    <div className="absolute top-[35%] left-[48%] w-2 h-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] rounded-full"></div>
-                  </div>
-                  <div className="w-32 flex flex-col justify-center gap-4">
-                    {dashboardData.locations.map((loc) => (
-                      <div key={loc.city} className="flex flex-col">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`w-2 h-2 rounded-full ${loc.color}`}></span>
-                          <span className="text-white text-sm">{loc.city}</span>
-                        </div>
-                        <span className="text-[#90b2cb] text-xs pl-4">{loc.percent}%</span>
-                      </div>
+                <h2 className="text-lg font-bold text-white mb-4">Your shows by city</h2>
+                {!stats ? <p className="text-sm text-[#90b2cb]">Loading…</p> : stats.byCity?.length ? (
+                  <ul className="space-y-3">
+                    {stats.byCity.map(({ city, shows }) => (
+                      <li key={city}>
+                        <div className="flex justify-between text-sm mb-1"><span className="text-white">{city}</span><span className="text-[#90b2cb]">{shows} show{shows > 1 ? 's' : ''}</span></div>
+                        <div className="w-full bg-[#101b22] h-2 rounded-full overflow-hidden"><div className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] h-full rounded-full" style={{ width: `${Math.round((shows / Math.max(...stats.byCity.map((c) => c.shows))) * 100)}%` }} /></div>
+                      </li>
                     ))}
-                  </div>
-                </div>
+                  </ul>
+                ) : <p className="text-sm text-[#90b2cb]">No upcoming shows yet. <Link href="/create-event" className="font-semibold text-[#ffb000] hover:underline">Create one</Link>.</p>}
               </div>
-
             </motion.div>
           </motion.div>
         </div>
@@ -303,7 +214,7 @@ function AIDescriptionGenerator() {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2 text-white font-bold">
           <Sparkles className="w-5 h-5 text-pink-500/90" />
-          <h3>AI Analysis Assistant</h3>
+          <h2>Ask the AI about your event</h2>
         </div>
         <div className="text-xs text-[#90b2cb] bg-[#101b22] px-2 py-1 rounded border border-[#2c3b47]">Beta</div>
       </div>
@@ -313,8 +224,9 @@ function AIDescriptionGenerator() {
 
         { }
         <div className={`flex flex-col ${generatedText ? 'h-1/3' : 'h-full'} transition-all duration-300`}>
-          <label className="text-xs text-[#90b2cb] mb-2 uppercase font-semibold">Event Keywords / Context</label>
+          <label htmlFor="ai-insight-prompt" className="text-sm text-[#90b2cb] mb-2 font-semibold">Describe your event in a few words</label>
           <textarea
+            id="ai-insight-prompt"
             className="w-full h-full bg-[#101b22] border border-[#2c3b47] rounded-lg p-3 text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-pink-500/90 resize-none"
             placeholder="e.g., Techno rave, Warehouse vibes, Late night queues..."
             value={prompt}
@@ -326,7 +238,7 @@ function AIDescriptionGenerator() {
         {generatedText && (
           <div className="flex-1 flex flex-col h-2/3 animate-in slide-in-from-bottom-4 duration-300">
             <div className="flex justify-between items-center mb-2">
-              <label className="text-xs text-pink-500/90 uppercase font-semibold">Generated Insight</label>
+              <p className="text-sm text-pink-400 font-semibold">What the AI suggests</p>
               <button
                 onClick={handleCopy}
                 className="text-xs text-[#90b2cb] hover:text-white flex items-center gap-1 transition-colors"
@@ -358,9 +270,42 @@ function AIDescriptionGenerator() {
             Analyzing...
           </>
         ) : (
-          <><Wand2 className="w-4 h-4" /> Generate Magic</>
+          <><Wand2 className="w-4 h-4" aria-hidden /> Analyse</>
         )}
       </button>
+    </div>
+  );
+}
+
+/** The organizer's next shows: date, title, city, artist, and whether a crew is on it. */
+function NextShows({ shows }) {
+  return (
+    <div className="bg-[#192734] rounded-xl border border-[#2c3b47] p-6 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-white">Your next shows</h2>
+        <Link href="/events" className="flex min-h-11 items-center gap-1 text-sm font-semibold text-[#ffb000] hover:underline">All events <ArrowRight className="w-4 h-4" aria-hidden /></Link>
+      </div>
+      {!shows ? <p className="text-sm text-[#90b2cb]">Loading…</p> : shows.length === 0 ? (
+        <p className="text-sm text-[#90b2cb]">No upcoming shows yet. <Link href="/create-event" className="font-semibold text-[#ffb000] hover:underline">Create your first event</Link>.</p>
+      ) : (
+        <ul className="divide-y divide-[#2c3b47] overflow-y-auto">
+          {shows.map((show) => (
+            <li key={show.id}>
+              <Link href={`/events/${show.id}`} className="flex items-center gap-4 py-3 hover:bg-[#223949]/50 rounded-lg px-2">
+                <div className="w-12 shrink-0 text-center">
+                  <div className="text-xs font-bold uppercase text-[#ffb000]">{new Date(show.date).toLocaleDateString('en-GB', { month: 'short' })}</div>
+                  <div className="text-xl font-bold text-white leading-none">{new Date(show.date).getDate()}</div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-white">{show.title}</p>
+                  <p className="truncate text-sm text-[#90b2cb]"><MapPin className="inline w-3.5 h-3.5 -mt-0.5" aria-hidden /> {show.city}{show.artist ? ` · ${show.artist}` : ''}</p>
+                </div>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${show.crew ? 'bg-green-400/10 text-green-300' : 'bg-yellow-400/10 text-yellow-200'}`}>{show.crew ? 'Crew assigned' : 'No crew yet'}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

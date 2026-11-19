@@ -9,7 +9,6 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
       <div className="p-6 border-b border-[#27272A]">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-bold text-lg">Project Docs</h3>
-          <button className="text-orange-500 hover:text-white text-xs font-bold uppercase">View All</button>
         </div>
         <div className="flex flex-col gap-3">
           {docs.map((doc, i) => (

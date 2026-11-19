@@ -248,10 +248,12 @@ export default function CreateVenueModal({
                     style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1580655653885-65763b2597d0?q=80&w=800&auto=format&fit=crop")' }}
                   ></div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <button className="bg-[#182234]/80 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium text-white border border-[#314368] hover:bg-[#182234] transition-colors flex items-center gap-1">
-                      <MapIcon className="w-3.5 h-3.5" />
-                      Verify Location
-                    </button>
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([formData?.name, formData?.address, formData?.city].filter(Boolean).join(', '))}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="bg-[#182234]/80 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium text-white border border-[#314368] hover:bg-[#182234] flex items-center gap-1.5">
+                      <MapIcon className="w-3.5 h-3.5" aria-hidden />
+                      Check on a map
+                    </a>
                   </div>
                 </div>
               </div>
