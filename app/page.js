@@ -84,7 +84,7 @@ export default function Home() {
 
           <ShowSection events={screenEvents} />
 
-          <div id="events" className="relative z-10 flex flex-col space-y-16 md:space-y-24 pt-16 pb-20 bg-transparent">
+          <div id="events" className="relative z-10 flex flex-col pt-8 pb-8 bg-[#050505]">
 
             {}
             <div className="w-full">

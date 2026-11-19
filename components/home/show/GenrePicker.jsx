@@ -30,14 +30,14 @@ export default function GenrePicker({ value, onChange, counts = {}, onHelpChange
                             {GENRES[key].label}
                             <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-amber-300" aria-hidden />
                         </span>
-                        <span className="block mt-0.5 text-[11px] leading-snug text-gray-400">{GENRE_HINTS[key]}</span>
-                        {counts[key] ? <span className="block mt-1 text-[10px] font-mono tracking-wider text-amber-300/80">{counts[key]} DEMO SONG{counts[key] > 1 ? 'S' : ''}</span> : null}
+                        <span className="block mt-0.5 text-xs leading-snug text-gray-400">{GENRE_HINTS[key]}</span>
+                        {counts[key] ? <span className="block mt-1 text-xs font-mono tracking-wider text-amber-300/80">{counts[key]} DEMO SONG{counts[key] > 1 ? 'S' : ''}</span> : null}
                     </button>
                 ))}
             </div>
 
             <button type="button" onClick={() => setHelp((h) => !h)} aria-expanded={help} aria-controls="genre-help"
-                className="mt-2 flex items-center gap-1.5 text-xs text-gray-400 hover:text-amber-300">
+                className="mt-1 flex min-h-11 items-center gap-1.5 text-sm text-gray-300 hover:text-amber-300">
                 <CircleHelp className="w-3.5 h-3.5" aria-hidden /> Which genre is my song?
             </button>
             {help && (

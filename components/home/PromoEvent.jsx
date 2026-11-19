@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Sparkles, DollarSign } from 'lucide-react';
+import { Sparkles, CalendarClock } from 'lucide-react';
 import { FEATURES } from '@/lib/features';
 
 // the product's own screens (switch off: the stock photos return)
@@ -11,7 +11,7 @@ const PICTURES = FEATURES.liveSections
 
 export default function PromoSection() {
   return (
-    <section className="py-24 bg-black relative">
+    <section className="py-16 relative">
       <div className="mx-auto max-w-[1440px] px-6 lg:px-12">
         <div className="flex flex-col lg:flex-row gap-12 items-center bg-[#141414] rounded-3xl p-8 lg:p-12 border border-white/5">
           
@@ -51,13 +51,13 @@ export default function PromoSection() {
             </div>
             
             <div className="flex items-start gap-3 text-slate-300">
-              <DollarSign className="w-6 h-6 text-[#ffb000] mt-1 shrink-0" />
-              <p className="text-lg">Transparent ticketing with instant payouts and comprehensive analytics.</p>
+              <CalendarClock className="w-6 h-6 text-[#ffb000] mt-1 shrink-0" />
+              <p className="text-lg">One timeline for you, the artist and the crew: the day sheet, the setlist, the lighting patch and every task.</p>
             </div>
             
             <div className="pt-4">
-              <Link href="/signup" className="inline-block px-8 py-3 rounded-lg border border-[#a855f7]/50 text-[#ffb000] font-bold hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] hover:text-black transition-all uppercase tracking-wide">
-                Become a Partner
+              <Link href="/signup?role=organizer" className="inline-block px-8 py-3 rounded-lg border border-[#a855f7]/50 text-[#ffb000] font-bold hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] hover:text-black transition-all uppercase tracking-wide">
+                Start as an organizer
               </Link>
             </div>
           </div>

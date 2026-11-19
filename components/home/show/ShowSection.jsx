@@ -73,6 +73,31 @@ const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(
 // A hidden overlay is inert: its buttons can't take taps or focus. pointer-events-none alone isn't enough,
 // because a child with pointer-events-auto (the playground card) still catches taps,
 // and on a phone those invisible cards cover the overlay that is showing.
+// each persona's sign-up role, and its article ("an organizer")
+const ROLE_SIGNUP = { Crew: 'production', Organizer: 'organizer', Fan: 'fan', Artist: 'artist' };
+const ROLE_ARTICLE = { Crew: 'a', Organizer: 'an', Fan: 'a', Artist: 'an' };
+// which stage plays which genre (the playground walks to it)
+const STAGE_GENRES = PLAY_STAGES.filter((st) => st.genres.length)
+    .map((st) => `${st.genres.map((g) => GENRES[g]?.label ?? g).join(' and ')} play${st.genres.length > 1 ? '' : 's'} on the ${st.title}`)
+    .join(', ') + '.';
+
+/** The playground on a phone: what it is, and a link to open it on a bigger screen. */
+function PhonePlayground() {
+    const [copied, setCopied] = useState(false);
+    const copy = async () => {
+        try { await navigator.clipboard.writeText(window.location.origin + '/'); setCopied(true); } catch { setCopied(false); }
+    };
+    return (
+        <>
+            <h2 className="text-2xl font-black mb-2">Play a song and run the lights.</h2>
+            <p className="text-sm text-gray-300">Pick a song and watch the stage light up to it, or run the lights yourself. It needs a laptop or desktop with the sound on.</p>
+            <button type="button" onClick={copy} className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-white font-bold text-black">
+                {copied ? 'Link copied: open it on your computer' : 'Copy the link for your computer'}
+            </button>
+        </>
+    );
+}
+
 function Fade({ show, children, className = '' }) {
     return (
         <div aria-hidden={!show} inert={!show} className={`absolute inset-0 flex transition-opacity duration-500 ${show ? 'opacity-100' : 'opacity-0 pointer-events-none'} ${className}`}>
@@ -740,6 +765,11 @@ function ShowExperience({ events = [], isPhone = false }) {
 
     // The playground (lighting desk, demo songs, "Light up your song") is made for bigger screens: on a
     // phone, a tap explains that instead of starting it. The scroll show itself plays everywhere.
+    // straight past the show to the events below it (the page doesn't settle back into the show from there)
+    const skipToEvents = () => {
+        const el = document.getElementById('events');
+        if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'instant' });
+    };
     const bigScreenOnly = (action) => () => (isPhone ? setScreenNotice(true) : action());
     const bigScreenOnly2 = (action) => (arg) => (isPhone ? setScreenNotice(true) : action(arg));
     const genreDemos = song.demos.filter((d) => d.genre === genre);
@@ -816,24 +846,25 @@ function ShowExperience({ events = [], isPhone = false }) {
                 )}
 
                 {/* Section dots (small): where you are, and a jump to any section */}
-                {showOverlays && (
-                    <nav aria-label="Show sections" className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end gap-2">
+                {/* (not on phones: they swipe, the dots would cover the text, and Skip to events is always there) */}
+                {showOverlays && !isPhone && (
+                    <nav aria-label="Show sections" className="absolute right-1 sm:right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end gap-0">
                         <button type="button" onClick={() => control.current.step?.(-1)} disabled={stopKey === STOPS[0].key} aria-label="Previous section"
-                            className="mb-1 grid place-items-center w-7 h-7 rounded-full bg-black/50 border border-white/20 text-white/85 hover:bg-white/15 disabled:opacity-30">
+                            className="mb-1 grid place-items-center w-10 h-10 rounded-full bg-black/50 border border-white/20 text-white/85 hover:bg-white/15 disabled:opacity-30">
                             <ChevronUp className="w-4 h-4" aria-hidden />
                         </button>
                         {STOPS.map((s) => {
                             const active = stopKey === s.key;
                             return (
                                 <button key={s.key} onClick={() => goToStop(s)} aria-label={`Go to: ${s.label}`} aria-current={active ? 'step' : undefined}
-                                    className="group flex items-center gap-1.5 p-0.5">
-                                    <span className="hidden sm:block text-[10px] font-medium text-white/80 bg-black/50 backdrop-blur px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">{s.label}</span>
+                                    className="group flex min-h-7 min-w-10 items-center justify-end gap-1.5 px-2.5 py-1">
+                                    <span className={`hidden sm:block text-xs font-medium text-white/90 bg-black/50 backdrop-blur px-1.5 py-0.5 rounded transition-opacity ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>{s.label}</span>
                                     <span className={`block rounded-full transition-all ${active ? 'w-2 h-2 bg-amber-300 shadow-[0_0_6px_rgba(255,176,0,0.9)]' : 'w-1.5 h-1.5 bg-white/40 group-hover:bg-white/80'}`} />
                                 </button>
                             );
                         })}
                         <button type="button" onClick={() => control.current.step?.(1)} disabled={stopKey === STOPS[STOPS.length - 1].key} aria-label="Next section"
-                            className="mt-1 grid place-items-center w-7 h-7 rounded-full bg-black/50 border border-white/20 text-white/85 hover:bg-white/15 disabled:opacity-30">
+                            className="mt-1 grid place-items-center w-10 h-10 rounded-full bg-black/50 border border-white/20 text-white/85 hover:bg-white/15 disabled:opacity-30">
                             <ChevronDown className="w-4 h-4" aria-hidden />
                         </button>
                     </nav>
@@ -853,29 +884,59 @@ function ShowExperience({ events = [], isPhone = false }) {
                                 <h1 className={`${orbitron.className} text-2xl sm:text-4xl lg:text-5xl font-bold tracking-wide text-amber-100 drop-shadow-[0_0_14px_rgba(255,176,0,0.85)]`}>
                                     WELCOME TO STAGEVERSE
                                 </h1>
-                                <p className="mt-2 text-xs sm:text-sm tracking-[0.3em] text-white/85">SCROLL TO ENTER THE EXPERIENCE</p>
-                                <p className="sr-only">The entire concert ecosystem, one platform: from discovery to production.</p>
+                                <p className="mt-3 max-w-xl mx-auto text-sm sm:text-base text-white/90">Find shows, vote on the setlist and run the production: one place for fans, artists, organizers and crew.</p>
                             </div>
-                            <ChevronDown className="mt-4 w-7 h-7 text-amber-300 animate-bounce" aria-hidden />
+                            <div className="pointer-events-auto mt-5 flex flex-wrap justify-center gap-3">
+                                <button type="button" onClick={() => control.current.step?.(1)}
+                                    className="min-h-12 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] px-6 font-bold text-black shadow-lg shadow-[#ff6a00]/25 hover:brightness-110">
+                                    Watch the show
+                                </button>
+                                <button type="button" onClick={skipToEvents}
+                                    className="min-h-12 rounded-full border border-white/30 bg-black/50 px-6 font-bold text-white hover:bg-white/15">
+                                    Find events
+                                </button>
+                            </div>
+                            <p className="mt-3 flex items-center gap-1 text-xs tracking-[0.2em] text-white/70"><ChevronDown className="w-4 h-4 animate-bounce" aria-hidden /> OR SCROLL</p>
                         </Fade>
 
                         <Fade show={phase === 'cues'} className="items-end justify-start p-6 sm:p-12 pb-24">
                             <div>
                                 <div className="font-mono text-amber-300 text-xs sm:text-sm tracking-[0.3em] mb-2">{cueName?.toUpperCase()} · GO</div>
                                 <h2 className="text-3xl sm:text-5xl font-bold max-w-xl drop-shadow-xl">Every show runs on cues.</h2>
-                                <p className="mt-3 text-gray-300 max-w-md">StageVerse puts the whole production on one timeline, from the first ticket to the last blackout.</p>
+                                <p className="mt-3 text-gray-300 max-w-md">StageVerse puts the whole production on one timeline, from the first booking to the last blackout.</p>
                             </div>
                         </Fade>
+
+                        {/* Each persona's line, as text (it is also on the LED wall), with where to start */}
+                        <Fade show={phase === 'roles' && Boolean(role)} className="items-end justify-start p-6 sm:p-12 pb-24 sm:pb-24">
+                            <div className="max-w-md rounded-2xl bg-black/60 backdrop-blur-sm border border-white/10 p-5">
+                                <div className="font-mono text-amber-300 text-xs tracking-[0.3em] mb-2">FOR THE {String(role ?? '').toUpperCase()}</div>
+                                <p className="text-lg sm:text-xl font-bold leading-snug">{screen.line}</p>
+                                <Link href={`/signup?role=${ROLE_SIGNUP[role] ?? 'fan'}`} className="pointer-events-auto mt-3 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-amber-300 hover:underline">
+                                    Sign up as {ROLE_ARTICLE[role] ?? 'a'} {String(role ?? '').toLowerCase()} <ArrowRight className="w-4 h-4" aria-hidden />
+                                </Link>
+                            </div>
+                        </Fade>
+
+                        {/* 3. past the show at any point: straight to the events */}
+                        {phase !== 'outside' && phase !== 'play' && (
+                            <button type="button" onClick={skipToEvents}
+                                className="pointer-events-auto absolute bottom-5 left-1/2 -translate-x-1/2 flex min-h-11 items-center gap-1 rounded-full border border-white/20 bg-black/60 px-4 text-sm font-semibold text-white/90 backdrop-blur hover:bg-white/15">
+                                Skip to events <ChevronDown className="w-4 h-4" aria-hidden />
+                            </button>
+                        )}
 
                         {/* The playground, in three steps: pick a genre, play one of its songs (or your own), run the lights */}
                         <Fade show={phase === 'play'} className="flex-col items-start justify-end px-4 sm:px-12 pb-24 sm:pb-12">
                             <div className="pointer-events-auto w-full max-w-md rounded-2xl bg-black/80 border border-white/10 p-5 sm:p-6">
                                 <div className="flex items-center justify-between font-mono text-xs tracking-[0.3em] mb-2">
                                     <span className="text-amber-300">YOUR TURN</span>
-                                    <span className="text-gray-400">STEP {playStep === 'genre' ? 1 : playStep === 'songs' ? 2 : 3} OF 3</span>
+                                    {!isPhone && <span className="text-gray-400">STEP {playStep === 'genre' ? 1 : playStep === 'songs' ? 2 : 3} OF 3</span>}
                                 </div>
 
-                                {playStep === 'genre' ? (
+                                {isPhone ? (
+                                    <PhonePlayground />
+                                ) : playStep === 'genre' ? (
                                     <>
                                         {/* the stage: walk round the grounds with the arrows, then pick a genre and a song to play there */}
                                         {FEATURES.festival && (() => {
@@ -886,7 +947,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                                                         className="grid place-items-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40"><ArrowLeft className="w-4 h-4" /></button>
                                                     <div className="min-w-0 flex-1 text-center">
                                                         <p className="text-sm font-bold truncate">{walkingTo ? `Walking to the ${here.title}...` : here.title}</p>
-                                                        <p className="text-[11px] text-gray-400 truncate">{here.genres.length ? `Best for ${here.genres.map((g) => GENRES[g]?.label ?? g).join(' and ')}` : 'Any genre'}</p>
+                                                        <p className="text-xs text-gray-400 truncate">{here.genres.length ? `Best for ${here.genres.map((g) => GENRES[g]?.label ?? g).join(' and ')}` : 'Any genre'}</p>
                                                     </div>
                                                     <button type="button" onClick={() => shiftStage(1)} disabled={Boolean(walkingTo)} aria-label="Next stage"
                                                         className="grid place-items-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40"><ArrowRight className="w-4 h-4" /></button>
@@ -894,11 +955,12 @@ function ShowExperience({ events = [], isPhone = false }) {
                                             );
                                         })()}
                                         <h2 className="text-2xl sm:text-3xl font-black mb-1">Play a song.</h2>
-                                        <p className="text-sm text-gray-300 mb-4">Pick a genre first: each one is analysed and lit its own way.</p>
+                                        <p className="text-sm text-gray-300 mb-1">Pick a genre first: each one is analysed and lit its own way.</p>
+                                        {FEATURES.festival && <p className="text-xs text-gray-400 mb-4">{STAGE_GENRES}</p>}
                                         <GenrePicker value={genre} onHelpChange={holdScroll} counts={Object.fromEntries(GENRE_KEYS.map((g) => [g, song.demos.filter((d) => d.genre === g).length]))}
                                             onChange={bigScreenOnly2((g) => { setGenre(g); setPlayStep('songs'); })} />
                                         <button onClick={bigScreenOnly(() => setPlayStep('lights'))}
-                                            className="mt-4 flex items-center gap-1 text-sm text-gray-300 hover:text-white">
+                                            className="mt-3 flex min-h-11 items-center gap-1 text-sm text-gray-300 hover:text-white">
                                             <Settings2 className="w-4 h-4" /> Skip to running the lights <ArrowRight className="w-4 h-4" />
                                         </button>
                                     </>
@@ -912,12 +974,12 @@ function ShowExperience({ events = [], isPhone = false }) {
                                             <Headphones className="w-3.5 h-3.5" aria-hidden /><SunMedium className="w-3.5 h-3.5" aria-hidden /> For the best experience, use headphones and turn your screen brightness and volume up.
                                         </p>
                                         {genreDemos.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 mb-3">
+                                            <div className="flex flex-col gap-2 mb-3">
                                                 {genreDemos.map((demo) => (
                                                     <button key={demo.slug} onClick={bigScreenOnly(() => playDemo(demo))} title={demo.artist ? `${demo.title} by ${demo.artist}` : demo.title}
-                                                        className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-white/30 text-sm font-bold hover:border-white text-left">
-                                                        <Music className="w-4 h-4 shrink-0" />
-                                                        <span>{demo.title}{demo.artist && <span className="block text-[10px] font-medium text-gray-400">{demo.artist}</span>}</span>
+                                                        className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left font-bold text-black hover:bg-amber-300 transition-colors">
+                                                        <Play className="w-5 h-5 shrink-0" aria-hidden />
+                                                        <span className="min-w-0">{demo.title}{demo.artist && <span className="block text-xs font-medium text-black/60">{demo.artist}</span>}</span>
                                                     </button>
                                                 ))}
                                             </div>
@@ -926,7 +988,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                                             className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-400 text-black text-sm font-bold disabled:opacity-60">
                                             {song.status ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Light up your own {GENRES[genre].label} song
                                         </button>
-                                        <p className="mt-2 text-[11px] text-gray-400">We find its beats and sections and program a show for it in your browser. Your file never leaves your device.</p>
+                                        <p className="mt-2 text-xs text-gray-400">We find its beats and sections and program a show for it in your browser. Your file never leaves your device.</p>
                                         {song.status && <p className="mt-3 text-xs text-amber-200" role="status">{song.status}</p>}
                                         {song.ready && (
                                             <button onClick={() => playShow(song.ready.show, song.ready.url, song.ready.url)}
@@ -935,12 +997,11 @@ function ShowExperience({ events = [], isPhone = false }) {
                                             </button>
                                         )}
                                         {song.error && <p className="mt-3 text-xs text-red-300" role="alert">{song.error}</p>}
-                                        {genreDemos.length > 0 && <p className="mt-3 text-[10px] leading-snug text-gray-500">{SONG_NOTICE}</p>}
+                                        {genreDemos.length > 0 && <p className="mt-3 text-xs leading-snug text-gray-400">{SONG_NOTICE}</p>}
                                         {/* There's more: the lights are the next step */}
                                         <button onClick={bigScreenOnly(() => setPlayStep('lights'))}
-                                            className="mt-4 w-full flex items-center justify-between gap-2 px-5 py-3 rounded-xl bg-white text-black font-bold hover:bg-amber-300 transition-colors">
-                                            <span className="flex items-center gap-2"><Settings2 className="w-4 h-4" /> Next: run the lights yourself</span>
-                                            <ArrowRight className="w-5 h-5" />
+                                            className="mt-3 flex min-h-11 items-center gap-2 text-sm font-semibold text-gray-200 hover:text-white">
+                                            <Settings2 className="w-4 h-4" aria-hidden /> Next: run the lights yourself <ArrowRight className="w-4 h-4" aria-hidden />
                                         </button>
                                     </>
                                 ) : (
@@ -956,15 +1017,15 @@ function ShowExperience({ events = [], isPhone = false }) {
                                                     className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-3 text-sm font-bold transition-colors select-none ${active ? 'bg-amber-300 text-black border-purple-300' : key === 'drop' ? 'bg-gradient-to-br from-fuchsia-500 to-orange-400 text-black border-transparent' : 'bg-white/5 border-white/15 hover:border-white/50'}`}>
                                                     <Icon className="w-5 h-5" aria-hidden />
                                                     {label}
-                                                    <span className={`text-[10px] font-medium ${active || key === 'drop' ? 'text-black/70' : 'text-gray-400'}`}>{hint}</span>
+                                                    <span className={`text-xs font-medium ${active || key === 'drop' ? 'text-black/70' : 'text-gray-400'}`}>{hint}</span>
                                                 </button>
                                             ))}
                                         </div>
                                         <div className="mt-4 text-xs text-gray-400 mb-2">Colours</div>
                                         <div className="flex flex-wrap gap-2" role="group" aria-label="Rig colour">
                                             {ENCORE_CHOICES.map((c) => (
-                                                <button key={c.label} onClick={() => pickColors(c)} aria-label={`Rig colour ${c.label}`} aria-pressed={manual && desk.colorA === c.a}
-                                                    className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${manual && desk.colorA === c.a ? 'border-white scale-110' : 'border-white/20'}`}
+                                                <button key={c.label} onClick={() => pickColors(c)} aria-label={`Rig colour ${c.label}`} title={c.label} aria-pressed={manual && desk.colorA === c.a}
+                                                    className={`w-10 h-10 rounded-full border-2 transition-transform hover:scale-110 ${manual && desk.colorA === c.a ? 'border-white scale-110' : 'border-white/20'}`}
                                                     style={{ background: `linear-gradient(135deg, ${c.a}, ${c.b})` }} />
                                             ))}
                                         </div>
@@ -981,9 +1042,9 @@ function ShowExperience({ events = [], isPhone = false }) {
                                 )}
                                 <input ref={fileInput} type="file" accept="audio/*" className="hidden"
                                     onChange={(e) => { analyseUpload(e.target.files?.[0]); e.target.value = ''; }} />
-                                <div className="mt-4 pt-4 border-t border-white/10 flex gap-3 text-sm">
-                                    <Link href="/login" className="font-bold text-amber-300 hover:underline">Get started →</Link>
-                                    <a href="#events" className="text-gray-300 hover:underline">Explore events</a>
+                                <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-x-5 text-sm">
+                                    <Link href="/signup" className="flex min-h-11 items-center font-bold text-amber-300 hover:underline">Create a free account →</Link>
+                                    <button type="button" onClick={skipToEvents} className="flex min-h-11 items-center text-gray-300 hover:underline">Find events</button>
                                 </div>
                             </div>
                         </Fade>
@@ -1073,7 +1134,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                     </div>
                 )}
 
-                <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex flex-col items-end gap-3 pointer-events-none">
+                <div className={`absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex flex-col items-end gap-3 pointer-events-none ${isPhone ? 'hidden' : ''}`}>
                     <LightingDesk
                         onDrop={fireDrop}
                         onEffect={fireEffect}

@@ -51,6 +51,15 @@ export default function LoadingScreen() {
         return () => { root.style.overflow = before; };
     }, [phase]);
 
+    const skip = () => {
+        setPhase('gone');
+        // (once the page can scroll again)
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            const el = document.getElementById('events');
+            if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'instant' });
+        }));
+    };
+
     if (phase === 'gone') return null;
     const share = ready ? 1 : state.done / state.total;
     const label = ready ? 'Ready' : PART_LABELS[state.next] ?? 'Loading';
@@ -60,7 +69,7 @@ export default function LoadingScreen() {
             role="status"
             aria-live="polite"
             aria-label={`Loading the show: ${label}`}
-            className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#010208] text-white transition-opacity ease-out"
+            className="fixed inset-x-0 bottom-0 top-20 z-40 flex flex-col items-center justify-center bg-[#010208] text-white transition-opacity ease-out"
             style={{ opacity: phase === 'fading' ? 0 : 1, transitionDuration: `${FADE_MS}ms`, pointerEvents: phase === 'fading' ? 'none' : 'auto' }}
         >
             {/* Two beams sweeping across from the top corners, like a rig warming up */}
@@ -83,6 +92,11 @@ export default function LoadingScreen() {
                     </div>
                     <p className="mt-3 text-center text-xs uppercase tracking-[0.25em] text-white/60">{label}</p>
                 </div>
+                {/* the events don't wait for the stage: straight past it (the stage keeps loading behind) */}
+                <button type="button" onClick={skip}
+                    className="min-h-11 rounded-full border border-white/20 bg-white/5 px-5 text-sm font-semibold text-white/85 hover:bg-white/15">
+                    Skip to events
+                </button>
             </div>
 
             <style>{`

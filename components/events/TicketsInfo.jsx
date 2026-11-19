@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Ticket, ExternalLink, X, Clock, Calendar, MapPin } from 'lucide-react';
+import { formatPrice } from '@/lib/format';
 
 // StageVerse does not sell tickets: an event says where its tickets are sold (event.ticketsAt: { name, url }), and
 // the button to that platform says buying there from here is coming soon.
@@ -77,7 +78,7 @@ export default function TicketsInfo({ event, formattedDate }) {
                 {from !== null && (
                     <div className="flex items-start gap-3">
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-slate-400" aria-hidden>$</span>
-                        <div><dt className="text-slate-400">Prices</dt><dd className="font-semibold">{from === to ? `$${from}` : `$${from} to $${to}`}</dd></div>
+                        <div><dt className="text-slate-400">Prices</dt><dd className="font-semibold">{from === to ? formatPrice(from) : `${formatPrice(from)} to ${formatPrice(to)}`}</dd></div>
                     </div>
                 )}
                 <div className="flex items-start gap-3">

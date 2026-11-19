@@ -16,12 +16,19 @@ export default function Navbar() {
   const [isLoading, setIsLoading] = useState(true); // Add loading state
   useEffect(() => {
     const checkSession = async () => {
+      // (a browser that never signed in has nothing to check: no request, and no 401 in a visitor's console;
+      // login saves 'user', logout removes it)
+      let saved = null;
+      try { saved = localStorage.getItem('user'); } catch { saved = null; }
+      if (!saved) { setUser(null); setIsLoading(false); return; }
       try {
         const res = await fetch('/api/auth/me');
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user);
+          setUser(data.user ?? null);
         } else {
+          // (the session ended: forget it here too)
+          try { localStorage.removeItem('user'); } catch { /* private mode */ }
           setUser(null);
         }
       } catch (error) {
@@ -37,6 +44,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' }); 
+      try { localStorage.removeItem('user'); } catch { /* private mode */ }
       setUser(null);
       setIsOpen(false);
       router.push('/'); 

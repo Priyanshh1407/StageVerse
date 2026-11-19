@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatPrice } from '@/lib/format';
 
 export default function LocalEvents({ events, isLoading, city = null, live = false }) {
   const [startIndex, setStartIndex] = useState(0);
@@ -24,7 +25,7 @@ export default function LocalEvents({ events, isLoading, city = null, live = fal
   const isEnd = startIndex + itemsPerPage >= events.length;
 
   return (
-    <section className="py-20 bg-[#0a0a0a] border-y border-white/5">
+    <section className="py-16">
       <div className="mx-auto max-w-[1440px] px-6 lg:px-12">
 
         <div className="flex items-center justify-between mb-10">
@@ -36,18 +37,18 @@ export default function LocalEvents({ events, isLoading, city = null, live = fal
           </div>
 
           {}
-          <div className="hidden md:flex gap-3">
+          <div className={`${events.length > itemsPerPage ? 'hidden md:flex' : 'hidden'} gap-3`}>
             <button
               onClick={handlePrev}
               disabled={isStart}
-              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${isStart ? 'border-white/5 text-white/20 cursor-not-allowed' : 'border-white/10 text-white hover:bg-white hover:text-black'}`}
+              aria-label="Previous shows" className={`w-11 h-11 rounded-full border flex items-center justify-center transition-colors ${isStart ? 'border-white/5 text-white/20 cursor-not-allowed' : 'border-white/10 text-white hover:bg-white hover:text-black'}`}
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <button
               onClick={handleNext}
               disabled={isEnd}
-              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${isEnd ? 'border-white/5 text-white/20 cursor-not-allowed' : 'border-white/10 text-white hover:bg-white hover:text-black'}`}
+              aria-label="Next shows" className={`w-11 h-11 rounded-full border flex items-center justify-center transition-colors ${isEnd ? 'border-white/5 text-white/20 cursor-not-allowed' : 'border-white/10 text-white hover:bg-white hover:text-black'}`}
             >
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -72,7 +73,7 @@ export default function LocalEvents({ events, isLoading, city = null, live = fal
                 transition: { staggerChildren: 0.15 }
               }
             }}
-            className="space-y-4 min-h-[400px]"
+            className="space-y-4"
           >
             {visibleEvents.map((event) => (
               <motion.div
@@ -111,9 +112,9 @@ export default function LocalEvents({ events, isLoading, city = null, live = fal
                       </div>
 
                       <div className="flex flex-col items-end gap-3">
-                        <span className="text-xl font-bold text-white">{event.price}</span>
+                        <span className="text-lg font-bold text-white">{event.price ? `from ${formatPrice(event.price)}` : 'Free'}</span>
                         <div className={`px-6 py-2 rounded-lg text-sm font-bold transition-transform group-hover:scale-105 text-center ${event.price === 'Free' ? 'bg-white/10 text-white' : 'bg-white/10 group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-black text-white'}`}>
-                          {event.price === 'Free' ? 'RSVP' : 'Buy'}
+                          View event
                         </div>
                       </div>
                     </div>
