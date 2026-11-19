@@ -64,12 +64,12 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
             <h3 className="text-white text-base md:text-lg font-bold font-sans">
                 {editingGuest ? 'Edit Guest Details' : 'Add New Guest'}
             </h3>
-            <p className="text-slate-300 text-[10px] md:text-xs">
+            <p className="text-slate-300 text-xs md:text-xs">
                 {editingGuest ? 'Updating existing record' : 'Fill details for instant sync'}
             </p>
           </div>
           {editingGuest && (
-            <button onClick={onCancel} className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors">
+            <button onClick={onCancel} className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                 <X className="w-4 h-4" />
             </button>
           )}
@@ -86,8 +86,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
               onChange={(e) => setName(e.target.value)}
               className="w-full h-10 md:h-11 px-3 rounded-lg bg-slate-50 dark:bg-[#101b23] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none transition-all text-sm"
               placeholder="Full Name"
-              type="text"
-            />
+              type="text" aria-label="Full Name" />
           </div>
 
           <div>
@@ -97,8 +96,7 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
               onChange={(e) => setEmail(e.target.value)}
               className="w-full h-10 md:h-11 px-3 rounded-lg bg-slate-50 dark:bg-[#101b23] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none transition-all text-sm"
               placeholder="guest@example.com"
-              type="email"
-            />
+              type="email" aria-label="guest@example.com" />
           </div>
 
           {}
@@ -134,9 +132,9 @@ export default function AddGuestForm({ onAdd, onUpdate, editingGuest, onCancel }
           <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 mt-2">
             {!editingGuest && (
                 <div className="w-full sm:w-1/3 flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#101b23] h-10 md:h-11 px-1">
-                    <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-10 h-full flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><Minus className="w-4 h-4" /></button>
+                    <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-10 h-full flex items-center justify-center text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors min-h-11 min-w-11" aria-label="Decrease" title="Decrease"><Minus className="w-4 h-4" /></button>
                     <input className="w-full bg-transparent border-none text-center text-slate-900 dark:text-white font-bold focus:ring-0 p-0 text-sm" type="text" value={qty} readOnly/>
-                    <button onClick={() => setQty(q => q + 1)} className="w-10 h-full flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><Plus className="w-4 h-4" /></button>
+                    <button onClick={() => setQty(q => q + 1)} className="w-10 h-full flex items-center justify-center text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors min-h-11 min-w-11" aria-label="Add" title="Add"><Plus className="w-4 h-4" /></button>
                 </div>
             )}
 
@@ -177,9 +175,9 @@ function TierOption({ label, sub, badge, color, current, set }) {
       </div>
       <div className="flex-1 min-w-0">
         <span className="block text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">{label}</span>
-        <span className="block text-[10px] md:text-xs text-slate-500 dark:text-slate-400 truncate">{sub}</span>
+        <span className="block text-xs md:text-xs text-slate-500 dark:text-slate-400 truncate">{sub}</span>
       </div>
-      <span className={`text-[10px] md:text-xs font-bold px-1.5 py-0.5 rounded ${badgeColors[color]}`}>{badge}</span>
+      <span className={`text-xs md:text-xs font-bold px-1.5 py-0.5 rounded ${badgeColors[color]}`}>{badge}</span>
     </div>
   );
 }

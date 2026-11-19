@@ -8,7 +8,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
   const [showEncoreScreen, setShowEncoreScreen] = useState(false);
   const [encoreWinner, setEncoreWinner] = useState(null);
   // Hooks must run on every render, so the empty state is returned after them
-  if (!currentSong) return <div className="p-8 text-gray-500">No song active</div>;
+  if (!currentSong) return <div className="p-8 text-gray-400">No song active</div>;
   const activePoll = pollStats ? {
     isActive: true,
     title: pollStats.question,
@@ -68,7 +68,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
           <div className="flex flex-col">
             <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded bg-[#ff6a00]/20 text-[#ff6a00] w-fit mb-1">
               <PlayCircle className="w-3 h-3" />
-              <span className="text-[10px] font-bold tracking-wider uppercase">Now Playing</span>
+              <span className="text-xs font-bold tracking-wider uppercase">Now Playing</span>
             </div>
             <h1 className="text-white text-3xl md:text-4xl lg:text-5xl font-black leading-none tracking-tight">
               {currentSong.title}
@@ -80,7 +80,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
         <div className="flex flex-col gap-1.5 pt-1">
           <div className="flex gap-6 justify-between items-end">
             <p className="text-[#ff6a00] text-xs font-bold tracking-widest uppercase">{currentSong.section}</p>
-            <p className="text-slate-400 font-mono text-xs">{currentSong.timeElapsed} <span className="text-slate-600">/</span> {currentSong.duration}</p>
+            <p className="text-slate-400 font-mono text-xs">{currentSong.timeElapsed} <span className="text-slate-400">/</span> {currentSong.duration}</p>
           </div>
           <div className="rounded-full bg-[#16222b] border border-[#223949] h-2.5 overflow-hidden relative">
             <div
@@ -103,7 +103,7 @@ export default function LiveControls({ currentSong, currentCue, pollStats, winne
 
         <div className="relative z-10 flex flex-col justify-between h-full p-5 md:p-6">
           <div className="flex justify-between items-start">
-            <div className="bg-red-500/20 text-red-400 border border-red-500/50 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-red-500/20 text-red-400 border border-red-500/50 px-2 py-1 rounded text-xs font-bold uppercase tracking-widest flex items-center gap-2">
               <AlertTriangle className="w-3 h-3 animate-pulse" /> {currentCue.type} Cue
             </div>
           </div>
@@ -168,7 +168,7 @@ function PollMonitor({ poll, onReveal }) {
         <div className="flex items-center gap-2 mb-3">
           <BarChart3 className="w-4 h-4 text-[#ff6a00]" />
           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{poll.title}</span>
-          <span className="ml-auto text-xs text-slate-500">{totalVotes} votes</span>
+          <span className="ml-auto text-xs text-slate-400">{totalVotes} votes</span>
         </div>
 
         <div className="space-y-2">
@@ -232,11 +232,11 @@ function InfoCard({ icon: Icon, title, value, sub, accent }) {
   return (
     <div className={`bg-[#16222b] border border-[#223949] rounded-lg p-3 flex flex-col justify-center group transition-colors hover:border-[#a855f7]/30 ${accent ? 'bg-[#ff6a00]/5 border-[#a855f7]/20' : ''}`}>
       <div className="flex items-center gap-2 mb-1">
-        <Icon className={`w-3.5 h-3.5 ${accent ? 'text-[#ff6a00]' : 'text-slate-500 group-hover:text-slate-300'}`} />
-        <span className={`text-[10px] font-bold uppercase tracking-wide ${accent ? 'text-[#ff6a00]' : 'text-slate-500 group-hover:text-slate-300'}`}>{title}</span>
+        <Icon className={`w-3.5 h-3.5 ${accent ? 'text-[#ff6a00]' : 'text-slate-400 group-hover:text-slate-300'}`} />
+        <span className={`text-xs font-bold uppercase tracking-wide ${accent ? 'text-[#ff6a00]' : 'text-slate-400 group-hover:text-slate-300'}`}>{title}</span>
       </div>
       <div className="text-white font-bold text-base leading-tight truncate">{value}</div>
-      <div className="text-slate-400 text-[10px] mt-0.5 font-mono truncate">{sub}</div>
+      <div className="text-slate-400 text-xs mt-0.5 font-mono truncate">{sub}</div>
     </div>
   );
 }

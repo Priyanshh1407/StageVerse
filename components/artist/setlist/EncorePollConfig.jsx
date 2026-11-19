@@ -71,7 +71,7 @@ function PollGrid({ polls, loading, hasEvent, onAdd, onPreview }) {
               <div className="flex items-center gap-2">
                 <span className={`inline-block w-2 h-2 rounded-full ${poll.isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-[#ffb000]'}`} />
                 <span className={`text-xs font-bold uppercase tracking-wider ${poll.isActive ? 'text-emerald-400' : 'text-[#ffb000]'}`}>{poll.isActive ? 'Live now' : 'Ready'}</span>
-                <span className="ml-auto text-[11px] text-[#90b2cb]">{votes} vote{votes === 1 ? '' : 's'}</span>
+                <span className="ml-auto text-xs text-[#90b2cb]">{votes} vote{votes === 1 ? '' : 's'}</span>
               </div>
               <h4 className="text-white font-bold text-lg leading-snug">{poll.question}</h4>
               <p className="text-[#90b2cb] text-xs">Options: {poll.options.map((o) => o.text).join(', ')}</p>
@@ -155,7 +155,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
     <div className="animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col h-full">
       {}
       <div className="flex items-center gap-4 mb-6 border-b border-[#223949] pb-4">
-        <button onClick={onCancel} className="p-2 hover:bg-[#223949] rounded-full text-[#90b2cb] hover:text-white transition-colors">
+        <button onClick={onCancel} className="p-2 hover:bg-[#223949] rounded-full text-[#90b2cb] hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Back" title="Back">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
@@ -174,8 +174,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
               className="w-full bg-[#101b22] border border-[#223949] text-white text-sm rounded-lg focus:ring-1 focus:ring-[#a855f7] focus:border-[#a855f7] p-2.5"
               type="text"
               value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-            />
+              onChange={(e) => setQuestion(e.target.value)} aria-label="Poll Question" />
           </div>
 
           <h4 className="text-white text-sm font-bold uppercase tracking-wider mt-4">Poll Options</h4>
@@ -192,7 +191,7 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
                     placeholder={index === options.length - 1 ? "Type to add another option..." : "Enter option..."}
                   />
                   {(index !== options.length - 1 || opt.value !== "") && (
-                    <button onClick={() => removeOption(opt.id)} className="absolute right-2 top-2 text-[#90b2cb] hover:text-red-400">
+                    <button onClick={() => removeOption(opt.id)} className="absolute right-2 top-2 text-[#90b2cb] hover:text-red-400 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                       <X className="w-4 h-4" />
                     </button>
                   )}
@@ -222,8 +221,8 @@ function PollEditor({ onSave, onCancel, eventId }) { // Added eventId prop
         <button
           onClick={handleSavePoll}
           disabled={loading}
-          className="px-6 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black text-sm font-bold rounded-lg shadow-lg flex items-center gap-2 disabled:opacity-50"
-        >
+          className="px-6 py-2 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black text-sm font-bold rounded-lg shadow-lg flex items-center gap-2 disabled:opacity-50 min-h-11 min-w-11"
+         aria-label="Done" title="Done">
           {loading ? 'Saving...' : <><Check className="w-4 h-4" /> Save Poll</>}
         </button>
       </div>
@@ -244,7 +243,7 @@ function PollPreviewModal({ poll, onClose }) {
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffb000] flex items-center gap-2"><Smartphone className="w-4 h-4" /> What fans see</p>
         <div className="w-[300px] rounded-[2.2rem] border-[6px] border-[#2a2f3a] bg-[#0b0f14] p-5 shadow-2xl">
           <div className="mx-auto mb-4 h-1.5 w-16 rounded-full bg-[#2a2f3a]" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">● Live poll</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">● Live poll</span>
           <h3 className="mt-2 text-white text-lg font-bold leading-snug">{poll.question}</h3>
           <div className="mt-4 flex flex-col gap-2.5">
             {poll.options.map((o) => {
@@ -257,7 +256,7 @@ function PollPreviewModal({ poll, onClose }) {
               );
             })}
           </div>
-          <p className="mt-4 text-center text-[11px] text-slate-500">{total} vote{total === 1 ? '' : 's'} so far · tap an option to vote</p>
+          <p className="mt-4 text-center text-xs text-slate-400">{total} vote{total === 1 ? '' : 's'} so far · tap an option to vote</p>
         </div>
         <button type="button" onClick={onClose}
           className="px-6 py-2.5 rounded-lg font-bold text-black bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110">Close preview</button>

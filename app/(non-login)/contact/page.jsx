@@ -216,8 +216,8 @@ export default function ContactPage() {
                         ${status === 'success'
                           ? 'bg-green-500 text-white hover:bg-green-600'
                           : 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black hover:brightness-110'}
-                      `}
-                    >
+                       min-h-11 min-w-11`}
+                     aria-label="Mark as done" title="Mark as done">
                       {status === 'loading' ? (
                         <>
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -234,7 +234,7 @@ export default function ContactPage() {
                     </button>
                   </div>
 
-                  <p className="text-xs text-center text-gray-500 mt-4">
+                  <p className="text-xs text-center text-gray-400 mt-4">
                     By submitting this form, you agree to our <a href="#" className="underline hover:text-[#ffb000]">Privacy Policy</a>.
                   </p>
 

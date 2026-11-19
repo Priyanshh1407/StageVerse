@@ -196,10 +196,10 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
           <div className="space-y-5 mb-6">
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-[10px] font-bold text-[#90b2cb] uppercase tracking-wide">Fixture Profile</label>
+                <label className="block text-xs font-bold text-[#90b2cb] uppercase tracking-wide">Fixture Profile</label>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="text-[10px] text-orange-400 hover:text-orange-300 flex items-center gap-1 font-bold uppercase tracking-wider"
+                  className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1 font-bold uppercase tracking-wider"
                 >
                   <PlusCircle className="w-3 h-3" /> New Profile
                 </button>
@@ -237,7 +237,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
           </div>
 
           <div>
-            <label className="block text-[10px] font-bold text-[#ffb000] mb-2 uppercase tracking-wide flex items-center gap-1.5">
+            <label className="block text-xs font-bold text-[#ffb000] mb-2 uppercase tracking-wide flex items-center gap-1.5">
               <Wand2 className="w-4 h-4" /> AI Logic / Constraints
             </label>
             <div className="relative">
@@ -246,8 +246,8 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                 onChange={(e) => setLogic(e.target.value)}
                 className="w-full h-40 bg-[#0b1219] border border-[#2c3e50] rounded-lg p-4 text-sm text-gray-300 focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] placeholder:text-gray-600 resize-none font-mono leading-relaxed shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
                 placeholder="Patch these fixtures sequentially, but skip channels 50-60 due to a bad dimmer."
-              ></textarea>
-              <div className="absolute bottom-3 right-3 text-[10px] text-gray-600 font-mono">AI-ENABLED</div>
+               aria-label="Patch these fixtures sequentially, but skip channels 50-60 due to a bad dimmer"></textarea>
+              <div className="absolute bottom-3 right-3 text-xs text-gray-400 font-mono">AI-ENABLED</div>
             </div>
           </div>
         </div>
@@ -258,8 +258,8 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
         <button
           onClick={handleCalculate}
           disabled={isGenerating}
-          className="w-full py-4 bg-gradient-to-r from-[#ffb000] to-[#ff3d7a] hover:from-[#ffb000] hover:to-[#ff3d7a] text-black font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2 text-sm transform active:scale-[0.98] border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+          className="w-full py-4 bg-gradient-to-r from-[#ffb000] to-[#ff3d7a] hover:from-[#ffb000] hover:to-[#ff3d7a] text-black font-bold uppercase tracking-wider rounded-lg shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2 text-sm transform active:scale-[0.98] border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed min-h-11 min-w-11"
+         aria-label="Ask the AI" title="Ask the AI">
           {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5 fill-none" />}
           {isGenerating ? 'Thinking...' : 'Calculate & Append'}
         </button>
@@ -271,7 +271,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-[#2c3e50] bg-[#111]">
               <h3 className="text-white font-bold">Create New Fixture</h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleCreateProfile} className="p-6 space-y-4">
               <div>
@@ -281,8 +281,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                   placeholder="e.g. Clay Paky"
                   value={newManufacturer}
                   onChange={e => setNewManufacturer(e.target.value)}
-                  required
-                />
+                  required aria-label="Clay Paky" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">Model Name</label>
@@ -291,8 +290,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                   placeholder="e.g. Sharpy"
                   value={newModel}
                   onChange={e => setNewModel(e.target.value)}
-                  required
-                />
+                  required aria-label="Sharpy" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -301,8 +299,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                     className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                     value={newModeName}
                     onChange={e => setNewModeName(e.target.value)}
-                    required
-                  />
+                    required aria-label="Mode Name" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-400 mb-1">Channels</label>
@@ -312,8 +309,7 @@ export default function PatchingSidebar({ showName, onAddFixtures, onReplaceFixt
                     value={newChannels}
                     onChange={e => setNewChannels(e.target.value)}
                     min={1}
-                    required
-                  />
+                    required aria-label="Channels" />
                 </div>
               </div>
 
@@ -343,13 +339,13 @@ function NumberControl({ label, value, onChange, max }) {
 
   return (
     <div>
-      <label className="block text-[10px] font-bold text-[#90b2cb] mb-1.5 uppercase tracking-wide">{label}</label>
+      <label className="block text-xs font-bold text-[#90b2cb] mb-1.5 uppercase tracking-wide">{label}</label>
       <div className="flex items-center w-full bg-[#0b1219] border border-[#2c3e50] rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-[#a855f7] focus-within:border-[#a855f7] hover:border-[#4a6f8a] transition-all h-11">
         <button
           type="button"
           onClick={handleDec}
-          className="h-full px-3 text-[#90b2cb] bg-[#16202a] hover:text-white hover:bg-[#1f2d3a] active:bg-[#2c3e50] transition-colors border-r border-[#2c3e50] flex items-center justify-center"
-        >
+          className="h-full px-3 text-[#90b2cb] bg-[#16202a] hover:text-white hover:bg-[#1f2d3a] active:bg-[#2c3e50] transition-colors border-r border-[#2c3e50] flex items-center justify-center min-h-11 min-w-11"
+         aria-label="Decrease" title="Decrease">
           <Minus className="w-4 h-4" />
         </button>
         <input
@@ -361,8 +357,8 @@ function NumberControl({ label, value, onChange, max }) {
         <button
           type="button"
           onClick={handleInc}
-          className="h-full px-3 text-[#90b2cb] bg-[#16202a] hover:text-white hover:bg-[#1f2d3a] active:bg-[#2c3e50] transition-colors border-l border-[#2c3e50] flex items-center justify-center"
-        >
+          className="h-full px-3 text-[#90b2cb] bg-[#16202a] hover:text-white hover:bg-[#1f2d3a] active:bg-[#2c3e50] transition-colors border-l border-[#2c3e50] flex items-center justify-center min-h-11 min-w-11"
+         aria-label="Add" title="Add">
           <Plus className="w-4 h-4" />
         </button>
       </div>

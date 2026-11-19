@@ -131,7 +131,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
         { }
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Upload New Memories</h2>
-          <button onClick={onClose} disabled={isUploading} className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+          <button onClick={onClose} disabled={isUploading} className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -156,12 +156,12 @@ export default function UploadMediaModal({ isOpen, onClose }) {
             {files.length > 0 ? (
               <div className="flex flex-col gap-1">
                 <span className="font-bold text-slate-900 dark:text-white text-lg">{files.length} files selected</span>
-                <span className="text-sm text-slate-500">Click to add more</span>
+                <span className="text-sm text-slate-400">Click to add more</span>
               </div>
             ) : (
               <div className="flex flex-col gap-1">
                 <span className="font-bold text-slate-700 dark:text-slate-300 text-lg">Click to upload</span>
-                <span className="text-sm text-slate-500">or drag and drop</span>
+                <span className="text-sm text-slate-400">or drag and drop</span>
                 <span className="text-xs text-slate-400 mt-2">Supports JPG, PNG, MP4</span>
               </div>
             )}
@@ -177,15 +177,14 @@ export default function UploadMediaModal({ isOpen, onClose }) {
                   placeholder="Search event..."
                   value={eventQuery}
                   onChange={(e) => { setEventQuery(e.target.value); setShowEventDropdown(true); }}
-                  onFocus={() => setShowEventDropdown(true)}
-                />
+                  onFocus={() => setShowEventDropdown(true)} aria-label="Search event" />
               </div>
               {showEventDropdown && eventResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto">
                   {eventResults.map(e => (
                     <button key={e._id} onClick={() => { setSelectedEvent(e); setEventQuery(e.title); setDate(new Date(e.date).toISOString().split('T')[0]); setShowEventDropdown(false); }} className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800">
                       <span className="font-bold block text-sm">{e.title}</span>
-                      <span className="text-xs text-slate-500">{e.venue?.name}</span>
+                      <span className="text-xs text-slate-400">{e.venue?.name}</span>
                     </button>
                   ))}
                 </div>
@@ -200,8 +199,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
                   type="date"
                   className="w-full bg-white dark:bg-[#151f28] border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#a855f7] dark:[color-scheme:dark]"
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
+                  onChange={(e) => setDate(e.target.value)} aria-label="Date Attended" />
               </div>
             </div>
           </div>
@@ -214,7 +212,7 @@ export default function UploadMediaModal({ isOpen, onClose }) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="What was the highlight of the show?"
-            ></textarea>
+             aria-label="What was the highlight of the show?"></textarea>
           </div>
 
           { }

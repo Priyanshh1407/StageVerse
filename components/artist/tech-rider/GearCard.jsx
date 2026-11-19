@@ -28,7 +28,7 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
           </div>
           <div>
             <h3 className="font-bold text-white leading-tight">{item.name}</h3>
-            <p className="text-[11px] text-white/50 mt-0.5 uppercase tracking-wide">{item.type}</p>
+            <p className="text-xs text-white/50 mt-0.5 uppercase tracking-wide">{item.type}</p>
           </div>
         </div>
       </div>
@@ -41,7 +41,7 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
             ${isSelected
               ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black shadow-lg shadow-[#ff6a00]/20'
               : 'bg-white/10 hover:bg-white/20 text-white'}
-          `}>
+           min-h-11 min-w-11`} aria-label="Decrease" title="Decrease">
           <Minus className="w-4 h-4" />
         </button>
 
@@ -56,8 +56,8 @@ export default function GearCard({ item, onIncrement, onDecrement }) {
             ${isSelected
               ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none text-black shadow-lg shadow-[#ff6a00]/20'
               : 'bg-white/10 hover:bg-white/20 text-white'}
-          `}
-        >
+           min-h-11 min-w-11`}
+         aria-label="Add" title="Add">
           <Plus className="w-4 h-4" />
         </button>
       </div>

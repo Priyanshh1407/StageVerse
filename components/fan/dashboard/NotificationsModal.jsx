@@ -45,7 +45,7 @@ export default function NotificationsModal({ isOpen, onClose }) {
                         <Bell className="w-5 h-5 text-[#ff6a00]" />
                         Notifications
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -53,7 +53,7 @@ export default function NotificationsModal({ isOpen, onClose }) {
                 { }
                 <div className="flex-1 overflow-y-auto p-0 bg-slate-50 dark:bg-[#101b22]">
                     {loading ? (
-                        <div className="p-10 text-center text-slate-500">Loading updates...</div>
+                        <div className="p-10 text-center text-slate-400">Loading updates...</div>
                     ) : notifications.length > 0 ? (
                         <div className="divide-y divide-slate-200 dark:divide-slate-800">
                             {notifications.map((note) => (
@@ -79,7 +79,7 @@ export default function NotificationsModal({ isOpen, onClose }) {
                             ))}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-64 text-slate-500">
+                        <div className="flex flex-col items-center justify-center h-64 text-slate-400">
                             <CheckCircle className="w-12 h-12 mb-4 opacity-20" />
                             <p>No new notifications</p>
                         </div>

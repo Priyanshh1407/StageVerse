@@ -97,16 +97,15 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
             >
                 {}
                 <div className="flex items-center gap-3 p-4 border-b border-[#2c3e50]">
-                    <Search className="w-5 h-5 text-gray-500" />
+                    <Search className="w-5 h-5 text-gray-400" />
                     <input
                         ref={inputRef}
                         type="text"
                         className="flex-1 bg-transparent border-none outline-none text-white text-lg placeholder-gray-600"
                         placeholder="Search shows, tasks, patches..."
                         value={query}
-                        onChange={e => setQuery(e.target.value)}
-                    />
-                    <button onClick={onClose} className="p-1 hover:bg-[#1a1a1a] rounded text-gray-500 hover:text-white">
+                        onChange={e => setQuery(e.target.value)} aria-label="Search shows, tasks, patches" />
+                    <button onClick={onClose} className="p-1 hover:bg-[#1a1a1a] rounded text-gray-400 hover:text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -115,7 +114,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                 <div className="max-h-[60vh] overflow-y-auto custom-scrollbar bg-[#16202a]">
 
                     {isLoading && (
-                        <div className="flex items-center justify-center p-12 text-gray-500">
+                        <div className="flex items-center justify-center p-12 text-gray-400">
                             <Loader2 className="w-6 h-6 animate-spin mr-2" />
                             Searching...
                         </div>
@@ -126,7 +125,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
                             {}
                             {flatResults.length === 0 && (
-                                <div className="text-center py-12 text-gray-500">
+                                <div className="text-center py-12 text-gray-400">
                                     No results found for &quot;{query}&quot;
                                 </div>
                             )}
@@ -134,7 +133,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                             {}
                             {results.events.length > 0 && (
                                 <div>
-                                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-3 py-2">Shows</h3>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 px-3 py-2">Shows</h3>
                                     {results.events.map((event, idx) => {
                                         const absIndex = idx;
                                         const isSelected = selectedIndex === absIndex;
@@ -154,7 +153,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#ffb000]' : 'text-white'}`}>{event.title}</div>
-                                                    <div className="text-[11px] text-gray-500 truncate">{event.artist} • {event.city}</div>
+                                                    <div className="text-xs text-gray-400 truncate">{event.artist} • {event.city}</div>
                                                 </div>
                                                 {isSelected && <ArrowRight className="w-4 h-4 text-[#ffb000]" />}
                                             </Link>
@@ -166,7 +165,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                             {}
                             {results.tasks.length > 0 && (
                                 <div>
-                                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-3 py-2">Logistics Tasks</h3>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 px-3 py-2">Logistics Tasks</h3>
                                     {results.tasks.map((task, idx) => {
                                         const absIndex = (results.events?.length || 0) + idx;
                                         const isSelected = selectedIndex === absIndex;
@@ -186,7 +185,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#ffb000]' : 'text-white'}`}>{task.title}</div>
-                                                    <div className="text-[11px] text-gray-500 truncate">{task.assignee || 'Unassigned'} • Due {task.dueDate || 'Soon'}</div>
+                                                    <div className="text-xs text-gray-400 truncate">{task.assignee || 'Unassigned'} • Due {task.dueDate || 'Soon'}</div>
                                                 </div>
                                                 {isSelected && <ArrowRight className="w-4 h-4 text-[#ffb000]" />}
                                             </Link>
@@ -198,7 +197,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                             {}
                             {results.patches.length > 0 && (
                                 <div>
-                                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-3 py-2">Patches</h3>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 px-3 py-2">Patches</h3>
                                     {results.patches.map((patch, idx) => {
                                         const absIndex = (results.events?.length || 0) + (results.tasks?.length || 0) + idx;
                                         const isSelected = selectedIndex === absIndex;
@@ -218,7 +217,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className={`text-sm font-bold truncate ${isSelected ? 'text-[#ffb000]' : 'text-white'}`}>{patch.showName}</div>
-                                                    <div className="text-[11px] text-gray-500 truncate">Version {patch.version}</div>
+                                                    <div className="text-xs text-gray-400 truncate">Version {patch.version}</div>
                                                 </div>
                                                 {isSelected && <ArrowRight className="w-4 h-4 text-[#ffb000]" />}
                                             </Link>
@@ -234,10 +233,10 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                     {!query && (
                         <div className="p-8 text-center bg-[#16202a]">
                             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#1e2a36] mb-4">
-                                <Search className="w-6 h-6 text-gray-500" />
+                                <Search className="w-6 h-6 text-gray-400" />
                             </div>
                             <h3 className="text-white font-bold mb-1">Search the Studio</h3>
-                            <p className="text-xs text-gray-500 max-w-xs mx-auto">
+                            <p className="text-xs text-gray-400 max-w-xs mx-auto">
                                 Find shows, logistics, tasks, and lighting patches instantly.
                             </p>
                         </div>
@@ -246,7 +245,7 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
                 </div>
 
                 {}
-                <div className="bg-[#141b22] px-4 py-2 border-t border-[#2c3e50] flex items-center justify-between text-[10px] text-gray-500 font-mono">
+                <div className="bg-[#141b22] px-4 py-2 border-t border-[#2c3e50] flex items-center justify-between text-xs text-gray-400 font-mono">
                     <div className="flex gap-4">
                         <span><kbd className="bg-[#27272A] px-1 rounded border border-[#3F3F46] text-gray-300">↑↓</kbd> Navigate</span>
                         <span><kbd className="bg-[#27272A] px-1 rounded border border-[#3F3F46] text-gray-300">Enter</kbd> Select</span>

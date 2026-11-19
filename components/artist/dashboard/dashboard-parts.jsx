@@ -84,7 +84,7 @@ function AssignProductionOverlay({ eventId, currentAssignee }) {
         className="absolute top-6 left-1/2 -translate-x-1/2 z-20 bg-black/50 hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold border border-white/10 transition-all flex items-center gap-2"
       >
         <Lightbulb className="w-3 h-3" />
-        {currentAssignee ? 'Manage Production' : 'Assign LD / Production'}
+        {currentAssignee ? 'Change the crew' : 'Assign the crew'}
       </button>
     );
   }
@@ -144,12 +144,12 @@ export function TicketStatsCard({ data }) {
       {}
       <div className="flex w-full md:w-auto gap-4 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-4 md:pt-0 md:pl-8">
         <div className="flex-1 text-center min-w-[100px]">
-          <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">VIP Tiers</p>
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">VIP Tiers</p>
           <p className="text-slate-900 dark:text-white text-2xl font-bold">{data.vipPercent}%</p>
           <p className="text-xs text-green-500 font-bold">High Yield</p>
         </div>
         <div className="flex-1 text-center min-w-[100px]">
-          <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">GA Floor</p>
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">GA Floor</p>
           <p className="text-slate-900 dark:text-white text-2xl font-bold">{data.gaPercent}%</p>
           <p className="text-xs text-slate-400 font-bold">Standard</p>
         </div>
@@ -258,7 +258,7 @@ export function UpcomingStops({ data }) {
             </div>
 
             <div className="bg-slate-50 dark:bg-[#101b23] w-14 h-14 flex flex-col items-center justify-center rounded-xl flex-shrink-0 border border-slate-100 dark:border-slate-700">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{stop.month}</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{stop.month}</span>
               <span className="text-xl font-bold text-slate-900 dark:text-white leading-none mt-0.5">{stop.date}</span>
             </div>
 
@@ -267,10 +267,10 @@ export function UpcomingStops({ data }) {
               <p className="text-slate-500 dark:text-slate-400 text-sm truncate">{stop.venue}</p>
 
               <div className="flex items-center gap-2 mt-2">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${stop.percentSold >= 100 ? 'bg-green-500/10 text-green-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${stop.percentSold >= 100 ? 'bg-green-500/10 text-green-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                   {stop.percentSold >= 100 ? 'Sold Out' : `${stop.percentSold}% Sold`}
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase">{stop.status}</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 uppercase">{stop.status}</span>
               </div>
             </div>
           </div>
@@ -334,11 +334,11 @@ export function DaySheetCard({ onClick, data }) {
                   </div>
 
                   <div>
-                    <span className={`block text-xs font-mono mb-0.5 ${isActive ? 'text-[#ff6a00] font-bold' : 'text-slate-500'}`}>{item.time}</span>
+                    <span className={`block text-xs font-mono mb-0.5 ${isActive ? 'text-[#ff6a00] font-bold' : 'text-slate-400'}`}>{item.time}</span>
                     <span className={`text-sm md:text-base ${isActive ? 'text-white font-bold tracking-wide' : 'text-slate-300 font-medium'}`}>{item.event}</span>
                   </div>
 
-                  {isActive && <span className="text-[10px] font-bold bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black px-2 py-0.5 rounded shadow-lg shadow-orange-500/40">NOW</span>}
+                  {isActive && <span className="text-xs font-bold bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black px-2 py-0.5 rounded shadow-lg shadow-orange-500/40">NOW</span>}
                 </div>
               );
             })}
@@ -346,7 +346,7 @@ export function DaySheetCard({ onClick, data }) {
         </div>
 
         <div className="mt-6 pt-4 border-t border-white/5 text-center">
-          <p className="text-xs text-slate-500 font-medium group-hover:text-[#ff6a00] transition-colors uppercase tracking-widest">Tap to view full sheet</p>
+          <p className="text-xs text-slate-400 font-medium group-hover:text-[#ff6a00] transition-colors uppercase tracking-widest">Open the full day sheet</p>
         </div>
       </div>
     </div>

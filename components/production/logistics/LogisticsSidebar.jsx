@@ -34,7 +34,7 @@ export default function LogisticsSidebar({ crew = [], docs = [] }) {
             <Lightbulb className="text-orange-500 w-6 h-6 shrink-0" />
             <div>
               <p className="text-white text-sm font-bold mb-1">Tip of the day</p>
-              <p className="text-gray-500 text-xs leading-relaxed">Use &quot;Group Mode&quot; to assign tasks to multiple electricians at once during load-in.</p>
+              <p className="text-gray-400 text-xs leading-relaxed">Use &quot;Group Mode&quot; to assign tasks to multiple electricians at once during load-in.</p>
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@ function DocItem({ title, type, url }) {
       </div>
       <div className="flex-1">
         <p className="text-white text-sm font-bold group-hover:text-orange-400 transition-colors">{title}</p>
-        <p className="text-gray-500 text-xs">{type}</p>
+        <p className="text-gray-400 text-xs">{type}</p>
       </div>
     </a>
   );
@@ -75,7 +75,7 @@ function CrewItem({ name, status, color }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-white text-sm font-medium truncate">{name}</p>
-        <p className="text-gray-500 text-xs truncate">{status}</p>
+        <p className="text-gray-400 text-xs truncate">{status}</p>
       </div>
     </div>
   );

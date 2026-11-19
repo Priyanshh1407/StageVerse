@@ -21,15 +21,14 @@ export default function ArtistsFeed({
         {}
         <div className="relative w-full md:max-w-xl group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="w-5 h-5 text-gray-500 group-focus-within:text-[#ffb000] transition-colors" />
+            <Search className="w-5 h-5 text-gray-400 group-focus-within:text-[#ffb000] transition-colors" />
           </div>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="block w-full pl-11 pr-4 py-3 border border-gray-800 rounded-xl bg-[#18181B] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-transparent shadow-sm text-sm transition-all"
-            placeholder="Search artists, genres, or locations..."
-          />
+            placeholder="Search artists, genres, or locations..." aria-label="Search artists, genres, or locations" />
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
@@ -88,7 +87,7 @@ export default function ArtistsFeed({
           )}
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center h-64 text-gray-500 border border-dashed border-gray-800 rounded-xl">
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400 border border-dashed border-gray-800 rounded-xl">
           <p>No artists found.</p>
           <button onClick={() => setSearchQuery('')} className="text-[#ffb000] text-sm mt-2 hover:underline">Clear Search</button>
         </div>

@@ -15,7 +15,7 @@ export default function SystemLog({ logs, onAddLog }) {
     <div className="bg-white dark:bg-[#15232d] rounded-xl border border-slate-200 dark:border-[#223949] flex flex-col h-full max-h-[calc(100vh-140px)] shadow-sm">
       <div className="p-5 border-b border-slate-200 dark:border-[#223949] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <History className="w-5 h-5 text-[#587386]" />
+          <History className="w-5 h-5 text-[#90b2cb]" />
           <h3 className="font-bold text-lg uppercase tracking-tight">System Log</h3>
         </div>
         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
@@ -35,9 +35,9 @@ export default function SystemLog({ logs, onAddLog }) {
               }`}
             >
               <div className="flex justify-between items-center mb-1">
-                <span className={`text-xs font-mono font-bold ${log.critical ? 'text-red-400' : log.active ? 'text-[#ff6a00]' : 'text-[#587386]'}`}>{log.time}</span>
-                {log.active && <span className="text-[10px] uppercase font-bold text-[#ff6a00] bg-[#ff6a00]/10 px-1.5 py-0.5 rounded">Active</span>}
-                {log.critical && <span className="text-[10px] uppercase font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded">Alert</span>}
+                <span className={`text-xs font-mono font-bold ${log.critical ? 'text-red-400' : log.active ? 'text-[#ff6a00]' : 'text-[#90b2cb]'}`}>{log.time}</span>
+                {log.active && <span className="text-xs uppercase font-bold text-[#ff6a00] bg-[#ff6a00]/10 px-1.5 py-0.5 rounded">Active</span>}
+                {log.critical && <span className="text-xs uppercase font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded">Alert</span>}
               </div>
               <p className={`text-sm font-medium ${log.active || log.critical ? 'text-white' : 'text-slate-700 dark:text-slate-300'}`}>{log.msg}</p>
               {log.sub && <p className="text-xs text-[#90b2cb] mt-0.5">{log.sub}</p>}
@@ -55,13 +55,12 @@ export default function SystemLog({ logs, onAddLog }) {
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               className="w-full h-10 bg-white dark:bg-[#1a2c38] border border-slate-300 dark:border-[#315168] rounded-lg px-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#587386] focus:outline-none focus:border-[#a855f7]" 
               placeholder="Add manual log entry..." 
-              type="text"
-            />
+              type="text" aria-label="Add manual log entry" />
           </div>
           <button 
             onClick={handleSubmit}
-            className="w-10 h-10 flex items-center justify-center bg-[#223949] hover:bg-[#2c4759] text-white rounded-lg"
-          >
+            className="w-10 h-10 flex items-center justify-center bg-[#223949] hover:bg-[#2c4759] text-white rounded-lg min-h-11 min-w-11"
+           aria-label="Add" title="Add">
             <Plus className="w-5 h-5" />
           </button>
         </div>

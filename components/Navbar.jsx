@@ -124,7 +124,7 @@ export default function Navbar() {
 
                 <button 
                   onClick={handleLogout}
-                  className="ml-2 text-slate-500 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-full"
+                  className="ml-2 text-slate-400 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-full"
                   title="Logout"
                 >
                   <LogOut className="w-5 h-5" />
@@ -143,9 +143,9 @@ export default function Navbar() {
 
             {}
             <button 
-              className="md:hidden text-white hover:text-[#ff6a00] transition-colors p-1"
+              className="md:hidden text-white hover:text-[#ff6a00] transition-colors p-1 min-h-11 min-w-11"
               onClick={() => setIsOpen(!isOpen)}
-            >
+             aria-label="Close" title="Close">
               {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
             </button>
           </div>

@@ -31,7 +31,7 @@ function Stat({ number, label }) {
   return (
     <div>
       <div className="text-4xl font-bold text-white mb-1">{number}</div>
-      <div className="text-sm text-gray-500 uppercase tracking-wide">{label}</div>
+      <div className="text-sm text-gray-400 uppercase tracking-wide">{label}</div>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export default function DashboardHeader({ user, stats }) {
             Welcome back, {user.name.split(' ')[0]}.
           </h1>
           <div className="flex items-center gap-2 text-gray-400">
-            <HardHat className="w-5 h-5 text-gray-500" />
+            <HardHat className="w-5 h-5 text-gray-400" />
             <p className="text-base font-normal">
               Currently Working On: <span className="text-orange-500 font-bold">{user.currentProject}</span>
             </p>

@@ -31,7 +31,7 @@ export default function AllReleasesModal({ isOpen, onClose, releases }) {
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white">New Releases & News</h2>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Latest updates from artists you follow.</p>
                     </div>
-                    <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
@@ -53,10 +53,10 @@ export default function AllReleasesModal({ isOpen, onClose, releases }) {
                             {}
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white uppercase ${item.color || 'bg-slate-500'}`}>
+                                    <span className={`px-1.5 py-0.5 rounded text-xs font-bold text-white uppercase ${item.color || 'bg-slate-500'}`}>
                                         {item.type}
                                     </span>
-                                    <span className="text-xs text-slate-500">• {item.timeAgo || 'Just now'}</span>
+                                    <span className="text-xs text-slate-400">• {item.timeAgo || 'Just now'}</span>
                                 </div>
                                 <h4 className="font-bold text-slate-900 dark:text-white truncate text-lg leading-tight">{item.artist}</h4>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{item.title}</p>

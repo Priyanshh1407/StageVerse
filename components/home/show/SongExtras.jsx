@@ -58,7 +58,7 @@ export function ShareButtons({ show, time, stage }) {
             setTimeout(() => setCopied(false), 1800);
         } catch { /* clipboard blocked: nothing to do */ }
     };
-    const button = 'flex items-center gap-1 rounded-lg border border-white/15 bg-white/10 px-2 py-1 text-[11px] font-bold hover:bg-white/20';
+    const button = 'flex items-center gap-1 rounded-lg border border-white/15 bg-white/10 px-2 py-1 text-xs font-bold hover:bg-white/20';
     return (
         <>
             {show.slug && (
@@ -125,7 +125,7 @@ export function HowItWorks({ show, control, onClose }) {
                 <h2 className="flex items-center gap-1.5 font-mono text-xs tracking-[0.25em] text-amber-300"><Info className="h-3.5 w-3.5" /> HOW IT WORKS</h2>
                 <button type="button" onClick={onClose} aria-label="Close" className="rounded p-1 hover:bg-white/10"><X className="h-4 w-4" /></button>
             </div>
-            <p className="text-[11px] leading-snug text-gray-300">Before the song played, StageVerse found its tempo, every beat and its sections. The show is programmed from those; nothing is random.</p>
+            <p className="text-xs leading-snug text-gray-300">Before the song played, StageVerse found its tempo, every beat and its sections. The show is programmed from those; nothing is random.</p>
 
             <div className="mt-3 flex items-center justify-between text-xs">
                 <span className="font-mono text-gray-400">{show.bpm} BPM · bar {Math.floor(beat / meter) + 1}</span>
@@ -136,26 +136,26 @@ export function HowItWorks({ show, control, onClose }) {
                 </span>
             </div>
             <div className="mt-2">
-                <div className="flex justify-between text-[10px] text-gray-400"><span>Loudness</span><span>{Math.round(energy * 100)}%</span></div>
+                <div className="flex justify-between text-xs text-gray-400"><span>Loudness</span><span>{Math.round(energy * 100)}%</span></div>
                 <div className="mt-0.5 h-1.5 overflow-hidden rounded bg-white/10"><div className="h-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]" style={{ width: `${Math.round(energy * 100)}%` }} /></div>
             </div>
 
             {section && (
                 <div className="mt-3">
                     <div className="text-xs font-bold uppercase tracking-wider">{section.label ?? section.kind} <span className="font-mono font-normal text-gray-400">{fmt(section.start)}–{fmt(section.end)}</span></div>
-                    <p className="text-[11px] leading-snug text-gray-300">{SECTION_WHY[section.kind] ?? ''}</p>
+                    <p className="text-xs leading-snug text-gray-300">{SECTION_WHY[section.kind] ?? ''}</p>
                 </div>
             )}
-            {cue?.name && <p className="mt-2 text-[11px] text-gray-300"><span className="text-gray-500">Cue now:</span> <b className="text-white">{cue.name}</b> (since {fmt(cue.t)})</p>}
+            {cue?.name && <p className="mt-2 text-xs text-gray-300"><span className="text-gray-400">Cue now:</span> <b className="text-white">{cue.name}</b> (since {fmt(cue.t)})</p>}
 
             <div className="mt-3 min-h-[4.5rem] border-t border-white/10 pt-2">
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">Just fired</div>
-                {recent.length === 0 && <p className="text-[11px] text-gray-500">Nothing in the last few seconds.</p>}
+                <div className="text-xs uppercase tracking-wider text-gray-400">Just fired</div>
+                {recent.length === 0 && <p className="text-xs text-gray-400">Nothing in the last few seconds.</p>}
                 <ul className="space-y-0.5">
-                    {recent.map((h, i) => <li key={`${h.t}-${h.kind}-${i}`} className="text-[11px] text-gray-200"><span className="font-mono text-gray-500">{fmt(h.t)}</span> {HIT_WHY[h.kind] ?? h.kind}</li>)}
+                    {recent.map((h, i) => <li key={`${h.t}-${h.kind}-${i}`} className="text-xs text-gray-200"><span className="font-mono text-gray-400">{fmt(h.t)}</span> {HIT_WHY[h.kind] ?? h.kind}</li>)}
                 </ul>
             </div>
-            {next && <p className="mt-2 text-[11px] text-gray-400">Next effect in <b className="text-white">{Math.max(0, next.t - t).toFixed(1)} s</b>: {(HIT_WHY[next.kind] ?? next.kind).split(':')[0].toLowerCase()}</p>}
+            {next && <p className="mt-2 text-xs text-gray-400">Next effect in <b className="text-white">{Math.max(0, next.t - t).toFixed(1)} s</b>: {(HIT_WHY[next.kind] ?? next.kind).split(':')[0].toLowerCase()}</p>}
         </aside>
     );
 }

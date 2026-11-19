@@ -248,7 +248,7 @@ function Header({ onMenuClick }) {
   return (
     <header className="h-20 border-b border-[#2c3b47] flex items-center justify-between px-4 md:px-8 bg-[#101b22]/95 backdrop-blur-sm z-10 shrink-0">
       <div className="flex items-center gap-4">
-        <button onClick={onMenuClick} className="md:hidden text-[#90b2cb] hover:text-white">
+        <button onClick={onMenuClick} className="md:hidden text-[#90b2cb] hover:text-white min-h-11 min-w-11" aria-label="Open the menu" title="Open the menu">
           <Menu className="w-6 h-6" />
         </button>
         <div className="flex flex-col">
@@ -285,8 +285,7 @@ function EventsControlBar({ search, setSearch, statusFilter, setStatusFilter, on
             onChange={(e) => setSearch(e.target.value)}
             className="block w-full pl-10 pr-3 py-2 bg-[#101b22] border border-[#2c3b47] rounded-lg text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] transition-colors"
             placeholder="Search events..."
-            type="text"
-          />
+            type="text" aria-label="Search events" />
         </div>
 
         {}
@@ -476,8 +475,8 @@ function EventRow({ event, onDuplicate, onDelete, onEdit, onAnalytics, onViewLiv
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors"
-            >
+              className="p-2 hover:bg-[#2c3b47] rounded-lg text-[#90b2cb] hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center"
+             aria-label="More options" title="More options">
               <MoreVertical className="w-5 h-5" />
             </button>
             {showMenu && (

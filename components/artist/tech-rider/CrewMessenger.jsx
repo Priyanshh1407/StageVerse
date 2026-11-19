@@ -49,8 +49,7 @@ export default function CrewMessenger() {
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="e.g. We need to check the drum riser height..."
                         className="w-full h-24 bg-[#101b23] border border-[#223949] rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:border-[#a855f7] resize-none transition-colors"
-                        disabled={status === 'sending'}
-                    />
+                        disabled={status === 'sending'} aria-label="We need to check the drum riser height" />
                     {status === 'success' && (
                         <div className="absolute inset-0 flex items-center justify-center bg-[#101b23]/80 backdrop-blur-sm rounded-xl">
                             <div className="flex flex-col items-center gap-2 text-green-400 animate-in fade-in zoom-in duration-300">
@@ -65,8 +64,8 @@ export default function CrewMessenger() {
                     <button
                         onClick={handleSend}
                         disabled={status === 'sending' || !message.trim()}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:hover:brightness-110 text-black font-bold rounded-lg transition-all active:scale-95"
-                    >
+                        className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-[#ff6a00]/90 hover:bg-none disabled:opacity-50 disabled:hover:brightness-110 text-black font-bold rounded-lg transition-all active:scale-95 min-h-11 min-w-11"
+                     aria-label="Send" title="Send">
                         {status === 'sending' ? (
                             <span className="animate-pulse">Sending...</span>
                         ) : (

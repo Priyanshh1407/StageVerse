@@ -36,10 +36,10 @@ function TimelineItem({ item, index }) {
     return (
       <div className="opacity-40 select-none pointer-events-none">
         <div className="flex gap-4 p-3 rounded-lg border border-transparent">
-          <span className="text-slate-500 font-mono text-sm pt-1">{displayId}</span>
+          <span className="text-slate-400 font-mono text-sm pt-1">{displayId}</span>
           <div>
             <p className="text-white font-bold text-lg leading-tight">{item.title}</p>
-            <p className="text-slate-500 text-xs font-medium uppercase mt-1">Completed</p>
+            <p className="text-slate-400 text-xs font-medium uppercase mt-1">Completed</p>
           </div>
         </div>
       </div>

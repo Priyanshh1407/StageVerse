@@ -18,11 +18,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
   return (
     <div className="flex flex-wrap justify-between items-end gap-4 border-b border-[#223949] pb-6">
       <div className="flex min-w-72 flex-col gap-2">
-        <div className="flex items-center gap-2 text-emerald-400 mb-1">
-          <Sparkles className="w-4 h-4" />
-          <span className="text-xs font-bold uppercase tracking-wider">AI Curator Active</span>
-        </div>
-        <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em]">Smart Setlist Builder</h1>
+        <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em]">Setlist builder</h1>
 
         {}
         {event ? (
@@ -41,7 +37,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
             {}
             {isDropdownOpen && allEvents.length > 0 && (
               <div className="absolute top-full left-0 mt-2 w-72 bg-[#182934] border border-[#315168] rounded-xl shadow-2xl overflow-hidden py-1 z-50">
-                <div className="px-3 py-2 text-[10px] uppercase font-bold text-[#5a7c96] tracking-wider border-b border-[#223949] mb-1">Switch Event</div>
+                <div className="px-3 py-2 text-xs uppercase font-bold text-[#5a7c96] tracking-wider border-b border-[#223949] mb-1">Switch Event</div>
                 <div className="max-h-64 overflow-y-auto custom-scrollbar">
                   {allEvents.map((evt) => (
                     <button
@@ -54,7 +50,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
                     >
                       <div className="flex flex-col">
                         <span className="text-sm truncate">{evt.venue?.name || evt.city}</span>
-                        <span className="text-[10px] text-[#5a7c96] flex items-center gap-1">
+                        <span className="text-xs text-[#5a7c96] flex items-center gap-1">
                           {new Date(evt.date).toLocaleDateString()}
                         </span>
                       </div>
@@ -86,7 +82,7 @@ export default function BuilderHeader({ event, allEvents = [], onSwitchEvent, on
           className="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold tracking-[0.015em] transition-colors shadow-lg shadow-purple-500/20"
         >
           <Sparkles className="w-4 h-4" />
-          Declare Results
+          Show the vote results
         </button>
       </div>
     </div>

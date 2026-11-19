@@ -179,7 +179,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
         <div className="mb-6 p-6 rounded-xl border border-[#a855f7] bg-[#131d24] shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-top-4 relative z-50">
           <h4 className="text-white font-bold mb-4 flex justify-between items-center">
             {editingItem ? 'Edit Event' : 'Add New Event'}
-            <button onClick={() => setIsModalOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-white" /></button>
+            <button onClick={() => setIsModalOpen(false)} className="min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close"><X className="w-5 h-5 text-slate-400 hover:text-white" /></button>
           </h4>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -189,8 +189,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 placeholder="05:00 PM"
                 value={formData.time}
                 onChange={e => setFormData({ ...formData, time: e.target.value })}
-                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none"
-              />
+                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none" aria-label="05:00 PM" />
             </div>
             <div className="lg:col-span-2">
               <label className="text-xs text-slate-400 mb-1 block">Title</label>
@@ -198,8 +197,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 placeholder="Event Title"
                 value={formData.title}
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none"
-              />
+                className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none" aria-label="Event Title" />
             </div>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Type</label>
@@ -207,7 +205,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 value={formData.type}
                 onChange={e => setFormData({ ...formData, type: e.target.value })}
                 className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none"
-              >
+               aria-label="Type">
                 <option value="other">General</option>
                 <option value="sound">Sound</option>
                 <option value="travel">Travel</option>
@@ -224,8 +222,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
               placeholder="Location, notes, or team details..."
               value={formData.sub}
               onChange={e => setFormData({ ...formData, sub: e.target.value })}
-              className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none"
-            />
+              className="w-full bg-[#0b1219] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#a855f7] outline-none" aria-label="Location, notes, or team details" />
           </div>
 
           { }
@@ -238,7 +235,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 {formData.tasks.map((t, idx) => (
                   <span key={idx} className="inline-flex items-center gap-2 bg-[#223949] text-white text-xs px-2 py-1 rounded-md">
                     {t.label}
-                    <button onClick={() => removeTaskObj(idx)} className="hover:text-red-400"><X className="w-3 h-3" /></button>
+                    <button onClick={() => removeTaskObj(idx)} className="hover:text-red-400 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close"><X className="w-3 h-3" /></button>
                   </span>
                 ))}
               </div>
@@ -251,8 +248,7 @@ export default function Timeline({ initialSchedule, onUpdate }) {
                 value={tempTask}
                 onChange={e => setTempTask(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addTempTask()}
-                className="flex-1 bg-[#131d24] border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:border-[#a855f7] outline-none"
-              />
+                className="flex-1 bg-[#131d24] border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:border-[#a855f7] outline-none" aria-label="Add subtask ('Line Check')" />
               <button onClick={addTempTask} className="px-3 py-1 bg-[#223949] hover:bg-[#315168] text-white text-xs font-bold rounded-lg transition-colors">Add</button>
             </div>
           </div>
@@ -380,12 +376,12 @@ function TimelineItem({ item, isActive, isCompleted, isExpanded, onToggleExpand,
 
             <button
               onClick={onMarkDone}
-              className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded transition-colors ${isCompleted ? 'text-green-500 hover:text-green-400' : 'text-slate-500 hover:text-white hover:bg-white/10'}`}
-            >
+              className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded transition-colors ${isCompleted ? 'text-green-500 hover:text-green-400' : 'text-slate-400 hover:text-white hover:bg-white/10'} min-h-11 min-w-11`}
+             aria-label="Mark as done" title="Mark as done">
               {isCompleted ? (<>DONE <CheckCircle2 className="w-4 h-4" /></>) : (<>MARK DONE</>)}
             </button>
-            <div className={`text-sm font-mono font-medium ${isActive ? 'text-[#ff6a00]' : 'text-slate-500'}`}>{item.time}</div>
-            <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+            <div className={`text-sm font-mono font-medium ${isActive ? 'text-[#ff6a00]' : 'text-slate-400'}`}>{item.time}</div>
+            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
           </div>
         </div>
 
@@ -410,7 +406,7 @@ function TimelineItem({ item, isActive, isCompleted, isExpanded, onToggleExpand,
                       {task.done && <Check className="w-3 h-3 text-green-500" />}
                     </div>
                     { }
-                    <span className={`text-sm transition-all ${task.done ? 'line-through text-slate-500 decoration-slate-600' : 'text-white'}`}>
+                    <span className={`text-sm transition-all ${task.done ? 'line-through text-slate-400 decoration-slate-600' : 'text-white'}`}>
                       {task.label}
                     </span>
                   </div>

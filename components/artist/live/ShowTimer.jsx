@@ -20,7 +20,7 @@ export default function ShowTimer({ time, status }) {
             <span className="text-5xl md:text-8xl font-bold text-white leading-none tracking-tighter">
                 {time?.hours || "00"}
             </span>
-            <span className="text-xs text-[#587386] uppercase mt-2 font-bold tracking-wider">Hours</span>
+            <span className="text-xs text-[#90b2cb] uppercase mt-2 font-bold tracking-wider">Hours</span>
           </div>
 
           <span className="text-3xl md:text-6xl text-[#315168] font-light mb-6 md:mb-8">:</span>
@@ -30,7 +30,7 @@ export default function ShowTimer({ time, status }) {
             <span className="text-5xl md:text-8xl font-bold text-white leading-none tracking-tighter">
                 {time?.minutes || "00"}
             </span>
-            <span className="text-xs text-[#587386] uppercase mt-2 font-bold tracking-wider">Minutes</span>
+            <span className="text-xs text-[#90b2cb] uppercase mt-2 font-bold tracking-wider">Minutes</span>
           </div>
 
           <span className="text-3xl md:text-6xl text-[#315168] font-light mb-6 md:mb-8">:</span>
@@ -40,7 +40,7 @@ export default function ShowTimer({ time, status }) {
             <span className={`text-5xl md:text-8xl font-bold leading-none tracking-tighter transition-colors ${secondsColor}`}>
                 {time?.seconds || "00"}
             </span>
-            <span className="text-xs text-[#587386] uppercase mt-2 font-bold tracking-wider">Seconds</span>
+            <span className="text-xs text-[#90b2cb] uppercase mt-2 font-bold tracking-wider">Seconds</span>
           </div>
         </div>
       </div>

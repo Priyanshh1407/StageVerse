@@ -54,8 +54,8 @@ export default function VenueIntel({ intel, onUpdate }) {
         </div>
         <button
           onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-          className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-green-500/20 text-green-500' : 'bg-[#223949] text-slate-400 hover:text-white'}`}
-        >
+          className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-green-500/20 text-green-500' : 'bg-[#223949] text-slate-400 hover:text-white'} min-h-11 min-w-11 inline-grid place-items-center`}
+         aria-label="Save" title="Save">
           {isEditing ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
         </button>
       </div>
@@ -81,7 +81,7 @@ export default function VenueIntel({ intel, onUpdate }) {
           ) : (
             <>
               <p className="font-mono text-[#ff6a00] text-sm tracking-wide">{data.wifiPass || '---'}</p>
-              <button onClick={() => handleCopy(data.wifiPass)} className="text-[#90b2cb] hover:text-white transition-colors">
+              <button onClick={() => handleCopy(data.wifiPass)} className="text-[#90b2cb] hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Copy" title="Copy">
                 <Copy className="w-4 h-4" />
               </button>
             </>
@@ -103,7 +103,7 @@ export default function VenueIntel({ intel, onUpdate }) {
               ) : (
                 <>
                   <p className="text-slate-900 dark:text-white text-lg font-bold leading-tight">Code: {data.greenRoomCode || '---'}</p>
-                  <button onClick={() => handleCopy(data.greenRoomCode)} className="text-[#90b2cb] hover:text-white transition-colors">
+                  <button onClick={() => handleCopy(data.greenRoomCode)} className="text-[#90b2cb] hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Copy" title="Copy">
                     <Copy className="w-4 h-4" />
                   </button>
                 </>

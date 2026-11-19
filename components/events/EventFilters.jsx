@@ -82,7 +82,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                 value={filters.city}
                 onChange={(e) => update('city', e.target.value)}
                 className="w-full rounded-lg border border-white/10 bg-[#1e1e1e] px-3 py-2 text-sm text-white focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none"
-              >
+               aria-label="City">
                 <option value="All">All Cities</option>
                 <option value="New York">New York, NY</option>
                 <option value="Los Angeles">Los Angeles, CA</option>
@@ -100,8 +100,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                 type="date" 
                 value={filters.date}
                 onChange={(e) => update('date', e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-[#1e1e1e] px-3 py-2 text-sm text-white focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none [color-scheme:dark]" 
-              />
+                className="w-full rounded-lg border border-white/10 bg-[#1e1e1e] px-3 py-2 text-sm text-white focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] outline-none [color-scheme:dark]" aria-label="Date" />
             </div>
 
             {}
@@ -118,7 +117,7 @@ export default function EventsFilter({ filters, setFilters, onReset, isOpen, onC
                 onChange={(e) => update('maxPrice', Number(e.target.value))}
                 className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-gray-700 accent-[#ff6a00]" 
               />
-              <div className="mt-1 flex justify-between text-xs text-slate-500">
+              <div className="mt-1 flex justify-between text-xs text-slate-400">
                 <span>Free</span>
                 <span>$300+</span>
               </div>

@@ -92,11 +92,11 @@ export default function CreateShowModal({ onClose, onSave }) {
             <h2 className="text-white font-bold text-xl tracking-tight">
               {selectedRequestId ? 'Initialize Production' : 'Create New Show'}
             </h2>
-            <p className="text-gray-500 text-xs mt-1">
+            <p className="text-gray-400 text-xs mt-1">
               {selectedRequestId ? 'From Artist Request' : 'Manual Entry'}
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -126,7 +126,7 @@ export default function CreateShowModal({ onClose, onSave }) {
 
           {}
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Show Name / Tour Title</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Show Name / Tour Title</label>
             <input
               autoFocus
               type="text"
@@ -134,65 +134,62 @@ export default function CreateShowModal({ onClose, onSave }) {
               placeholder="e.g. Neon Nights World Tour"
               className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-3 text-white focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none placeholder:text-gray-700 font-medium"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })} aria-label="Neon Nights World Tour" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             {}
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Production Type</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Production Type</label>
               <div className="relative">
                 <select
                   className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-3 text-white focus:ring-1 focus:ring-purple-500 outline-none appearance-none cursor-pointer"
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                >
+                 aria-label="Production Type">
                   <option>Touring</option>
                   <option>Festival</option>
                   <option>Corporate</option>
                   <option>Theatre</option>
                 </select>
-                <Layers className="absolute right-3 top-3.5 w-4 h-4 text-gray-500 pointer-events-none" />
+                <Layers className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
             </div>
 
             {}
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Start Date</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Start Date</label>
               <div className="relative">
                 <input
                   type="date"
                   className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-white focus:ring-1 focus:ring-purple-500 outline-none text-sm [color-scheme:dark]"
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  value={formData.date}
-                />
+                  value={formData.date} aria-label="Start Date" />
               </div>
             </div>
           </div>
 
           {}
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Venue / Location</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Venue / Location</label>
             <div className="relative">
               <input
                 type="text"
                 placeholder="e.g. Wembley Stadium"
                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg pl-10 pr-4 py-3 text-white focus:ring-1 focus:ring-purple-500 outline-none placeholder:text-gray-700"
                 onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                value={formData.venue}
-              />
-              <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-gray-500" />
+                value={formData.venue} aria-label="Wembley Stadium" />
+              <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
             </div>
           </div>
 
           {}
           <div className="border-2 border-dashed border-[#27272A] rounded-lg p-6 flex flex-col items-center justify-center gap-2 hover:bg-[#0F0F10] hover:border-purple-500/50 transition-all cursor-pointer group">
             <div className="size-10 rounded-full bg-[#0F0F10] flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-              <Upload className="w-5 h-5 text-gray-500 group-hover:text-orange-500" />
+              <Upload className="w-5 h-5 text-gray-400 group-hover:text-orange-500" />
             </div>
             <p className="text-sm text-gray-400 font-medium">Drop Technical Rider (PDF)</p>
-            <p className="text-xs text-gray-600">Optional • Max 10MB</p>
+            <p className="text-xs text-gray-400">Optional • Max 10MB</p>
           </div>
 
           {}

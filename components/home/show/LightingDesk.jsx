@@ -41,17 +41,17 @@ const dmx = (v, max = 1) => Math.round(Math.max(0, Math.min(1, (v ?? 0) / max)) 
 /** A vertical channel fader with its DMX value on top and a flash (bump) button below. */
 const Fader = ({ label, value, max = 1, onChange, onFlash, onRelease, accent = 'cyan' }) => (
     <div className="flex flex-col items-center gap-1.5 w-12 shrink-0">
-        <span className={`font-mono text-[10px] tabular-nums ${accent === 'red' ? 'text-red-300' : 'text-amber-300'}`}>{dmx(value, max)}</span>
+        <span className={`font-mono text-xs tabular-nums ${accent === 'red' ? 'text-red-300' : 'text-amber-300'}`}>{dmx(value, max)}</span>
         <input type="range" min={0} max={max} step={max / 255} value={value ?? 0} aria-label={`${label} level`} aria-valuetext={`${dmx(value, max)} of 255`}
             onChange={(e) => onChange(Number(e.target.value))}
             className={`h-28 w-6 cursor-pointer [writing-mode:vertical-lr] [direction:rtl] ${accent === 'red' ? 'accent-red-400' : 'accent-orange-400'}`} />
         {onFlash ? (
             <button onPointerDown={onFlash} onPointerUp={onRelease} onPointerLeave={onRelease} aria-label={`Flash ${label}`}
-                className="w-full py-1 rounded bg-white/10 hover:bg-white/20 active:bg-yellow-300 active:text-black text-[9px] font-black tracking-wider select-none touch-none">
+                className="w-full py-1 rounded bg-white/10 hover:bg-white/20 active:bg-yellow-300 active:text-black text-xs font-black tracking-wider select-none touch-none">
                 FLASH
             </button>
         ) : <span className="h-[22px]" />}
-        <span className="text-[9px] uppercase tracking-wider text-gray-400 text-center leading-tight">{label}</span>
+        <span className="text-xs uppercase tracking-wider text-gray-400 text-center leading-tight">{label}</span>
     </div>
 );
 
@@ -60,27 +60,27 @@ const Fader = ({ label, value, max = 1, onChange, onFlash, onRelease, accent = '
 const Channel = ({ label, on, onToggle, onFlash, onRelease }) => (
     <div className="flex flex-col gap-1 min-w-0">
         <button onClick={onToggle} aria-pressed={on} aria-label={`${label} ${on ? 'on' : 'off'}`}
-            className={`rounded py-2 text-[10px] font-black tracking-wider transition-colors ${on ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-[0_0_10px_rgba(255,176,0,0.5)]' : 'bg-white/10 text-gray-400 hover:bg-white/15'}`}>
+            className={`rounded py-2 text-xs font-black tracking-wider transition-colors ${on ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-[0_0_10px_rgba(255,176,0,0.5)]' : 'bg-white/10 text-gray-400 hover:bg-white/15'}`}>
             {on ? 'ON' : 'OFF'}
         </button>
         <button onPointerDown={onFlash} onPointerUp={onRelease} onPointerLeave={onRelease} aria-label={`Flash ${label}`}
-            className="rounded py-1 bg-white/10 hover:bg-white/20 active:bg-yellow-300 active:text-black text-[9px] font-black tracking-wider select-none touch-none">
+            className="rounded py-1 bg-white/10 hover:bg-white/20 active:bg-yellow-300 active:text-black text-xs font-black tracking-wider select-none touch-none">
             FLASH
         </button>
-        <span className="text-[9px] uppercase tracking-wider text-gray-400 text-center leading-tight truncate">{label}</span>
+        <span className="text-xs uppercase tracking-wider text-gray-400 text-center leading-tight truncate">{label}</span>
     </div>
 );
 
 const Encoder = ({ label, hint, value, min, max, step = 0.01, onChange }) => (
-    <label className="block text-[10px] text-gray-400">
-        <span className="flex justify-between gap-2"><span>{label}{hint && <span className="text-gray-500"> · {hint}</span>}</span><span className="font-mono text-amber-300">{Number(value ?? 0).toFixed(step < 1 ? 2 : 0)}</span></span>
+    <label className="block text-xs text-gray-400">
+        <span className="flex justify-between gap-2"><span>{label}{hint && <span className="text-gray-400"> · {hint}</span>}</span><span className="font-mono text-amber-300">{Number(value ?? 0).toFixed(step < 1 ? 2 : 0)}</span></span>
         <input type="range" min={min} max={max} step={step} value={value ?? 0} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-orange-400" />
     </label>
 );
 
 const Swatches = ({ value, onChange, label }) => (
     <div className="flex items-center gap-2">
-        <span className="w-14 shrink-0 text-[10px] text-gray-400">{label}</span>
+        <span className="w-14 shrink-0 text-xs text-gray-400">{label}</span>
         <div className="flex gap-1 flex-wrap items-center" role="group" aria-label={label}>
             {COLORS.map((c) => (
                 <button key={c.value} onClick={() => onChange(c.value)} aria-label={`${label}: ${c.label}`} title={c.label}
@@ -98,14 +98,14 @@ const Swatches = ({ value, onChange, label }) => (
 
 const Panel = ({ title, children, className = '' }) => (
     <section className={`rounded-lg border border-white/10 bg-white/[0.03] p-2.5 ${className}`}>
-        <h3 className="mb-2 font-mono text-[10px] tracking-[0.25em] text-gray-400">{title}</h3>
+        <h3 className="mb-2 font-mono text-xs tracking-[0.25em] text-gray-400">{title}</h3>
         {children}
     </section>
 );
 
 const Key = ({ on, onClick, children, danger }) => (
     <button onClick={onClick} aria-pressed={on}
-        className={`px-2 py-1.5 rounded text-[10px] font-bold tracking-wide transition-colors ${on
+        className={`px-2 py-1.5 rounded text-xs font-bold tracking-wide transition-colors ${on
             ? danger ? 'bg-red-500 text-white' : 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black'
             : 'bg-white/10 text-gray-300 hover:bg-white/15'}`}>
         {children}
@@ -168,11 +168,11 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
             <div className="sticky top-0 z-10 -mx-3 px-3 pt-3 pb-2.5 mb-0.5 bg-[#07090d] flex items-center justify-between gap-3">
                 <div>
                     <div className="font-mono text-xs font-black tracking-[0.3em] text-amber-300">STAGEVERSE CONSOLE</div>
-                    <div className="font-mono text-[10px] text-gray-500">DMX UNIVERSE 1 · {manual ? 'DESK LIVE' : 'SHOW RUNNING · touch any control to take over'}</div>
+                    <div className="font-mono text-xs text-gray-400">DMX UNIVERSE 1 · {manual ? 'DESK LIVE' : 'SHOW RUNNING · touch any control to take over'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                     {manual && (
-                        <button onClick={onResume} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-[10px] font-bold">
+                        <button onClick={onResume} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-xs font-bold">
                             <RotateCcw className="w-3 h-3" /> Resume show
                         </button>
                     )}
@@ -186,7 +186,7 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     <div className="flex flex-col items-center gap-1.5 pr-3 border-r border-white/10">
                         <Fader label="Grand master" value={desk.intensity} max={2} accent="red" onChange={(v) => set({ intensity: v })} />
                         <button onClick={() => set({ master: desk.master > 0.5 ? 0 : 1 })} aria-pressed={desk.master < 0.5}
-                            className={`w-12 py-1 rounded text-[9px] font-black ${desk.master < 0.5 ? 'bg-red-500 text-white' : 'bg-white/10 text-gray-300'}`}>
+                            className={`w-12 py-1 rounded text-xs font-black ${desk.master < 0.5 ? 'bg-red-500 text-white' : 'bg-white/10 text-gray-300'}`}>
                             {desk.master < 0.5 ? 'BO ON' : 'BLACKOUT'}
                         </button>
                     </div>
@@ -241,11 +241,11 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     <Encoder label="Projector beams" value={counts.lasers} min={2} max={60} step={1} onChange={(v) => onCounts({ lasers: v })} />
                 </Panel>
                 <Panel title="RIG">
-                    <div className="text-[10px] text-gray-400 mb-1">Moving heads</div>
+                    <div className="text-xs text-gray-400 mb-1">Moving heads</div>
                     <div className="grid grid-cols-3 gap-1 mb-2">
                         {BEAM_COUNTS.map((n, i) => (
                             <Key key={n} on={counts.beams === n} onClick={() => onCounts({ beams: n })}>
-                                {n}<span className="block text-[8px] font-normal opacity-70">{['full rig', 'bigger', 'extreme'][i]}</span>
+                                {n}<span className="block text-xs font-normal opacity-70">{['full rig', 'bigger', 'extreme'][i]}</span>
                             </Key>
                         ))}
                     </div>
@@ -265,8 +265,8 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                         onPointerDown={() => onMomentary({ strobe: 1 }, true)}
                         onPointerUp={() => onMomentary({ strobe: 0 }, false)}
                         onPointerLeave={() => onMomentary({ strobe: 0 }, false)}
-                        className="py-2.5 rounded bg-white/10 active:bg-white active:text-black text-[11px] font-black tracking-widest select-none touch-none">
-                        STROBE <span className="block text-[9px] font-normal text-gray-400">hold</span>
+                        className="py-2.5 rounded bg-white/10 active:bg-white active:text-black text-xs font-black tracking-widest select-none touch-none">
+                        STROBE <span className="block text-xs font-normal text-gray-400">hold</span>
                     </button>
                     {[
                         ['spool', 'Laser spool', 'lasers open, then all in'],
@@ -274,28 +274,28 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                         ['burst', 'Burst', 'pinch, then explode out'],
                     ].map(([style, label, hint]) => (
                         <button key={style} onClick={() => onDrop(style)}
-                            className="py-2 px-1 rounded bg-gradient-to-b from-fuchsia-500/90 to-fuchsia-700/90 hover:from-fuchsia-400 text-white text-[11px] font-black tracking-wide">
+                            className="py-2 px-1 rounded bg-gradient-to-b from-fuchsia-500/90 to-fuchsia-700/90 hover:from-fuchsia-400 text-white text-xs font-black tracking-wide">
                             DROP · {label.toUpperCase()}
-                            <span className="block text-[9px] font-normal text-white/75 leading-tight">{hint}</span>
+                            <span className="block text-xs font-normal text-white/75 leading-tight">{hint}</span>
                         </button>
                     ))}
                 </div>
                 {/* Everything at once: to see the whole look and feel */}
                 <div className="mt-2 pt-2 border-t border-white/10">
-                    <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mb-1.5">EVERYTHING</div>
+                    <div className="font-mono text-xs tracking-[0.25em] text-gray-400 mb-1.5">EVERYTHING</div>
                     <div className="grid grid-cols-2 gap-1.5">
                         <button
                             onPointerDown={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, true))}
                             onPointerUp={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
                             onPointerLeave={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
                             onPointerCancel={() => ALL_EFFECTS.forEach((k) => onEffectHold(k, false))}
-                            className="py-2.5 rounded bg-gradient-to-r from-amber-300 via-fuchsia-300 to-amber-300 active:from-white active:to-white text-black text-[11px] font-black tracking-widest select-none touch-none">
-                            ALL EFFECTS <span className="block text-[9px] font-normal text-black/60">hold</span>
+                            className="py-2.5 rounded bg-gradient-to-r from-amber-300 via-fuchsia-300 to-amber-300 active:from-white active:to-white text-black text-xs font-black tracking-widest select-none touch-none">
+                            ALL EFFECTS <span className="block text-xs font-normal text-black/60">hold</span>
                         </button>
                         <button onClick={() => ALL_EFFECTS.forEach((k) => onEffect(k, 'burst'))}
-                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[11px] font-black tracking-wide">
+                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-xs font-black tracking-wide">
                             ALL · AT ONCE
-                            <span className="block text-[9px] font-normal text-gray-400 leading-tight">one burst of each</span>
+                            <span className="block text-xs font-normal text-gray-400 leading-tight">one burst of each</span>
                         </button>
                     </div>
                 </div>
@@ -307,21 +307,21 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                     { kind: 'streamers', title: 'STREAMERS', hold: 'STREAMERS', name: 'STREAMERS', patterns: CANNON_PATTERNS, holdHint: 'hold for more', className: 'from-amber-200 to-slate-300 active:from-white active:to-white text-black', hintClass: 'text-black/60' },
                 ].map((fx) => (
                     <div key={fx.kind} className="mt-2 pt-2 border-t border-white/10">
-                        <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mb-1.5">{fx.title}</div>
+                        <div className="font-mono text-xs tracking-[0.25em] text-gray-400 mb-1.5">{fx.title}</div>
                         <div className="grid grid-cols-3 gap-1.5">
                             <button
                                 onPointerDown={() => onEffectHold(fx.kind, true)}
                                 onPointerUp={() => onEffectHold(fx.kind, false)}
                                 onPointerLeave={() => onEffectHold(fx.kind, false)}
                                 onPointerCancel={() => onEffectHold(fx.kind, false)}
-                                className={`py-2.5 rounded bg-gradient-to-b ${fx.className} text-[11px] font-black tracking-widest select-none touch-none`}>
-                                {fx.hold} <span className={`block text-[9px] font-normal ${fx.hintClass}`}>{fx.holdHint ?? 'hold'}</span>
+                                className={`py-2.5 rounded bg-gradient-to-b ${fx.className} text-xs font-black tracking-widest select-none touch-none`}>
+                                {fx.hold} <span className={`block text-xs font-normal ${fx.hintClass}`}>{fx.holdHint ?? 'hold'}</span>
                             </button>
                             {(fx.patterns ?? ROW_PATTERNS).map(([pattern, label, hint]) => (
                                 <button key={pattern} onClick={() => onEffect(fx.kind, pattern)}
-                                    className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[11px] font-black tracking-wide">
+                                    className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-xs font-black tracking-wide">
                                     {fx.name} · {label.toUpperCase()}
-                                    <span className="block text-[9px] font-normal text-gray-400 leading-tight">{hint}</span>
+                                    <span className="block text-xs font-normal text-gray-400 leading-tight">{hint}</span>
                                 </button>
                             ))}
                         </div>
@@ -331,33 +331,33 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
 
             {/* Fireworks: shells in the sky behind the stage, pyro on the stage, and the finale */}
             <Panel title="FIREWORKS" className="mt-2">
-                <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mb-1.5">SHELLS</div>
+                <div className="font-mono text-xs tracking-[0.25em] text-gray-400 mb-1.5">SHELLS</div>
                 <div className="grid grid-cols-4 gap-1.5">
                     {SHELL_BUTTONS.map(([type, label, hint]) => (
                         <button key={type} onClick={() => onFirework(type)}
-                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-black tracking-wide">
+                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-xs font-black tracking-wide">
                             {label.toUpperCase()}
-                            <span className="block text-[9px] font-normal text-gray-400 leading-tight">{hint}</span>
+                            <span className="block text-xs font-normal text-gray-400 leading-tight">{hint}</span>
                         </button>
                     ))}
                 </div>
-                <div className="font-mono text-[9px] tracking-[0.25em] text-gray-500 mt-2 mb-1.5">STAGE PYRO</div>
+                <div className="font-mono text-xs tracking-[0.25em] text-gray-400 mt-2 mb-1.5">STAGE PYRO</div>
                 <div className="grid grid-cols-2 gap-1.5">
                     {STAGE_BUTTONS.map(([type, label, hint]) => (
                         <button key={type} onClick={() => onFirework(type)}
-                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-black tracking-wide">
+                            className="py-2 px-1 rounded bg-white/10 hover:bg-white/20 text-xs font-black tracking-wide">
                             {label.toUpperCase()}
-                            <span className="block text-[9px] font-normal text-gray-400 leading-tight">{hint}</span>
+                            <span className="block text-xs font-normal text-gray-400 leading-tight">{hint}</span>
                         </button>
                     ))}
                 </div>
                 <button onClick={onFinale}
                     className="mt-2 w-full py-2.5 rounded bg-gradient-to-r from-amber-400 via-fuchsia-500 to-pink-400 hover:brightness-110 text-black text-[12px] font-black tracking-[0.3em]">
-                    FINALE <span className="block text-[9px] font-normal tracking-normal text-black/70">a barrage building to one big closing volley</span>
+                    FINALE <span className="block text-xs font-normal tracking-normal text-black/70">a barrage building to one big closing volley</span>
                 </button>
                 <div className="flex items-center justify-between gap-2 mt-2">
                     <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-gray-400 mr-1">Colours</span>
+                        <span className="text-xs text-gray-400 mr-1">Colours</span>
                         {[['mixed', 'Mixed'], ['classic', 'Classic'], ['show', 'Show colours']].map(([scheme, label]) => (
                             <Key key={scheme} on={fwOptions.scheme === scheme} onClick={() => onFwOptions({ scheme })}>{label}</Key>
                         ))}
@@ -371,16 +371,16 @@ export default function LightingDesk({ open, onOpenChange, desk, counts, manual,
                 <Panel title="DMX MONITOR" className="mt-2">
                     {monitor
                         ? <><DmxMonitor look={look} beams={counts.beams} /><div className="mt-1.5"><Key on onClick={() => setMonitor(false)}>Hide the monitor</Key></div></>
-                        : <div className="flex items-center justify-between gap-2"><p className="text-[11px] text-gray-400">See the channel values this look would send to a real rig, live.</p><Key onClick={() => setMonitor(true)}>Show the monitor</Key></div>}
+                        : <div className="flex items-center justify-between gap-2"><p className="text-xs text-gray-400">See the channel values this look would send to a real rig, live.</p><Key onClick={() => setMonitor(true)}>Show the monitor</Key></div>}
                 </Panel>
             )}
 
             {song.available && (
                 <Panel title="CONCERT MODE" className="mt-2">
                     <div className="flex items-center justify-between gap-2">
-                        <p className="text-[11px] text-gray-400">{song.title}: a light show programmed from the song&apos;s beats and sections.</p>
+                        <p className="text-xs text-gray-400">{song.title}: a light show programmed from the song&apos;s beats and sections.</p>
                         <button onClick={song.playing ? song.stop : song.play}
-                            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-[11px] font-bold">
+                            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-xs font-bold min-h-11 min-w-11" aria-label="Stop" title="Stop">
                             {song.playing ? <><Square className="w-3 h-3" /> Stop</> : <><Music className="w-3 h-3" /><Play className="w-3 h-3" /> Play</>}
                         </button>
                     </div>

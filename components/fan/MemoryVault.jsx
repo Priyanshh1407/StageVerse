@@ -93,7 +93,7 @@ function MemoryCard({ memory }) {
   if (memory.type === 'ticket') {
     return (
       <div className={`group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed transition-transform hover:scale-[1.02] ${currentSpan}`}>
-        <TicketIcon className="text-slate-500 w-10 h-10 mb-2" />
+        <TicketIcon className="text-slate-400 w-10 h-10 mb-2" />
         <p className="text-slate-300 text-center text-xs font-mono tracking-widest uppercase">Ticket Stub</p>
         <p className="text-white font-bold text-center mt-1 text-lg">{memory.title}</p>
       </div>

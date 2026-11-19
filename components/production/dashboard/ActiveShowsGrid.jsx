@@ -51,7 +51,7 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
                             className="flex items-center gap-2"
                         >
                             {view === 'active' && <Film className="w-5 h-5 text-orange-500" />}
-                            {view === 'archived' && <Archive className="w-5 h-5 text-gray-500" />}
+                            {view === 'archived' && <Archive className="w-5 h-5 text-gray-400" />}
                             {view === 'requested' && <Inbox className="w-5 h-5 text-amber-500" />}
 
                             {view === 'active' && 'Active Shows'}
@@ -75,13 +75,13 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
                         onClick={() => setView('requested')}
                         className={`relative flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold transition-all ${view === 'requested'
                             ? 'bg-[#27272A] text-white shadow-sm border border-[#3F3F46]'
-                            : 'text-gray-500 hover:text-white'
+                            : 'text-gray-400 hover:text-white'
                             }`}
                     >
                         <Inbox className="w-3.5 h-3.5" />
                         Requests
                         {pendingCount > 0 && (
-                            <span className="ml-1 bg-amber-500 text-black px-1.5 py-0.5 rounded-full text-[9px] font-extrabold">
+                            <span className="ml-1 bg-amber-500 text-black px-1.5 py-0.5 rounded-full text-xs font-extrabold">
                                 {pendingCount}
                             </span>
                         )}
@@ -114,7 +114,7 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
                         view !== 'active' && (
                             <motion.div
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                className="col-span-full py-12 text-center text-gray-500 bg-[#18181B] border border-[#27272A] border-dashed rounded-xl"
+                                className="col-span-full py-12 text-center text-gray-400 bg-[#18181B] border border-[#27272A] border-dashed rounded-xl"
                             >
                                 <p>No {view} found.</p>
                             </motion.div>
@@ -129,10 +129,10 @@ export default function ActiveShowsGrid({ initialActiveShows = [] }) {
                         onClick={() => setIsCreateModalOpen(true)}
                         className="group flex flex-col items-center justify-center rounded-xl bg-transparent border-2 border-dashed border-[#27272A] hover:border-purple-500 hover:bg-orange-500/5 transition-all min-h-[250px] gap-3"
                     >
-                        <div className="size-12 rounded-full bg-[#18181B] group-hover:bg-orange-500/20 flex items-center justify-center text-gray-500 group-hover:text-orange-500 transition-colors">
+                        <div className="size-12 rounded-full bg-[#18181B] group-hover:bg-orange-500/20 flex items-center justify-center text-gray-400 group-hover:text-orange-500 transition-colors">
                             <Plus className="w-7 h-7" />
                         </div>
-                        <p className="text-gray-500 font-bold group-hover:text-orange-500 transition-colors">Create New Show</p>
+                        <p className="text-gray-400 font-bold group-hover:text-orange-500 transition-colors">Create New Show</p>
                     </motion.button>
                 )}
             </motion.div>
@@ -153,7 +153,7 @@ function TabButton({ active, onClick, icon: Icon, label }) {
             onClick={onClick}
             className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold transition-all ${active
                 ? 'bg-[#27272A] text-white shadow-sm border border-[#3F3F46]'
-                : 'text-gray-500 hover:text-white'
+                : 'text-gray-400 hover:text-white'
                 }`}
         >
             <Icon className="w-3.5 h-3.5" /> {label}
@@ -214,17 +214,17 @@ function ShowCard({ show, isRequested, variants }) {
             <div className="h-32 w-full bg-cover bg-center relative" style={{ backgroundImage: `url(${show.image})` }}>
                 <div className="absolute inset-0 bg-linear-to-t from-[#18181B] to-transparent opacity-90"></div>
                 <div className="absolute bottom-3 left-4">
-                    <span className={`${show.typeColor} text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider`}>
+                    <span className={`${show.typeColor} text-white text-xs font-bold px-2 py-1 rounded uppercase tracking-wider`}>
                         {show.type}
                     </span>
                     {isRequested && (
-                        <span className="ml-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider animate-pulse">
+                        <span className="ml-2 bg-amber-500 text-black text-xs font-bold px-2 py-1 rounded uppercase tracking-wider animate-pulse">
                             Action Required
                         </span>
                     )}
                 </div>
                 {isArchived && (
-                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-gray-300 border border-white/10">
+                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-gray-300 border border-white/10">
                         ARCHIVED
                     </div>
                 )}
@@ -272,8 +272,8 @@ function ShowCard({ show, isRequested, variants }) {
                         <div className="relative">
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="size-9 flex items-center justify-center rounded border border-[#27272A] text-gray-400 hover:text-white hover:bg-[#27272A] hover:border-gray-500 transition-colors"
-                            >
+                                className="size-9 flex items-center justify-center rounded border border-[#27272A] text-gray-400 hover:text-white hover:bg-[#27272A] hover:border-gray-500 transition-colors min-h-11 min-w-11"
+                             aria-label="More options" title="More options">
                                 <MoreVertical className="w-4 h-4" />
                             </button>
 

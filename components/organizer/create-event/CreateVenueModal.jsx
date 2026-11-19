@@ -138,8 +138,8 @@ export default function CreateVenueModal({
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#90a4cb] hover:text-white transition-colors"
-            >
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#90a4cb] hover:text-white transition-colors min-h-11 min-w-11"
+             aria-label="Close" title="Close">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -164,8 +164,7 @@ export default function CreateVenueModal({
                     value={formData.name}
                     onChange={handleChange}
                     className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
-                    placeholder="e.g., Hollywood Bowl"
-                  />
+                    placeholder="e.g., Hollywood Bowl" aria-label="Hollywood Bowl" />
                 </div>
 
                 {}
@@ -177,7 +176,7 @@ export default function CreateVenueModal({
                       value={formData.type}
                       onChange={handleChange}
                       className="w-full appearance-none rounded-lg border border-[#314368] bg-[#182234] h-12 pl-4 pr-10 text-white focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none cursor-pointer"
-                    >
+                     aria-label="Venue Type">
                       <option value="" disabled>Select a type...</option>
                       <option value="amphitheater">Outdoor Amphitheater</option>
                       <option value="arena">Indoor Arena</option>
@@ -199,8 +198,7 @@ export default function CreateVenueModal({
                       value={formData.capacity}
                       onChange={handleChange}
                       className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 pl-4 pr-10 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
-                      placeholder="e.g., 17,500"
-                    />
+                      placeholder="e.g., 17,500" aria-label="17,500" />
                     <Users className="absolute right-3 top-1/2 -translate-y-1/2 text-[#90a4cb] w-5 h-5 pointer-events-none" />
                   </div>
                 </div>
@@ -224,8 +222,7 @@ export default function CreateVenueModal({
                     value={formData.address}
                     onChange={handleChange}
                     className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
-                    placeholder="e.g., 2301 N Highland Ave"
-                  />
+                    placeholder="e.g., 2301 N Highland Ave" aria-label="2301 N Highland Ave" />
                 </div>
 
                 {}
@@ -237,8 +234,7 @@ export default function CreateVenueModal({
                     value={formData.city}
                     onChange={handleChange}
                     className="w-full rounded-lg border border-[#314368] bg-[#182234] h-12 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
-                    placeholder="e.g., Los Angeles"
-                  />
+                    placeholder="e.g., Los Angeles" aria-label="Los Angeles" />
                 </div>
 
                 {}
@@ -291,8 +287,7 @@ export default function CreateVenueModal({
                     value={formData.bagPolicy}
                     onChange={handleChange}
                     className="w-full rounded-lg border border-[#314368] bg-[#182234] h-20 px-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all"
-                    placeholder="e.g., Clear Bags Only"
-                  />
+                    placeholder="e.g., Clear Bags Only" aria-label="Clear Bags Only" />
                 </div>
 
                 {}
@@ -304,7 +299,7 @@ export default function CreateVenueModal({
                     onChange={handleChange}
                     className="w-full rounded-lg border border-[#314368] bg-[#182234] min-h-[140px] p-4 text-white placeholder-[#90a4cb] focus:ring-2 focus:ring-[#a855f7] focus:border-transparent outline-none transition-all resize-y custom-scrollbar text-sm"
                     placeholder="Describe the venue, its history, acoustics, and what makes it unique for events..."
-                  ></textarea>
+                   aria-label="Describe the venue, its history, acoustics, and what makes it unique for events"></textarea>
                 </div>
               </div>
             </div>
@@ -342,8 +337,8 @@ export default function CreateVenueModal({
             <button
               onClick={handleSaveVenue}
               disabled={isSubmitting}
-              className="px-6 md:px-8 h-10 md:h-12 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold shadow-lg shadow-[#ff6a00]/25 hover:shadow-[#ff6a00]/40 active:scale-95 transition-all flex items-center gap-2 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+              className="px-6 md:px-8 h-10 md:h-12 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 text-black font-bold shadow-lg shadow-[#ff6a00]/25 hover:shadow-[#ff6a00]/40 active:scale-95 transition-all flex items-center gap-2 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed min-h-11 min-w-11"
+             aria-label="Save" title="Save">
               {isSubmitting ? (
                 <>
                   <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>

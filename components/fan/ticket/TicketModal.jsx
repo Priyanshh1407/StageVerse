@@ -35,8 +35,8 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
           
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
-          >
+            className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors min-h-11 min-w-11 inline-grid place-items-center"
+           aria-label="Close" title="Close">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -46,15 +46,15 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
           {}
           <div className="flex justify-between w-full mb-8 text-slate-900">
             <div className="text-center">
-              <p className="text-[10px] uppercase font-bold text-slate-400">Sec</p>
+              <p className="text-xs uppercase font-bold text-slate-400">Sec</p>
               <p className="font-black text-xl">TERR</p>
             </div>
             <div className="text-center">
-              <p className="text-[10px] uppercase font-bold text-slate-400">Row</p>
+              <p className="text-xs uppercase font-bold text-slate-400">Row</p>
               <p className="font-black text-xl">4</p>
             </div>
             <div className="text-center">
-              <p className="text-[10px] uppercase font-bold text-slate-400">Seat</p>
+              <p className="text-xs uppercase font-bold text-slate-400">Seat</p>
               <p className="font-black text-xl">22</p>
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function TicketModal({ isOpen, onClose, ticket }) {
           
           <div className="flex items-center gap-2 mt-2">
              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-             <span className="text-[10px] font-bold text-slate-500 uppercase">Live Ticket</span>
+             <span className="text-xs font-bold text-slate-400 uppercase">Live Ticket</span>
           </div>
         </div>
 

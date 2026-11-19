@@ -41,7 +41,7 @@ export default function TicketHistoryModal({ isOpen, onClose, tickets = [], onSe
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">Order History</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">Archive of all your past events.</p>
           </div>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -54,8 +54,7 @@ export default function TicketHistoryModal({ isOpen, onClose, tickets = [], onSe
               className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#1a2632] text-sm focus:ring-2 focus:ring-[#a855f7] outline-none transition-all"
               placeholder="Search by artist or venue..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+              onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search by artist or venue" />
           </div>
         </div>
 
@@ -78,7 +77,7 @@ export default function TicketHistoryModal({ isOpen, onClose, tickets = [], onSe
               {}
               <div className="flex-1 min-w-0">
                 <h4 className="font-bold text-slate-900 dark:text-white truncate">{ticket.artist}</h4>
-                <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
+                <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
                   <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {ticket.date}</span>
                   <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {ticket.venue}</span>
                 </div>
@@ -92,7 +91,7 @@ export default function TicketHistoryModal({ isOpen, onClose, tickets = [], onSe
           ))}
           
           {filteredTickets.length === 0 && (
-            <div className="text-center py-10 text-slate-500 text-sm">
+            <div className="text-center py-10 text-slate-400 text-sm">
               No tickets found matching &quot;{searchQuery}&quot;
             </div>
           )}

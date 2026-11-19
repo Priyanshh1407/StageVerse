@@ -6,7 +6,7 @@ export default function EventsHero({ searchValue, onSearchChange }) {
   return (
     <div className="relative h-[26vh] min-h-[220px] lg:h-[34vh] w-full overflow-hidden">
       <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: 'url("/images/events/desert-1.jpg")' }}></div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#0a0a0a]/30 via-[#0a0a0a]/80 to-[#0a0a0a]"></div>
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#0a0a0a]/75 via-[#0a0a0a]/85 to-[#0a0a0a]"></div>
 
       <div className="relative z-20 flex h-full flex-col items-center justify-center px-4 text-center">
         <h1 className="mb-3 text-4xl font-bold tracking-tight text-white sm:text-6xl drop-shadow-lg">

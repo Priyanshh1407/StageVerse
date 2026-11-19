@@ -63,34 +63,33 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
 
                 <div className="flex justify-between items-center p-5 border-b border-[#27272A]">
                     <h3 className="text-white font-bold text-lg">{task ? 'Edit Task' : 'Create New Task'}</h3>
-                    <button onClick={onClose} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close"><X className="w-5 h-5" /></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Task Title</label>
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Task Title</label>
                         <input
                             required
                             type="text"
                             className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                             placeholder="e.g. Update Patch Sheet"
                             value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        />
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })} aria-label="Update Patch Sheet" />
                     </div>
 
                     {}
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Show / Event</label>
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Show / Event</label>
                         {isLoadingEvents ? (
-                            <div className="text-xs text-gray-500 flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin" /> Loading events...</div>
+                            <div className="text-xs text-gray-400 flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin" /> Loading events...</div>
                         ) : (
                             <select
                                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                                 value={formData.eventId} // Use eventId
                                 onChange={(e) => setFormData({ ...formData, eventId: e.target.value })}
                                 disabled={!!showId} // Lock if we are on a specific page? User request implies they want to see/select. Let's unlock if that's the request, BUT parent overrides it.
-                            >
+                             aria-label="Show / Event">
                                 <option value="">Select Event...</option>
                                 {events.map(ev => (
                                     <option key={ev._id} value={ev._id || ev.eventId}>
@@ -109,38 +108,37 @@ export default function TaskModal({ task, showId, onClose, onSave }) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Priority</label>
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Priority</label>
                             <select
                                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                                 value={formData.priority}
                                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                            >
+                             aria-label="Priority">
                                 <option>Low</option>
                                 <option>Medium</option>
                                 <option>High</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Due Date</label>
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Due Date</label>
                             <input
                                 type="text"
                                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                                 placeholder="e.g. Tomorrow"
                                 value={formData.dueDate}
-                                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                            />
+                                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} aria-label="Tomorrow" />
                         </div>
                     </div>
 
                     {}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Tag</label>
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Tag</label>
                             <select
                                 className="w-full bg-[#0F0F10] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
                                 value={formData.tag}
                                 onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
-                            >
+                             aria-label="Tag">
                                 <option>General</option>
                                 <option>Rigging</option>
                                 <option>Electric</option>

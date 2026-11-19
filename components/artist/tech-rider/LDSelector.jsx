@@ -65,8 +65,8 @@ export default function LDSelector({ selectedLD, onSelect }) {
                 </div>
                 <button
                     onClick={handleClear}
-                    className="ml-2 text-white/30 hover:text-white transition-colors"
-                >
+                    className="ml-2 text-white/30 hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center"
+                 aria-label="Close" title="Close">
                     <X className="w-4 h-4" />
                 </button>
             </div>
@@ -82,8 +82,7 @@ export default function LDSelector({ selectedLD, onSelect }) {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Assign to Lighting Designer..."
-                    className="w-full bg-[#1a2632] border border-[#223949] text-white text-sm rounded-lg pl-9 pr-4 py-2.5 focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] transition-all"
-                />
+                    className="w-full bg-[#1a2632] border border-[#223949] text-white text-sm rounded-lg pl-9 pr-4 py-2.5 focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] transition-all" aria-label="Assign to Lighting Designer" />
                 {isLoading && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         <Loader2 className="w-4 h-4 text-[#ff6a00] animate-spin" />

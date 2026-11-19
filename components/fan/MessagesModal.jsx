@@ -88,14 +88,14 @@ export default function MessagesModal({ isOpen, onClose, start = null }) {
                 <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-2 min-w-0">
                         {active && (
-                            <button type="button" onClick={() => { setActive(null); setThread([]); }} aria-label="Back to conversations" className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 hover:text-[#ff6a00]">
+                            <button type="button" onClick={() => { setActive(null); setThread([]); }} aria-label="Back to conversations" className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-[#ff6a00]">
                                 <ArrowLeft className="w-4 h-4" />
                             </button>
                         )}
                         <MessageSquare className="w-5 h-5 text-[#ff6a00] shrink-0" />
                         <h2 className="font-bold text-lg text-slate-900 dark:text-white truncate">{active ? active.name : 'Messages'}</h2>
                     </div>
-                    <button type="button" onClick={onClose} aria-label="Close messages" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 hover:text-[#ff6a00]">
+                    <button type="button" onClick={onClose} aria-label="Close messages" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-[#ff6a00]">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -104,7 +104,7 @@ export default function MessagesModal({ isOpen, onClose, start = null }) {
                     <div className="flex-1 overflow-y-auto p-3">
                         {loading && <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-[#ff6a00]" /></div>}
                         {!loading && conversations.length === 0 && startable.length === 0 && (
-                            <p className="text-center text-sm text-slate-500 py-10">No messages yet. Follow fans on the Friends page to message them.</p>
+                            <p className="text-center text-sm text-slate-400 py-10">No messages yet. Follow fans on the Friends page to message them.</p>
                         )}
                         {conversations.map((c) => (
                             <button key={c.with.id} type="button" onClick={() => openThread(c.with)} className="w-full flex items-center gap-3 p-3 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/5">
@@ -112,16 +112,16 @@ export default function MessagesModal({ isOpen, onClose, start = null }) {
                                 <span className="min-w-0 flex-1">
                                     <span className="flex items-center justify-between gap-2">
                                         <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{c.with.name}</span>
-                                        <span className="text-[10px] text-slate-400 shrink-0">{when(c.last.createdAt)}</span>
+                                        <span className="text-xs text-slate-400 shrink-0">{when(c.last.createdAt)}</span>
                                     </span>
-                                    <span className="block text-xs text-slate-500 truncate">{c.last.mine ? 'You: ' : ''}{c.last.text}</span>
+                                    <span className="block text-xs text-slate-400 truncate">{c.last.mine ? 'You: ' : ''}{c.last.text}</span>
                                 </span>
-                                {c.unread > 0 && <span className="text-[10px] font-bold text-black rounded-full px-2 py-0.5 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]">{c.unread}</span>}
+                                {c.unread > 0 && <span className="text-xs font-bold text-black rounded-full px-2 py-0.5 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a]">{c.unread}</span>}
                             </button>
                         ))}
                         {startable.length > 0 && (
                             <>
-                                <p className="px-3 pt-4 pb-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">Start a conversation</p>
+                                <p className="px-3 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-slate-400">Start a conversation</p>
                                 {startable.map((f) => (
                                     <button key={f.id} type="button" onClick={() => openThread(f)} className="w-full flex items-center gap-3 p-3 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/5">
                                         <Avatar person={f} />
@@ -134,12 +134,12 @@ export default function MessagesModal({ isOpen, onClose, start = null }) {
                 ) : (
                     <>
                         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                            {thread.length === 0 && <p className="text-center text-sm text-slate-500 py-10">Say hi to {active.name}.</p>}
+                            {thread.length === 0 && <p className="text-center text-sm text-slate-400 py-10">Say hi to {active.name}.</p>}
                             {thread.map((m) => (
                                 <div key={m.id} className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[78%] rounded-2xl px-3.5 py-2 text-sm ${m.mine ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black' : 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white'}`}>
                                         <p className="whitespace-pre-wrap break-words">{m.text}</p>
-                                        <p className={`mt-0.5 text-[10px] ${m.mine ? 'text-black/60' : 'text-slate-400'}`}>{when(m.createdAt)}</p>
+                                        <p className={`mt-0.5 text-xs ${m.mine ? 'text-black/60' : 'text-slate-400'}`}>{when(m.createdAt)}</p>
                                     </div>
                                 </div>
                             ))}

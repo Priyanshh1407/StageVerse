@@ -236,24 +236,23 @@ export default function PatchStudioPage(props) {
          {}
          <header className="flex items-center justify-between border-b border-[#27272A] bg-[#0F0F10] px-6 py-2.5 shrink-0 z-20">
             <div className="flex items-center gap-2 text-sm">
-               <FolderOpen className="w-5 h-5 text-gray-600" />
+               <FolderOpen className="w-5 h-5 text-gray-400" />
                <span className="text-gray-400">{showTitle || 'Your show'}</span>
                <span className="text-[#27272A]">/</span>
                <span className="text-white font-medium">Patch Studio</span>
-               {lastSaved && <span className="text-green-500 text-[10px] ml-2 animate-in fade-in slide-in-from-left-2 transition-all">Saved {lastSaved.toLocaleTimeString()}</span>}
+               {lastSaved && <span className="text-green-500 text-xs ml-2 animate-in fade-in slide-in-from-left-2 transition-all">Saved {lastSaved.toLocaleTimeString()}</span>}
             </div>
 
             <div className="flex items-center gap-4">
                {}
                <div className="hidden md:flex items-center bg-[#18181B] border border-[#27272A] rounded-lg h-9 w-72 px-3 focus-within:border-purple-500/50 transition-all">
-                  <Search className="w-4 h-4 text-gray-500 mr-2" />
+                  <Search className="w-4 h-4 text-gray-400 mr-2" />
                   <input
                      value={searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
                      className="bg-transparent border-none text-white text-xs w-full focus:outline-none placeholder:text-gray-600"
-                     placeholder="Search fixtures (ID, Type, Role)..."
-                  />
-                  <span className="text-[10px] text-gray-600 border border-[#27272A] px-1 rounded">⌘K</span>
+                     placeholder="Search fixtures (ID, Type, Role)..." aria-label="Search fixtures (ID, Type, Role)" />
+                  <span className="text-xs text-gray-400 border border-[#27272A] px-1 rounded">⌘K</span>
                </div>
 
                {}
@@ -261,7 +260,7 @@ export default function PatchStudioPage(props) {
                   onClick={loadPatch}
                   disabled={isLoading}
                   title="Sync Data"
-                  className="text-gray-500 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors"
                >
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                </button>
@@ -301,7 +300,7 @@ export default function PatchStudioPage(props) {
                <div className="flex flex-col md:flex-row items-center justify-between p-6 pb-4 gap-4 z-10 border-b border-[#27272A] bg-[#0F0F10]/95 backdrop-blur-sm sticky top-0">
                   <div className="flex flex-col">
                      <h2 className="text-white text-xl font-bold tracking-tight">Show rig: <span className="text-orange-500 font-normal">{showTitle || 'Your show'}</span></h2>
-                     <p className="text-xs text-gray-500 mt-1">
+                     <p className="text-xs text-gray-400 mt-1">
                         {viewMode === 'creative'
                            ? `Creative Mode • ${new Set(filteredFixtures.map(f => f.cue)).size} Groups Defined`
                            : `Technical Mode • ${filteredFixtures.length} Fixtures Patched`}
@@ -312,13 +311,13 @@ export default function PatchStudioPage(props) {
                   <div className="bg-[#18181B] p-1 rounded-lg border border-[#27272A] flex h-9 items-center">
                      <button
                         onClick={() => setViewMode('creative')}
-                        className={`px-3 h-full rounded-md text-xs font-bold transition-all ${viewMode === 'creative' ? 'bg-[#27272A] text-white shadow-sm border border-[#3F3F46]' : 'text-gray-500 hover:text-white'}`}
+                        className={`px-3 h-full rounded-md text-xs font-bold transition-all ${viewMode === 'creative' ? 'bg-[#27272A] text-white shadow-sm border border-[#3F3F46]' : 'text-gray-400 hover:text-white'}`}
                      >
                         Creative View
                      </button>
                      <button
                         onClick={() => setViewMode('technical')}
-                        className={`px-3 h-full rounded-md text-xs font-bold transition-all ${viewMode === 'technical' ? 'bg-[#27272A] text-white shadow-sm border border-[#3F3F46]' : 'text-gray-500 hover:text-white'}`}
+                        className={`px-3 h-full rounded-md text-xs font-bold transition-all ${viewMode === 'technical' ? 'bg-[#27272A] text-white shadow-sm border border-[#3F3F46]' : 'text-gray-400 hover:text-white'}`}
                      >
                         Technical View
                      </button>

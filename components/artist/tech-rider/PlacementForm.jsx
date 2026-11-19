@@ -37,8 +37,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
                 onChange={(e) => handleChange('stageLocation', e.target.value)}
                 className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#a855f7] focus:border-[#a855f7] outline-none placeholder-white/20 transition-all"
                 placeholder="e.g. Upstage Center Truss"
-                type="text"
-              />
+                type="text" aria-label="Upstage Center Truss" />
             </div>
 
             <div className="space-y-2">
@@ -50,7 +49,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
                   value={plotData.mountingPreference || 'Standard / Default'}
                   onChange={(e) => handleChange('mountingPreference', e.target.value)}
                   className="w-full appearance-none bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#a855f7] focus:border-[#a855f7] outline-none transition-all cursor-pointer"
-                >
+                 aria-label="Mounting Preference">
                   <option>Standard / Default</option>
                   <option>Floor Stand</option>
                   <option>Flown (Truss)</option>
@@ -69,7 +68,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
               onChange={(e) => handleChange('placementNotes', e.target.value)}
               className="w-full bg-[#101b23] border border-[#223949] rounded-lg p-4 text-white text-sm focus:ring-1 focus:ring-[#a855f7] focus:border-[#a855f7] outline-none h-32 resize-none placeholder-white/30 leading-relaxed transition-all"
               placeholder="Enter detailed instructions here..."
-            ></textarea>
+             aria-label="Enter detailed instructions here"></textarea>
           </div>
         </div>
 
@@ -84,7 +83,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
               </div>
               <div>
                 <span className="text-white font-bold block">Hazer Required</span>
-                <span className="text-[11px] text-white/50 block font-medium">Continuous Haze</span>
+                <span className="text-xs text-white/50 block font-medium">Continuous Haze</span>
               </div>
             </div>
             <div
@@ -104,7 +103,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
                 </div>
                 <div>
                   <span className="text-white font-bold block text-sm">Local Power</span>
-                  <span className="text-[11px] text-white/50 block font-medium">3 Phase / 60A</span>
+                  <span className="text-xs text-white/50 block font-medium">3 Phase / 60A</span>
                 </div>
               </div>
               <CheckCircle className="w-5 h-5 text-white/30" />
@@ -119,7 +118,7 @@ export default function PlacementForm({ hazer, setHazer, plotData, setPlotData }
                 </div>
                 <div>
                   <span className="text-white font-bold block text-sm">Cabling</span>
-                  <span className="text-[11px] text-white/50 block font-medium">DMX 5-Pin</span>
+                  <span className="text-xs text-white/50 block font-medium">DMX 5-Pin</span>
                 </div>
               </div>
               <Lock className="w-5 h-5 text-white/30" />

@@ -14,7 +14,7 @@ export default function DashboardSidebar({ tasks, activity }) {
             <Kanban className="w-5 h-5 text-orange-500" />
             Tasks
           </h2>
-          <Link href="/tasks" className="text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-orange-500 transition-colors">View All</Link>
+          <Link href="/tasks" className="text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-orange-500 transition-colors">View All</Link>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -54,10 +54,10 @@ function TaskItem({ task }) {
     <div className={`bg-[#18181B] border border-[#27272A] rounded-lg p-4 flex flex-col gap-2 shadow-sm relative overflow-hidden group hover:border-purple-500/30 transition-colors ${isMessage ? 'bg-purple-500/5' : ''}`}>
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${theme.border}`}></div>
       <div className="flex justify-between items-start">
-        <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${theme.badge}`}>
+        <span className={`text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${theme.badge}`}>
           {isMessage ? 'Artist Message' : task.priority}
         </span>
-        <GripVertical className="w-4 h-4 text-gray-600 cursor-pointer hover:text-white" />
+        <GripVertical className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white" />
       </div>
       <p className="text-sm font-medium text-white leading-snug">{isMessage ? task.title.replace('Artist Message: ', '') : task.title}</p>
 
@@ -69,7 +69,7 @@ function TaskItem({ task }) {
       )}
 
       <div className="flex items-center justify-between mt-1">
-        <div className="flex items-center gap-1 text-gray-500 text-xs">
+        <div className="flex items-center gap-1 text-gray-400 text-xs">
           <Clock className="w-3.5 h-3.5" />
           <span>Due {task.due}</span>
         </div>
@@ -120,7 +120,7 @@ function ActivityItem({ item }) {
           {}
           {item.text}
         </p>
-        <p className="text-xs text-gray-600 group-hover/text:text-gray-500">
+        <p className="text-xs text-gray-400 group-hover/text:text-gray-500">
           {item.time}
         </p>
       </Link>

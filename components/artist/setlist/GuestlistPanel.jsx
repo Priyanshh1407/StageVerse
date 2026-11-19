@@ -128,8 +128,7 @@ export default function GuestlistPanel({ eventId }) {
                             <input
                                 type="text"
                                 placeholder="Search guests..."
-                                className="w-full bg-[#101b23] border border-[#315168]/50 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-[#587b94] focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7]/50 transition-all font-medium"
-                            />
+                                className="w-full bg-[#101b23] border border-[#315168]/50 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-[#587b94] focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7]/50 transition-all font-medium" aria-label="Search guests" />
                         </div>
                     </div>
 
@@ -260,8 +259,7 @@ export default function GuestlistPanel({ eventId }) {
                                                 onChange={e => setNotesBuffer(e.target.value)}
                                                 className="w-full bg-[#101b23] border border-[#315168] rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#a855f7] min-h-[100px] shadow-inner font-normal leading-relaxed"
                                                 placeholder="Add notes about this guest..."
-                                                autoFocus
-                                            />
+                                                autoFocus aria-label="Add notes about this guest" />
                                             <div className="flex gap-3 mt-3 justify-end">
                                                 <button
                                                     onClick={() => setIsEditingNotes(false)}

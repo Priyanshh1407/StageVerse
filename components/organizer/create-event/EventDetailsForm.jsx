@@ -516,8 +516,8 @@ export default function EventDetailsForm({
         <button
           onClick={(e) => handleAiGenerate(e)}
           disabled={isGenerating || isSubmitting}
-          className="flex-1 h-12 bg-[#192734] border border-[#2c3b47] rounded-lg font-bold text-white hover:bg-[#233b4a] transition-all flex items-center justify-center gap-2"
-        >
+          className="flex-1 h-12 bg-[#192734] border border-[#2c3b47] rounded-lg font-bold text-white hover:bg-[#233b4a] transition-all flex items-center justify-center gap-2 min-h-11 min-w-11"
+         aria-label="More information" title="More information">
           {isGenerating ? 'Writing…' : <><Info className="w-4 h-4" aria-hidden /> Write the description for me</>}
         </button>
 

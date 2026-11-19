@@ -132,7 +132,7 @@ export default function GlobalTasksPage() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-white tracking-tight">Tasks</h1>
-                <p className="text-gray-500 text-sm mt-1">Manage deliverables across all active productions.</p>
+                <p className="text-gray-400 text-sm mt-1">Manage deliverables across all active productions.</p>
               </div>
               <button
                 onClick={openCreateModal}
@@ -150,7 +150,7 @@ export default function GlobalTasksPage() {
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all capitalize ${filter === f ? 'bg-[#27272A] text-white shadow-sm' : 'text-gray-500 hover:text-white'}`}
+                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all capitalize ${filter === f ? 'bg-[#27272A] text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
                   >
                     {f}
                   </button>
@@ -159,14 +159,13 @@ export default function GlobalTasksPage() {
 
               <div className="flex items-center gap-3 w-full lg:w-auto">
                 <div className="relative flex-1 lg:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search tasks or shows..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#18181B] border border-[#27272A] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-600 outline-none"
-                  />
+                    className="w-full bg-[#18181B] border border-[#27272A] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-600 outline-none" aria-label="Search tasks or shows" />
                 </div>
               </div>
             </div>
@@ -192,7 +191,7 @@ export default function GlobalTasksPage() {
                   ))}
 
                   {filteredTasks.length === 0 && (
-                    <div className="text-center py-20 text-gray-600">
+                    <div className="text-center py-20 text-gray-400">
                       <p>No tasks found.</p>
                     </div>
                   )}
@@ -243,24 +242,24 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
       {}
       <button
         onClick={onToggle}
-        className={`shrink-0 transition-colors ${task.status === 'completed' ? 'text-green-500' : 'text-gray-600 hover:text-orange-500'}`}
-      >
+        className={`shrink-0 transition-colors ${task.status === 'completed' ? 'text-green-500' : 'text-gray-400 hover:text-orange-500'} min-h-11 min-w-11 inline-grid place-items-center`}
+       aria-label="Mark as done" title="Mark as done">
         {task.status === 'completed' ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
       </button>
 
       {}
       <button type="button" onClick={onEdit} aria-label={`Open task: ${task.title}`} className="flex-1 min-w-0 flex flex-col gap-1 text-left rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a855f7]">
         <div className="flex items-center gap-3">
-          <span className={`text-sm font-medium group-hover:text-[#ffb000] transition-colors ${task.status === 'completed' ? 'text-gray-500 line-through' : 'text-white'}`}>
+          <span className={`text-sm font-medium group-hover:text-[#ffb000] transition-colors ${task.status === 'completed' ? 'text-gray-400 line-through' : 'text-white'}`}>
             {task.title}
           </span>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-[#27272A] bg-[#222] text-gray-400 uppercase tracking-wider">
+          <span className="text-xs font-bold px-2 py-0.5 rounded border border-[#27272A] bg-[#222] text-gray-400 uppercase tracking-wider">
             {task.show}
           </span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-gray-500">
+        <div className="flex items-center gap-3 text-xs text-gray-400">
           <span>{task.venue}</span>
-          <span className={`px-1.5 rounded text-[10px] font-bold uppercase border ${getPriorityColor(task.priority)}`}>
+          <span className={`px-1.5 rounded text-xs font-bold uppercase border ${getPriorityColor(task.priority)}`}>
             {task.priority}
           </span>
         </div>
@@ -276,8 +275,8 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-lg hover:bg-[#27272A] text-gray-500 hover:text-white transition-colors"
-          >
+            className="p-2 rounded-lg hover:bg-[#27272A] text-gray-400 hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center"
+           aria-label="More options" title="More options">
             <MoreHorizontal className="w-5 h-5" />
           </button>
 
@@ -293,8 +292,8 @@ function TaskRow({ task, onToggle, onDelete, onEdit }) {
                 </button>
                 <button
                   onClick={() => { onToggle(); setMenuOpen(false); }}
-                  className="flex items-center gap-2 px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-[#27272A] rounded-md text-left"
-                >
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-[#27272A] rounded-md text-left min-h-11 min-w-11"
+                 aria-label="Mark as done" title="Mark as done">
                   {task.status === 'completed' ? (
                     <><Circle className="w-3.5 h-3.5" /> Mark Pending</>
                   ) : (
@@ -352,9 +351,9 @@ function TaskModal({ task, shows = [], onClose, onSave }) {
         <div className="flex justify-between items-start gap-4 p-5 border-b border-[#27272A]">
           <div className="min-w-0">
             <h3 id="task-modal-title" className="text-white font-bold text-lg">{task ? 'Task details' : 'Create new task'}</h3>
-            {task && <p className="mt-0.5 text-xs text-gray-500 truncate">{task.show}{task.venue ? ` · ${task.venue}` : ''} · {task.status === 'completed' ? 'Completed' : 'Open'}</p>}
+            {task && <p className="mt-0.5 text-xs text-gray-400 truncate">{task.show}{task.venue ? ` · ${task.venue}` : ''} · {task.status === 'completed' ? 'Completed' : 'Open'}</p>}
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="p-1.5 rounded-full text-gray-500 hover:text-[#ff6a00] hover:bg-white/5"><X className="w-5 h-5" /></button>
+          <button type="button" onClick={onClose} aria-label="Close" className="p-1.5 rounded-full text-gray-400 hover:text-[#ff6a00] hover:bg-white/5"><X className="w-5 h-5" /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">

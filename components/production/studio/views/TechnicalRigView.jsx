@@ -46,7 +46,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
   return (
     <div className="min-h-[500px] pb-32 relative">
       <table className="w-full text-left border-collapse min-w-[900px]">
-        <thead className="bg-[#18181B] sticky top-0 z-20 text-[10px] uppercase font-bold text-gray-500 tracking-wider">
+        <thead className="bg-[#18181B] sticky top-0 z-20 text-xs uppercase font-bold text-gray-400 tracking-wider">
           <tr>
             <th className="py-3 px-4 border-b border-[#27272A] w-16">ID</th>
             <th className="py-3 px-4 border-b border-[#27272A]">Fixture Name</th>
@@ -83,7 +83,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
             ))
           ) : (
             <tr>
-              <td colSpan="8" className="py-12 text-center text-gray-500 italic">
+              <td colSpan="8" className="py-12 text-center text-gray-400 italic">
                 No fixtures patched yet. Switch to Creative Mode or use the Sidebar to add some!
               </td>
             </tr>
@@ -98,7 +98,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-[#2c3e50] bg-[#111]">
               <h3 className="text-white font-bold flex items-center gap-2"><Pencil className="w-4 h-4 text-orange-500" /> Edit Fixture {editingFixture.fixtureId}</h3>
-              <button onClick={() => setEditingFixture(null)} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
+              <button onClick={() => setEditingFixture(null)} className="text-gray-400 hover:text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
 
@@ -111,8 +111,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                     value={editingFixture.universe}
                     onChange={e => setEditingFixture({ ...editingFixture, universe: parseInt(e.target.value) })}
                     min={1}
-                    required
-                  />
+                    required aria-label="Universe" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-400 mb-1">Address</label>
@@ -123,8 +122,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                     onChange={e => setEditingFixture({ ...editingFixture, address: parseInt(e.target.value) })}
                     min={1}
                     max={512}
-                    required
-                  />
+                    required aria-label="Address" />
                 </div>
               </div>
 
@@ -137,7 +135,7 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
                     setEditingFixture({ ...editingFixture, cue: e.target.value, cueColor: colors[e.target.value] || 'blue' })
                   }}
                   className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
-                >
+                 aria-label="Role / Cue">
                   <option value="Intro Sequence">Intro Sequence</option>
                   <option value="Drum Solo">Drum Solo</option>
                   <option value="Main Wash">Main Wash</option>
@@ -164,41 +162,41 @@ export default function TechnicalRigView({ fixtures, onDeleteFixture, onEditFixt
           <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-[#2c3e50] bg-[#111]">
               <h3 className="text-white font-bold flex items-center gap-2"><Info className="w-4 h-4 text-orange-500" /> Fixture Details</h3>
-              <button onClick={() => setViewingFixture(null)} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
+              <button onClick={() => setViewingFixture(null)} className="text-gray-400 hover:text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
 
               <div className="bg-[#0b1219] p-4 rounded-lg border border-[#2c3e50] space-y-3">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-gray-500">Fixture ID</label>
+                    <label className="text-xs uppercase font-bold text-gray-400">Fixture ID</label>
                     <div className="text-white font-mono text-sm">{viewingFixture.fixtureId || viewingFixture.id}</div>
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-gray-500">Channels</label>
+                    <label className="text-xs uppercase font-bold text-gray-400">Channels</label>
                     <div className="text-white font-mono text-sm">{viewingFixture.channels}</div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500">Profile</label>
+                  <label className="text-xs uppercase font-bold text-gray-400">Profile</label>
                   <div className="text-white text-sm font-bold">{viewingFixture.profile}</div>
                   <div className="text-gray-400 text-xs">{viewingFixture.mode}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#2c3e50] mt-2">
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-gray-500">Universe</label>
+                    <label className="text-xs uppercase font-bold text-gray-400">Universe</label>
                     <div className="text-orange-400 font-mono text-lg">{viewingFixture.universe}</div>
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-gray-500">Address</label>
+                    <label className="text-xs uppercase font-bold text-gray-400">Address</label>
                     <div className="text-orange-400 font-mono text-lg">{viewingFixture.address}</div>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-[#2c3e50] mt-2">
-                  <label className="text-[10px] uppercase font-bold text-gray-500">Role</label>
+                  <label className="text-xs uppercase font-bold text-gray-400">Role</label>
                   <div className="text-white text-sm flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full bg-${viewingFixture.cueColor}-500 inline-block`}></span>
                     {viewingFixture.cue}
@@ -253,7 +251,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
       <td className="py-3 px-4 text-gray-400">{mode}</td>
 
       <td className="py-3 px-4">
-        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium border ${theme.bg} ${theme.text} ${theme.border}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium border ${theme.bg} ${theme.text} ${theme.border}`}>
           <span className={`size-1.5 rounded-full ${theme.dot}`}></span> {cue}
         </span>
       </td>
@@ -271,7 +269,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
         {isConflict && (
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            className="mr-3 bg-red-600 hover:bg-red-500 text-white text-[10px] uppercase font-bold py-1 px-3 rounded shadow-lg shadow-red-900/20 transition-all"
+            className="mr-3 bg-red-600 hover:bg-red-500 text-white text-xs uppercase font-bold py-1 px-3 rounded shadow-lg shadow-red-900/20 transition-all"
           >
             Fix
           </button>
@@ -279,8 +277,8 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
 
         <button
           onClick={(e) => { e.stopPropagation(); onToggle(); }}
-          className={`text-gray-600 hover:text-white transition-colors p-1 rounded ${isOpen ? 'text-white bg-[#27272A]' : ''}`}
-        >
+          className={`text-gray-400 hover:text-white transition-colors p-1 rounded ${isOpen ? 'text-white bg-[#27272A]' : ''} min-h-11 min-w-11 inline-grid place-items-center`}
+         aria-label="More options" title="More options">
           <MoreHorizontal className="w-5 h-5" />
         </button>
 
@@ -293,7 +291,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
                 onClick={() => { onEdit(); onToggle(); }}
                 className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors w-full text-left group/item"
               >
-                <Pencil className="w-3.5 h-3.5 text-gray-500 group-hover/item:text-white" />
+                <Pencil className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-white" />
                 Edit Fixture
               </button>
 
@@ -301,7 +299,7 @@ function FixtureRow({ id, name, univ, addr, mode, cue, cueColor, status, isConfl
                 onClick={() => { onView(); onToggle(); }}
                 className="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors w-full text-left group/item"
               >
-                <Info className="w-3.5 h-3.5 text-gray-500 group-hover/item:text-white" />
+                <Info className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-white" />
                 View Details
               </button>
 

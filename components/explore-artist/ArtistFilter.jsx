@@ -43,7 +43,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
               <button onClick={onReset} className="text-xs text-[#ffb000] hover:text-white transition-colors flex items-center gap-1">
                 <RotateCcw className="w-3 h-3" /> Reset
               </button>
-              <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-white">
+              <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-white min-h-11 min-w-11" aria-label="Close" title="Close">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -101,7 +101,7 @@ export default function ArtistsFilter({ filters, setFilters, onReset, isOpen, on
                   onChange={(e) => update('popularity', parseInt(e.target.value))}
                   className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#ff6a00]" 
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-2">
+                <div className="flex justify-between text-xs text-gray-400 mt-2">
                   <span>New</span>
                   <span>Rising</span>
                   <span>Star</span>

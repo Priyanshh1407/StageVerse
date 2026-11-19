@@ -154,7 +154,7 @@ export default function ArtistDashboard() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-slate-900 dark:text-white tracking-tight text-3xl md:text-4xl font-bold leading-tight">
-              Tour Hub: {data.tourName}
+              {data.tourName}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">Overview of today&apos;s logistics and tour status.</p>
           </div>

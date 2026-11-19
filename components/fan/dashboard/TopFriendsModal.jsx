@@ -45,7 +45,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Concert Friends</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">People you&apos;ve shared the most memories with.</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -59,8 +59,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
               placeholder="Search friends..."
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+              onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search friends" />
           </div>
         </div>
 
@@ -77,7 +76,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
                 {}
                 <div className="flex-1 min-w-0">
                   <p className="text-slate-900 dark:text-white font-bold truncate text-base">{friend.name}</p>
-                  <p className="text-xs text-slate-500">{friend.role || "Concert Buddy"}</p>
+                  <p className="text-xs text-slate-400">{friend.role || "Concert Buddy"}</p>
                 </div>
 
                 {}
@@ -87,7 +86,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
                     <p className="font-bold text-xs">{friend.sharedShows} Shared</p>
                   </div>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => { onClose(); window.dispatchEvent(new CustomEvent('sv:open-messages', { detail: { id: String(friend.id ?? friend._id), name: friend.name, avatar: friend.avatar ?? null } })); }} className="text-[10px] text-slate-400 hover:text-[#ff6a00] transition-colors flex items-center gap-0.5">
+                    <button type="button" onClick={() => { onClose(); window.dispatchEvent(new CustomEvent('sv:open-messages', { detail: { id: String(friend.id ?? friend._id), name: friend.name, avatar: friend.avatar ?? null } })); }} className="text-xs text-slate-400 hover:text-[#ff6a00] transition-colors flex items-center gap-0.5">
                       Message <MessageSquare className="w-3 h-3" />
                     </button>
                   </div>
@@ -95,7 +94,7 @@ export default function TopFriendsModal({ isOpen, onClose, friends = [] }) {
               </div>
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center py-10 text-slate-500">
+            <div className="flex flex-col items-center justify-center py-10 text-slate-400">
               <p>No friends found matching &quot;{searchQuery}&quot;</p>
             </div>
           )}

@@ -42,7 +42,7 @@ export default function LeaderboardModal({
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
                 </div>
 
-                <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white p-2 rounded-full hover:bg-white/10 z-20">
+                <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white p-2 rounded-full hover:bg-white/10 z-20 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                     <X className="w-5 h-5" />
                 </button>
 
@@ -118,7 +118,7 @@ export default function LeaderboardModal({
                                         {}
                                         <div className="text-right">
                                             <p className="text-[#ff6a00] font-black text-xl">{winner.score}</p>
-                                            <p className="text-[#90b2cb] text-[10px] uppercase font-bold tracking-wider">PTS</p>
+                                            <p className="text-[#90b2cb] text-xs uppercase font-bold tracking-wider">PTS</p>
                                         </div>
 
                                         {}

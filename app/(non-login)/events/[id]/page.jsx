@@ -367,7 +367,7 @@ function SimilarEventCard({ event }) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute top-4 left-4">
-                    <span className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-[10px] font-black uppercase px-2 py-1 rounded-sm">{event.genre}</span>
+                    <span className="bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-xs font-black uppercase px-2 py-1 rounded-sm">{event.genre}</span>
                 </div>
                 <div className="absolute bottom-4 left-4">
                     <p className="text-white font-black text-xl leading-none mb-1">{event.name}</p>
@@ -376,7 +376,7 @@ function SimilarEventCard({ event }) {
             </div>
             <div className="p-4 flex justify-between items-center border-t border-white/5 bg-[#161616]">
                 <div>
-                    <p className="text-xs text-slate-500 font-bold uppercase mb-0.5">Starting at</p>
+                    <p className="text-xs text-slate-400 font-bold uppercase mb-0.5">Starting at</p>
                     <p className="text-white font-bold text-lg">${event.price}</p>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white group-hover:bg-gradient-to-r group-hover:from-[#ffb000] group-hover:via-[#ff6a00] group-hover:to-[#ff3d7a] group-hover:text-black transition-colors">

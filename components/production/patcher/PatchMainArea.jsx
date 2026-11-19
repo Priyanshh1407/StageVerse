@@ -9,7 +9,7 @@ export default function PatchMainArea({ patches = [], onEditFixture }) {
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
 
         {}
-        <div className="grid grid-cols-12 bg-[#141b22] border-b border-[#2c3e50] py-3 px-6 text-[10px] font-bold text-[#90b2cb] uppercase tracking-wider select-none shrink-0 flex-none gap-4">
+        <div className="grid grid-cols-12 bg-[#141b22] border-b border-[#2c3e50] py-3 px-6 text-xs font-bold text-[#90b2cb] uppercase tracking-wider select-none shrink-0 flex-none gap-4">
           <div className="col-span-1 text-center">ID</div>
           <div className="col-span-3">Fixture Name</div>
           <div className="col-span-1 text-center">Univ</div>
@@ -37,7 +37,7 @@ export default function PatchMainArea({ patches = [], onEditFixture }) {
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#e74c3c] shadow-[0_0_15px_rgba(231,76,60,0.6)]"></div>
                 )}
 
-                <div className={`col-span-1 font-mono text-center font-bold ${isConflict ? 'text-red-200' : 'text-gray-500'}`}>
+                <div className={`col-span-1 font-mono text-center font-bold ${isConflict ? 'text-red-200' : 'text-gray-400'}`}>
                   {patch.fixtureId}
                 </div>
 
@@ -72,12 +72,12 @@ export default function PatchMainArea({ patches = [], onEditFixture }) {
                   {isConflict ? (
                     <button
                       onClick={() => onEditFixture && onEditFixture(patch)}
-                      className="flex items-center gap-1 pl-2 pr-3 py-1 bg-[#e74c3c] hover:bg-red-500 text-white rounded shadow-lg shadow-[#e74c3c]/20 text-[10px] font-bold uppercase tracking-wide transition-all hover:scale-105 active:scale-95"
+                      className="flex items-center gap-1 pl-2 pr-3 py-1 bg-[#e74c3c] hover:bg-red-500 text-white rounded shadow-lg shadow-[#e74c3c]/20 text-xs font-bold uppercase tracking-wide transition-all hover:scale-105 active:scale-95"
                     >
                       <Wrench className="w-3 h-3" /> Fix
                     </button>
                   ) : (
-                    <span className="text-[#2ecc71] text-[10px] font-bold uppercase tracking-wide">OK</span>
+                    <span className="text-[#2ecc71] text-xs font-bold uppercase tracking-wide">OK</span>
                   )}
                 </div>
               </div>
@@ -85,7 +85,7 @@ export default function PatchMainArea({ patches = [], onEditFixture }) {
           })}
 
           {}
-          <div className="py-2 px-6 bg-[#141b22] border-t border-[#2c3e50] text-[10px] text-gray-500 font-mono flex justify-between shrink-0 min-h-[40px] items-center">
+          <div className="py-2 px-6 bg-[#141b22] border-t border-[#2c3e50] text-xs text-gray-400 font-mono flex justify-between shrink-0 min-h-[40px] items-center">
             <span>Total Fixtures: {patches.length}</span>
             <span>Universe 1 Usage: {patches.length > 0 ? '25.6%' : '0%'}</span>
           </div>
@@ -97,7 +97,7 @@ export default function PatchMainArea({ patches = [], onEditFixture }) {
 
 function ActionButton({ icon: Icon, label }) {
   return (
-    <button className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-[#2c3e50] text-[#90b2cb] hover:text-white hover:bg-white/5 hover:border-gray-500 transition-all text-[11px] font-bold uppercase tracking-wide">
+    <button className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-[#2c3e50] text-[#90b2cb] hover:text-white hover:bg-white/5 hover:border-gray-500 transition-all text-xs font-bold uppercase tracking-wide">
       <Icon className="w-4 h-4" /> {label}
     </button>
   );

@@ -58,7 +58,7 @@ export default function DaySheetListPage() {
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-32 rounded-3xl border border-dashed border-[#223949] bg-[#101b22]">
-            <p className="text-slate-500 font-medium">No upcoming shows found.</p>
+            <p className="text-slate-400 font-medium">No upcoming shows found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -78,7 +78,7 @@ export default function DaySheetListPage() {
                   </span>
 
                   <div className="relative z-10">
-                    <span className={`inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider mb-4 ${index === 0 ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-lg shadow-orange-500/20' : 'bg-[#223949] text-slate-400'}`}>
+                    <span className={`inline-block px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider mb-4 ${index === 0 ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black shadow-lg shadow-orange-500/20' : 'bg-[#223949] text-slate-400'}`}>
                       {index === 0 ? 'Next Up' : 'Scheduled'}
                     </span>
 

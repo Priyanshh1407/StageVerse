@@ -59,10 +59,10 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
 
    if (!fixtures || fixtures.length === 0) {
       return (
-         <div className="flex flex-col items-center justify-center h-full text-gray-500 p-12">
+         <div className="flex flex-col items-center justify-center h-full text-gray-400 p-12">
             <Layers className="w-12 h-12 mb-4 opacity-20" />
             <p>No groups defined yet.</p>
-            <p className="text-xs mt-1 text-gray-600">Add fixtures from the sidebar to start creating.</p>
+            <p className="text-xs mt-1 text-gray-400">Add fixtures from the sidebar to start creating.</p>
          </div>
       );
    }
@@ -77,7 +77,7 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
                <div key={group.role} className="flex flex-col gap-3">
                   {}
                   <div className="flex items-center gap-3">
-                     <span className={`${theme.bg} ${theme.text} ${theme.border} border px-3 py-1 rounded text-[11px] font-bold tracking-widest uppercase flex items-center gap-2`}>
+                     <span className={`${theme.bg} ${theme.text} ${theme.border} border px-3 py-1 rounded text-xs font-bold tracking-widest uppercase flex items-center gap-2`}>
                         <span className={`size-2 rounded-full ${theme.dot}`}></span>
                         {group.role}
                      </span>
@@ -106,7 +106,7 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
                                     <div>
                                        <h3 className="text-white text-lg font-bold tracking-tight leading-tight">{count}x {displayName}</h3>
                                        <div className="flex items-center gap-2 mt-1.5">
-                                          <span className="text-gray-500 text-[10px] font-medium bg-[#27272A] px-2 py-0.5 rounded uppercase tracking-wide">Fixture Batch</span>
+                                          <span className="text-gray-400 text-xs font-medium bg-[#27272A] px-2 py-0.5 rounded uppercase tracking-wide">Fixture Batch</span>
                                        </div>
                                     </div>
                                  </div>
@@ -115,18 +115,18 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
                               {}
                               <div className="flex items-end justify-between border-t border-[#27272A] pt-4 mt-2">
                                  <div>
-                                    <div className="flex items-center gap-1.5 text-green-500 text-[10px] font-bold">
+                                    <div className="flex items-center gap-1.5 text-green-500 text-xs font-bold">
                                        <CheckCircle className="w-3 h-3" /> Patched
                                     </div>
-                                    <p className="text-[#52525B] text-[10px] font-mono mt-0.5">{patchLabel}</p>
+                                    <p className="text-[#52525B] text-xs font-mono mt-0.5">{patchLabel}</p>
                                  </div>
 
                                  {}
                                  <div className="relative action-menu-container">
                                     <button
                                        onClick={(e) => { e.stopPropagation(); toggleMenu(uniqueId); }}
-                                       className={`text-gray-600 hover:text-white transition-colors p-1.5 rounded-md ${isOpen ? 'text-white bg-[#27272A]' : ''}`}
-                                    >
+                                       className={`text-gray-400 hover:text-white transition-colors p-1.5 rounded-md ${isOpen ? 'text-white bg-[#27272A]' : ''} min-h-11 min-w-11 inline-grid place-items-center`}
+                                     aria-label="More options" title="More options">
                                        <MoreVertical className="w-4 h-4" />
                                     </button>
 
@@ -134,7 +134,7 @@ export default function CreativeRigView({ fixtures, onDeleteGroup }) {
                                     {isOpen && (
                                        <div className="absolute right-0 bottom-8 w-48 bg-[#27272A] border border-[#3F3F46] rounded-lg shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-bottom-right">
                                           <div className="flex flex-col py-1">
-                                             <div className="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-[#3F3F46] mb-1">
+                                             <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-[#3F3F46] mb-1">
                                                 Manage Group
                                              </div>
                                              {}

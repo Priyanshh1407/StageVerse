@@ -112,7 +112,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                 </div>
                 <div className="text-left">
                   <h2 className="text-white text-sm font-bold leading-tight">{event.artist}</h2>
-                  <p className="text-[#90b2cb] text-[10px] uppercase tracking-wide flex items-center gap-1">
+                  <p className="text-[#90b2cb] text-xs uppercase tracking-wide flex items-center gap-1">
                     <Ticket className="w-3 h-3" /> {event.venue}
                   </p>
                 </div>
@@ -123,7 +123,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
             {}
             {isDropdownOpen && (
               <div className="absolute top-full left-0 mt-2 w-72 bg-[#182934]/95 backdrop-blur-xl border border-[#315168] rounded-xl shadow-2xl overflow-hidden py-2 animate-in fade-in zoom-in-95">
-                <p className="px-4 py-2 text-[10px] uppercase font-bold text-[#5a7c96] tracking-wider">Select Event to Predict</p>
+                <p className="px-4 py-2 text-xs uppercase font-bold text-[#5a7c96] tracking-wider">Select Event to Predict</p>
                 <div className="max-h-64 overflow-y-auto custom-scrollbar">
                   {events.map((item) => (
                     <button
@@ -139,7 +139,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                       </div>
                       <div className="text-left min-w-0">
                         <p className={`text-sm font-bold truncate ${selectedEventId === item.event._id ? 'text-[#ff6a00]' : 'text-slate-200'}`}>{item.event.artist}</p>
-                        <p className="text-[#90b2cb] text-[10px] truncate flex items-center gap-1">
+                        <p className="text-[#90b2cb] text-xs truncate flex items-center gap-1">
                           {new Date(item.event.date).toLocaleDateString()} • {item.event.venue}
                         </p>
                       </div>
@@ -187,8 +187,7 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                   placeholder="Search songs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#182934] border border-[#315168] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#a855f7]"
-                />
+                  className="w-full bg-[#182934] border border-[#315168] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-[#90b2cb] focus:outline-none focus:border-[#a855f7]" aria-label="Search songs" />
               </div>
             </div>
 
@@ -243,22 +242,22 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
                             <button
                               onClick={() => moveItem(index, -1)}
                               disabled={index === 0}
-                              className="p-0.5 text-[#90b2cb] hover:text-white disabled:opacity-30 hover:bg-[#223949] rounded"
-                            >
+                              className="p-0.5 text-[#90b2cb] hover:text-white disabled:opacity-30 hover:bg-[#223949] rounded min-h-11 min-w-11 inline-grid place-items-center"
+                             aria-label="Show less" title="Show less">
                               <ChevronUp className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => moveItem(index, 1)}
                               disabled={index === prediction.length - 1}
-                              className="p-0.5 text-[#90b2cb] hover:text-white disabled:opacity-30 hover:bg-[#223949] rounded"
-                            >
+                              className="p-0.5 text-[#90b2cb] hover:text-white disabled:opacity-30 hover:bg-[#223949] rounded min-h-11 min-w-11 inline-grid place-items-center"
+                             aria-label="Show more" title="Show more">
                               <ChevronDown className="w-4 h-4" />
                             </button>
                           </div>
                           <button
                             onClick={() => removeFromPrediction(song.id)}
-                            className="p-2 text-[#90b2cb] hover:text-red-400 hover:bg-red-400/10 rounded-lg"
-                          >
+                            className="p-2 text-[#90b2cb] hover:text-red-400 hover:bg-red-400/10 rounded-lg min-h-11 min-w-11 inline-grid place-items-center"
+                           aria-label="Delete" title="Delete">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -279,8 +278,8 @@ export default function SetListPredictor({ initialEventId, events = [] }) {
               <button
                 onClick={handleSave}
                 disabled={prediction.length === 0 || isSubmitting || isGraded}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-lg font-bold shadow-lg shadow-[#ff6a00]/20 transition-all active:scale-95"
-              >
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-lg font-bold shadow-lg shadow-[#ff6a00]/20 transition-all active:scale-95 min-h-11 min-w-11"
+               aria-label="Save" title="Save">
                 <Save className="w-4 h-4" />
                 {isSubmitting ? "Saving..." : (isGraded ? "Prediction Locked" : "Lock In Prediction")}
               </button>

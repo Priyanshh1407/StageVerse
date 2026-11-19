@@ -35,9 +35,9 @@ export default function PromptModal({ isOpen, onClose, onSubmit }) {
                 <Sparkles className="w-5 h-5 text-[#ff6a00]" />
                 Refine AI Setlist Prompt
               </h3>
-              <p className="text-[#90b2cb] text-sm">Customize the prompt for the Gemini API optimization.</p>
+              <p className="text-[#90b2cb] text-sm">Tell the AI what you want from the running order.</p>
             </div>
-            <button onClick={onClose} className="text-[#90b2cb] hover:text-white transition-colors">
+            <button onClick={onClose} className="text-[#90b2cb] hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -49,8 +49,7 @@ export default function PromptModal({ isOpen, onClose, onSubmit }) {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               className="w-full h-40 bg-[#101b22] border border-[#223949] rounded-xl p-4 text-white placeholder:text-[#90b2cb]/50 focus:ring-1 focus:ring-[#a855f7] focus:border-[#a855f7] resize-none text-base leading-relaxed custom-scrollbar shadow-inner outline-none transition-all"
-              placeholder="Describe how you want the setlist to flow..."
-            />
+              placeholder="Describe how you want the setlist to flow..." aria-label="Describe how you want the setlist to flow" />
           </div>
 
           {}

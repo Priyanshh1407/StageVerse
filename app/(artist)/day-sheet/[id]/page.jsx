@@ -70,7 +70,7 @@ export default function DaySheetDetailPage() {
     }
 
     if (!data) return (
-        <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] flex items-center justify-center text-slate-500">
+        <div className="min-h-screen bg-[#f5f7f8] dark:bg-[#101b22] flex items-center justify-center text-slate-400">
             <p>Event not found.</p>
         </div>
     );

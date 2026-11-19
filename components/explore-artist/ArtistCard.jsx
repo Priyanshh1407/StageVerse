@@ -38,7 +38,7 @@ export default function ArtistCard({ artist }) {
         {}
         <div className="flex items-center justify-between border-t border-gray-800 pt-4 mt-2">
           <div className="flex flex-col">
-            <span className="text-xs text-gray-500 uppercase font-semibold">Upcoming</span>
+            <span className="text-xs text-gray-400 uppercase font-semibold">Upcoming</span>
             <span className="text-sm font-bold text-white">{artist.upcomingEvents} Events</span>
           </div>
 

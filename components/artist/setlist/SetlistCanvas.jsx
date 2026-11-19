@@ -135,7 +135,7 @@ export default function SetlistCanvas({ items, setItems }) {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                Gemini API Ready
+                AI ready
               </div>
               <div className="text-xs text-[#90b2cb]">AI can suggest better flow based on mood tags</div>
             </div>
@@ -148,8 +148,8 @@ export default function SetlistCanvas({ items, setItems }) {
                   ? 'bg-[#223949] cursor-not-allowed opacity-80'
                   : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02]'
                 }
-              `}
-            >
+               min-h-11 min-w-11`}
+             aria-label="Ask the AI" title="Ask the AI">
               {isOptimizing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin text-[#90b2cb]" />
@@ -159,7 +159,7 @@ export default function SetlistCanvas({ items, setItems }) {
                 <>
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                   <Sparkles className="relative z-10 w-5 h-5" />
-                  <span className="relative z-10 text-base">Optimize Flow</span>
+                  <span className="relative z-10 text-base">Improve the running order</span>
                 </>
               )}
             </button>
@@ -210,7 +210,7 @@ export default function SetlistCanvas({ items, setItems }) {
                           <div className="shrink-0 flex flex-col items-end justify-between gap-2">
                             <span className="font-mono text-sm text-[#90b2cb]">{item.duration}</span>
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 p-1.5 rounded hover:bg-white/10"><Trash2 className="w-4 h-4" /></button>
+                              <button onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300 p-1.5 rounded hover:bg-white/10 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Delete" title="Delete"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           </div>
                         </div>

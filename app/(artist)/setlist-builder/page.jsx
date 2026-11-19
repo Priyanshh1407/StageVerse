@@ -346,8 +346,8 @@ function SetlistBuilderContent() {
               <button
                 onClick={handleAiSuggestClick}
                 disabled={isAiLoading}
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg transition-all disabled:opacity-50"
-              >
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold shadow-lg transition-all disabled:opacity-50 min-h-11 min-w-11"
+               aria-label="Ask the AI" title="Ask the AI">
                 {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
                 {isAiLoading ? "Dreaming..." : "Suggest Songs with AI"}
               </button>
@@ -401,8 +401,7 @@ function SetlistBuilderContent() {
               className="w-full bg-[#101b23] border border-[#315168] rounded-xl p-4 text-white text-sm focus:outline-none focus:border-purple-500 min-h-[100px] mb-6"
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder="Enter your prompt here..."
-            />
+              placeholder="Enter your prompt here..." aria-label="Enter your prompt here" />
 
             <div className="flex justify-end gap-3">
               <button

@@ -261,8 +261,8 @@ export default function LogisticsPage(props) {
                         <div className="flex justify-between items-start mb-8 border-b pb-4">
                             <div>
                                 <h1 className="text-3xl font-bold mb-2">Logistics Report</h1>
-                                <h2 className="text-xl text-gray-600">{showData.showName}</h2>
-                                <p className="text-gray-500">{showData.venue}</p>
+                                <h2 className="text-xl text-gray-400">{showData.showName}</h2>
+                                <p className="text-gray-400">{showData.venue}</p>
                             </div>
                             <div className="text-right no-print" data-html2canvas-ignore="true">
                                 <button onClick={handleDownloadPDF} className="bg-green-600 text-white px-4 py-2 rounded mr-2 font-bold hover:bg-green-700 inline-flex items-center gap-2">
@@ -326,7 +326,7 @@ export default function LogisticsPage(props) {
                                     {showData.venue}
                                 </div>
                                 <h1 className="text-white text-4xl font-bold leading-tight tracking-tight">Logistics: {showData.showName}</h1>
-                                <p className="text-gray-500 text-base font-normal leading-normal">Production Phase: <span className="text-white font-medium">{showData.phase}</span></p>
+                                <p className="text-gray-400 text-base font-normal leading-normal">Production Phase: <span className="text-white font-medium">{showData.phase}</span></p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <button
@@ -354,7 +354,7 @@ export default function LogisticsPage(props) {
                         <div className="px-6 pb-4 pt-2 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                             <div className="flex flex-1 w-full max-w-xl items-center gap-4">
                                 <div className="relative flex-1">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                         <Search className="w-4 h-4" />
                                     </div>
                                     <input
@@ -362,19 +362,18 @@ export default function LogisticsPage(props) {
                                         placeholder="Search tasks..."
                                         type="text"
                                         value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                    />
+                                        onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search tasks" />
                                 </div>
                                 <div className="flex bg-[#18181B] rounded-lg p-1 border border-[#27272A] hidden md:flex">
                                     <button
                                         onClick={() => setViewMode('kanban')}
-                                        className={`p-1.5 rounded transition-colors ${viewMode === 'kanban' ? 'bg-[#27272A] text-white border border-[#3F3F46]' : 'text-gray-500 hover:text-white'}`}
+                                        className={`p-1.5 rounded transition-colors ${viewMode === 'kanban' ? 'bg-[#27272A] text-white border border-[#3F3F46]' : 'text-gray-400 hover:text-white'}`}
                                     >
                                         <Layout className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => setViewMode('table')}
-                                        className={`p-1.5 rounded transition-colors ${viewMode === 'table' ? 'bg-[#27272A] text-white border border-[#3F3F46]' : 'text-gray-500 hover:text-white'}`}
+                                        className={`p-1.5 rounded transition-colors ${viewMode === 'table' ? 'bg-[#27272A] text-white border border-[#3F3F46]' : 'text-gray-400 hover:text-white'}`}
                                     >
                                         <Table className="w-4 h-4" />
                                     </button>
@@ -412,7 +411,7 @@ export default function LogisticsPage(props) {
                         <div className="flex-1 overflow-auto p-6">
                             <div className="max-w-6xl mx-auto bg-[#18181B] rounded-xl border border-[#27272A]">
                                 <table className="w-full text-left">
-                                    <thead className="bg-[#121214] border-b border-[#27272A] text-xs uppercase text-gray-500">
+                                    <thead className="bg-[#121214] border-b border-[#27272A] text-xs uppercase text-gray-400">
                                         <tr>
                                             <th className="p-4">Title</th>
                                             <th className="p-4">Status</th>
@@ -459,22 +458,22 @@ function TaskTableRow({ task, onEdit, onDelete }) {
             <td className="p-4 font-medium text-white">{task.title}</td>
             <td className="p-4 text-gray-400">{task.status || task.columnId}</td>
             <td className="p-4">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${task.tagColor}`}>{task.tag}</span>
+                <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${task.tagColor}`}>{task.tag}</span>
             </td>
             <td className="p-4 text-gray-400">{task.urgent ? 'Urgent' : 'Normal'}</td>
-            <td className="p-4 text-gray-500">{task.date}</td>
+            <td className="p-4 text-gray-400">{task.date}</td>
             <td className="p-4 text-right">
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
                     <button
                         onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                        className="p-1.5 rounded hover:bg-[#3F3F46] text-gray-400 hover:text-white"
-                    >
+                        className="p-1.5 rounded hover:bg-[#3F3F46] text-gray-400 hover:text-white min-h-11 min-w-11 inline-grid place-items-center"
+                     aria-label="Edit" title="Edit">
                         <Pencil className="w-4 h-4" />
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                        className="p-1.5 rounded hover:bg-[#3F3F46] text-gray-400 hover:text-red-400"
-                    >
+                        className="p-1.5 rounded hover:bg-[#3F3F46] text-gray-400 hover:text-red-400 min-h-11 min-w-11 inline-grid place-items-center"
+                     aria-label="Delete" title="Delete">
                         <Trash2 className="w-4 h-4" />
                     </button>
                 </div>

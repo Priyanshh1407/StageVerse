@@ -103,8 +103,7 @@ export default function SocialPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search friends..."
-                  className="w-full bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-lg py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#a855f7]"
-                />
+                  className="w-full bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-800 rounded-lg py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#a855f7]" aria-label="Search friends" />
               </div>
             </div>
 
@@ -177,7 +176,7 @@ export default function SocialPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="py-10 text-center text-slate-500 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl">
+                    <div className="py-10 text-center text-slate-400 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl">
                       {q ? 'No friends match your search.' : 'You are not following anyone yet. Start with the people below, or find shows on '}
                       {!q && <Link href="/discover" className="text-[#ff6a00] font-medium">Discover</Link>}
                     </div>

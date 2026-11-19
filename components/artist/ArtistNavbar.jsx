@@ -98,8 +98,8 @@ export default function ArtistNavbar() {
           <div className="relative">
             <button
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors relative"
-            >
+              className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors relative min-h-11 min-w-11 inline-grid place-items-center"
+             aria-label="Notifications" title="Notifications">
               <Bell className="w-5 h-5" />
               {notifications.length > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#101b23] animate-pulse"></span>}
             </button>
@@ -120,7 +120,7 @@ export default function ArtistNavbar() {
                           <div className="mt-1.5 w-2 h-2 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] flex-shrink-0"></div>
                           <div>
                             <p className="text-slate-800 dark:text-white text-sm font-medium leading-tight">{note.title.replace('Crew Message: ', '')}</p>
-                            <p className="text-xs text-slate-500 mt-1">{new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p className="text-xs text-slate-400 mt-1">{new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                           </div>
                         </div>
                         <button
@@ -151,8 +151,8 @@ export default function ArtistNavbar() {
           {}
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
-          >
+            className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors min-h-11 min-w-11"
+           aria-label="Close" title="Close">
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>

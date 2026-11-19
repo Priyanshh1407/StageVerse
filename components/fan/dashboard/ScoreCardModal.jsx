@@ -119,7 +119,7 @@ export default function ScorecardModal({ isOpen, onClose, artistName = "Artist",
         </div>
 
         {}
-        <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white p-2 rounded-full hover:bg-white/10 z-20">
+        <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white p-2 rounded-full hover:bg-white/10 z-20 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
           <X className="w-6 h-6" />
         </button>
 
@@ -141,7 +141,7 @@ export default function ScorecardModal({ isOpen, onClose, artistName = "Artist",
                 <div className={`col-span-10 sm:col-span-5 font-medium ${row.status === 'correct' ? 'text-[#ff6a00]' : 'text-slate-400'}`}>
                   {row.guess}
                   {}
-                  <div className="sm:hidden text-xs text-slate-500 mt-1 block">
+                  <div className="sm:hidden text-xs text-slate-400 mt-1 block">
                     Actual: {row.actual}
                   </div>
                 </div>
@@ -159,7 +159,7 @@ export default function ScorecardModal({ isOpen, onClose, artistName = "Artist",
                 </div>
               </div>
             )) : (
-              <div className="text-center text-slate-500 py-8">Wait for the artist to save the setlist!</div>
+              <div className="text-center text-slate-400 py-8">Wait for the artist to save the setlist!</div>
             )}
           </div>
         </div>

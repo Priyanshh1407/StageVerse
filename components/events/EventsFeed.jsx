@@ -21,7 +21,7 @@ export default function EventsFeed({
         <h2 className="text-2xl font-bold text-white flex items-center">
           Events 
           {!isLoading && (
-            <span className="text-sm font-normal text-slate-500 ml-2 pt-1">
+            <span className="text-sm font-normal text-slate-400 ml-2 pt-1">
               ({totalFound} found)
             </span>
           )}
@@ -78,7 +78,7 @@ export default function EventsFeed({
           )}
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center h-64 text-slate-500 border border-dashed border-white/10 rounded-xl">
+        <div className="flex flex-col items-center justify-center h-64 text-slate-400 border border-dashed border-white/10 rounded-xl">
           <p>No events found matching your filters.</p>
           <p className="text-sm mt-2">Try adjusting your search or filters.</p>
         </div>

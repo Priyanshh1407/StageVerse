@@ -94,8 +94,8 @@ export default function OrganizerDashboard() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden p-2 text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] rounded-lg transition-colors"
-            >
+              className="md:hidden p-2 text-[#90b2cb] hover:text-white hover:bg-[#2c3b47] rounded-lg transition-colors min-h-11 min-w-11"
+             aria-label="Open the menu" title="Open the menu">
               <Menu className="w-6 h-6" />
             </button>
             <div className="flex flex-col">
@@ -241,8 +241,8 @@ function AIDescriptionGenerator() {
               <p className="text-sm text-pink-400 font-semibold">What the AI suggests</p>
               <button
                 onClick={handleCopy}
-                className="text-xs text-[#90b2cb] hover:text-white flex items-center gap-1 transition-colors"
-              >
+                className="text-xs text-[#90b2cb] hover:text-white flex items-center gap-1 transition-colors min-h-11 min-w-11"
+               aria-label="Done" title="Done">
                 {isCopied ? <><Check className="w-3 h-3 text-green-400" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
               </button>
             </div>
@@ -262,8 +262,8 @@ function AIDescriptionGenerator() {
           ${isGenerating || !prompt
             ? 'bg-[#2c3b47] text-[#90b2cb] cursor-not-allowed'
             : 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/20 hover:scale-[1.02]'}
-        `}
-      >
+         min-h-11 min-w-11`}
+       aria-label="Ask the AI" title="Ask the AI">
         {isGenerating ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />

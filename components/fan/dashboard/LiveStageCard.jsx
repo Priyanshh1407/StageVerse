@@ -66,13 +66,13 @@ export default function LiveStageCard({ eventId, eventTitle }) {
     return (
         <>
             <button type="button" onClick={() => setOpen(true)}
-                className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] px-4 py-2.5 text-sm font-bold text-black shadow-lg shadow-[#ff6a00]/30 hover:brightness-110">
-                <Radio className="h-4 w-4" /> Watch the stage
+                className="relative z-10 flex min-h-11 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] px-4 py-2.5 text-sm font-bold text-black shadow-lg shadow-[#ff6a00]/30 hover:brightness-110">
+                <Radio className="h-4 w-4" aria-hidden /> Watch the stage live
             </button>
             <StageView open={open} onClose={close} title={eventTitle ? `${eventTitle}: the stage, live` : 'The stage, live'} subtitle="The lights follow the show's console and the encore vote" lookAt={lookAt}>
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <p className="font-mono text-[11px] tracking-[0.25em] text-amber-300">{(STATUS_TEXT[state.status] ?? state.status).toUpperCase()}{state.warning ? ' · WARNING FROM THE CREW' : ''}</p>
+                        <p className="font-mono text-xs tracking-[0.25em] text-amber-300">{(STATUS_TEXT[state.status] ?? state.status).toUpperCase()}{state.warning ? ' · WARNING FROM THE CREW' : ''}</p>
                         <p className="mt-1 text-sm text-gray-200">
                             {state.poll?.question
                                 ? lead ? <>{lead.decided ? 'The crowd chose' : 'In front'}: <b>{lead.text}</b> ({lead.votes} vote{lead.votes === 1 ? '' : 's'}), so the rig is {color.label.toLowerCase()}.</> : <>Vote open: <b>{state.poll.question}</b> The first vote colours the rig.</>
@@ -80,7 +80,7 @@ export default function LiveStageCard({ eventId, eventTitle }) {
                         </p>
                     </div>
                     {state.poll?.options?.length > 0 && (
-                        <ul className="flex flex-wrap gap-2 text-[11px]">
+                        <ul className="flex flex-wrap gap-2 text-xs">
                             {state.poll.options.map((o, i) => (
                                 <li key={o._id ?? i} className="flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1">
                                     <span className="h-2.5 w-2.5 rounded-full" style={{ background: `linear-gradient(135deg, ${VOTE_COLORS[i % VOTE_COLORS.length].a}, ${VOTE_COLORS[i % VOTE_COLORS.length].b})` }} />

@@ -93,7 +93,7 @@ export default function UserSearchInput({
                     value={searchTerm}
                     onChange={handleChange}
                     onFocus={() => searchTerm.length >= 2 && !selectedUser && setShowDropdown(true)}
-                    className={`w-full h-12 bg-[#182234] border ${selectedUser ? 'border-green-500/50' : 'border-[#314368]'} rounded-lg pl-10 pr-10 text-white focus:border-[#a855f7] outline-none placeholder-[#314368] transition-colors`}
+                    className={`w-full h-12 bg-[#182234] border ${selectedUser ? 'border-green-500/50' : 'border-[#314368]'} rounded-lg pl-10 pr-10 text-white focus:border-[#a855f7] outline-none placeholder-[#5b6b86] transition-colors`}
                     placeholder={placeholder}
                 />
 
@@ -102,7 +102,7 @@ export default function UserSearchInput({
                 {isLoading ? (
                     <Loader2 className="absolute right-3 top-3.5 text-[#ff6a00] w-5 h-5 animate-spin" />
                 ) : selectedUser ? (
-                    <button onClick={handleClear} className="absolute right-3 top-3.5 text-green-500 hover:text-red-400 transition-colors">
+                    <button onClick={handleClear} className="absolute right-3 top-3.5 text-green-500 hover:text-red-400 transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                         <X className="w-5 h-5" />
                     </button>
                 ) : null}

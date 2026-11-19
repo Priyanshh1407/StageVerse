@@ -111,22 +111,19 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
               className="w-full bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
               placeholder="Song Title (e.g. My New Track)"
               value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-            />
+              onChange={(e) => setNewTitle(e.target.value)} aria-label="Song Title (My New Track)" />
             
             <div className="flex gap-2">
                <input 
                 className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
                 placeholder="Genre (Pop)"
                 value={newGenre}
-                onChange={(e) => setNewGenre(e.target.value)}
-              />
+                onChange={(e) => setNewGenre(e.target.value)} aria-label="Genre (Pop)" />
               <input 
                 className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
                 placeholder="Mood (Sad)"
                 value={newMood}
-                onChange={(e) => setNewMood(e.target.value)}
-              />
+                onChange={(e) => setNewMood(e.target.value)} aria-label="Mood (Sad)" />
             </div>
 
             <div className="flex gap-2">
@@ -134,8 +131,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 className="w-1/2 bg-[#101b22] text-white text-sm rounded-lg border border-[#223949] focus:ring-1 focus:ring-[#a855f7] px-3 py-2 placeholder:text-white/30"
                 placeholder="BPM (120)"
                 value={newBpm}
-                onChange={(e) => setNewBpm(e.target.value)}
-              />
+                onChange={(e) => setNewBpm(e.target.value)} aria-label="BPM (120)" />
               
               {}
               <input 
@@ -143,6 +139,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 placeholder="MM:SS"
                 value={newDuration}
                 onChange={handleDurationChange} // Use the new handler
+                aria-label="Song length (minutes:seconds)"
                 maxLength={5} // Prevents typing more than 04:00
               />
             </div>
@@ -170,8 +167,7 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-[#223949] text-white text-sm rounded-lg border-none focus:ring-1 focus:ring-[#a855f7] pl-9 pr-3 py-2 placeholder:text-white/30" 
-                placeholder="Filter by mood, tag, title..." 
-              />
+                placeholder="Filter by mood, tag, title..." aria-label="Filter by mood, tag, title" />
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
               {filters.map((filter) => (
@@ -202,8 +198,8 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
               <div className="flex-1 min-w-0">
                 <h4 className="text-white text-sm font-bold truncate">{song.title}</h4>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className={`text-[10px] px-1.5 rounded-sm bg-${song.tagColor || 'blue'}-500/20 text-${song.tagColor || 'blue'}-300 border border-${song.tagColor || 'blue'}-500/30`}>{song.tag}</span>
-                  <span className="text-[#90b2cb] text-[10px] font-mono">{song.bpm}</span>
+                  <span className={`text-xs px-1.5 rounded-sm bg-${song.tagColor || 'blue'}-500/20 text-${song.tagColor || 'blue'}-300 border border-${song.tagColor || 'blue'}-500/30`}>{song.tag}</span>
+                  <span className="text-[#90b2cb] text-xs font-mono">{song.bpm}</span>
                 </div>
               </div>
               <span className="text-[#90b2cb] text-xs font-mono">{song.duration}</span>
@@ -214,8 +210,8 @@ export default function SongBank({ songs, onAddSong, onCreateSong }) {
                   recentlyAdded === song.id 
                   ? 'bg-green-500 text-white scale-110' 
                   : 'text-[#ff6a00] hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] hover:text-white'
-                }`}
-              >
+                } min-h-11 min-w-11`}
+               aria-label="Done" title="Done">
                 {recentlyAdded === song.id ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
               </button>
             </div>

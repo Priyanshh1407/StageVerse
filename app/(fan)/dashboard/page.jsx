@@ -89,7 +89,7 @@ export default function FanDashboard() {
         {}
         <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632]">
           <span className="font-bold text-lg">StageVerse</span>
-          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300">
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Open the menu" title="Open the menu">
             <Menu className="w-6 h-6" />
           </button>
         </div>
@@ -154,6 +154,7 @@ export default function FanDashboard() {
               <button onClick={() => setIsEditProfileOpen(true)} className="relative z-10 flex cursor-pointer items-center gap-2 justify-center rounded-lg px-6 py-3 bg-white dark:bg-[#22303c] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-bold hover:bg-slate-100 dark:hover:bg-[#2a3b4a] transition-colors w-full md:w-auto shadow-sm">
                 <Edit className="w-4 h-4" /> <span>Edit Profile</span>
               </button>
+              {FEATURES.liveStage && <LiveStageCard eventId={activeEvent?._id} eventTitle={activeEvent?.title} />}
             </motion.section>
 
             <motion.section variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -170,7 +171,7 @@ export default function FanDashboard() {
                   </div>
                   <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-1 rounded bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-[10px] font-bold uppercase tracking-wider animate-pulse">Live Challenge</span>
+                      <span className="px-2 py-1 rounded bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black text-xs font-bold uppercase tracking-wider animate-pulse">Live Challenge</span>
                     </div>
                     <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Predict Setlist</p>
                     <h3 className="text-white text-2xl font-bold leading-tight mt-1 truncate">{activeEvent.artist}</h3>
@@ -190,7 +191,7 @@ export default function FanDashboard() {
                 <div className="flex flex-col gap-1 rounded-xl p-6 bg-[#1a2632] border border-slate-800 shadow-sm relative overflow-hidden opacity-75">
                   <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Predict Setlist</p>
                   <h3 className="text-slate-200 text-xl font-bold leading-tight mt-1">No Upcoming Shows</h3>
-                  <p className="text-slate-500 text-xs mt-1">Buy a ticket to play!</p>
+                  <p className="text-slate-400 text-xs mt-1">Buy a ticket to play!</p>
                 </div>
               )}
 
@@ -210,7 +211,7 @@ export default function FanDashboard() {
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-[#ff6a00] font-bold text-2xl">{data.topFriends.length}</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide">Following</span>
+                    <span className="text-xs text-slate-400 uppercase tracking-wide">Following</span>
                   </div>
                 </div>
                 <div className="mt-4 p-2 bg-slate-100 dark:bg-[#151f28] rounded-lg border border-slate-200 dark:border-slate-700/50">
@@ -233,7 +234,7 @@ export default function FanDashboard() {
                   {data.topArtists.length > 0 ? (
                     data.topArtists.map((artist) => (<ArtistRow key={artist.rank} {...artist} />))
                   ) : (
-                    <div className="p-6 text-center text-slate-500">No shows attended yet.</div>
+                    <div className="p-6 text-center text-slate-400">No shows attended yet.</div>
                   )}
                 </div>
               </div>
@@ -251,7 +252,7 @@ export default function FanDashboard() {
                     {data.topVenues.length > 0 ? (
                       data.topVenues.map((venue, i) => (<VenueRow key={i} {...venue} />))
                     ) : (
-                      <div className="p-6 text-center text-slate-500">Go to events to see venues here.</div>
+                      <div className="p-6 text-center text-slate-400">Go to events to see venues here.</div>
                     )}
                   </div>
                 </div>
@@ -303,7 +304,7 @@ export default function FanDashboard() {
                   if (memory.type === "ticket") {
                     return (
                       <div key={memory.id} onClick={() => setOpenMemory(memoryIndex)} className="group relative rounded-xl overflow-hidden cursor-pointer bg-[#223949] flex flex-col items-center justify-center p-4 border border-slate-700 border-dashed hover:border-[#a855f7] transition-colors">
-                        <TicketStub className="text-slate-500 w-10 h-10 mb-2 group-hover:text-[#ff6a00] transition-colors" />
+                        <TicketStub className="text-slate-400 w-10 h-10 mb-2 group-hover:text-[#ff6a00] transition-colors" />
                         <p className="text-slate-300 text-center text-sm font-mono uppercase">TICKET STUB</p>
                         <p className="text-white font-bold text-center mt-1">{memory.title}</p>
                       </div>
@@ -318,7 +319,7 @@ export default function FanDashboard() {
                     </div>
                   );
                 }) : (
-                  <div className="col-span-full py-10 text-center text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">No memories yet. Upload one!</div>
+                  <div className="col-span-full py-10 text-center text-slate-400 border-2 border-dashed border-slate-700 rounded-xl">No memories yet. Upload one!</div>
                 )}
               </div>
               <MemoryLightbox
@@ -382,7 +383,6 @@ export default function FanDashboard() {
 
       {}
       <LivePollCard eventId={activeEvent?._id} onComplete={() => console.log("Poll Ended")} />
-      {FEATURES.liveStage && <LiveStageCard eventId={activeEvent?._id} eventTitle={activeEvent?.title} />}
 
     </div>
   );
@@ -408,7 +408,7 @@ function ArtistRow({ rank, name, genre, count, image }) {
       <div className="relative h-12 w-12 rounded-lg shadow-md overflow-hidden bg-slate-700">
         <Image src={image || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745"} alt={name} fill className="object-cover" />
       </div>
-      <div className="flex-1 min-w-0"><p className="text-slate-900 dark:text-white font-bold truncate">{name}</p><p className="text-xs text-slate-500">{genre}</p></div>
+      <div className="flex-1 min-w-0"><p className="text-slate-900 dark:text-white font-bold truncate">{name}</p><p className="text-xs text-slate-400">{genre}</p></div>
       <div className="shrink-0 flex items-center gap-1"><TicketStub className="w-4 h-4 text-[#ff6a00]" /><p className="text-slate-900 dark:text-white font-bold">{count}</p></div>
     </div>
   );
@@ -418,7 +418,7 @@ function VenueRow({ name, location, visits, active }) {
   return (
     <div className={`flex items-center gap-4 p-4 ${active ? 'border-b border-slate-200 dark:border-slate-800/50' : ''}`}>
       <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-slate-500 dark:text-slate-400"><MapPin className={`w-5 h-5 ${active ? 'text-[#ff6a00]' : ''}`} /></div>
-      <div className="flex-1"><p className="text-slate-900 dark:text-white font-bold">{name}</p><p className="text-xs text-slate-500">{location}</p></div>
+      <div className="flex-1"><p className="text-slate-900 dark:text-white font-bold">{name}</p><p className="text-xs text-slate-400">{location}</p></div>
       <span className={`text-sm font-bold px-2 py-1 rounded ${active ? 'bg-[#ff6a00]/10 text-[#ff6a00]' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{visits} Visits</span>
     </div>
   );

@@ -178,10 +178,10 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                <div className="flex flex-col gap-3">
                   <div className="flex flex-col gap-1.5">
                      <div className="flex items-center justify-between mb-0.5">
-                        <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Fixture Profile</label>
+                        <label className="text-xs uppercase font-bold text-gray-400 tracking-wider">Fixture Profile</label>
                         <button
                            onClick={() => setShowModal(true)}
-                           className="text-[10px] text-orange-400 hover:text-orange-300 flex items-center gap-1 font-bold uppercase tracking-wider"
+                           className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1 font-bold uppercase tracking-wider"
                         >
                            <PlusCircle className="w-3 h-3" /> New
                         </button>
@@ -210,26 +210,25 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                     <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Quantity</label>
+                     <label className="text-xs uppercase font-bold text-gray-400 tracking-wider">Quantity</label>
                      <input
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
                         className="bg-[#18181B] border border-[#27272A] text-white text-sm rounded-lg focus:ring-1 focus:ring-purple-500 block w-full p-2.5 outline-none hover:border-[#3F3F46] transition-colors"
                         type="number"
                         min="1"
-                        max="512"
-                     />
+                        max="512" aria-label="Quantity" />
                   </div>
                </div>
 
                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Creative Role / Cue</label>
+                  <label className="text-xs uppercase font-bold text-gray-400 tracking-wider">What it&apos;s for</label>
                   <div className="relative">
                      <select
                         value={role}
                         onChange={(e) => setRole(e.target.value)}
                         className="w-full bg-[#18181B] border border-[#27272A] text-white text-sm rounded-lg focus:ring-1 focus:ring-purple-500 block p-2.5 appearance-none cursor-pointer hover:border-[#3F3F46] transition-colors"
-                     >
+                      aria-label="What it's for">
                         <option value="Intro Sequence">Intro Sequence</option>
                         <option value="Drum Solo">Drum Solo</option>
                         <option value="Main Wash">Main Wash</option>
@@ -242,12 +241,12 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
 
                <div className="flex flex-col gap-1.5 flex-1 min-h-[160px]">
                   <div className="flex justify-between items-center">
-                     <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Logic</label>
+                     <label className="text-xs uppercase font-bold text-gray-400 tracking-wider">Patching notes</label>
                      <button
                         onClick={handleAiPatch}
                         disabled={isGenerating}
-                        className="text-[10px] text-orange-500 hover:text-white hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors flex items-center gap-1 bg-orange-500/10 px-2 py-0.5 rounded border border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                     >
+                        className="text-xs text-orange-500 hover:text-white hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] transition-colors flex items-center gap-1 bg-orange-500/10 px-2 py-0.5 rounded border border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-11 min-w-11"
+                      aria-label="Ask the AI" title="Ask the AI">
                         {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
                         {isGenerating ? 'Thinking...' : 'AI Assist'}
                      </button>
@@ -257,7 +256,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                      onChange={(e) => setLogic(e.target.value)}
                      className="flex-1 bg-[#18181B] border border-[#27272A] text-gray-300 text-sm rounded-lg focus:ring-1 focus:ring-purple-500 block w-full p-3 resize-none placeholder:text-gray-600 font-mono leading-relaxed outline-none hover:border-[#3F3F46] transition-colors"
                      placeholder="Patch these sequentially starting from Universe 2..."
-                  ></textarea>
+                   aria-label="Patch these sequentially starting from Universe 2"></textarea>
                </div>
 
                <button
@@ -270,7 +269,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
             </div>
 
             <div className="mt-auto pt-6 border-t border-[#27272A]">
-               <div className="flex items-center gap-3 text-xs text-gray-500">
+               <div className="flex items-center gap-3 text-xs text-gray-400">
                   <Info className="w-4 h-4" />
                   <span>Standard Library v24.1</span>
                </div>
@@ -283,7 +282,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                <div className="bg-[#16202a] border border-[#2c3e50] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                   <div className="flex items-center justify-between p-4 border-b border-[#2c3e50] bg-[#111]">
                      <h3 className="text-white font-bold">Create New Fixture</h3>
-                     <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
+                     <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close"><X className="w-5 h-5" /></button>
                   </div>
                   <form onSubmit={handleCreateProfile} className="p-6 space-y-4">
                      <div>
@@ -293,8 +292,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                            placeholder="e.g. Clay Paky"
                            value={newManufacturer}
                            onChange={e => setNewManufacturer(e.target.value)}
-                           required
-                        />
+                           required aria-label="Clay Paky" />
                      </div>
                      <div>
                         <label className="block text-xs font-bold text-gray-400 mb-1">Model Name</label>
@@ -303,8 +301,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                            placeholder="e.g. Sharpy"
                            value={newModel}
                            onChange={e => setNewModel(e.target.value)}
-                           required
-                        />
+                           required aria-label="Sharpy" />
                      </div>
                      <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -313,8 +310,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                               className="w-full bg-[#0b1219] border border-[#2c3e50] rounded p-2 text-white text-sm focus:border-purple-500 outline-none"
                               value={newModeName}
                               onChange={e => setNewModeName(e.target.value)}
-                              required
-                           />
+                              required aria-label="Mode Name" />
                         </div>
                         <div>
                            <label className="block text-xs font-bold text-gray-400 mb-1">Channels</label>
@@ -324,8 +320,7 @@ export default function StudioSidebar({ onAddFixtures, onReplaceFixtures, fixtur
                               value={newChannels}
                               onChange={e => setNewChannels(e.target.value)}
                               min={1}
-                              required
-                           />
+                              required aria-label="Channels" />
                         </div>
                      </div>
 

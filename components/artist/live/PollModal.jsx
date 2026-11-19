@@ -21,7 +21,7 @@ export default function PollModal({ isOpen, onClose, onActivate, pollData }) {
       <div className="w-full max-w-md relative z-10 flex flex-col justify-between bg-[#121212] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
 
         {}
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors z-20">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-20 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
           <X className="w-6 h-6" />
         </button>
 
@@ -52,7 +52,7 @@ export default function PollModal({ isOpen, onClose, onActivate, pollData }) {
                 className={`cursor-pointer w-full rounded-2xl bg-[#1a1a1a] border-2 p-5 flex flex-col justify-between relative overflow-hidden transition-all ${isSelected ? 'border-[#a855f7] bg-[#ff6a00]/10 shadow-[0_0_30px_rgba(255,106,0,0.2)]' : 'border-white/10 hover:border-white/20'}`}
               >
                 <div className="flex justify-between items-start relative z-10">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Option {idx + 1}</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Option {idx + 1}</span>
                   {isSelected && (
                     <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black flex items-center justify-center">
                       <Check className="w-4 h-4 font-bold" />

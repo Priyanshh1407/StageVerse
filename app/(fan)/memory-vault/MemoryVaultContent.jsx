@@ -117,7 +117,7 @@ export default function MemoryVaultPage() {
         {}
         <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632]">
           <span className="font-bold text-lg">StageVerse</span>
-          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300">
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Open the menu" title="Open the menu">
             <Menu className="w-6 h-6" />
           </button>
         </div>
@@ -161,7 +161,7 @@ export default function MemoryVaultPage() {
                   >
                     {artists.map(a => <option key={a} value={a}>{a}</option>)}
                   </select>
-                  <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-500 w-4 h-4" />
+                  <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-400 w-4 h-4" />
                 </div>
 
                 {}
@@ -173,7 +173,7 @@ export default function MemoryVaultPage() {
                   >
                     {venues.map(v => <option key={v} value={v}>{v}</option>)}
                   </select>
-                  <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-500 w-4 h-4" />
+                  <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-400 w-4 h-4" />
                 </div>
 
                 {}
@@ -185,7 +185,7 @@ export default function MemoryVaultPage() {
                   >
                     {years.map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
-                  <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-500 w-4 h-4" />
+                  <ChevronDown className="absolute right-3 top-2.5 pointer-events-none text-slate-400 w-4 h-4" />
                 </div>
               </div>
 
@@ -197,8 +197,7 @@ export default function MemoryVaultPage() {
                     placeholder="Search memories..." 
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                    onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search memories" />
                 </div>
               </div>
             </div>
@@ -215,7 +214,7 @@ export default function MemoryVaultPage() {
                   <Plus className="text-slate-400 dark:text-slate-500 w-8 h-8" />
                 </div>
                 <p className="text-slate-900 dark:text-white font-bold text-sm">Add New Memory</p>
-                <p className="text-slate-500 text-xs mt-1 text-center">Drag & drop photos or videos here</p>
+                <p className="text-slate-400 text-xs mt-1 text-center">Drag & drop photos or videos here</p>
               </div>
 
               {filteredMemories.slice(0,visibleCount).length > 0 ? (
@@ -223,7 +222,7 @@ export default function MemoryVaultPage() {
                   <MemoryCard key={item.id} item={item} onOpen={() => setOpenIndex(i)} />
                 ))
               ) : (
-                <div className="col-span-full text-center py-20 text-slate-500">
+                <div className="col-span-full text-center py-20 text-slate-400">
                   <p>No memories found. Try adjusting your filters.</p>
                 </div>
               )}
@@ -236,8 +235,8 @@ export default function MemoryVaultPage() {
                 <button 
                   onClick={handleLoadMore}
                   disabled={isLoadingMore}
-                  className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-[#1e2a35] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#2a3b4a] transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-[#1e2a35] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#2a3b4a] transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-11 min-w-11"
+                 aria-label="Show more" title="Show more">
                   {isLoadingMore ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -349,7 +348,7 @@ function MemoryCard({ item, onOpen }) {
           </div>
           <p className="text-slate-400 text-xs font-mono tracking-widest uppercase mb-1">Digital Stub</p>
           <h3 className="text-white font-bold text-xl">{item.title}</h3>
-          <p className="text-slate-500 text-sm mt-1">{item.subtitle}</p>
+          <p className="text-slate-400 text-sm mt-1">{item.subtitle}</p>
         </div>
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#f5f7f8] dark:bg-[#101b22] rounded-full"></div>
         <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#f5f7f8] dark:bg-[#101b22] rounded-full"></div>

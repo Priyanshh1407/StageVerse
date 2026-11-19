@@ -166,11 +166,11 @@ export default function StudioNavbar({ projectId }) {
               onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#2c3e50] bg-[#0b1219] hover:bg-[#182234] hover:border-gray-500 transition-all group"
             >
-              <Folder className={`w-4 h-4 ${currentId ? 'text-[#ffb000]' : 'text-gray-500'}`} />
+              <Folder className={`w-4 h-4 ${currentId ? 'text-[#ffb000]' : 'text-gray-400'}`} />
               <span className={`text-sm font-bold max-w-[140px] truncate ${currentId ? 'text-white' : 'text-gray-400'}`}>
                 {projectTitle}
               </span>
-              <ChevronDown className={`w-3 h-3 text-gray-500 transition-transform ${isProjectDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${isProjectDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isProjectDropdownOpen && (
@@ -192,7 +192,7 @@ export default function StudioNavbar({ projectId }) {
                       {((p.id || p.eventId) == currentId) && <Check className="w-3 h-3 flex-shrink-0" />}
                     </button>
                   )) : (
-                    <div className="p-4 text-center text-xs text-gray-500">No projects found</div>
+                    <div className="p-4 text-center text-xs text-gray-400">No projects found</div>
                   )}
                   <Link href="/prod-dashboard" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#90b2cb] hover:text-white hover:bg-white/5 transition-colors border-t border-[#2c3e50] mt-1">
                     All your shows
@@ -213,7 +213,7 @@ export default function StudioNavbar({ projectId }) {
             className="hidden md:flex items-center bg-[#0b1219] border border-[#2c3e50] rounded-full px-3 py-1.5 gap-2 group cursor-pointer hover:border-gray-500 transition-colors"
           >
             <Search className="w-4 h-4 text-[#90b2cb] group-hover:text-[#ffb000] transition-colors" />
-            <span className="text-[10px] text-[#90b2cb] font-mono group-hover:text-white uppercase">Search (Ctrl+K)</span>
+            <span className="text-xs text-[#90b2cb] font-mono group-hover:text-white uppercase">Search (Ctrl+K)</span>
           </div>
 
           <div className="h-4 w-px bg-[#2c3e50] hidden md:block"></div>
@@ -248,7 +248,7 @@ export default function StudioNavbar({ projectId }) {
                   </div>
                   <div className="max-h-[300px] overflow-y-auto">
                     {notifications.length === 0 ? (
-                      <div className="p-6 text-center text-gray-500 text-xs">No new alerts</div>
+                      <div className="p-6 text-center text-gray-400 text-xs">No new alerts</div>
                     ) : (
                       notifications.map(note => (
                         <div key={note._id} className="p-3 border-b border-[#2c3e50] hover:bg-white/5 transition-colors cursor-pointer group flex justify-between items-start">
@@ -281,7 +281,7 @@ export default function StudioNavbar({ projectId }) {
                 <div className={`w-9 h-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 border flex items-center justify-center text-xs font-bold text-white shadow-lg transition-all ${isProfileOpen ? 'border-[#a855f7] ring-2 ring-[#a855f7]/20' : 'border-gray-500 group-hover:border-[#a855f7]'}`}>
                   {initials(me?.name)}
                 </div>
-                <ChevronDown className={`hidden sm:block w-3 h-3 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180 text-white' : ''}`} />
+                <ChevronDown className={`hidden sm:block w-3 h-3 text-gray-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180 text-white' : ''}`} />
               </button>
 
               {}
@@ -325,8 +325,7 @@ export default function StudioNavbar({ projectId }) {
                 value={msgContent}
                 onChange={(e) => setMsgContent(e.target.value)}
                 placeholder="Enter urgent message for the artist..."
-                className="w-full h-32 bg-[#0d131a] border border-[#2c3e50] rounded-lg p-3 text-white focus:border-[#a855f7] focus:outline-none resize-none mb-4"
-              />
+                className="w-full h-32 bg-[#0d131a] border border-[#2c3e50] rounded-lg p-3 text-white focus:border-[#a855f7] focus:outline-none resize-none mb-4" aria-label="Enter urgent message for the artist" />
               <div className="flex justify-end gap-3">
                 <button onClick={() => setIsMsgModalOpen(false)} className="px-4 py-2 text-gray-400 hover:text-white text-sm font-bold">Cancel</button>
                 <button

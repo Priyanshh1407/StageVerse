@@ -71,22 +71,22 @@ export default function ShowHeader({ city, venue, date }) {
             {}
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">Tour Schedule</h3>
-              <button onClick={() => setIsCalendarOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsCalendarOpen(false)} className="text-slate-400 hover:text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {}
             <div className="flex items-center justify-between mb-4">
-              <button onClick={prevMonth} className="p-2 hover:bg-[#223949] rounded-full text-white"><ChevronLeft className="w-5 h-5" /></button>
+              <button onClick={prevMonth} className="p-2 hover:bg-[#223949] rounded-full text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Previous" title="Previous"><ChevronLeft className="w-5 h-5" /></button>
               <span className="font-bold text-white uppercase tracking-wider">{monthName}</span>
-              <button onClick={nextMonth} className="p-2 hover:bg-[#223949] rounded-full text-white"><ChevronRight className="w-5 h-5" /></button>
+              <button onClick={nextMonth} className="p-2 hover:bg-[#223949] rounded-full text-white min-h-11 min-w-11 inline-grid place-items-center" aria-label="Next" title="Next"><ChevronRight className="w-5 h-5" /></button>
             </div>
 
             {}
             <div className="grid grid-cols-7 mb-2 text-center">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-                <div key={d} className="text-xs text-slate-500 font-bold">{d}</div>
+                <div key={d} className="text-xs text-slate-400 font-bold">{d}</div>
               ))}
             </div>
 
@@ -111,7 +111,7 @@ export default function ShowHeader({ city, venue, date }) {
                         {dayNum}
                       </Link>
                     ) : (
-                      <div className="text-slate-500 text-sm">{dayNum}</div>
+                      <div className="text-slate-400 text-sm">{dayNum}</div>
                     )}
                   </div>
                 );

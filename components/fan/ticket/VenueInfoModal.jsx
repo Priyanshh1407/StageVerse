@@ -46,8 +46,8 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
 
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors"
-          >
+            className="absolute top-4 right-4 p-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center"
+           aria-label="Close" title="Close">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -106,7 +106,7 @@ export default function VenueInfoModal({ isOpen, onClose, venue }) {
                 </div>
                 <div className="p-3">
                   <p className="text-xs font-semibold text-slate-900 dark:text-white mb-1">Getting Here</p>
-                  <p className="text-[10px] text-slate-500 leading-tight">
+                  <p className="text-xs text-slate-400 leading-tight">
                     Accessible via Metro Line 4 or Bus Route 202. Rideshare drop-off located at the North Entrance.
                   </p>
                 </div>
@@ -134,7 +134,7 @@ function StatItem({ icon: Icon, label, value }) {
   return (
     <div className="p-3 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center text-center shadow-sm">
       <Icon className="w-5 h-5 text-slate-400 mb-1" />
-      <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{label}</span>
+      <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">{label}</span>
       <span className="text-sm font-bold text-slate-900 dark:text-white">{value}</span>
     </div>
   );

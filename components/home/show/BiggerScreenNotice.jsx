@@ -43,7 +43,7 @@ export default function BiggerScreenNotice({ open, onClose }) {
                     bigger screen, with the sound on, to run the show yourself.
                 </p>
                 <button onClick={copyLink}
-                    className="w-full flex items-center justify-center gap-2 rounded-full bg-white text-black py-2.5 text-sm font-bold hover:bg-amber-300 transition-colors">
+                    className="w-full flex items-center justify-center gap-2 rounded-full bg-white text-black py-2.5 text-sm font-bold hover:bg-amber-300 transition-colors min-h-11 min-w-11" aria-label="Done" title="Done">
                     {copied ? <><Check className="h-4 w-4" aria-hidden /> Link copied</> : <><Link2 className="h-4 w-4" aria-hidden /> Copy link for later</>}
                 </button>
                 <button onClick={onClose} className="mt-3 w-full py-2 text-sm text-gray-300 hover:text-white">Got it</button>

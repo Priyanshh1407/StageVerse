@@ -112,7 +112,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
               <div>
                 <label htmlFor="profile-location" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Location</label>
                 <div className="relative">
-                  <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+                  <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                   <input id="profile-location" className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] text-slate-900 dark:text-white sm:text-sm px-4 py-2.5 outline-none focus:border-[#a855f7] focus:ring-2 focus:ring-[#a855f7]/25 pl-9" type="text" maxLength={80} placeholder="e.g. Mumbai, India"
                     value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
                 </div>
@@ -122,7 +122,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
                 <label htmlFor="profile-bio" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Bio</label>
                 <textarea id="profile-bio" className="block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101b22] text-slate-900 dark:text-white sm:text-sm px-4 py-2.5 outline-none focus:border-[#a855f7] focus:ring-2 focus:ring-[#a855f7]/25 resize-none" rows={3} maxLength={300} placeholder="Tell us about your music taste..."
                   value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} />
-                <p className="mt-1 text-xs text-slate-500 text-right">{formData.bio.length}/300</p>
+                <p className="mt-1 text-xs text-slate-400 text-right">{formData.bio.length}/300</p>
               </div>
 
               <div className="md:col-span-2">
@@ -150,7 +150,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onSave 
                   <Eye className="text-slate-400 w-5 h-5 shrink-0" />
                   <div className="flex flex-col min-w-0">
                     <label htmlFor="profile-visibility" className="text-sm font-semibold text-slate-900 dark:text-white">Profile visibility</label>
-                    <span className="text-xs text-slate-500">Who can see your passport?</span>
+                    <span className="text-xs text-slate-400">Who can see your passport?</span>
                   </div>
                 </div>
                 <select id="profile-visibility"

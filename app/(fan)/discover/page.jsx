@@ -123,7 +123,7 @@ export default function DiscoverPage() {
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632]">
           <span className="font-bold text-lg">StageVerse</span>
-          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300">
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 dark:text-slate-300 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Open the menu" title="Open the menu">
             <Menu className="w-6 h-6" />
           </button>
         </div>
@@ -145,9 +145,8 @@ export default function DiscoverPage() {
                     placeholder="Search artists, venues, or cities..."
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>}
+                    onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search artists, venues, or cities" />
+                  {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close"><X className="w-4 h-4" /></button>}
                 </div>
 
                 <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
@@ -257,7 +256,7 @@ export default function DiscoverPage() {
                     onClick={() => setIsReleasesModalOpen(true)}
                     className="group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer bg-slate-800 border border-slate-700 flex flex-col items-center justify-center hover:bg-slate-700 transition-colors"
                   >
-                    <Plus className="w-10 h-10 text-slate-600 mb-2 group-hover:text-slate-400 transition-colors" />
+                    <Plus className="w-10 h-10 text-slate-400 mb-2 group-hover:text-slate-400 transition-colors" />
                     <span className="text-sm font-medium text-slate-400 group-hover:text-white transition-colors">View All</span>
                   </motion.div>
                 </motion.div>
@@ -294,7 +293,7 @@ function FilterDropdown({ icon: Icon, label, options, value, onChange }) {
   return (
     <div className="relative min-w-[140px]">
       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-        <Icon className="w-4 h-4 text-slate-500" />
+        <Icon className="w-4 h-4 text-slate-400" />
       </div>
       <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full appearance-none pl-10 pr-8 py-3 bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#a855f7] cursor-pointer">
         <option value="All">{label}: All</option>
@@ -322,7 +321,7 @@ function SectionHeader({ icon: Icon, title }) {
 function EmptyState({ message }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 bg-slate-50 dark:bg-[#1a2632]/50 rounded-2xl border border-slate-200 dark:border-slate-800 border-dashed">
-      <Search className="w-10 h-10 text-slate-300 mb-2" /><p className="text-slate-500 font-medium">{message}</p>
+      <Search className="w-10 h-10 text-slate-300 mb-2" /><p className="text-slate-400 font-medium">{message}</p>
       <button onClick={() => window.location.reload()} className="mt-4 text-sm text-[#ff6a00] hover:underline">Clear Filters</button>
     </div>
   );
@@ -349,9 +348,11 @@ function RecommendedCard({ event }) {
         />
 
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/80 to-transparent"></div>
-        <span className="absolute bottom-3 left-3 px-2 py-1 rounded bg-[#ff6a00]/20 border border-[#a855f7]/30 backdrop-blur text-[10px] font-bold text-white uppercase tracking-wider">
-          {event.match || '95% Match'}
-        </span>
+        {event.match && (
+          <span className="absolute bottom-3 left-3 px-2 py-1 rounded bg-[#ff6a00]/20 border border-[#a855f7]/30 backdrop-blur text-xs font-bold text-white uppercase tracking-wider">
+            {event.match}
+          </span>
+        )}
       </div>
 
       <div className="p-5 flex flex-col flex-1">
@@ -359,7 +360,7 @@ function RecommendedCard({ event }) {
           {event.title}
         </h3>
 
-        <div className="flex items-center gap-1 text-sm text-slate-500 mb-4">
+        <div className="flex items-center gap-1 text-sm text-slate-400 mb-4">
           <MapPin className="w-3.5 h-3.5" />
           <span>{event.venue}</span>
         </div>
@@ -392,12 +393,12 @@ function FriendEventCard({ event }) {
       <div className="w-full md:w-48 h-48 md:h-auto relative shrink-0"><Image src={event.image} alt={event.title} fill className="object-cover" /></div>
       <div className="p-5 flex flex-col flex-1 justify-between">
         <div>
-          <div className="flex items-center justify-between mb-2"><span className={`text-xs font-bold uppercase tracking-wide ${event.statusColor || 'text-[#ff6a00]'}`}>{event.status}</span><span className="text-xs text-slate-500">{event.date}</span></div>
+          <div className="flex items-center justify-between mb-2"><span className={`text-xs font-bold uppercase tracking-wide ${event.statusColor || 'text-[#ff6a00]'}`}>{event.status}</span><span className="text-xs text-slate-400">{event.date}</span></div>
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{event.title}</h3>
-          <p className="text-sm text-slate-500 mb-4">{event.venue}</p>
+          <p className="text-sm text-slate-400 mb-4">{event.venue}</p>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <div className="flex -space-x-3">{event.attendees.map((person, i) => <div key={i} className={`size-8 rounded-full ring-2 ring-white dark:ring-[#1a2632] flex items-center justify-center overflow-hidden ${person.color || 'bg-gray-300 dark:bg-slate-700'}`}>{person.img ? <Image src={person.img} alt="User" width={32} height={32} className="object-cover h-full w-full" /> : <span className={`text-[10px] font-bold ${person.count ? 'text-black bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] w-full h-full flex items-center justify-center' : 'text-slate-600 dark:text-slate-300'}`}>{person.initials || `+${person.count}`}</span>}</div>)}</div>
+          <div className="flex -space-x-3">{event.attendees.map((person, i) => <div key={i} className={`size-8 rounded-full ring-2 ring-white dark:ring-[#1a2632] flex items-center justify-center overflow-hidden ${person.color || 'bg-gray-300 dark:bg-slate-700'}`}>{person.img ? <Image src={person.img} alt="User" width={32} height={32} className="object-cover h-full w-full" /> : <span className={`text-xs font-bold ${person.count ? 'text-black bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] w-full h-full flex items-center justify-center' : 'text-slate-600 dark:text-slate-300'}`}>{person.initials || `+${person.count}`}</span>}</div>)}</div>
           <span className="text-sm font-bold text-[#ff6a00] hover:text-[#ff6a00]/80 transition-colors">Join Them</span>
         </div>
       </div>
@@ -410,7 +411,7 @@ function ReleaseCard({ item }) {
     <Link href={`/artist/${item.id}`} className="group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer block">
       <Image src={item.image} alt={item.artist} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
-        <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold text-white w-fit mb-2 ${item.color}`}>{item.type}</span>
+        <span className={`px-2 py-0.5 rounded-sm text-xs font-bold text-white w-fit mb-2 ${item.color}`}>{item.type}</span>
         <h4 className="text-white font-bold leading-tight">{item.artist}</h4>
         <p className="text-slate-300 text-xs mt-1">{item.title}</p>
       </div>

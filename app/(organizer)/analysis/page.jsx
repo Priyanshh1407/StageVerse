@@ -361,12 +361,12 @@ function Header({ onMenuClick, isGenerating, onGenerate }) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex flex-col gap-1 w-full md:w-auto">
           <div className="flex items-center gap-4 mb-2 md:mb-0">
-            <button onClick={onMenuClick} className="md:hidden text-[#90b2cb] hover:text-white">
+            <button onClick={onMenuClick} className="md:hidden text-[#90b2cb] hover:text-white min-h-11 min-w-11" aria-label="Open the menu" title="Open the menu">
               <Menu className="w-6 h-6" />
             </button>
             <div className="flex items-center gap-3">
               <h2 className="text-white text-2xl md:text-3xl font-bold tracking-tight">Summer Music Festival 2023</h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#0bda5b]/20 text-[#0bda5b] border border-[#0bda5b]/20">COMPLETED</span>
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#0bda5b]/20 text-[#0bda5b] border border-[#0bda5b]/20">COMPLETED</span>
             </div>
           </div>
           <p className="text-[#90b2cb] text-sm flex items-center gap-2 pl-10 md:pl-0">
@@ -385,8 +385,8 @@ function Header({ onMenuClick, isGenerating, onGenerate }) {
               flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg 
               bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] hover:bg-gradient-to-r hover:from-[#ffb000] hover:via-[#ff6a00] hover:to-[#ff3d7a] text-white text-sm font-bold shadow-lg shadow-[#ff6a00]/20 
               transition-all hover:translate-y-[-1px] disabled:opacity-70 disabled:cursor-wait
-            `}
-          >
+             min-h-11 min-w-11`}
+           aria-label="Download" title="Download">
             {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
             {isGenerating ? 'Generating...' : 'Generate Report'}
           </button>

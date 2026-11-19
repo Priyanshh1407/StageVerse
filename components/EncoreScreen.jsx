@@ -73,7 +73,7 @@ export default function EncoreScreen({ winnerName, onClose }) {
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end">
             <Logo size="lg" />
-            <span className="text-white/60 text-[10px] tracking-[0.2em] uppercase leading-none mt-1">Live OS</span>
+            <span className="text-white/60 text-xs tracking-[0.2em] uppercase leading-none mt-1">Live OS</span>
           </div>
         </div>
       </div>

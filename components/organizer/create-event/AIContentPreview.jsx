@@ -45,13 +45,13 @@ export default function AIContentPreview({ content, onRequestAI }) {
   };
   if (!parsed) {
     return (
-      <div className="flex flex-col h-full gap-4 opacity-50 pointer-events-none filter blur-[1px]">
+      <div className="flex flex-col h-full gap-4 pointer-events-none">
         {}
-        <div className="flex-1 bg-white dark:bg-[#192734] rounded-xl border border-slate-200 dark:border-[#2c3b47] flex items-center justify-center text-slate-500">
+        <div className="flex-1 bg-white dark:bg-[#192734] rounded-xl border border-slate-200 dark:border-[#2c3b47] flex items-center justify-center text-slate-400">
           <div className="text-center p-8">
             <RefreshCw className="w-12 h-12 mx-auto mb-4 text-[#ff6a00] animate-pulse" />
-            <h3 className="text-lg font-bold text-white">Ready to Dream?</h3>
-            <p className="max-w-xs mx-auto mt-2">Fill the form and hit &quot;Generate AI&quot; to see the magic here.</p>
+            <h3 className="text-lg font-bold text-white">The description appears here</h3>
+            <p className="max-w-xs mx-auto mt-2">Pick the artist, then press &quot;Write the description for me&quot;. You can change it before you publish.</p>
           </div>
         </div>
       </div>

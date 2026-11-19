@@ -63,7 +63,7 @@ export default function EventSelectionPage({ role = 'artist' }) {
                                             {eventImage(event) ? (
                                                 <img src={eventImage(event)} alt={event.title} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-slate-600 font-bold text-2xl">
+                                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-2xl">
                                                     {event.venue?.name?.substring(0, 2) || "EV"}
                                                 </div>
                                             )}

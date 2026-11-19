@@ -841,7 +841,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                 {/* While the show runs in the browser's full screen */}
                 {fullscreen && (
                     <div className="absolute top-4 right-4 z-30 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur border border-white/15 text-xs text-white/80 pointer-events-none">
-                        Press <kbd className="px-1.5 py-0.5 mx-0.5 rounded bg-white/15 font-mono text-[11px] text-white">Esc</kbd> to exit full screen
+                        Press <kbd className="px-1.5 py-0.5 mx-0.5 rounded bg-white/15 font-mono text-xs text-white">Esc</kbd> to exit full screen
                     </div>
                 )}
 
@@ -1060,7 +1060,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                             className="mx-auto mt-2 flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] px-5 py-2.5 text-sm font-bold text-black">
                             <Play className="h-4 w-4" /> Play {linkedDemo.title}{linked.t > 0 ? ` from ${fmt(linked.t)}` : ''}
                         </button>
-                        <button type="button" onClick={() => setLinked(null)} className="mt-2 text-[11px] text-gray-400 hover:text-white">Not now</button>
+                        <button type="button" onClick={() => setLinked(null)} className="mt-2 text-xs text-gray-400 hover:text-white">Not now</button>
                     </div>
                 )}
                 {/* Concert mode: now playing, with the programmed timeline (click to seek) */}
@@ -1069,9 +1069,9 @@ function ShowExperience({ events = [], isPhone = false }) {
                         <div className="flex items-center justify-between gap-3 text-sm mb-1.5">
                             <div className="min-w-0">
                                 <div className="font-bold truncate leading-tight">{now.title}</div>
-                                {now?.demo && <div className="text-[9px] leading-tight text-gray-500 truncate">{now.artist ? `${now.artist} · ` : ''}educational, non-commercial use only</div>}
+                                {now?.demo && <div className="text-xs leading-tight text-gray-400 truncate">{now.artist ? `${now.artist} · ` : ''}educational, non-commercial use only</div>}
                             </div>
-                            <div className="flex shrink-0 items-center gap-2 font-mono text-[11px] text-gray-300">
+                            <div className="flex shrink-0 items-center gap-2 font-mono text-xs text-gray-300">
                                 <span className="hidden sm:inline text-gray-400">{now.bpm} BPM · {songSection ? (songSection.label ?? songSection.kind).toUpperCase() : ''}{mode === 'manual' ? ' · DESK' : ''}</span>
                                 <span>{fmt(song.time)} / {fmt(now.duration)}</span>
                                 <button onClick={stopSong} aria-label="Stop concert mode" className="p-1.5 rounded-full bg-white/10 hover:bg-white/20"><Square className="w-3 h-3" /></button>
@@ -1096,8 +1096,8 @@ function ShowExperience({ events = [], isPhone = false }) {
                             <div role="group" aria-label="Camera view" className="mt-1.5 grid grid-cols-3 gap-1 rounded-lg bg-white/5 p-0.5">
                                 {VIEWS.map(([v, label], i) => (
                                     <button key={v} type="button" onClick={() => pickView(v)} aria-pressed={view === v} aria-keyshortcuts={String(i + 1)}
-                                        className={`flex items-center justify-center gap-1.5 rounded-md py-1 text-[11px] font-semibold ${view === v ? 'bg-amber-300 text-black' : 'text-gray-300 hover:bg-white/10'}`}>
-                                        <kbd className={`font-mono text-[9px] px-1 rounded ${view === v ? 'bg-black/15' : 'bg-white/10 text-gray-400'}`}>{i + 1}</kbd>{label}
+                                        className={`flex items-center justify-center gap-1.5 rounded-md py-1 text-xs font-semibold ${view === v ? 'bg-amber-300 text-black' : 'text-gray-300 hover:bg-white/10'}`}>
+                                        <kbd className={`font-mono text-xs px-1 rounded ${view === v ? 'bg-black/15' : 'bg-white/10 text-gray-400'}`}>{i + 1}</kbd>{label}
                                     </button>
                                 ))}
                             </div>
@@ -1109,7 +1109,7 @@ function ShowExperience({ events = [], isPhone = false }) {
                                 {FEATURES.share && <ShareButtons show={now} time={song.time} stage={stage} />}
                                 {FEATURES.howItWorks && (
                                     <button type="button" onClick={() => setExplain((x) => !x)} aria-pressed={explain}
-                                        className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-bold ${explain ? 'border-transparent bg-[#ff6a00] text-black' : 'border-white/15 bg-white/10 hover:bg-white/20'}`}>
+                                        className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-bold ${explain ? 'border-transparent bg-[#ff6a00] text-black' : 'border-white/15 bg-white/10 hover:bg-white/20'}`}>
                                         How it works
                                     </button>
                                 )}
@@ -1124,8 +1124,8 @@ function ShowExperience({ events = [], isPhone = false }) {
                                         onPointerUp={() => liveHold(which, false)} onPointerCancel={() => liveHold(which, false)} onLostPointerCapture={() => liveHold(which, false)}
                                         onContextMenu={(e) => e.preventDefault()}
                                         title="Hold to fire. The show carries on."
-                                        className={`select-none touch-none px-2.5 py-1 rounded-lg border text-[11px] font-black tracking-wider transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
-                                        {fx.label} <kbd className={`ml-0.5 px-1 py-0.5 rounded font-mono text-[9px] font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
+                                        className={`select-none touch-none px-2.5 py-1 rounded-lg border text-xs font-black tracking-wider transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
+                                        {fx.label} <kbd className={`ml-0.5 px-1 py-0.5 rounded font-mono text-xs font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
                                     </button>
                                 ))}
                             </>

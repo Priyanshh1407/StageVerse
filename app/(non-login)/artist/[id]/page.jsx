@@ -65,7 +65,7 @@ export default function PublicArtistPage() {
       <div className="flex flex-col min-h-screen bg-black text-white">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
-          <User className="w-16 h-16 text-slate-500 mb-6" />
+          <User className="w-16 h-16 text-slate-400 mb-6" />
           <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tighter">Artist Not Found</h2>
           <Link href="/explore-artist" className="text-[#ffb000] hover:underline font-bold text-lg">
             Browse Artists
@@ -167,13 +167,13 @@ export default function PublicArtistPage() {
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="flex items-center justify-between p-4 bg-[#111] border border-white/5 rounded-2xl hover:bg-[#161616] hover:border-[#a855f7]/20 transition-all cursor-pointer group">
                       <div className="flex items-center gap-6">
-                        <span className="text-slate-600 font-black text-xl w-6 text-center group-hover:text-[#ffb000]">{i}</span>
+                        <span className="text-slate-400 font-black text-xl w-6 text-center group-hover:text-[#ffb000]">{i}</span>
                         <div className="w-12 h-12 bg-gray-800 rounded-lg overflow-hidden relative">
                           <Image src={`https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=100&h=100&fit=crop`} alt="Track" fill className="object-cover" />
                         </div>
                         <div>
                           <h4 className="text-white font-bold group-hover:text-[#ffb000] transition-colors">Track Title {i}</h4>
-                          <p className="text-slate-500 text-xs uppercase tracking-wider">Album Name</p>
+                          <p className="text-slate-400 text-xs uppercase tracking-wider">Album Name</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
@@ -199,7 +199,7 @@ export default function PublicArtistPage() {
                       <Link href={`/events/${show.id}`} key={show.id} className="block group">
                         <div className="flex gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
                           <div className="bg-[#1a1a1a] rounded-lg w-14 h-14 flex flex-col items-center justify-center border border-white/10 group-hover:border-[#a855f7] transition-colors">
-                            <span className="text-[10px] text-[#ffb000] font-black uppercase">{show.month}</span>
+                            <span className="text-xs text-[#ffb000] font-black uppercase">{show.month}</span>
                             <span className="text-xl text-white font-bold leading-none">{show.day}</span>
                           </div>
                           <div>
@@ -209,7 +209,7 @@ export default function PublicArtistPage() {
                         </div>
                       </Link>
                     )) : (
-                      <p className="text-slate-500 text-center py-8">No upcoming shows.</p>
+                      <p className="text-slate-400 text-center py-8">No upcoming shows.</p>
                     )}
                   </div>
 

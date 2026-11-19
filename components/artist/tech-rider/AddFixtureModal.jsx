@@ -27,7 +27,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                 {}
                 <div className="flex justify-between items-center p-5 border-b border-[#223949]">
                     <h3 className="text-white font-bold text-lg">Add Custom Fixture</h3>
-                    <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
+                    <button onClick={onClose} className="text-white/50 hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -42,8 +42,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                             onChange={(e) => setName(e.target.value)}
                             placeholder="e.g. Clay Paky Sharpy"
                             className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#a855f7] outline-none transition-all"
-                            autoFocus
-                        />
+                            autoFocus aria-label="Clay Paky Sharpy" />
                     </div>
 
                     <div className="space-y-2">
@@ -52,7 +51,7 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                             value={type}
                             onChange={(e) => setType(e.target.value)}
                             className="w-full bg-[#101b23] border border-[#223949] rounded-lg px-4 py-3 text-white text-sm focus:ring-1 focus:ring-[#a855f7] outline-none"
-                        >
+                         aria-label="Fixture Type">
                             <option>Speakers/PA</option>
                             <option>Spot</option>
                             <option>Beam</option>
@@ -71,8 +70,8 @@ export default function AddFixtureModal({ isOpen, onClose, onAdd }) {
                                     key={icn}
                                     type="button"
                                     onClick={() => setIconType(icn)}
-                                    className={`p-3 rounded-lg border transition-all ${iconType === icn ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] border-[#a855f7] text-black' : 'bg-[#101b23] border-[#223949] text-white/50 hover:border-white/30'}`}
-                                >
+                                    className={`p-3 rounded-lg border transition-all ${iconType === icn ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] border-[#a855f7] text-black' : 'bg-[#101b23] border-[#223949] text-white/50 hover:border-white/30'} min-h-11 min-w-11 inline-grid place-items-center`}
+                                 aria-label="Quick action" title="Quick action">
                                     {icn === 'Lightbulb' && <Lightbulb className="w-5 h-5" />}
                                     {icn === 'Zap' && <Zap className="w-5 h-5" />}
                                     {icn === 'Scan' && <Scan className="w-5 h-5" />}

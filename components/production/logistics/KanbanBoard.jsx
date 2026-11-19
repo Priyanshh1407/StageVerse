@@ -26,7 +26,7 @@ function KanbanColumn({ data, onEditTask, onDeleteTask }) {
         <div className="flex items-center gap-2">
           <div className={`size-2 rounded-full ${data.dotColor}`}></div>
           <h3 className="font-bold text-white text-sm">{data.title}</h3>
-          <span className="bg-[#27272A] text-gray-400 text-[10px] px-1.5 py-0.5 rounded font-mono">{data.count}</span>
+          <span className="bg-[#27272A] text-gray-400 text-xs px-1.5 py-0.5 rounded font-mono">{data.count}</span>
         </div>
       </div>
 
@@ -53,7 +53,7 @@ function KanbanColumn({ data, onEditTask, onDeleteTask }) {
                 {}
                 {provided.placeholder}
                 {data.cards.length === 0 && !snapshot.isDraggingOver && (
-                  <div className="flex-1 flex flex-col items-center justify-center text-gray-600 h-32">
+                  <div className="flex-1 flex flex-col items-center justify-center text-gray-400 h-32">
                     <div className="opacity-50 mb-2 border-2 border-dashed border-[#27272A] rounded-lg p-3">
                       <Plus className="w-6 h-6" />
                     </div>
@@ -96,12 +96,12 @@ function KanbanCard({ card, index, onEdit, onDelete }) {
         >
 
           <div className="flex justify-between items-start mb-2 relative">
-            <span className={`${card.tagColor} text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wide`}>{card.tag}</span>
+            <span className={`${card.tagColor} text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wide`}>{card.tag}</span>
             <div ref={menuRef}>
               <button
                 onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
-                className="text-gray-600 hover:text-white p-1 rounded hover:bg-[#27272A] transition-colors"
-              >
+                className="text-gray-400 hover:text-white p-1 rounded hover:bg-[#27272A] transition-colors min-h-11 min-w-11 inline-grid place-items-center"
+               aria-label="More options" title="More options">
                 <MoreHorizontal className="w-4 h-4" />
               </button>
               {menuOpen && (
@@ -128,12 +128,12 @@ function KanbanCard({ card, index, onEdit, onDelete }) {
           <div className="flex justify-between items-center">
             <div className="flex -space-x-2">
               {card.unassigned ? (
-                <div className="size-6 rounded-full bg-[#27272A] flex items-center justify-center text-[10px] font-bold border border-[#18181B] text-gray-400">?</div>
+                <div className="size-6 rounded-full bg-[#27272A] flex items-center justify-center text-xs font-bold border border-[#18181B] text-gray-400">?</div>
               ) : (
                 <div className="size-6 rounded-full bg-gray-600 border border-[#18181B]"></div>
               )}
             </div>
-            <div className="flex items-center gap-1 text-gray-500 text-xs">
+            <div className="flex items-center gap-1 text-gray-400 text-xs">
               <Clock className="w-3 h-3" />
               <span>{card.date}</span>
             </div>

@@ -62,7 +62,7 @@ export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId 
             </h2>
             <p className="text-slate-400 text-xs mt-1">Choose a configured poll to push to the audience.</p>
           </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Close" title="Close">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -80,18 +80,18 @@ export default function PollSelectionModal({ isOpen, onClose, onSelect, eventId 
                 <div>
                   <h3 className="text-white font-bold text-base group-hover:text-purple-300 transition-colors">{poll.title}</h3>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-xs text-slate-500 font-mono bg-white/5 px-1.5 py-0.5 rounded">{poll.options} Options</span>
-                    <span className="text-xs text-slate-500">Trigger: {poll.trigger}</span>
+                    <span className="text-xs text-slate-400 font-mono bg-white/5 px-1.5 py-0.5 rounded">{poll.options} Options</span>
+                    <span className="text-xs text-slate-400">Trigger: {poll.trigger}</span>
                   </div>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
             </button>
           ))}
         </div>
 
         <div className="p-4 bg-[#0a1116] border-t border-white/5 text-center">
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest">StageVerse Live Control</p>
+          <p className="text-xs text-slate-400 uppercase tracking-widest">StageVerse Live Control</p>
         </div>
       </div>
     </div>

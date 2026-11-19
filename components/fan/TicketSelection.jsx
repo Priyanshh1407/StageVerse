@@ -67,7 +67,7 @@ export default function TicketSelection({ eventId, tiers = [] }) {
       {}
       <div className="flex items-center gap-3 mb-6">
         {step === 2 && (
-          <button onClick={() => setStep(1)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#2c3b47] transition-colors">
+          <button onClick={() => setStep(1)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#2c3b47] transition-colors min-h-11 min-w-11 inline-grid place-items-center" aria-label="Back" title="Back">
             <ArrowLeft className="w-5 h-5 text-slate-500 dark:text-[#90b2cb]" />
           </button>
         )}
@@ -116,9 +116,9 @@ export default function TicketSelection({ eventId, tiers = [] }) {
             <div className="flex justify-between items-center mb-6 p-4 bg-slate-50 dark:bg-[#101b22] rounded-lg border border-slate-200 dark:border-[#2c3b47]">
               <span className="text-sm text-slate-500 dark:text-[#90b2cb]">Quantity</span>
               <div className="flex items-center gap-4">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 rounded-full bg-white dark:bg-[#192734] border border-slate-300 dark:border-[#2c3b47] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#233342] text-slate-900 dark:text-white"><Minus className="w-4 h-4" /></button>
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 rounded-full bg-white dark:bg-[#192734] border border-slate-300 dark:border-[#2c3b47] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#233342] text-slate-900 dark:text-white min-h-11 min-w-11" aria-label="Decrease" title="Decrease"><Minus className="w-4 h-4" /></button>
                 <span className="font-mono font-bold text-slate-900 dark:text-white w-4 text-center">{quantity}</span>
-                <button onClick={() => setQuantity(Math.min(10, quantity + 1))} className="w-8 h-8 rounded-full bg-white dark:bg-[#192734] border border-slate-300 dark:border-[#2c3b47] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#233342] text-slate-900 dark:text-white"><Plus className="w-4 h-4" /></button>
+                <button onClick={() => setQuantity(Math.min(10, quantity + 1))} className="w-8 h-8 rounded-full bg-white dark:bg-[#192734] border border-slate-300 dark:border-[#2c3b47] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#233342] text-slate-900 dark:text-white min-h-11 min-w-11" aria-label="Add" title="Add"><Plus className="w-4 h-4" /></button>
               </div>
             </div>
           )}
@@ -165,10 +165,9 @@ export default function TicketSelection({ eventId, tiers = [] }) {
                   value={buyerName}
                   onChange={(e) => setBuyerName(e.target.value)}
                   className="w-full pl-10 p-2.5 bg-slate-50 dark:bg-[#101b22] border border-slate-200 dark:border-[#2c3b47] rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#a855f7]"
-                  placeholder="Who is this ticket for?"
-                />
+                  placeholder="Who is this ticket for?" aria-label="Who is this ticket for?" />
               </div>
-              <p className="text-[10px] text-slate-400 mt-1">This name will appear on the ticket.</p>
+              <p className="text-xs text-slate-400 mt-1">This name will appear on the ticket.</p>
             </div>
 
             {}

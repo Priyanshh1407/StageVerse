@@ -175,7 +175,7 @@ export default function LivePollCard({ eventId, onComplete }) {
 
                                 {}
                                 <div className="relative z-10 flex flex-col items-start pointer-events-none">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Option 0{index + 1}</span>
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Option 0{index + 1}</span>
                                     <h2 className="text-xl font-bold uppercase leading-none text-white">{opt.text}</h2>
                                 </div>
 
@@ -212,7 +212,7 @@ export default function LivePollCard({ eventId, onComplete }) {
                     </div>
                 </div>
 
-                <p className="text-center text-[10px] text-slate-600 mt-4 uppercase tracking-widest font-bold">Powered by StageVerse Live</p>
+                <p className="text-center text-xs text-slate-400 mt-4 uppercase tracking-widest font-bold">Powered by StageVerse Live</p>
 
                 {}
                 <div className="absolute top-1/4 -left-12 w-24 h-24 bg-[#ff6a00]/20 rounded-full blur-xl animate-float" />

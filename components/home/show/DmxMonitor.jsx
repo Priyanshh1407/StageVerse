@@ -78,27 +78,27 @@ export default function DmxMonitor({ look, beams }) {
                 <div className="flex gap-1">
                     {universes.map((u) => (
                         <button key={u} type="button" onClick={() => setUniverse(u)} aria-pressed={u === shown}
-                            className={`rounded px-2 py-1 text-[10px] font-bold ${u === shown ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black' : 'bg-white/10 text-gray-300 hover:bg-white/15'}`}>
+                            className={`rounded px-2 py-1 text-xs font-bold ${u === shown ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black' : 'bg-white/10 text-gray-300 hover:bg-white/15'}`}>
                             UNIVERSE {u}
                         </button>
                     ))}
                 </div>
-                <span className="font-mono text-[10px] text-gray-400">{patch.length} fixtures · {used} channels</span>
+                <span className="font-mono text-xs text-gray-400">{patch.length} fixtures · {used} channels</span>
             </div>
             <canvas ref={canvas} width={COLS * CELL} height={ROWS * CELL} onMouseMove={onMove} onMouseLeave={() => setHover(null)}
                 className="w-full rounded border border-white/10" style={{ imageRendering: 'pixelated' }} role="img" aria-label={`The 512 channel values of universe ${shown}`} />
-            <p className="mt-1 h-4 font-mono text-[10px] text-gray-300">
+            <p className="mt-1 h-4 font-mono text-xs text-gray-300">
                 {hover
                     ? hover.info ? `ch ${hover.channel} = ${hover.value}  ·  ${hover.info.fixture.name}: ${hover.info.channel} (address ${hover.info.fixture.address})` : `ch ${hover.channel}: free`
                     : 'Point at a channel to see whose it is.'}
             </p>
-            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-400">
+            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-400">
                 {Object.entries(TYPE_COLORS).map(([type, color]) => (
                     <span key={type} className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: color }} />{type}</span>
                 ))}
             </div>
-            <p className="mt-1.5 truncate font-mono text-[9px] text-gray-500" title="Bytes 108-141 of this universe's sACN (E1.31) packet: priority, sequence, universe, the DMP header, then the first channel values">sACN {bytes}</p>
-            <p className="mt-1 text-[10px] leading-snug text-gray-500">What the show would send to a real rig: {universes.length} sACN packets of 638 bytes, 40 times a second. A simulation: nothing leaves this page.</p>
+            <p className="mt-1.5 truncate font-mono text-xs text-gray-400" title="Bytes 108-141 of this universe's sACN (E1.31) packet: priority, sequence, universe, the DMP header, then the first channel values">sACN {bytes}</p>
+            <p className="mt-1 text-xs leading-snug text-gray-400">What the show would send to a real rig: {universes.length} sACN packets of 638 bytes, 40 times a second. A simulation: nothing leaves this page.</p>
         </div>
     );
 }
