@@ -463,3 +463,109 @@ redirects once logged in, and that request failed. One `router.replace` now.
 
 Also: the navbar's links and active underline are orange, Sign up is orange and white on hover.
 `npm test`: **399 passing** (37 files) · lint: **0 errors** · build: passes.
+
+## The festival grounds and the site-wide UX pass (2026-11-12 to 2026-11-19, branch `upg-04-homepage`)
+
+Three new stages (warehouse, desert, mainstage) were built on their own test pages, then put on the homepage as a
+festival site the camera walks through. Then a UX pass over the whole site for first-time visitors.
+
+### BUG-42 — CO2, confetti, streamers and fireworks "didn't work" on the grounds' stages (commit 9239fb2)
+Situation: on the test pages every effect fired; on the homepage the keyboard's CO2 and a song's confetti did
+nothing at the warehouse, desert or mainstage.
+Cause: the effect shaders placed every plume, paper, ribbon and star in **world** coordinates. On a test page the
+stage sits at the origin, so world = stage. On the grounds the stages stand hundreds of metres away and turned, so
+the effects fired at the centre of the world: the live stage, dark at that moment.
+Fix: positions are computed in the stage's own frame and the effect meshes live inside the stage's group, so the
+group's transform places them. The same mistake was then checked for the beam shader (it aims in the stage's frame)
+and the mainstage's wall visuals (lined up with the fins when the stage is turned).
+Lesson: a component that works at the origin isn't proven until it's tested under a transform.
+
+### BUG-43 — Every stage looked soft on the homepage next to its test page (commit 781557e)
+The homepage lowered its render resolution when the frame rate dipped (85%, then 75%). With four stages on one page
+it dipped often, so the stages stayed blurry. The step-down now only drops bloom (off by default anyway since
+7be26e1); the resolution stays native. Only the stage being visited is lit; the others keep a cheap standby glow.
+
+### BUG-44 — Gaps in the floor-beam row along the deck front (commit 5e5a3f6)
+A stage with more moving heads than the machine draws (160, or 96 on slower machines) was thinned evenly in every
+group, which dropped floor beams out of the one straight row the eye reads (on the mainstage at 96: eight of 18).
+Every floor beam is now always drawn and the other groups share what's left.
+
+### BUG-45 — Some mainstage cues never played (commits 90d5880, a446fc5)
+The laser cathedral took "every second laser moment of a peak", and songs have one or two, so it never played; the
+silhouette played twice in ten songs. The fix was a planner, not a tweak: each moment only takes cues that fit it,
+the least-played fitting cue goes next, so every cue plays before any repeats, and a cue's speed is a multiple of
+the song's tempo. A test checks every mainstage cue is used by the demo songs.
+
+### BUG-46 — Confetti cannons fired twice in one place, others never (commit 15cbd83)
+The extra cannon sets were picked so they shared mounts with the usual set: 9 different cannons fired, 3 of them
+twice. Every set now takes every k-th mount starting from the usual set: 12 cannons, 12 launchers, each its own.
+
+### BUG-47 — The screen froze on the first firework, laser or strobe (commit ed9f557)
+Two causes. (1) The finale's "silent" flag was read in a helper that never received it, so every burst threw an
+error inside the frame loop. (2) three.js compiles a material the first time its object is drawn, and the warm-up
+skips hidden objects; lasers, strobe glows and the flash veil start hidden, so each compiled mid-show. The warm-up
+now compiles them too.
+
+### BUG-48 — Green lasers drew white; a bright blob at every laser projector (commits 0fb81af, 5b75e61, 0272446)
+The laser core pushed every colour channel past full, so it clipped to white. The core is now as bright as it goes
+**in its own colour**. The glow round each beam stacked where a fan's beams overlap (at the projector, and end-on
+towards the camera): it was faded in along the beam, faded as a beam turns to the viewer and divided by the number
+of lit beams, and later removed entirely.
+
+### BUG-49 — The two-colour focus showed white (commit e53a1c2)
+Both colours' beams met on one point, and additive blending added them up to white. Each colour now meets on its
+own point, side by side: 1.6 m either side on the live stage and the warehouse, 2.4 m on the desert, 3.2 m on the
+mainstage (the live stage's beam shader learnt a `uSplit` uniform).
+
+### BUG-50 — The scroll fought the visitor (commits c104a31, 3d4e2d4, 73339d6, 92060b4)
+Situation: a fast scroll zapped through the grounds or stopped between two sections; scrolling up sometimes didn't
+work; visitors couldn't reach the events below the show (it pulled them back to the playground).
+Causes: the show followed the raw scroll position, the browser's own scroll snapping fought the page's settling, a
+second flick during a glide raced it, and the settling ran everywhere, not only inside the show.
+Fix: a small state machine. Every section dot is a fixed moment on a fixed stage; a gesture, key, swipe or click
+moves exactly one dot, played as a glide of a set length whatever the scroll speed; the rest of the gesture is
+ignored; a change of direction is a new gesture and turns a glide back at once; settling happens only inside the
+show; CSS scroll-snap is gone. During a song, and while the genre help is open, the page holds still.
+Interview version: "I stopped treating scroll as a position and started treating it as intent: one gesture means
+one step. That removed a whole class of races between the browser, the trackpad's momentum and my animation."
+
+### BUG-51 — Removing a console 401 broke a security test (fixed in 08918bf)
+A never-signed-in visitor saw a 401 from `/api/auth/me` in the console. Making that route return 200 for "nobody"
+failed the BUG-11 security test (it must stay 401). Reverted; instead the navbar doesn't ask at all when the browser
+has never signed in. The tests caught a fix that would have weakened auth for a cosmetic reason.
+
+### BUG-52 — A pop-up trapped inside the hero (commit dd7352e)
+The "Get tickets" coming-soon pop-up was `position: fixed`, but inside a hero with a CSS `transform`, which makes
+fixed children position against the hero, not the window. It's rendered with `createPortal` into `document.body`.
+
+### BUG-53 — Task due dates in the year 2001 (commit 0f435e5)
+`formatDue` (`app/api/production/tasks/route.js`) passed free-text strings like "Fri 14:00" to `new Date()`, which
+guessed a year. It now only parses ISO dates and shows anything else as written.
+
+### BUG-54 — Create Event rejected after Publish (commit 96735c0)
+The form sent events the server's schema rejects (no description, time, city or artist), so the organizer only
+learnt at the end. The form now checks every field the server needs before sending and says what is missing under
+each one; the draft is saved as you type.
+
+### BUG-55 — An automated accessibility fix that broke the build (commit ecce3d3)
+A script added names to 97 icon buttons and 82 fields. Its first run inserted attributes after the `/` of
+self-closing tags. Reverted with git, fixed the insertion point, re-ran, and reviewed the diff (one attribute had
+landed inside a `//` comment and was fixed by hand). Lint and build checked after.
+
+### Tooling: leaked headless browsers slowed the machine
+Screenshot scripts started headless Edge and, on errors, left it running: about 140 processes at once, and lint and
+tests started timing out. Every script now kills its own browser's whole process tree on exit (`taskkill /T`), and
+cleanup only matches the scripts' own temporary profiles, never the user's browser.
+
+### Features in this release
+- **The festival grounds**: four stages, one lit at a time, a walk between them; each persona at its own stage.
+- **Stage-specific rules**: the mainstage's 16 cues and planner, the warehouse's club looks and circling camera, the
+  desert's higher shells and once-each-way three-quarter shots.
+- **Camera views**: Show / Audience / Artist, keys 1 2 3; every song starts on Show.
+- **Nov 12**: crowd with LED wristbands, performers, share link, poster, How it works, DMX monitor, the 3D stage in
+  the dashboards, Playwright browser tests.
+- **Site**: no ticketing (ticket information and a platform button instead), one-click demo sign-in, one menu for
+  every role, real data on the organizer dashboard, event photos rendered from our own stages, an accessibility
+  sweep, Vercel Web Analytics with named events.
+
+`npm test`: **495 passing** (45 files) · lint: **0 errors** · build: passes.

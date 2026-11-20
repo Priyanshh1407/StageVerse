@@ -11,6 +11,10 @@ tower strobes, 8 laser projectors, flown 16-box line arrays, and a line of subwo
 barrier on the ground in front. Nine hand-marked demo songs (EDM, pop, rap, Bollywood) play with their
 own programmed shows, and any song a visitor picks is analysed in the browser with its genre's settings.
 
+**Now (Nov 2026):** the live stage is one of four stages on a festival site (a warehouse, a desert stage and a
+mainstage stand outside its gate). Jump to [The festival grounds](#the-festival-grounds-nov-1219-2026-the-current-homepage)
+for how the homepage works today; the sections in between are the live stage's design history.
+
 ## How it stays fast on integrated graphics
 
 The `/test-3d` prototype used ~89 real lights (drei volumetric SpotLights and pointLights),
@@ -552,12 +556,166 @@ the poster tier doesn't wait for 3D. Measured: revealed at about 6 s on the Iris
 - **Author credit**: "Designed and built by Priyansh Waghela" in the site footer and on the loading screen, and the
   page metadata names him as author and creator (`components/brand/BuiltBy.jsx`).
 
-## Festival stages (in progress: test pages only)
+## The festival grounds (Nov 12–19, 2026): the current homepage
 
-Three new stages are being built on their own test pages before anything reaches the homepage (the plan is `private/STAGE_BUILD_PLAN.md`). The homepage's files are not edited while this happens.
+> This section and the ones after it describe the homepage as it is now. Where an older section above
+> disagrees (9 scroll stops, the encore, scroll snapping, "phones get the scroll show only"), this one wins.
 
-- **Definitions** (`lib/show/stages/`): each stage as plain data, built from its layout: structure, LED surfaces, moving heads with a role (aerial, sides, floor, wash) and a beat number, strobes, blinders, lasers, pixel bars, effect mounts, crowd area, camera shots, home genres (EDM mainstage, pop and Bollywood desert, rap warehouse). `rig.js` turns a definition into what the components draw (base pan and tilt for the beam shader, a light count thinned evenly across roles, 6 floor and 4 high CO2 jets, 4 confetti cannons, 3 streamer launchers, firework launches moved onto the stage). `screenFx.js` picks the LED screens' animation.
-- **Renderer** (`components/home/stage/festival/`): copies of the homepage's components that take positions from a definition (heads, strobes, lasers, CO2, confetti, streamers, fireworks, crowd), and new code for the structure, the LED screens (six animations: equaliser, centre-out sweep, chase, strobe frames, colour wipe, sparkle) and the pixel bars (any angle, one draw call). Haze and the performer are the homepage's own, placed with a transform.
-- **Test pages**: `/lab/desert` shows the built desert stage (looks, the demo songs, camera shots, an optional camera that follows the show, the light count, an FPS counter; `?layout=1` for the grey layout; `?song=<slug>&t=<s>` starts a song at a moment). `/lab/mainstage` and `/lab/warehouse` still show their layouts.
-- `r3f-perf` crashed Turbopack's development build ("invalid utf-8 ... source map"); the festival test page uses its own FPS counter instead.
+The homepage is now a festival site with four stages. The live stage described above is still where the visit
+starts and ends; the three festival stages stand outside its gate, each built first on its own test page and
+then put on the grounds as that page's own scene (the same fixtures, effects, crowd and performer).
 
+| Stage | Look | Home genres | Persona met there | Test page |
+|---|---|---|---|---|
+| **Live stage** | The original festival main stage (64 moving heads, 8 lasers, an LED wall) | any | Crew | (the homepage) |
+| **Warehouse** | A club: low roof, tight truss grid, the wordmark on a back LED screen, a club PA, lasers firing down over the crowd, CO2 only (no confetti, streamers or fireworks indoors) | rap | Organizer | `/lab/warehouse` |
+| **Desert stage** | A wide black roof stage, one big LED wall with the wordmark, two portrait side screens with moving heads under them, palms, mountains, a ferris wheel, a sunset sky that turns to night as a song builds | pop, Bollywood | Fan | `/lab/desert` |
+| **Mainstage** | Original "winged fins" design: six angled LED fins a side, a chevron crown, one LED wall, an LED DJ booth, 4-high sub stacks with the strobes on top, flown PA | EDM | Artist | `/lab/mainstage` |
+
+All stage designs are original StageVerse designs in the style of big festival stages; no festival's name, logo or
+stage is copied.
+
+### How a stage is built
+- **One definition per stage** (`lib/show/stages/`): plain data built from its layout file (`mainstageLayout.js`,
+  `desertLayout.js`, `warehouseLayout.js`): the structure, LED surfaces, moving heads with a role (aerial, sides,
+  floor, wash, spot) and a beat number, strobes, blinders, lasers, pixel bars, effect mounts, the crowd area, camera
+  shots and home genres. `rig.js` turns a definition into what the components draw.
+- **One renderer for all three** (`components/home/stage/festival/`): moving heads with the same vertex-shader beams,
+  LED screens (equaliser, sweep, chase, strobe frames, colour wipe, sparkle, and real main-stage visuals as one
+  canvas on the mainstage), pixel bars at any angle, one draw call per kind.
+- **Shows stay role-based**: a show says "aerials sweep, floor beams fan", never "fixture 12", so any song plays on
+  any stage. Each stage can add rules on top:
+  - the **mainstage** has 16 cues of its own (sky spears, crossed swords, wide wings, starburst, scissors, pixel
+    storm, wall of light, laser cathedral, crowd rake, ripple, low tide, odd-even chop, sunrise, the pyramid,
+    silhouette, lone sweeper) that take about half of every song. Each moment only takes cues that fit it (peak cues
+    in peaks, quiet ones in calm parts), the least-played fitting cue goes next so every cue plays before any
+    repeats, and a cue's speed is a multiple of the song's own tempo (`mainstageCues.js`). A test checks every one
+    of them is used by the demo songs.
+  - the **warehouse** turns every look into a club look (mirror-ball moments, tight single-colour scans, strobe and
+    laser ramps, bar-start strobe hits) and its camera circles the room once or twice a song instead of cutting
+    (`club.js`, `orbit.js`).
+  - the **desert** bursts its firework shells higher (its roof and side screens are taller than the stage the shows
+    were made for).
+- **The floor row is never thinned.** When a machine draws fewer heads than a stage has (160, or 96 on slower
+  machines), every floor beam is always drawn and the other groups share the rest, so the straight row along the
+  deck front never has gaps.
+- **Effects in the stage's own frame.** CO2, confetti, streamers and fireworks compute their positions in the stage's
+  frame and are placed with its group, so a stage turned to face the avenue fires them at itself (they used to fire
+  at the centre of the world; see FIX_LOG).
+
+### The visit (scroll)
+The scroll has **8 places it rests** (`STOPS` in `components/home/show/scrollShow.js`): the gate, house lights, the
+rig comes up, Crew (live stage), Organizer (warehouse), Fan (desert), Artist (mainstage) and Your turn (the
+playground). The drop plays on the way from the Artist back to the live stage. The encore section is out for now.
+
+- **Each dot is a fixed moment on a fixed stage.** A scroll gesture, an arrow/Page/Space key, a swipe or a click on
+  a dot moves exactly **one** section, as a glide of a set length (1.6 s; 4.2 s through the riser and the drop),
+  whatever the scroll's speed. The rest of a gesture and a second flick during a glide are ignored, so it never skips
+  or stops between sections.
+- **Scrolling the other way during a glide turns it back at once**, even mid-coast on a trackpad (a change of
+  direction starts a new gesture).
+- **The camera walks, it doesn't fly**: it backs away from the stage it is at (watching it go dark), turns on the
+  spot the short way round and walks forward to the next stage, at eye level, 8 s a walk. It walks straight to the
+  stage asked for from anywhere, and asked for another stage mid-walk it turns from where it is. Tests check all 20
+  possible walks, and every mid-walk turn, stay clear of the gate's wall and every stage.
+- **One stage lit at a time**: the stage left goes dark before the next lights; unlit stages keep a faint standby
+  glow. At the persona stages every light group is on but low, with the persona on the LED wall.
+- **Below the show the page scrolls freely**: the show only settles on a section while you're inside it. Coming back
+  up from below lands on the playground first. The browser's own scroll snapping is gone (it fought the settling).
+- **Skip to events** on every section and on the loader takes you straight past the show.
+- During a song the wheel and swipes don't scroll the stage away; a list that can scroll scrolls itself, and while
+  the "Which genre is my song?" help is open only its panel scrolls (`scrollHeld`).
+- `NEXT_PUBLIC_FEATURE_FESTIVAL=off` keeps the whole scroll on the live stage.
+
+### The playground
+- **Pick the stage** with arrows that walk the camera round the four stages; the card says which genres each stage
+  is best for and picks the first. The song chosen plays on that stage with its own cues, looks and camera.
+- **The songs are the big buttons**; "Light up your song" analyses a visitor's own file in the browser.
+- **Phones** get one plain card (the songs and a link to copy for a computer) instead of controls that can't run
+  there; the section dots are hidden on phones.
+
+### Cameras during a song
+- **Show / Audience / Artist**: a switch on its own row in the now-playing bar, or keys **1, 2, 3**. Every song starts
+  on **Show** (the show's own camera), never on the view picked in the last song.
+  - **Show**: the shots the song's program calls (house, dolly, left, right, drop, high, finale, sky). The same rule
+    films a stage on its test page and on the homepage (`lib/show/stages/camera.js`); a test checks they put the
+    camera in the same place.
+  - **Audience**: eye level in the crowd, far enough back that the whole stage fits the visitor's screen
+    (`audienceShot(frame, aspect)` works the distance out from the window's shape).
+  - **Artist**: from in front of the DJ booth or the singer, out over the crowd, so no performer blocks it.
+- **Desert three-quarter shots** play once each way a song (the first turn left, the second right, later ones stay in
+  front; a song with fewer turns borrows a front shot): `planQuarterShots` in `mainstageCues.js`.
+- **While fireworks are up** the camera stands back and looks up (the sky shot) on every stage.
+- **Mainstage finale**: from 12 shells in the air at once, the beams come down to 80% and the floor beams point out at
+  the audience, so the fireworks are the focus.
+
+### Two-colour focus
+In the focus cue each colour's beams meet on their own point, side by side, so both colours show instead of adding
+up to white: 1.6 m either side of centre on the live stage and the warehouse (`FOCUS_SPLIT` in
+`lib/show/timeline.js`), 2.4 m on the desert, 3.2 m on the mainstage (the `uSplit` uniform in the beam shader).
+
+### The now-playing bar
+Song, time and the view switch; one row with **Link** (opens this song at this moment: `/?song=<slug>&t=<s>`),
+**Poster** (saves the stage as it looks now), **How it works** (tempo, beat, loudness, section and one line on why
+the rig is doing what it does), and the live **CO2 · Space** and **Confetti · Shift** buttons. The row stays on one
+line (the bar is 38rem wide; a narrow window scrolls the row).
+
+### Also on the homepage (Nov 12)
+- **Crowd with LED wristbands**: one instanced mesh, one draw call. It bounces on the beat, sways in quiet parts,
+  jumps with hands up only in the peaks, holds up phone torches in calm sections, and its wristbands flash in the
+  show's two colours in a pattern that changes every 16 beats (`look.crowd`).
+- **Performer**: a DJ behind a booth (EDM, rap) or a five-piece band (pop, Bollywood), lit by the washes.
+- **Live DMX monitor** on the desk: the rig is patched with the project's own allocator (100 fixtures over three
+  universes) and the 512 values of each universe update ten times a second, with the sACN (E1.31) packet bytes
+  shown. A simulation: nothing leaves the page.
+- **The 3D stage in the dashboards**: fans' "Watch the stage live" follows the real show (standby, live, paused,
+  crew warnings) and takes its colours from the encore vote; the crew's "View on stage" in the patch studio draws the
+  stage with the patch's own fixture counts.
+- **Social card, sitemap and robots.txt**; a 30-second fireworks finale.
+- **Bloom is off by default** everywhere (`NEXT_PUBLIC_FEATURE_BLOOM=on` brings it back), and the page no longer
+  lowers its resolution when the frame rate dips (only bloom is dropped), so the stages stay sharp.
+
+### Feature switches
+Every newer feature can be turned off in the environment and rebuilt (`lib/features.js`, listed in `.env.example`):
+`NEXT_PUBLIC_FEATURE_CROWD`, `_PERFORMER`, `_SHARE`, `_HOW_IT_WORKS`, `_LIVE_SECTIONS`, `_DMX_MONITOR`,
+`_PATCH_STAGE`, `_LIVE_STAGE`, `_FESTIVAL` (all on unless set to `off`) and `_BLOOM` (off unless set to `on`).
+
+### Test pages
+`/lab/desert`, `/lab/mainstage`, `/lab/warehouse`: looks, the demo songs, camera buttons (including Audience and
+Artist), an FPS counter, a cue tester that holds any of the shows' cues, and "Your own song" (pick a genre and a file;
+analysed in the browser with the homepage's worker). URL options: `?layout=1` (grey layout), `?song=<slug>&t=<s>`,
+`?cue=<name>`, `?only=aerial|sides|floor|wash`, `?cam=x,y,z&target=x,y,z`. `/lab/festival` is the walk between the
+stages on its own. Where each number that shapes the lights lives: [`STAGE_TUNING.md`](STAGE_TUNING.md).
+
+## The rest of the site (Nov 19, 2026)
+
+A UX pass so a first-time visitor (often coming from a social media link) gets through with the least work:
+
+- **Homepage**: the loader covers only the stage (below the menu) with **Skip to events**; the first screen says what
+  StageVerse is, with **Watch the show** and **Find events**; each persona's line is also text with a sign-up link
+  for that role; "Coming up soon" (real upcoming events, a swipe row on phones); "View event" and "from $45" (no
+  Buy); a footer with only pages that exist (new Privacy and Terms pages).
+- **No ticketing.** The event page shows the ticket information (when, where, prices, where they are sold) and a
+  **Get tickets on <platform>** button that says buying from here is coming soon. Organizers set the platform and an
+  optional link (`ticketsAt`) on Create Event. My Tickets, Ticketing and order Reports redirect.
+- **Sign-in and sign-up**: one-click **Try as Fan / Artist / Organizer / Crew** (the public demo accounts), show
+  password, plain errors next to each field, a return to the page you were opening (`?next=`, only ever a page on
+  this site), role cards on sign-up, signed in straight away. No Google button (it did nothing). Fans' profiles
+  use only their own name and initials (no made-up city or bio).
+- **One menu for every role** (`components/shell/RoleSidebar.jsx`), the same names everywhere; the crew's tools open
+  on the show in the address or the last one picked.
+- **Real data, no dead buttons**: the organizer dashboard on real numbers (upcoming shows, artists booked, shows with
+  a crew, shows by city); Get directions opens a map; share and copy-link work; the tech rider downloads as JSON;
+  buttons with nothing behind them are gone.
+- **Event photos from our own stages**: 11 renders of the three festival stages (`public/images/events`), picked by
+  genre and stable per event (`lib/eventImages.js`); an event's own picture always wins.
+- **Forms**: Create Event checks every field before sending, saves a draft as you type and remembers the last venue;
+  the Events page remembers its filters.
+- **Accessibility**: no text under 12 px, every icon button named with a 44 px tap area, every field labelled,
+  lighter greys for contrast.
+- **Analytics**: Vercel Web Analytics (`<Analytics />` in `app/layout.js`) counts visitors, page views and where
+  they came from (referring sites; UTM tags depend on the Vercel plan); named events record who tried it: Try demo, Sign up, Play song, Light up own
+  song, Open lighting desk, Get tickets. Nothing is sent in development.
+
+### Note on the test pages
+- `r3f-perf` crashed Turbopack's development build ("invalid utf-8 ... source map"); the festival test pages use their own FPS counter instead.

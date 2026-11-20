@@ -3,8 +3,8 @@
 Where every number that shapes the light show lives, and what changing it does. Change a value, save, and the dev server reloads the page. Test on the stage pages (section 9) before touching the homepage.
 
 There are two kinds of stage:
-- **The homepage stage** (today's): `components/home/stage/` (`rigLayout.js`, `Fixtures.jsx`, ...).
-- **The festival stages** (desert, warehouse, mainstage; test pages only for now): their layouts in `lib/show/stages/`, their renderer in `components/home/stage/festival/`.
+- **The live stage** (where the homepage visit starts): `components/home/stage/` (`rigLayout.js`, `Fixtures.jsx`, ...).
+- **The festival stages** (desert, warehouse, mainstage; on their test pages and on the homepage's grounds, the same scene): their layouts in `lib/show/stages/`, their renderer in `components/home/stage/festival/`.
 
 The **shows** (cues, what each section does) are shared by both and live in `lib/show/program.js`.
 

@@ -335,12 +335,45 @@ broken effect simply doesn't show.
 8. Side towers: in a peak, both towers light (alternating looks run up and down each tower, both sides).
 9. Lighting desk → EFFECTS and FIREWORKS: every button fires; FINALE plays; the colour scheme and sound toggle work.
 
+## 10d. The festival grounds (Nov 2026)
+
+| # | Check | Steps | Expected |
+|---|---|---|---|
+| 10d.1 | One step per gesture | Scroll, press the arrow/Page keys, swipe or click a dot inside the show | Exactly one section moves each time, however fast you scroll; it never stops between two sections |
+| 10d.2 | Both directions | Scroll down, then up during a glide | The glide turns back at once |
+| 10d.3 | The walk | Go from Crew to Organizer, Fan, Artist | The camera backs away, turns and walks to the warehouse, the desert stage and the mainstage; one stage lit at a time |
+| 10d.4 | Below the show | Scroll past the playground, then back up | The page scrolls freely below; coming back up lands on the playground |
+| 10d.5 | Skip to events | Press Skip to events on the loader and on any section | You land on "Coming up soon" and stay there |
+| 10d.6 | Stage picker | In the playground, use the arrows, then play a song | The camera walks to each stage; the song plays on the one chosen, with its own cues and camera |
+| 10d.7 | Views | During a song press 1, 2, 3 (or the switch) | Show, Audience (the whole stage from the crowd), Artist (from the booth, no performer in the way); the next song starts on Show |
+| 10d.8 | Effects on every stage | During a song on each stage hold Space, then Shift | CO2 and confetti fire at that stage |
+| 10d.9 | Two-colour focus | Watch a focus cue | Two colours side by side, not white |
+| 10d.10 | Genre help | Open "Which genre is my song?" and scroll | Only the panel scrolls; the page holds still |
+| 10d.11 | Now-playing row | During a song | Link, Poster, How it works, CO2, Confetti on one line |
+| 10d.12 | Phones | DevTools device toolbar, a phone size | The scroll show plays, no section dots, the playground is one card with a link to copy |
+| 10d.13 | Test pages | `/lab/desert`, `/lab/mainstage`, `/lab/warehouse` | Each stage, its songs, camera buttons, the cue tester, "Your own song" |
+
+## 10e. The site after the UX pass (Nov 2026)
+
+| # | Check | Steps | Expected |
+|---|---|---|---|
+| 10e.1 | One-click demo | `/login` → Try as Fan / Artist / Organizer / Crew | Signed in to that demo account, on its dashboard |
+| 10e.2 | Return path | Signed out, open `/manage/dashboard` | Sent to `/login?next=…`; after logging in as the organizer you land on `/manage/dashboard` |
+| 10e.3 | Sign-up | `/signup?role=artist`, submit empty, then a real one | Artist pre-picked; every problem shown at once; signed in straight away (creates a real account) |
+| 10e.4 | No ticketing | An event page → Get tickets | Ticket information card; a "Coming soon" box; `/ticket`, `/ticketing`, `/reports` redirect |
+| 10e.5 | One menu | Log in as each role | The same menu everywhere: who you are, your pages, Back to the site, Log out |
+| 10e.6 | Real data | Organizer dashboard | Upcoming shows, artists booked, shows with a crew, your shows by city; no revenue or made-up charts |
+| 10e.7 | Event photos | Event pages, homepage cards, Events page | Renders of our own stages, by genre, the same photo for the same event |
+| 10e.8 | Create Event | Publish with fields empty; leave and come back | Every missing field marked; the draft comes back with Start over |
+| 10e.9 | Readability | Any page, on a phone | No text under 12 px, big tap areas, tooltips on icon buttons |
+| 10e.10 | Analytics | Deployed site → Vercel project → Analytics | Visitors and page views; events Try demo, Sign up, Play song, Light up own song, Open lighting desk, Get tickets (custom events depend on the plan; nothing is counted on localhost) |
+
 ## 11. Automated tests (Git Bash)
 
 Run from the project folder (`cd /d/Projects/stageverse`). None of these touch your real database: the tests start an in-memory MongoDB (the first run downloads a ~100 MB `mongod` binary and caches it) and mock every AI provider.
 
 ```bash
-# Everything: 392 tests in 36 files, about 1-2 minutes
+# Everything: 495 tests in 45 files, a few minutes
 npm test
 
 # Watch mode while editing (re-runs affected tests on save)
