@@ -48,6 +48,8 @@ const VIEWS = [['show', 'Show'], ['audience', 'Audience'], ['artist', 'Artist']]
 const LIVE_FX = {
     co2: { kinds: ['co2', 'co2Truss'], label: 'CO2', key: 'Space' },
     confetti: { kinds: ['confetti'], label: 'Confetti', key: 'Shift' },
+    // the strobes while held (S), over the song's own look
+    strobe: { kinds: [], label: 'Strobe', key: 'S', strobe: true },
 };
 // The logo's two faces, for the LED wall and the gate sign (drawn into canvases, so passed by name)
 const LOGO_FONTS = { tag: logoTag.style.fontFamily, script: logoScript.style.fontFamily };
@@ -373,13 +375,20 @@ function ShowExperience({ events = [], isPhone = false }) {
             // playing (7) keeps the page where it is
             if (scrollsItself(e.target, dir)) return;
             if (c.scrollHeld || songOn(c)) { e.preventDefault(); return; }
-            if (c.mode !== 'scroll' || !staysIn(dir)) return;
-            e.preventDefault();
+            if (c.mode !== 'scroll') return;
             const now = performance.now();
             // a new gesture: after a pause, or (5) the other way, even mid-coast
             if (now - (c.lastWheel ?? 0) > GESTURE_GAP_MS || dir !== c.wheelDir) c.gestureStepped = false;
             c.lastWheel = now;
             c.wheelDir = dir;
+            if (!staysIn(dir)) {
+                // leaving the show (down past the playground): only a new gesture, once the glide has landed. The rest
+                // of the gesture that brought the show here (a wheel's or trackpad's coasting) is ignored: it scrolled
+                // the page on past the playground while the glide was still running, and the glide pulled it back
+                if (c.gestureStepped || (c.gliding && dir === c.glideDir)) e.preventDefault();
+                return;
+            }
+            e.preventDefault();
             if (c.gestureStepped) return;
             c.gestureStepped = step(dir) || c.gliding;
         };
@@ -405,7 +414,9 @@ function ShowExperience({ events = [], isPhone = false }) {
             const dir = Math.sign(dy);
             if (!dir || scrollsItself(e.target, dir)) return;
             if (c.scrollHeld || songOn(c)) { e.preventDefault(); return; }
-            if (c.mode !== 'scroll' || !staysIn(dir)) return;
+            if (c.mode !== 'scroll') return;
+            // (the swipe that stepped, or a glide still landing, doesn't also scroll the page out of the show)
+            if (!staysIn(dir)) { if (touch.stepped || (c.gliding && dir === c.glideDir)) e.preventDefault(); return; }
             e.preventDefault();
             if (!touch.stepped && Math.abs(dy) > 40) touch.stepped = step(dir);
         };
@@ -639,13 +650,17 @@ function ShowExperience({ events = [], isPhone = false }) {
 
     // --- Live effects during a song (space bar: CO2, shift: confetti) ---------------------
     // Only while a song's light show runs; the show isn't taken over (unlike the lighting desk)
-    const [liveOn, setLiveOn] = useState({ co2: false, confetti: false });
+    const [liveOn, setLiveOn] = useState({ co2: false, confetti: false, strobe: false });
     const liveHold = useCallback((which, down) => {
         const c = control.current;
         if (down && c.mode !== 'song') return;
         const now = performance.now();
         c.live = c.live || {};
         let changed = false;
+        if (LIVE_FX[which].strobe && Boolean(c.liveStrobe) !== down) {
+            c.liveStrobe = down;
+            changed = true;
+        }
         for (const kind of LIVE_FX[which].kinds) {
             const fx = DESK_EFFECTS[kind];
             const list = c.live[kind] || [];
@@ -666,7 +681,7 @@ function ShowExperience({ events = [], isPhone = false }) {
     // The keys, while a song's light show runs (not while typing in a field): held = firing
     useEffect(() => {
         if (mode !== 'song' || !song.playing) return undefined;
-        const which = (e) => (e.code === 'Space' ? 'co2' : e.key === 'Shift' ? 'confetti' : null);
+        const which = (e) => (e.code === 'Space' ? 'co2' : e.key === 'Shift' ? 'confetti' : e.code === 'KeyS' && !e.altKey && !e.ctrlKey && !e.metaKey ? 'strobe' : null);
         const typing = (e) => {
             const t = e.target;
             return t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
@@ -686,7 +701,7 @@ function ShowExperience({ events = [], isPhone = false }) {
             if (!typing(e)) e.preventDefault();
             liveHold(w, false);
         };
-        const release = () => { liveHold('co2', false); liveHold('confetti', false); };
+        const release = () => { liveHold('co2', false); liveHold('confetti', false); liveHold('strobe', false); };
         window.addEventListener('keydown', down);
         window.addEventListener('keyup', up);
         window.addEventListener('blur', release); // switching window mid-hold: let go
@@ -702,7 +717,8 @@ function ShowExperience({ events = [], isPhone = false }) {
     const stopSong = useCallback(() => {
         const c = control.current;
         c.live = null; // anything still held stops with the song
-        setLiveOn({ co2: false, confetti: false });
+        c.liveStrobe = false;
+        setLiveOn({ co2: false, confetti: false, strobe: false });
         // effects still in the air carry on to their end (unless the song had already ended: then they already are)
         if (c.mode === 'song' && c.song && c.audio && !c.houseUpAt) c.linger = { song: c.song, t: songTime(c), at: performance.now() };
         clearTimeout(c.afterShow);
@@ -1127,13 +1143,13 @@ function ShowExperience({ events = [], isPhone = false }) {
                         {mode === 'song' && (
                             <>
                                 {Object.entries(LIVE_FX).map(([which, fx]) => (
-                                    <button key={which} type="button" aria-pressed={liveOn[which]} aria-keyshortcuts={fx.key === 'Space' ? 'Space' : 'Shift'}
+                                    <button key={which} type="button" aria-pressed={liveOn[which]} aria-keyshortcuts={fx.key}
                                         onPointerDown={(e) => { e.currentTarget.setPointerCapture?.(e.pointerId); liveHold(which, true); }}
                                         onPointerUp={() => liveHold(which, false)} onPointerCancel={() => liveHold(which, false)} onLostPointerCapture={() => liveHold(which, false)}
                                         onContextMenu={(e) => e.preventDefault()}
                                         title="Hold to fire. The show carries on."
-                                        className={`shrink-0 select-none touch-none px-2.5 py-1 rounded-lg border text-xs font-black tracking-wider transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
-                                        {fx.label} <kbd className={`ml-0.5 px-1 py-0.5 rounded font-mono text-xs font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
+                                        className={`shrink-0 select-none touch-none px-2 py-1 rounded-lg border text-xs font-black tracking-wide transition-colors ${liveOn[which] ? 'bg-gradient-to-r from-[#ffb000] via-[#ff6a00] to-[#ff3d7a] text-black border-purple-300' : 'bg-white/10 border-white/15 hover:bg-white/20'}`}>
+                                        {fx.label} <kbd className={`px-1 py-0.5 rounded font-mono text-xs font-normal ${liveOn[which] ? 'bg-black/20' : 'bg-white/15'}`}>{fx.key}</kbd>
                                     </button>
                                 ))}
                             </>

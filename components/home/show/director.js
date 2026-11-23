@@ -80,6 +80,8 @@ const LIVE = [
  * or cannon the newer firing shows.
  */
 function withLive(control, look) {
+    // the strobe key (S) held: the strobes flash over whatever the song is doing
+    if (control.liveStrobe) look = { ...look, strobe: 1 };
     const live = control.live;
     if (!live) return look;
     const now = performance.now();
@@ -131,7 +133,7 @@ function baseState(control) {
             for (const key of EFFECT_KEYS) delete look[key];
             return { ...state, look: withLive(control, venueLit(look, k)), name: 'House lights' };
         }
-        return control.live ? { ...state, look: withLive(control, state.look) } : state;
+        return control.live || control.liveStrobe ? { ...state, look: withLive(control, state.look) } : state;
     }
     // The director smooths scroll progress (wheel notches arrive in jumps); fall back to the raw value
     const progress = control.smoothProgress ?? control.progress;
