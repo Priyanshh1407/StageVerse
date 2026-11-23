@@ -69,6 +69,9 @@ const DROP_MS = 4200;
 const GESTURE_GAP_MS = 220;
 // After a song: the house lights come up, hold, then the playground returns (ms, including the fade)
 const AFTER_SHOW_MS = HOUSE_UP_MS + 5000;
+// A song is on stage: its own show (song), or the lighting desk took over while it plays (manual)
+const songOn = (c) => c.mode === 'song' || (c.mode === 'manual' && Boolean(c.audio) && !c.audio.paused);
+
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 // A hidden overlay is inert: its buttons can't take taps or focus. pointer-events-none alone isn't enough,
@@ -369,7 +372,7 @@ function ShowExperience({ events = [], isPhone = false }) {
             // a list that can scroll that way scrolls itself; a panel holding the show (the genre help) or a song
             // playing (7) keeps the page where it is
             if (scrollsItself(e.target, dir)) return;
-            if (c.scrollHeld || c.mode === 'song') { e.preventDefault(); return; }
+            if (c.scrollHeld || songOn(c)) { e.preventDefault(); return; }
             if (c.mode !== 'scroll' || !staysIn(dir)) return;
             e.preventDefault();
             const now = performance.now();
@@ -401,7 +404,7 @@ function ShowExperience({ events = [], isPhone = false }) {
             const dy = touch.y - (e.touches[0]?.clientY ?? touch.y);
             const dir = Math.sign(dy);
             if (!dir || scrollsItself(e.target, dir)) return;
-            if (c.scrollHeld || c.mode === 'song') { e.preventDefault(); return; }
+            if (c.scrollHeld || songOn(c)) { e.preventDefault(); return; }
             if (c.mode !== 'scroll' || !staysIn(dir)) return;
             e.preventDefault();
             if (!touch.stepped && Math.abs(dy) > 40) touch.stepped = step(dir);
@@ -815,7 +818,9 @@ function ShowExperience({ events = [], isPhone = false }) {
     const now = song.current;
     const songSection = now?.sections.find((s) => song.time >= s.start && song.time < s.end);
     const deskCounts = { ...counts, beams: counts.beams ?? BEAM_COUNTS[0] };
-    const showOverlays = mode !== 'song';
+    // the scroll's cards and the playground (its song list) only between songs: taking the lights over on the
+    // desk during a song (manual) keeps them hidden, as the song plays on
+    const showOverlays = mode === 'scroll' || (mode === 'manual' && !song.playing);
     // The lighting desk offers the first demo song
     const firstDemo = song.demos[0];
     const songControls = { available: Boolean(firstDemo), title: firstDemo?.title, playing: song.playing, play: () => firstDemo && playDemo(firstDemo), stop: stopSong };
