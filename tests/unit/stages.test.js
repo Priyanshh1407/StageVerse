@@ -267,12 +267,25 @@ describe('the mainstage changes', async () => {
         expect(Math.max(...launchers)).toBeGreaterThan(10);
     });
 
-    it('changes nothing on the other stages', () => {
+    it('changes nothing on the other stages (the desert has more confetti and CO2 of its own, below)', () => {
         for (const key of ['desert', 'warehouse']) {
             const st = STAGES[key];
-            for (const k of ['frame', 'headTune', 'laserStrength', 'moreEffects']) expect(st[k], `${key}.${k}`).toBeUndefined();
-            expect(stageMounts(st).moreCannons).toEqual([]);
+            for (const k of ['frame', 'headTune', 'laserStrength']) expect(st[k], `${key}.${k}`).toBeUndefined();
         }
+        expect(STAGES.warehouse.moreEffects).toBeUndefined();
+        expect(stageMounts(STAGES.warehouse).moreCannons).toEqual([]);
+    });
+
+    it('gives the desert more confetti cannons and CO2 nozzles, its streamers unchanged', () => {
+        const m = stageMounts(STAGES.desert);
+        const cannons = [...m.cannons, ...m.moreCannons.flat()];
+        expect(cannons).toHaveLength(8); // two sets of four, every one its own
+        expect(new Set(cannons.map((c) => c.base[0])).size).toBe(8);
+        expect(m.moreLaunchers).toEqual([]); // still one set of three streamers
+        expect(m.launchers).toHaveLength(3);
+        expect(STAGES.desert.co2Extra.length).toBeGreaterThanOrEqual(7);
+        expect(STAGES.desert.co2TrussExtra).toHaveLength(2);
+        for (const n of STAGES.desert.co2Extra) expect(n.follow).toBeLessThan(6); // each fires with a floor jet
     });
 });
 
@@ -331,13 +344,11 @@ describe('the mainstage strobes on the subs', () => {
         xs.forEach((x, i) => expect(x).toBeCloseTo(-xs[xs.length - 1 - i], 5)); // matched left and right
     });
 
-    it('adds two roof CO2 nozzles and the finale twins on the mainstage alone', () => {
+    it('adds two roof CO2 nozzles on the mainstage (and the desert), the finale twins on the mainstage alone', () => {
         expect(STAGES.mainstage.co2TrussExtra).toHaveLength(2);
         expect(STAGES.mainstage.finaleEcho).toBe(true);
-        for (const key of ['desert', 'warehouse']) {
-            expect(STAGES[key].co2TrussExtra, key).toBeUndefined();
-            expect(STAGES[key].finaleEcho, key).toBeUndefined();
-        }
+        expect(STAGES.warehouse.co2TrussExtra).toBeUndefined();
+        for (const key of ['desert', 'warehouse']) expect(STAGES[key].finaleEcho, key).toBeUndefined();
     });
 });
 
