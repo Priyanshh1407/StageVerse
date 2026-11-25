@@ -268,10 +268,8 @@ describe('the mainstage changes', async () => {
     });
 
     it('changes nothing on the other stages (the desert has more confetti and CO2 of its own, below)', () => {
-        for (const key of ['desert', 'warehouse']) {
-            const st = STAGES[key];
-            for (const k of ['frame', 'headTune', 'laserStrength']) expect(st[k], `${key}.${k}`).toBeUndefined();
-        }
+        for (const k of ['frame', 'headTune', 'laserStrength']) expect(STAGES.warehouse[k], `warehouse.${k}`).toBeUndefined();
+        expect(STAGES.desert.frame).toBeUndefined();
         expect(STAGES.warehouse.moreEffects).toBeUndefined();
         expect(stageMounts(STAGES.warehouse).moreCannons).toEqual([]);
     });
@@ -597,5 +595,59 @@ describe('the three-quarter shots on the desert stage', () => {
         const once = planQuarterShots(['wide', 'left', 'wide', 'dolly', 'dolly', 'drop'].map((shot) => ({ shot })));
         expect(once).toEqual([null, 'left', null, 'right', 'right', null]);
         expect(STAGES.desert.shotPlan).toBe(planQuarterShots);
+    });
+});
+
+describe('the desert stage, mounted and tuned', () => {
+    const st = STAGES.desert;
+    const deck = st.deck;
+    it('stands every floor fixture on the deck (or its plinth), not above it', () => {
+        for (const h of st.heads.filter((x) => x.role === 'floor')) {
+            const onDeck = Math.abs(h.pos[1] - deck) < 0.01;
+            const onPlinth = Math.abs(Math.abs(h.pos[0]) - 35.5) < 6 && Math.abs(h.pos[1] - 2.4) < 0.01;
+            expect(onDeck || onPlinth, `${h.pos}`).toBe(true);
+        }
+    });
+    it('hangs every roof fixture right under a truss', () => {
+        const trusses = st.structure.filter((p) => p.kind === 'truss' && p.from[1] === p.to[1]);
+        for (const h of st.heads.filter((x) => x.role === 'aerial')) {
+            const under = trusses.some((t) => Math.abs(t.from[1] - 0.25 - h.pos[1]) < 0.01
+                && (t.from[2] === t.to[2] ? Math.abs(t.from[2] - h.pos[2]) < 0.01 : Math.abs(t.from[0] - h.pos[0]) < 0.01));
+            expect(under, `${h.pos}`).toBe(true);
+        }
+    });
+    it('puts a CO2 nozzle between the two lasers on each front leg, which stand further apart, firing at the audience', () => {
+        const [lo, hi] = st.meta.towerLasers;
+        expect(hi - lo).toBeGreaterThan(2.5);
+        const tower = st.co2Extra.filter((n) => n.dir);
+        expect(tower).toHaveLength(2);
+        for (const n of tower) {
+            expect(n.pos[1]).toBeGreaterThan(deck + lo);
+            expect(n.pos[1]).toBeLessThan(deck + hi);
+            expect(n.dir[2]).toBeGreaterThan(Math.abs(n.dir[1])); // more forward than up
+        }
+        expect(st.co2Extra.some((n) => Math.abs(n.pos[0]) > 30)).toBe(false); // none left under the screens
+    });
+    it('adds beam columns up both edges of each side screen', () => {
+        const columns = st.heads.filter((h) => Math.abs(Math.abs(h.pos[0]) - 35.5) > 6 && Math.abs(Math.abs(h.pos[0]) - 35.5) < 7 && h.pos[1] > 4 && h.pos[2] < 5);
+        for (const h of columns) expect(h.role).toBe('sides');
+        expect(columns).toHaveLength(24);
+    });
+    it('turns the outer confetti cannons further towards the audience', async () => {
+        const { stageMounts } = await import('@/lib/show/stages/rig');
+        const m = stageMounts(st);
+        const all = [...m.cannons, ...m.moreCannons.flat()];
+        const outer = all.filter((c) => Math.abs(c.base[0]) > 20);
+        const inner = all.filter((c) => Math.abs(c.base[0]) < 20);
+        for (const c of outer) expect(c.dir[2] / c.dir[1]).toBeGreaterThan(inner[0].dir[2] / inner[0].dir[1]);
+    });
+    it('plays the beam wipe, only the aerial and floor beams on, in some grooves and verses', async () => {
+        const { planDesertCues, BEAM_WIPE } = await import('@/lib/show/stages/mainstageCues');
+        const cues = ['Intro', 'Groove', 'Groove · phrase 2', 'Verse', 'Verse · phrase 2', 'Peak · all in'].map((name) => ({ name }));
+        const plan = planDesertCues(cues);
+        expect(plan.filter((p) => p === BEAM_WIPE).length).toBeGreaterThanOrEqual(2);
+        expect(BEAM_WIPE.look).toMatchObject({ beams: 1, floor: 1, sides: 0, laser: 0 });
+        // a song with a single groove still gets one
+        expect(planDesertCues([{ name: 'Groove' }, { name: 'Peak · all in' }]).includes(BEAM_WIPE)).toBe(true);
     });
 });

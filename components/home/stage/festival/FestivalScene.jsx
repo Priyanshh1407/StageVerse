@@ -262,6 +262,9 @@ function ClubLooks({ look }) {
  * then stands in a turned group, so `focusWorld` is where its beams focus on the grounds, and `screen` is what
  * its LED wall shows (a persona) instead of the wordmark alone.
  */
+// (an extra CO2 nozzle's own direction, made unit length)
+const norm3 = ([x, y, z]) => { const l = Math.hypot(x, y, z) || 1; return [x / l, y / l, z / l]; };
+
 export default function FestivalScene({ stage, look, count = 96, bloom = true, quality = 'low', control, embedded = false, focusWorld = null, screen = null }) {
     const heads = useMemo(() => rigHeads(stage, count), [stage, count]);
     const mounts = useMemo(() => stageMounts(stage), [stage]);
@@ -327,7 +330,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             <StageCo2 look={look} jets={mounts.highJets} quality={quality} blinders={blinders} mount="truss" />
             {stage.co2TrussExtra && <StageCo2 look={look} jets={stage.co2TrussExtra.map((j) => ({ pos: j.pos, dir: trussDir(j.pos) }))} follow={stage.co2TrussExtra.map((j) => j.follow)} quality={quality} blinders={blinders} mount="truss" />}
             {/* extra CO2 nozzles, in sets of up to 6 (one set holds as many as the floor jets) */}
-            {co2Sets.map((set, i) => <StageCo2 key={`co2-extra-${i}`} look={look} jets={set.map((j) => ({ pos: j.pos, dir: [0, 0.999, 0.05] }))} follow={set.map((j) => j.follow)} quality={quality} blinders={blinders} mount="floor" />)}
+            {co2Sets.map((set, i) => <StageCo2 key={`co2-extra-${i}`} look={look} jets={set.map((j) => ({ pos: j.pos, dir: j.dir ? norm3(j.dir) : [0, 0.999, 0.05] }))} follow={set.map((j) => j.follow)} quality={quality} blinders={blinders} mount="floor" />)}
             {stage.confetti !== false && (
                 <>
                     <StageConfetti look={look} cannons={mounts.cannons} quality={quality} blinders={blinders} />

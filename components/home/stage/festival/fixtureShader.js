@@ -48,6 +48,9 @@ export function createRoleUniforms({ scale = 2.3, spread = 1, opacity = 1 } = {}
         uMirrorSweep: { value: 0 },     // 1 = the right side sweeps the opposite way to the left (scissors)
         uSplit: { value: 0 },           // metres: the two colours' beams meet this far either side of the target
         uLength: { value: 1 },          // beam length (and width) multiplier
+        uWipe: { value: 0 },            // 0..1: the beam wipe (beams on only in a band sweeping across the stage)
+        uWipeMode: { value: 1 },        // 1 left to right, 2 right to left, 3 from both sides to the centre
+        uWipeHalf: { value: 20 },       // half the width the group spans (metres, the stage's own frame)
     };
 }
 
@@ -78,6 +81,9 @@ const RIG_GLSL = /* glsl */ `
     uniform float uBeat;
     uniform float uAlternate;
     uniform float uSparkle;
+    uniform float uWipe;
+    uniform float uWipeMode;
+    uniform float uWipeHalf;
     attribute float aIndex;
     uniform float uScale;
     attribute vec2 aBase;
@@ -124,7 +130,18 @@ const RIG_GLSL = /* glsl */ `
         float slot = floor(uBeat * 2.0);
         float k = smoothstep(0.75, 1.0, fract(uBeat * 2.0));
         float sparkleOn = mix(step(0.4, fixtureHash(aIndex, slot, 1.7)), step(0.4, fixtureHash(aIndex, slot + 1.0, 1.7)), k);
-        return g * mix(1.0, sparkleOn, uSparkle);
+        // the beam wipe: on in a band sweeping across the stage once a bar (each beam lights as the band passes,
+        // like a CO2 chase), by where the fixture stands across the stage
+        #ifdef MOUNT_FROM_POSITION
+        vec3 mountW = (modelMatrix * vec4(position, 1.0)).xyz;
+        #else
+        vec3 mountW = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+        #endif
+        float xn = clamp((transpose(stageTurn()) * (mountW - modelMatrix[3].xyz)).x / uWipeHalf, -1.0, 1.0);
+        float across = uWipeMode < 1.5 ? 0.5 + 0.5 * xn : uWipeMode < 2.5 ? 0.5 - 0.5 * xn : 1.0 - abs(xn);
+        float front = fract(uBeat / 4.0) * 1.4 - 0.2;
+        float wipeOn = smoothstep(0.28, 0.06, abs(across - front));
+        return g * mix(1.0, sparkleOn, uSparkle) * mix(1.0, wipeOn, uWipe);
     }
     // Colour isn't randomised (focus keeps one colour; colour changes fade smoothly, all together)
     float fixtureColorMix(float base) { return base; }

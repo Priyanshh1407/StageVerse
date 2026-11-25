@@ -182,14 +182,27 @@ function driveRole(u, role, target, state, delta) {
     // off and blackout stay off)
     const groupLevel = target[role.level] ?? 1;
     // (except in a deliberately dimmed rig, look.dimRig: the homepage's persona stages, where the screen is the focus)
-    const keepBright = role.steady && !target.dimRig;
+    // (tune.evenLevels, the desert: the aerials, side towers and floor at much the same level whenever they are on,
+    // within 85-115% of their average, so no row stands out; the floor's never-dim rule then gives way)
+    const even = state.tune.evenLevels && (role === ROLES.aerial || role === ROLES.sides || role === ROLES.floor);
+    const keepBright = role.steady && !target.dimRig && !even;
     // (with the aerials on too, the floor beams sit in a similar range to them, 80-115% of their level, so the two
     // rows read as one rig and are only rarely told apart; on their own they keep their never-dim rule)
     const aerialsOn = state.tune.oneRig && (target.beams ?? 0) > 0.05;
-    const level = keepBright && groupLevel > 0.05
+    let level = keepBright && groupLevel > 0.05
         ? (aerialsOn ? Math.min(target.beams * 1.15, Math.max(target.beams * 0.8, groupLevel)) : Math.max(0.85, groupLevel))
         : groupLevel;
     const intensity = keepBright && !aerialsOn ? Math.max(0.95, target.intensity) : target.intensity;
+    if (even && groupLevel > 0.05) {
+        const on = [target.beams, target.sides, target.floor].filter((v) => (v ?? 0) > 0.05);
+        const mean = on.reduce((a, v) => a + v, 0) / on.length;
+        level = Math.min(mean * 1.15, Math.max(mean * 0.85, groupLevel));
+    }
+    // the beam wipe (look.beamWipe): the aerial and floor beams on in a band sweeping across the stage; 4 = each way in
+    // turn, one a bar
+    const wipe = (target.beamWipe ?? 0) > 0 && (role === ROLES.aerial || role === ROLES.floor);
+    u.uWipe.value += ((wipe ? 1 : 0) - u.uWipe.value) * Math.min(1, dt * 8);
+    if (wipe) u.uWipeMode.value = target.beamWipe >= 4 ? 1 + (Math.floor((target.beatPos ?? state.clock * 2) / 4) % 3) : target.beamWipe;
     const wanted = intensity * (target.master ?? 1) * level * (state.extraLevel ? target[state.extraLevel] ?? 1 : 1) * houseOff;
     state.level += (wanted - state.level) * ease;
     const strobe = role === ROLES.wash ? 0 : target.strobe ?? 0; // strobing is the strobes' job; beams flicker with them
@@ -211,8 +224,10 @@ function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false
         const u = createRoleUniforms({ spread: role.spread * (own.spread ?? 1), opacity: role.opacity * (own.opacity ?? 1), scale: role.scale ?? 2.3 });
         u.uMap.value = map;
         u.uLength.value = own.length ?? 1;
+        // (the beam wipe sweeps across the width this group spans)
+        u.uWipeHalf.value = Math.max(4, ...fixtures.map((f) => Math.abs(f.position[0]))) + 1;
         return u;
-    }, [role, map, own.spread, own.opacity, own.length]);
+    }, [role, map, own.spread, own.opacity, own.length, fixtures]);
     const materials = useMemo(() => ({
         base: createPartMaterial(uniforms, 'base'),
         yoke: createPartMaterial(uniforms, 'yoke'),
