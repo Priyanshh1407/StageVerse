@@ -624,7 +624,8 @@ describe('the desert stage, mounted and tuned', () => {
         for (const n of tower) {
             expect(n.pos[1]).toBeGreaterThan(deck + lo);
             expect(n.pos[1]).toBeLessThan(deck + hi);
-            expect(n.dir[2]).toBeGreaterThan(Math.abs(n.dir[1])); // more forward than up
+            expect(n.dir[2]).toBeGreaterThan(Math.abs(n.dir[1])); // out at the audience
+            expect(n.dir[1]).toBeLessThan(0); // and down
         }
         expect(st.co2Extra.some((n) => Math.abs(n.pos[0]) > 30)).toBe(false); // none left under the screens
     });
@@ -649,5 +650,16 @@ describe('the desert stage, mounted and tuned', () => {
         expect(BEAM_WIPE.look).toMatchObject({ beams: 1, floor: 1, sides: 0, laser: 0 });
         // a song with a single groove still gets one
         expect(planDesertCues([{ name: 'Groove' }, { name: 'Peak · all in' }]).includes(BEAM_WIPE)).toBe(true);
+    });
+
+    it('plays its side-tower cues in turn: the side towers solo, bridges and breakdowns, or the first build', async () => {
+        const { planDesertCues, DESERT_SIDE_CUES } = await import('@/lib/show/stages/mainstageCues');
+        expect(DESERT_SIDE_CUES.map((c) => c.kind)).toEqual(['Desert · ladder climb', 'Desert · depth chase', 'Desert · crossfire', 'Desert · ping-pong']);
+        const plan = planDesertCues(['Intro', 'Solo · side towers', 'Bridge', 'Breakdown', 'Peak · all in'].map((name) => ({ name })));
+        expect(plan.slice(1, 4)).toEqual(DESERT_SIDE_CUES.slice(0, 3));
+        // only the side lights and a little of the rest: the towers are the point
+        for (const c of DESERT_SIDE_CUES) expect(c.look.sides).toBe(1);
+        const none = planDesertCues([{ name: 'Build' }, { name: 'Peak · all in' }]);
+        expect(none[0]).toBe(DESERT_SIDE_CUES[0]);
     });
 });

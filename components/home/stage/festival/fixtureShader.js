@@ -51,6 +51,9 @@ export function createRoleUniforms({ scale = 2.3, spread = 1, opacity = 1 } = {}
         uWipe: { value: 0 },            // 0..1: the beam wipe (beams on only in a band sweeping across the stage)
         uWipeMode: { value: 1 },        // 1 left to right, 2 right to left, 3 from both sides to the centre
         uWipeHalf: { value: 20 },       // half the width the group spans (metres, the stage's own frame)
+        uWipeAxis: { value: 0 },        // 0 across the stage (x), 1 up (y), 2 front to back (z)
+        uWipeY: { value: new THREE.Vector2(0, 20) }, // the heights the group spans
+        uWipeZ: { value: new THREE.Vector2(-20, 0) }, // the depths it spans
     };
 }
 
@@ -84,6 +87,9 @@ const RIG_GLSL = /* glsl */ `
     uniform float uWipe;
     uniform float uWipeMode;
     uniform float uWipeHalf;
+    uniform float uWipeAxis;
+    uniform vec2 uWipeY;
+    uniform vec2 uWipeZ;
     attribute float aIndex;
     uniform float uScale;
     attribute vec2 aBase;
@@ -137,8 +143,14 @@ const RIG_GLSL = /* glsl */ `
         #else
         vec3 mountW = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
         #endif
-        float xn = clamp((transpose(stageTurn()) * (mountW - modelMatrix[3].xyz)).x / uWipeHalf, -1.0, 1.0);
+        vec3 local = transpose(stageTurn()) * (mountW - modelMatrix[3].xyz);
+        float xn = clamp(local.x / uWipeHalf, -1.0, 1.0);
         float across = uWipeMode < 1.5 ? 0.5 + 0.5 * xn : uWipeMode < 2.5 ? 0.5 - 0.5 * xn : 1.0 - abs(xn);
+        // (up a ladder from the bottom; or from the front ladders to the back (mode 1) and back again (mode 2))
+        float up = clamp((local.y - uWipeY.x) / max(0.1, uWipeY.y - uWipeY.x), 0.0, 1.0);
+        float back = clamp((uWipeZ.y - local.z) / max(0.1, uWipeZ.y - uWipeZ.x), 0.0, 1.0);
+        if (uWipeAxis > 1.5) across = uWipeMode < 1.5 ? back : 1.0 - back;
+        else if (uWipeAxis > 0.5) across = up;
         float front = fract(uBeat / 4.0) * 1.4 - 0.2;
         float wipeOn = smoothstep(0.28, 0.06, abs(across - front));
         return g * mix(1.0, sparkleOn, uSparkle) * mix(1.0, wipeOn, uWipe);

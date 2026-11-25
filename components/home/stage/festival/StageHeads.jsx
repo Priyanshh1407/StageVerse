@@ -201,9 +201,25 @@ function driveRole(u, role, target, state, delta) {
     // the beam wipe (look.beamWipe): the aerial and floor beams on in a band sweeping across the stage; 4 = each way in
     // turn, one a bar
     const wipe = (target.beamWipe ?? 0) > 0 && (role === ROLES.aerial || role === ROLES.floor);
-    u.uWipe.value += ((wipe ? 1 : 0) - u.uWipe.value) * Math.min(1, dt * 8);
-    if (wipe) u.uWipeMode.value = target.beamWipe >= 4 ? 1 + (Math.floor((target.beatPos ?? state.clock * 2) / 4) % 3) : target.beamWipe;
-    const wanted = intensity * (target.master ?? 1) * level * (state.extraLevel ? target[state.extraLevel] ?? 1 : 1) * houseOff;
+    if (role !== ROLES.sides) u.uWipe.value += ((wipe ? 1 : 0) - u.uWipe.value) * Math.min(1, dt * 8);
+    if (wipe) { u.uWipeAxis.value = 0; u.uWipeMode.value = target.beamWipe >= 4 ? 1 + (Math.floor((target.beatPos ?? state.clock * 2) / 4) % 3) : target.beamWipe; }
+    // (the screen columns: off whenever the beams focus or converge; in the ping-pong (look.pingPong) the towers and the
+    // columns take turns on the beat)
+    const columns = state.extraLevel === 'screenColumns';
+    const focusing = (target.converge ?? 0) > 0.5;
+    let extra = columns ? (focusing ? 0 : target.screenColumns ?? 1) : state.extraLevel ? target[state.extraLevel] ?? 1 : 1;
+    if (role === ROLES.sides && (target.pingPong ?? 0) > 0.5) {
+        const odd = Math.floor(target.beatPos ?? state.clock * 2) % 2 === 1;
+        extra *= odd === columns ? 1 : 0.04;
+    }
+    // the side wipes (look.sideWipe): 5 = up each ladder from the bottom, 6 = from the front ladders to the back and back
+    if (role === ROLES.sides) {
+        const side = target.sideWipe ?? 0;
+        u.uWipe.value += ((side > 0 ? 1 : 0) - u.uWipe.value) * Math.min(1, dt * 8);
+        if (side === 5) { u.uWipeAxis.value = 1; u.uWipeMode.value = 1; }
+        if (side === 6) { u.uWipeAxis.value = 2; u.uWipeMode.value = 1 + (Math.floor((target.beatPos ?? state.clock * 2) / 4) % 2); }
+    }
+    const wanted = intensity * (target.master ?? 1) * level * extra * houseOff * state.gain;
     state.level += (wanted - state.level) * ease;
     const strobe = role === ROLES.wash ? 0 : target.strobe ?? 0; // strobing is the strobes' job; beams flicker with them
     const flash = (u.uTime.value * 12.5) % 1 < 0.3 ? 1.6 : 0.15;
@@ -216,16 +232,21 @@ function driveRole(u, role, target, state, delta) {
     u.uIntensity.value = state.level * dip * (1 + (target.pulse ?? 0) * 0.7 * pulseGain) * (1 + (flash - 1) * strobe * 0.12);
 }
 
-function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false, extraLevel = null, tune = {}, shared }) {
+function RoleGroup({ roleName, tuneKey = null, fixtures, parts, map, look, focus, mirror = false, extraLevel = null, tune = {}, shared }) {
     const role = ROLES[roleName];
-    // (a stage may tune a group: tune[role] = { opacity, length, spread } multipliers, e.g. the mainstage's bigger beams)
-    const own = tune[roleName] ?? {};
+    // (a stage may tune a group: tune[role] = { opacity, length, spread, gain } multipliers, e.g. the mainstage's bigger
+    // beams; a split group, e.g. 'floor-screens', may have its own)
+    const own = (tuneKey && tune[tuneKey]) || tune[roleName] || {};
     const uniforms = useMemo(() => {
         const u = createRoleUniforms({ spread: role.spread * (own.spread ?? 1), opacity: role.opacity * (own.opacity ?? 1), scale: role.scale ?? 2.3 });
         u.uMap.value = map;
         u.uLength.value = own.length ?? 1;
-        // (the beam wipe sweeps across the width this group spans)
+        // (the beam wipe sweeps across the width this group spans; the side wipes up its height and through its depth)
         u.uWipeHalf.value = Math.max(4, ...fixtures.map((f) => Math.abs(f.position[0]))) + 1;
+        const ys = fixtures.map((f) => f.position[1]);
+        const zs = fixtures.map((f) => f.position[2]);
+        u.uWipeY.value.set(Math.min(...ys) - 0.5, Math.max(...ys) + 0.5);
+        u.uWipeZ.value.set(Math.min(...zs) - 0.5, Math.max(...zs) + 0.5);
         return u;
     }, [role, map, own.spread, own.opacity, own.length, fixtures]);
     const materials = useMemo(() => ({
@@ -257,7 +278,7 @@ function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false
         });
     }, [fixtures]);
 
-    const state = useRef({ focus, mirror, extraLevel, tune, shared, level: 1, phase: 0, clock: 0, colors: { a: {}, b: {}, ta: new THREE.Color(), tb: new THREE.Color() } });
+    const state = useRef({ focus, mirror, extraLevel, tune, shared, gain: own.gain ?? 1, level: 1, phase: 0, clock: 0, colors: { a: {}, b: {}, ta: new THREE.Color(), tb: new THREE.Color() } });
     useFrame((_, delta) => {
         const mesh = group.current?.children[0];
         if (mesh) driveRole(mesh.material.uniforms, role, look.current, state.current, delta);
@@ -294,16 +315,22 @@ export default function StageHeads({ heads, look, focus = [0, 1.8, -8], screenBe
         if (r === 'floor' && screenBeamsX) {
             const under = list.filter((f) => Math.abs(f.position[0]) >= screenBeamsX);
             const rest = list.filter((f) => Math.abs(f.position[0]) < screenBeamsX);
-            return [{ key: 'floor', role: r, list: rest }, { key: 'floor-screens', role: r, list: under, extraLevel: 'sideScreenBeams' }].filter((g) => g.list.length);
+            return [{ key: 'floor', role: r, list: rest }, { key: 'floor-screens', role: r, list: under, extraLevel: 'sideScreenBeams', tuneKey: 'floor-screens' }].filter((g) => g.list.length);
         }
         if (r !== 'sides') return [{ key: r, role: r, list }];
-        const left = list.filter((f) => f.position[0] < 0);
-        const right = list.filter((f) => f.position[0] >= 0);
-        return [{ key: 'sides-left', role: r, list: left }, { key: 'sides-right', role: r, list: right, mirror: true }].filter((g) => g.list.length);
+        // (the beam columns beside the side screens, beyond screenBeamsX, are their own groups: off in a focus, and
+        // taking turns with the towers in the ping-pong: extraLevel 'screenColumns')
+        const towers = screenBeamsX ? list.filter((f) => Math.abs(f.position[0]) < screenBeamsX) : list;
+        const columns = screenBeamsX ? list.filter((f) => Math.abs(f.position[0]) >= screenBeamsX) : [];
+        const sides = (from, key, extra) => [
+            { key: `${key}-left`, role: r, list: from.filter((f) => f.position[0] < 0), extraLevel: extra, tuneKey: key },
+            { key: `${key}-right`, role: r, list: from.filter((f) => f.position[0] >= 0), mirror: true, extraLevel: extra, tuneKey: key },
+        ];
+        return [...sides(towers, 'sides', null), ...sides(columns, 'sides-screens', 'screenColumns')].filter((g) => g.list.length);
     }), [heads, screenBeamsX]);
 
     return groups.map((g) => (
-        <RoleGroup key={`${g.key}-${g.list.length}`} roleName={g.role} fixtures={g.list} parts={parts} map={map} look={look} focus={focus} mirror={g.mirror} extraLevel={g.extraLevel} tune={tune} shared={shared} />
+        <RoleGroup key={`${g.key}-${g.list.length}`} roleName={g.role} tuneKey={g.tuneKey} fixtures={g.list} parts={parts} map={map} look={look} focus={focus} mirror={g.mirror} extraLevel={g.extraLevel} tune={tune} shared={shared} />
     ));
 }
 
