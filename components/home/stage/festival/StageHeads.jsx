@@ -26,7 +26,7 @@ export const ROLES = {
     // (the floor fixtures' bodies are smaller, so the performers stand out; the light is the same)
     // (steady: every cue keeps the floor beams close to the direction of 'Peak · hook', out at the crowd and a
     // little down: see FLOOR below; they take no part in the focus or the drop's sideways throw)
-    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.6, speed: 1.3, converge: 0, spread: 0.9, opacity: 1.6, scale: 1.6, noWave: true, steady: true },
+    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.5, speed: 1, converge: 0, spread: 0.9, opacity: 1.6, scale: 1.6, noWave: true, steady: true },
     // Washes colour the stage: wide, soft, barely moving, never part of the drop's convergence
     wash: { level: 'wash', colors: ['washColor', 'washColor'], sweep: 0.15, speed: 0.35, converge: 0, spread: 4.5, opacity: 0.3 },
     // spots: hard, medium-width beams on the performers, in the show's colours, barely moving
@@ -127,10 +127,12 @@ function driveRole(u, role, target, state, delta) {
     // Accumulate the movement position: a speed change alters how fast it moves from where it is
     // (computing sin(time * speed) made beams leap whenever a cue changed the speed)
     state.phase += delta * u.uSpeed.value;
-    // (look.floorWave: the floor beams ride the aerials' wave in step with them, one ripple through the rig)
+    // (look.floorWave: the floor beams ride the aerials' whole wave in step with them, one ripple through the rig)
     const rippling = role.steady && (target.floorWave ?? 0) > 0.5;
-    if (role === ROLES.aerial) state.shared.phase = state.phase;
-    u.uPhase.value = rippling ? state.shared.phase : state.phase;
+    // The aerial and floor beams are one rig: the floor row always moves on the aerials' clock (it ran its own, at
+    // 1.3x, so the two rows drifted apart within a few bars)
+    if (role === ROLES.aerial) { state.shared.phase = state.phase; state.shared.on = true; }
+    u.uPhase.value = role.steady && state.shared.on ? state.shared.phase : state.phase;
     // Side towers: their pan is their crossing angle times (1 + sidesAim): 0 = crossing (rest),
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
     const fan = role === ROLES.wash || role === ROLES.spot ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0)
@@ -163,6 +165,8 @@ function driveRole(u, role, target, state, delta) {
     const tiltWave = circle ? (role === ROLES.aerial ? aerialWave : radius)
         : rippling ? target.tiltWave ?? 0
         : role === ROLES.wash && state.tune.washOnStage ? 0
+        // (the floor row rides half the aerials' wave, in step: the same ripple, kept low over the crowd)
+        : role.steady ? aerialWave * 0.5
         : role.ownAim || role.noWave || role.onPerformer ? 0 : role === ROLES.aerial ? aerialWave : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
     glide(u.uTiltWave, tiltWave, dt);
     glide(u.uPhaseSpread, circle ? 1 : target.phaseSpread ?? 0.25, dt);
@@ -177,8 +181,13 @@ function driveRole(u, role, target, state, delta) {
     const groupLevel = target[role.level] ?? 1;
     // (except in a deliberately dimmed rig, look.dimRig: the homepage's persona stages, where the screen is the focus)
     const keepBright = role.steady && !target.dimRig;
-    const level = keepBright && groupLevel > 0.05 ? Math.max(0.85, groupLevel) : groupLevel;
-    const intensity = keepBright ? Math.max(0.95, target.intensity) : target.intensity;
+    // (with the aerials on too, the floor beams sit in a similar range to them, 80-115% of their level, so the two
+    // rows read as one rig and are only rarely told apart; on their own they keep their never-dim rule)
+    const aerialsOn = (target.beams ?? 0) > 0.05;
+    const level = keepBright && groupLevel > 0.05
+        ? (aerialsOn ? Math.min(target.beams * 1.15, Math.max(target.beams * 0.8, groupLevel)) : Math.max(0.85, groupLevel))
+        : groupLevel;
+    const intensity = keepBright && !aerialsOn ? Math.max(0.95, target.intensity) : target.intensity;
     const wanted = intensity * (target.master ?? 1) * level * (state.extraLevel ? target[state.extraLevel] ?? 1 : 1) * houseOff;
     state.level += (wanted - state.level) * ease;
     const strobe = role === ROLES.wash ? 0 : target.strobe ?? 0; // strobing is the strobes' job; beams flicker with them
