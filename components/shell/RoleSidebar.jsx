@@ -12,6 +12,7 @@ import NotificationsModal from '@/components/fan/dashboard/NotificationsModal';
 import MessagesModal from '@/components/fan/MessagesModal';
 import CrewMessagesModal from './CrewMessagesModal';
 import { ROLE_INFO } from '@/lib/roles';
+import { nextShow } from '@/lib/shows';
 
 // The crew's pages for one show (patch sheet, patch studio, logistics) need that show: the one in the address,
 // otherwise the last one picked (remembered here, set by the crew's project picker)
@@ -99,6 +100,28 @@ export default function RoleSidebar({ role, variant = 'inline', isOpen = false, 
     window.addEventListener('sv:project', read);
     return () => window.removeEventListener('sv:project', read);
   }, [role, pathname]);
+  // (no show picked yet, or one remembered from another account: the crew's next show from their own list, so Patch
+  // sheet, Patch studio and Logistics always open a show this person works on; they led back to the dashboard)
+  const [shows, setShows] = useState(null);
+  useEffect(() => {
+    if (role !== 'production') return undefined;
+    let alive = true;
+    fetch('/api/production/dashboard').then((r) => (r.ok ? r.json() : null)).then((j) => {
+      if (alive) setShows(Array.isArray(j?.data?.shows) ? j.data.shows : []);
+    }).catch(() => { if (alive) setShows([]); });
+    return () => { alive = false; };
+  }, [role]);
+  useEffect(() => {
+    if (role !== 'production' || !shows?.length) return;
+    const ids = shows.map((s) => String(s.eventId ?? s.id));
+    if (project && ids.includes(String(project))) return;
+    if (PROJECT_PAGE.test(pathname)) return; // (a show in the address is the one on screen)
+    const next = nextShow(shows);
+    if (!next) return;
+    const id = String(next.eventId ?? next.id);
+    try { localStorage.setItem(PROJECT_KEY, id); } catch { /* private mode */ }
+    setProject(id); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [role, shows, project, pathname]);
 
   const logout = async () => {
     try {
@@ -132,6 +155,7 @@ export default function RoleSidebar({ role, variant = 'inline', isOpen = false, 
         </button>
       );
     }
+    // (a crew page for one show: the show picked, else (no shows at all) the dashboard, which says how to get one)
     const href = item.project ? (project ? `${item.project}/${project}` : '/prod-dashboard') : item.href;
     const active = item.project ? pathname.startsWith(`${item.project}/`) : isActive(pathname, item.href);
     return (
