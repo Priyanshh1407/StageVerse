@@ -652,7 +652,7 @@ describe('the desert stage, mounted and tuned', () => {
         const cues = ['Intro', 'Groove', 'Groove · phrase 2', 'Verse', 'Verse · phrase 2', 'Peak · all in'].map((name) => ({ name }));
         const plan = planDesertCues(cues);
         expect(plan.filter((p) => p === BEAM_WIPE).length).toBeGreaterThanOrEqual(2);
-        expect(BEAM_WIPE.look).toMatchObject({ beams: 1, floor: 1, sides: 0, laser: 0 });
+        expect(BEAM_WIPE.look).toMatchObject({ beams: 1, floor: 1, sides: 0, laser: 0, spots: 0 });
         // a song with a single groove still gets one
         expect(planDesertCues([{ name: 'Groove' }, { name: 'Peak · all in' }]).includes(BEAM_WIPE)).toBe(true);
     });
@@ -661,11 +661,13 @@ describe('the desert stage, mounted and tuned', () => {
         const { planDesertCues, DESERT_SIDE_CUES } = await import('@/lib/show/stages/mainstageCues');
         expect(DESERT_SIDE_CUES.map((c) => c.kind)).toEqual(['Side towers · ladder climb', 'Side towers · depth chase', 'Side towers · crossfire', 'Side towers · ping-pong']);
         const plan = planDesertCues(['Intro', 'Solo · side towers', 'Bridge', 'Breakdown', 'Peak · all in'].map((name) => ({ name })));
-        expect(plan.slice(1, 4)).toEqual(DESERT_SIDE_CUES.slice(0, 3));
+        expect(plan.slice(1, 4).map((c) => c.kind)).toEqual(DESERT_SIDE_CUES.slice(0, 3).map((c) => c.kind));
         // only the side lights and a little of the rest: the towers are the point
         for (const c of DESERT_SIDE_CUES) expect(c.look.sides).toBe(1);
         const none = planDesertCues([{ name: 'Groove' }, { name: 'Build' }, { name: 'Peak · all in' }]);
-        expect(none[1]).toBe(DESERT_SIDE_CUES[0]);
+        expect(none[1].kind).toBe(DESERT_SIDE_CUES[0].kind);
+        // on the desert they are the only lights; the beam wipe has the spots off
+        for (const c of plan.slice(1, 4)) for (const k of ['beams', 'floor', 'wash', 'spots', 'laser', 'pixel', 'strobe', 'blinder']) expect(c.look[k], `${c.kind} ${k}`).toBe(0);
     });
 
     it('plays the beam wipe and the side-tower cues on the mainstage too, in every song, and nowhere else', async () => {
@@ -679,7 +681,9 @@ describe('the desert stage, mounted and tuned', () => {
             const show = JSON.parse(fs.readFileSync(file, 'utf8'));
             for (const plan of [planMainstageCues(show.cues), STAGES.desert.cuePlan(show.cues)]) {
                 expect(plan.includes(BEAM_WIPE), demo.slug ?? file).toBe(true);
-                expect(plan.some((p) => DESERT_SIDE_CUES.includes(p)), demo.slug ?? file).toBe(true);
+                expect(plan.some((p) => DESERT_SIDE_CUES.some((c) => c.kind === p?.kind)), demo.slug ?? file).toBe(true);
+                // (the side lights alone: every other light off)
+                for (const p of plan.filter((x) => DESERT_SIDE_CUES.some((c) => c.kind === x?.kind))) expect([p.look.beams, p.look.floor, p.look.wash, p.look.laser]).toEqual([0, 0, 0, 0]);
             }
         }
         expect(STAGES.warehouse.cuePlan).toBeUndefined();

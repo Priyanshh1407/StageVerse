@@ -180,7 +180,8 @@ function driveRole(u, role, target, state, delta) {
     const houseOff = role.onPerformer ? 1 - Math.min(1, (target.house ?? 0) * 1.5) : 1;
     // (the floor beams are never dim: whenever a cue has them on at all, at 85% or more of a nearly full intensity;
     // off and blackout stay off)
-    const groupLevel = target[role.level] ?? 1;
+    // (the spots follow the washes' level, and look.spots on top: off in the beam wipe and the desert's side-tower cues)
+    const groupLevel = (target[role.level] ?? 1) * (role.onPerformer ? target.spots ?? 1 : 1);
     // (except in a deliberately dimmed rig, look.dimRig: the homepage's persona stages, where the screen is the focus)
     // (tune.evenLevels, the desert: the aerials, side towers and floor at much the same level whenever they are on,
     // within 85-115% of their average, so no row stands out; the floor's never-dim rule then gives way)
