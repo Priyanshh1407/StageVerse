@@ -52,6 +52,10 @@ export function createRoleUniforms({ scale = 2.3, spread = 1, opacity = 1 } = {}
         uWipeMode: { value: 1 },        // 1 left to right, 2 right to left, 3 from both sides to the centre
         uWipeHalf: { value: 20 },       // half the width the group spans (metres, the stage's own frame)
         uWipeAxis: { value: 0 },        // 0 across the stage (x), 1 up (y), 2 front to back (z)
+        uMulti: { value: 0 },           // 1 = the multi-colour focus: each beam one of uMultiColors, each colour its own point
+        uMultiN: { value: 6 },          // how many colours
+        uMultiGap: { value: 2.6 },      // metres between the colours' points, along a line across the stage
+        uMultiColors: { value: Array.from({ length: 6 }, () => new THREE.Color()) },
         uWipeY: { value: new THREE.Vector2(0, 20) }, // the heights the group spans
         uWipeZ: { value: new THREE.Vector2(-20, 0) }, // the depths it spans
     };
@@ -87,6 +91,9 @@ const RIG_GLSL = /* glsl */ `
     uniform float uWipe;
     uniform float uWipeMode;
     uniform float uWipeHalf;
+    uniform float uMulti;
+    uniform float uMultiN;
+    uniform float uMultiGap;
     uniform float uWipeAxis;
     uniform vec2 uWipeY;
     uniform vec2 uWipeZ;
@@ -117,6 +124,9 @@ const RIG_GLSL = /* glsl */ `
         float tilt = base.y + uTiltShift + sin(t * 2.0) * uSweep * 0.12 + cos(t) * uTiltWave;
         vec3 sweepDir = R * normalize(vec3(sin(tilt) * sin(pan), -cos(tilt), sin(tilt) * cos(pan)));
         vec3 focusAt = uTarget + R * vec3((aColorMix - 0.5) * 2.0 * uSplit, 0.0, 0.0);
+        // (the multi-colour focus: the beams of each colour meet on their own point, the points in a line across the stage)
+        float slot = mod(aIndex, max(1.0, uMultiN));
+        focusAt += R * vec3((slot - (uMultiN - 1.0) * 0.5) * uMultiGap * uMulti, 0.0, 0.0);
         vec3 dir = normalize(mix(sweepDir, normalize(focusAt - from), uConverge));
         // The drop: thrown up and out over the audience, splayed to this fixture's side
         float side = fromL.x >= 0.0 ? 1.0 : -1.0;
@@ -156,7 +166,7 @@ const RIG_GLSL = /* glsl */ `
         return g * mix(1.0, sparkleOn, uSparkle) * mix(1.0, wipeOn, uWipe);
     }
     // Colour isn't randomised (focus keeps one colour; colour changes fade smoothly, all together)
-    float fixtureColorMix(float base) { return base; }
+    float fixtureColorMix(float base) { return uMulti > 0.5 ? (mod(aIndex, max(1.0, uMultiN)) + 0.5) / max(1.0, uMultiN) + 2.0 : base; }
     float fixtureWhite() { return 0.0; }
 
     // Model (Z up) <-> world, through the fixture's mounting basis (standing, hanging or sideways)
@@ -247,6 +257,18 @@ export function createPartMaterial(uniforms, part) {
             uniform sampler2D uMap;
             uniform vec3 uColorA;
             uniform vec3 uColorB;
+            uniform vec3 uMultiColors[6];
+            uniform float uMultiN;
+            vec3 tintOf(float m) {
+                if (m < 1.5) return mix(uColorA, uColorB, m);
+                float k = floor((m - 2.0) * uMultiN);
+                if (k < 0.5) return uMultiColors[0];
+                if (k < 1.5) return uMultiColors[1];
+                if (k < 2.5) return uMultiColors[2];
+                if (k < 3.5) return uMultiColors[3];
+                if (k < 4.5) return uMultiColors[4];
+                return uMultiColors[5];
+            }
             uniform float uIntensity;
             varying vec2 vUv;
             varying vec3 vNormalW;
@@ -261,7 +283,7 @@ export function createPartMaterial(uniforms, part) {
             void main() {
                 vec3 albedo = texture2D(uMap, vUv).rgb;
                 vec3 n = safeNormalize(vNormalW);
-                vec3 tint = mix(uColorA, uColorB, vColorMix);
+                vec3 tint = tintOf(vColorMix);
                 float level = min(uIntensity, 1.5);
                 float fill = 0.12 + 0.5 * max(0.0, dot(n, normalize(vec3(0.15, 0.35, 1.0))));   // from front of house
                 float edge = pow(clamp(1.0 - dot(n, vViewDir), 0.0, 1.0), 3.0);                // rim from the rig
@@ -312,6 +334,18 @@ export function createBeamMaterial(uniforms) {
         fragmentShader: /* glsl */ `
             uniform vec3 uColorA;
             uniform vec3 uColorB;
+            uniform vec3 uMultiColors[6];
+            uniform float uMultiN;
+            vec3 tintOf(float m) {
+                if (m < 1.5) return mix(uColorA, uColorB, m);
+                float k = floor((m - 2.0) * uMultiN);
+                if (k < 0.5) return uMultiColors[0];
+                if (k < 1.5) return uMultiColors[1];
+                if (k < 2.5) return uMultiColors[2];
+                if (k < 3.5) return uMultiColors[3];
+                if (k < 4.5) return uMultiColors[4];
+                return uMultiColors[5];
+            }
             uniform float uIntensity;
             uniform float uHaze;
             uniform float uTime;
@@ -344,7 +378,7 @@ export function createBeamMaterial(uniforms) {
                 float haze = mix(1.0, 0.2 + smoke * 1.6, uHaze);
                 float near = smoothstep(3.0, 16.0, length(cameraPosition - vWorld));
                 float a = core * fade * haze * uIntensity * 0.75 * uOpacity * mix(0.25, 1.0, near);
-                vec3 color = mix(mix(uColorA, uColorB, vColorMix), vec3(1.0), max(pow(clamp(vAlong, 0.0, 1.0), 8.0) * 0.55 * core, vWhite));
+                vec3 color = mix(tintOf(vColorMix), vec3(1.0), max(pow(clamp(vAlong, 0.0, 1.0), 8.0) * 0.55 * core, vWhite));
                 gl_FragColor = vec4(color, a * vGate);
             }
         `,
@@ -380,6 +414,18 @@ export function createGlowMaterial(uniforms) {
         fragmentShader: /* glsl */ `
             uniform vec3 uColorA;
             uniform vec3 uColorB;
+            uniform vec3 uMultiColors[6];
+            uniform float uMultiN;
+            vec3 tintOf(float m) {
+                if (m < 1.5) return mix(uColorA, uColorB, m);
+                float k = floor((m - 2.0) * uMultiN);
+                if (k < 0.5) return uMultiColors[0];
+                if (k < 1.5) return uMultiColors[1];
+                if (k < 2.5) return uMultiColors[2];
+                if (k < 3.5) return uMultiColors[3];
+                if (k < 4.5) return uMultiColors[4];
+                return uMultiColors[5];
+            }
             uniform float uIntensity;
             varying float vColorMix;
             varying float vFlare;
@@ -388,7 +434,7 @@ export function createGlowMaterial(uniforms) {
                 float d = length(gl_PointCoord - 0.5) * 2.0;
                 float halo = pow(max(0.0, 1.0 - d), 4.0) * 0.6;
                 float hot = smoothstep(0.18, 0.0, d);
-                vec3 col = mix(mix(uColorA, uColorB, vColorMix), vec3(1.0), hot);
+                vec3 col = mix(tintOf(vColorMix), vec3(1.0), hot);
                 gl_FragColor = vec4(col, (halo + hot) * min(uIntensity, 1.2) * vFlare * 0.8 * vGate);
             }
         `,

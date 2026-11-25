@@ -689,3 +689,42 @@ describe('the desert stage, mounted and tuned', () => {
         expect(STAGES.warehouse.cuePlan).toBeUndefined();
     });
 });
+
+describe('the mainstage, attached and symmetric', () => {
+    it('attaches every fixture to its structure (a bracket where one stands off a surface)', async () => {
+        const { nearestStructure } = await import('@/lib/show/stages/brackets');
+        const st = STAGES.mainstage;
+        const all = [...st.heads, ...st.strobes, ...st.blinders, ...st.lasers, ...Object.entries(st.effects).filter(([k]) => k !== 'shell' && k !== 'haze').flatMap(([, l]) => l)];
+        // (the PA's own sub stacks are drawn from stage.pa: the floor row stands on the riser above them)
+        for (const f of all) expect(nearestStructure(f.pos, st.structure).distance, `${f.type ?? ''} ${f.pos}`).toBeLessThanOrEqual(0.31);
+        // no lone beam under the crown's point
+        expect(st.heads.some((h) => Math.abs(h.pos[0]) < 0.01 && h.type === 'beam' && h.pos[1] < 23)).toBe(false);
+    });
+
+    it('thins every stage as mirror images: as many heads on the left as on the right in every group', async () => {
+        const { rigHeads } = await import('@/lib/show/stages/rig');
+        for (const key of ['mainstage', 'desert', 'warehouse']) {
+            for (const count of [64, 96, 160]) {
+                const heads = rigHeads(STAGES[key], count);
+                for (const role of ['aerial', 'sides', 'floor', 'wash', 'spot']) {
+                    // (the desert's follow spots stand on the front-of-house tower, off to one side of the crowd on purpose)
+                    const mine = heads.filter((h) => h.role === role && !(key === 'desert' && h.position[2] > 20));
+                    const left = mine.filter((h) => h.position[0] < -0.05).length;
+                    const right = mine.filter((h) => h.position[0] > 0.05).length;
+                    expect(left, `${key} ${count} ${role}`).toBe(right);
+                }
+            }
+        }
+    });
+
+    it('lowers the floor beams in every cue, turns them off in crossed swords and the pyramid, and has a multi-colour focus', async () => {
+        const { MAINSTAGE_CUES, planMainstageCues } = await import('@/lib/show/stages/mainstageCues');
+        expect(STAGES.mainstage.headTune.floorLower).toBeGreaterThan(0);
+        for (const kind of ['Mainstage · crossed swords', 'Mainstage · the pyramid']) expect(MAINSTAGE_CUES.find((c) => c.kind === kind).look.floor).toBe(0);
+        const multi = MAINSTAGE_CUES.find((c) => c.kind === 'Mainstage · multi-colour focus');
+        expect(multi.look).toMatchObject({ focusMulti: 1, sparkle: 0 });
+        const plan = planMainstageCues(['Focus', 'Focus · phrase 2 · two colours', 'Focus · phrase 3', 'Peak · all in'].map((name) => ({ name })));
+        expect(plan[2]).toBe(multi);
+        expect(planMainstageCues([{ name: 'Focus' }, { name: 'Peak · all in' }])[0]).toBe(multi);
+    });
+});

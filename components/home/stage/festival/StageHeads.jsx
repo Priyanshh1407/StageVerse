@@ -65,6 +65,8 @@ function createGlowGeometry(fixtures) {
 // started each change at full speed (from standing still in one frame), which read as jerky
 // whenever a cue snapped (a solo, a slam, a new phrase's look).
 const MOVE_TIME = 0.3; // seconds
+// the multi-colour focus's colours, when a look names none: red, amber, green, cyan, blue, magenta
+const MULTI_COLORS = ['#ff2a2a', '#ffb000', '#39ff14', '#19d9ff', '#3b5bff', '#ff3df2'];
 // The floor beams' limits in every cue, around 'Peak · hook' (fan 0.9, tilt shift -0.3): how far a cue may fan
 // them (never mirrored: a crossing fan threw them outwards), raise or lower them, and swing them side to side
 const FLOOR = { fan: [0.8, 1.0], tiltShift: [-0.4, -0.2], sweep: 0.25 };
@@ -106,6 +108,16 @@ function driveRole(u, role, target, state, delta) {
     glide(u.uMirrorSweep, circle ? 0 : target.mirrorSweep ?? 0, dt);
     // a focus in two colours (look.focusSplit, metres): the two colours meet side by side, not on one white point
     glide(u.uSplit, target.focusSplit ?? 0, dt);
+    // a focus in many colours (look.focusMulti): every beam one of the palette's colours (look.focusColors), each colour
+    // meeting on its own point along a line across the stage, so every colour shows and none piles into a white blob
+    const multi = (target.focusMulti ?? 0) > 0.5 && !role.onPerformer && role !== ROLES.wash;
+    u.uMulti.value = multi ? 1 : 0;
+    if (multi) {
+        const palette = target.focusColors ?? MULTI_COLORS;
+        u.uMultiN.value = Math.min(6, palette.length);
+        if (state.palette !== palette) { state.palette = palette; palette.slice(0, 6).forEach((hex, i) => u.uMultiColors.value[i].set(hex)); }
+        glide(u.uMultiGap, target.focusGap ?? 2.6, dt);
+    }
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)
     const drop = target.dropFx ?? 0;
     const converge = Math.max(target.converge, role.sideways ? 0 : drop) * role.converge;
@@ -159,7 +171,8 @@ function driveRole(u, role, target, state, delta) {
         // (in a circle the floor beams circle round a centre a little up from where they lean, so the whole circle stays
         // in the air over the crowd: from their lean the bottom of the circle came down flat over the heads)
         : role.steady && circle ? (state.tune.floorCircleLift ?? 0)
-        : role.steady ? (target.floorTilt ?? clamp(target.tiltShift ?? 0, FLOOR.tiltShift))
+        // (tune.floorLower, the mainstage: the floor beams a little lower, out at the audience, in every cue)
+        : role.steady ? (target.floorTilt ?? clamp(target.tiltShift ?? 0, FLOOR.tiltShift)) - (state.tune.floorLower ?? 0)
         : role === ROLES.aerial && target.aerialTilt !== undefined && !circle ? target.aerialTilt
         : role === ROLES.aerial ? Math.min(0, target.tiltShift ?? 0) - Math.max(0, aerialWave - AERIAL_MAX_LIFT)
             : target.tiltShift ?? 0;
