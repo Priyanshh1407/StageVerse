@@ -569,3 +569,26 @@ cleanup only matches the scripts' own temporary profiles, never the user's brows
   sweep, Vercel Web Analytics with named events.
 
 `npm test`: **495 passing** (45 files) · lint: **0 errors** · build: passes.
+
+## The live stage's feel on every stage (2026-11-25)
+
+### BUG-56 — A strobe on a festival stage lit only its own panels (commit d8a59bb)
+Situation: the live stage's strobes felt real, the other stages' didn't. Comparing frames: on the live stage a hit
+whites out the haze, the steel, the crowd and the camera's exposure; on the festival stages only the panels lit.
+Cause: on the homepage the festival stages are embedded in the live stage's scene, which owns the room light and the
+camera veil, and those read the live stage's look: dark while another stage plays.
+Fix: `sceneFlash` takes the brighter of the live stage's flash and the active stage's (the grounds keep each stage's
+look in `control.stageLooks`), at the live stage's reference strength.
+
+### BUG-57 — The mainstage's floor and aerial beams moved like two rigs (commit 20e4ab1)
+The floor row ran its own clock at 1.3x the aerials', had no up-and-down wave, and each row numbered its own beams,
+so the rows drifted apart within a few bars and chases ran at different paces. Now one clock, half the aerials'
+wave, and each beam's phase is its position across the stage on one scale; the floor's level stays within 80–115%
+of the aerials'.
+
+### Features
+- Cameras filmed like the live stage (head height, centre framing, a mix of shots), the mainstage's side laser
+  shot, the warehouse camera over the crowd (commit 01e6743).
+- Desert visuals and title, eight more mainstage visuals, chosen by genre (commit 01e6743).
+
+`npm test`: **498 passing** (45 files) · lint: **0 errors**.

@@ -687,6 +687,34 @@ analysed in the browser with the homepage's worker). URL options: `?layout=1` (g
 `?cue=<name>`, `?only=aerial|sides|floor|wash`, `?cam=x,y,z&target=x,y,z`. `/lab/festival` is the walk between the
 stages on its own. Where each number that shapes the lights lives: [`STAGE_TUNING.md`](STAGE_TUNING.md).
 
+## The live stage's feel on every stage (Nov 25, 2026)
+
+The festival stages were compared with the live stage on the live site, song by song. What made the live stage
+feel real, and what each festival stage now does the same way:
+
+- **The strobe lights the whole room.** On the live stage a strobe hit flashes the haze, the steel, the crowd and
+  the camera's exposure (a white veil), not just the panels. On the grounds the festival stages are drawn inside
+  the homepage's scene, whose room light and veil read the live stage's look (dark meanwhile); they now follow the
+  stage being played (`sceneFlash` in `components/home/stage/flash.js`). On a strobe cue the festival beams dip a
+  little and flicker harder, and the mainstage has a strobe under every fin tip.
+- **Head-height cameras, shots that change.** Song shots stand 1.5–2.5 m up just behind the crowd (silhouettes along
+  the bottom), each cut changing the distance or angle. Mainstage: the song shots frame the centre of the stage;
+  only house, wide, high and finale fit the whole stage (`frameShots`). Desert: house, dolly, drop, high and finale
+  at head height with the roof edge and sky in the picture (its wide, audience, artist and three-quarter views are
+  unchanged). Warehouse: the circling camera just over the crowd (3.0–3.4 m), kept on the DJ and the screen;
+  wristbands at half strength.
+- **The mainstage laser shot.** With only the tower lasers on, the camera goes low and to the side
+  (`laserShots`: (-65, 3, 35) and mirrored), where each fin-tip fan reads as a sheet of light sweeping up and down.
+- **One rig.** The aerial and floor beams share one movement clock; each beam's phase is its position across the
+  stage on one scale (`asOneSystem` in `lib/show/stages/rig.js`), and the floor row rides half the aerials' wave.
+  With the aerials on, the floor beams stay at 80–115% of their level.
+- **Screen visuals by stage and genre.** One library of 24 visuals (`mainstageVisuals.js`), each pure maths of
+  stage position, beat and time, played across all of a stage's screens as one canvas. The mainstage adds fire,
+  rain, a laser grid, a heartbeat, a 4-3-2-1 countdown, liquid metal, fins swapping colours and the mandala. The
+  desert gets its own: a sunset over dunes, palms against a pulsing sun, a paint wash, a mandala, rays and a live
+  feed of the singer on the side screens, plus NOW PLAYING with the title and artist on its wall during a song.
+  `visualFor(look, stage)` picks by the song's genre (`look.songGenre`, so uploads too) and the section's energy.
+
 ## The rest of the site (Nov 19, 2026)
 
 A UX pass so a first-time visitor (often coming from a social media link) gets through with the least work:
