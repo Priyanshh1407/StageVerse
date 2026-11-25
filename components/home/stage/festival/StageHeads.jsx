@@ -208,9 +208,11 @@ function driveRole(u, role, target, state, delta) {
     const columns = state.extraLevel === 'screenColumns';
     const focusing = (target.converge ?? 0) > 0.5;
     let extra = columns ? (focusing ? 0 : target.screenColumns ?? 1) : state.extraLevel ? target[state.extraLevel] ?? 1 : 1;
+    // (a stage without screen columns, the mainstage: the left and right side lights take turns instead)
     if (role === ROLES.sides && (target.pingPong ?? 0) > 0.5) {
         const odd = Math.floor(target.beatPos ?? state.clock * 2) % 2 === 1;
-        extra *= odd === columns ? 1 : 0.04;
+        const turn = state.hasColumns ? columns : Boolean(state.mirror);
+        extra *= odd === turn ? 1 : 0.04;
     }
     // the side wipes (look.sideWipe): 5 = up each ladder from the bottom, 6 = from the front ladders to the back and back
     if (role === ROLES.sides) {
@@ -232,7 +234,7 @@ function driveRole(u, role, target, state, delta) {
     u.uIntensity.value = state.level * dip * (1 + (target.pulse ?? 0) * 0.7 * pulseGain) * (1 + (flash - 1) * strobe * 0.12);
 }
 
-function RoleGroup({ roleName, tuneKey = null, fixtures, parts, map, look, focus, mirror = false, extraLevel = null, tune = {}, shared }) {
+function RoleGroup({ roleName, tuneKey = null, fixtures, parts, map, look, focus, mirror = false, extraLevel = null, tune = {}, shared, hasColumns = false }) {
     const role = ROLES[roleName];
     // (a stage may tune a group: tune[role] = { opacity, length, spread, gain } multipliers, e.g. the mainstage's bigger
     // beams; a split group, e.g. 'floor-screens', may have its own)
@@ -278,7 +280,7 @@ function RoleGroup({ roleName, tuneKey = null, fixtures, parts, map, look, focus
         });
     }, [fixtures]);
 
-    const state = useRef({ focus, mirror, extraLevel, tune, shared, gain: own.gain ?? 1, level: 1, phase: 0, clock: 0, colors: { a: {}, b: {}, ta: new THREE.Color(), tb: new THREE.Color() } });
+    const state = useRef({ focus, mirror, extraLevel, tune, shared, hasColumns, gain: own.gain ?? 1, level: 1, phase: 0, clock: 0, colors: { a: {}, b: {}, ta: new THREE.Color(), tb: new THREE.Color() } });
     useFrame((_, delta) => {
         const mesh = group.current?.children[0];
         if (mesh) driveRole(mesh.material.uniforms, role, look.current, state.current, delta);
@@ -328,9 +330,10 @@ export default function StageHeads({ heads, look, focus = [0, 1.8, -8], screenBe
         ];
         return [...sides(towers, 'sides', null), ...sides(columns, 'sides-screens', 'screenColumns')].filter((g) => g.list.length);
     }), [heads, screenBeamsX]);
+    const hasColumns = groups.some((g) => g.extraLevel === 'screenColumns');
 
     return groups.map((g) => (
-        <RoleGroup key={`${g.key}-${g.list.length}`} roleName={g.role} tuneKey={g.tuneKey} fixtures={g.list} parts={parts} map={map} look={look} focus={focus} mirror={g.mirror} extraLevel={g.extraLevel} tune={tune} shared={shared} />
+        <RoleGroup key={`${g.key}-${g.list.length}`} roleName={g.role} tuneKey={g.tuneKey} fixtures={g.list} parts={parts} map={map} look={look} focus={focus} mirror={g.mirror} extraLevel={g.extraLevel} tune={tune} shared={shared} hasColumns={hasColumns} />
     ));
 }
 

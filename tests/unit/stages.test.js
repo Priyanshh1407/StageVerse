@@ -184,12 +184,17 @@ describe('the mainstage cues', async () => {
         expect(kindAt('Calm 2')).toBe('Mainstage · silhouette');
         // builds: their first and third phrase, sunrise and the pyramid in turn (the second keeps the song's own look)
         expect(new Set([kindAt('Build 4'), kindAt('Build 4 · phrase 3')])).toEqual(new Set(['Mainstage · sunrise', 'Mainstage · the pyramid']));
-        expect(kindAt('Build 4 · phrase 2')).toBeNull();
+        // (the second keeps the song's own look, unless it is the free slot the song's one beam wipe takes)
+        expect([null, 'Beam wipe']).toContain(kindAt('Build 4 · phrase 2'));
         expect(kindAt('Breakdown 6')).toBe('Mainstage · lone sweeper');
         expect(kindAt('Peak 5 · lasers')).toBe('Mainstage · laser cathedral');
         expect(kindAt('Peak 7 · lasers')).toBe('Mainstage · laser cathedral');
         for (const peak of ['Peak 5 · all in', 'Peak 5 · phrase 2', 'Peak 7 · hook', 'Peak 7 · phrase 3']) expect(plan[names.indexOf(peak)].fits, peak).toBe('peak');
-        for (const groove of ['Groove 3', 'Groove 3 · phrase 2']) expect(plan[names.indexOf(groove)].fits, groove).toBe('groove');
+        // (a groove phrase is the mainstage's own groove cue, or the song's one side-tower cue when it has no free slot for it)
+        for (const groove of ['Groove 3', 'Groove 3 · phrase 2']) {
+            const c = plan[names.indexOf(groove)];
+            expect(c.fits === 'groove' || /^(Beam wipe|Side towers · )/.test(c.kind), groove).toBe(true);
+        }
         expect(plan.filter(Boolean).length).toBeGreaterThan(names.length / 2);
     });
 
@@ -224,7 +229,7 @@ describe('the mainstage cues', async () => {
 
     it('gives the cue tester a complete look for each', () => {
         const tested = mainstageTestCues([{ kind: 'Peak · all in', look: { intensity: 1.3, colorA: '#ff0000' } }]);
-        expect(tested).toHaveLength(MAINSTAGE_CUES.length);
+        expect(tested).toHaveLength(MAINSTAGE_CUES.length + 8); // its own, then the 4 beam wipes and 4 side-tower cues
         expect(tested[0].look.colorA).toBe('#ff0000');
     });
 });
@@ -654,12 +659,29 @@ describe('the desert stage, mounted and tuned', () => {
 
     it('plays its side-tower cues in turn: the side towers solo, bridges and breakdowns, or the first build', async () => {
         const { planDesertCues, DESERT_SIDE_CUES } = await import('@/lib/show/stages/mainstageCues');
-        expect(DESERT_SIDE_CUES.map((c) => c.kind)).toEqual(['Desert · ladder climb', 'Desert · depth chase', 'Desert · crossfire', 'Desert · ping-pong']);
+        expect(DESERT_SIDE_CUES.map((c) => c.kind)).toEqual(['Side towers · ladder climb', 'Side towers · depth chase', 'Side towers · crossfire', 'Side towers · ping-pong']);
         const plan = planDesertCues(['Intro', 'Solo · side towers', 'Bridge', 'Breakdown', 'Peak · all in'].map((name) => ({ name })));
         expect(plan.slice(1, 4)).toEqual(DESERT_SIDE_CUES.slice(0, 3));
         // only the side lights and a little of the rest: the towers are the point
         for (const c of DESERT_SIDE_CUES) expect(c.look.sides).toBe(1);
-        const none = planDesertCues([{ name: 'Build' }, { name: 'Peak · all in' }]);
-        expect(none[0]).toBe(DESERT_SIDE_CUES[0]);
+        const none = planDesertCues([{ name: 'Groove' }, { name: 'Build' }, { name: 'Peak · all in' }]);
+        expect(none[1]).toBe(DESERT_SIDE_CUES[0]);
+    });
+
+    it('plays the beam wipe and the side-tower cues on the mainstage too, in every song, and nowhere else', async () => {
+        const { planMainstageCues, BEAM_WIPE, DESERT_SIDE_CUES } = await import('@/lib/show/stages/mainstageCues');
+        const fs = await import('node:fs');
+        const index = JSON.parse(fs.readFileSync('public/shows/index.json', 'utf8'));
+        const list = Array.isArray(index) ? index : index.demos ?? index.songs ?? Object.values(index);
+        expect(list.length).toBeGreaterThan(0);
+        for (const demo of list) {
+            const file = (demo.show ?? `/shows/${demo.slug}.show.json`).replace(/^\//, 'public/');
+            const show = JSON.parse(fs.readFileSync(file, 'utf8'));
+            for (const plan of [planMainstageCues(show.cues), STAGES.desert.cuePlan(show.cues)]) {
+                expect(plan.includes(BEAM_WIPE), demo.slug ?? file).toBe(true);
+                expect(plan.some((p) => DESERT_SIDE_CUES.includes(p)), demo.slug ?? file).toBe(true);
+            }
+        }
+        expect(STAGES.warehouse.cuePlan).toBeUndefined();
     });
 });
