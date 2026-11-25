@@ -225,7 +225,7 @@ export function StageScreens({ stage, look }) {
         const u = mesh.current.material.uniforms;
         clock.current += delta;
         u.uTime.value = clock.current;
-        if (stage.visuals) driveVisuals(u, target, clock.current);
+        if (stage.visuals) driveVisuals(u, target, clock.current, stage.visuals.set);
         else {
             u.uBeat.value = target.beatPos ?? clock.current * 2;
             u.uPulse.value = target.pulse ?? 0;

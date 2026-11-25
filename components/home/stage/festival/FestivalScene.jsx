@@ -321,7 +321,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
             <group position={[px, py + 1.8 - 1.8 * ps, pz]} scale={ps}>
                 <Performer look={look} control={control} />
             </group>
-            <StageCrowd look={look} area={stage.crowd} quality={quality} blinders={Math.min(16, blinders)} />
+            <StageCrowd look={look} area={stage.crowd} quality={quality} blinders={Math.min(16, blinders)} bandLevel={stage.crowdBands ?? 1} />
 
             <StageCo2 look={look} jets={mounts.floorJets} quality={quality} blinders={blinders} mount="floor" />
             <StageCo2 look={look} jets={mounts.highJets} quality={quality} blinders={blinders} mount="truss" />

@@ -130,7 +130,7 @@ const FRAGMENT = /* glsl */ `
     }
 `;
 
-export default function StageCrowd({ look, area, quality = 'low', blinders = 8 }) {
+export default function StageCrowd({ look, area, quality = 'low', blinders = 8, bandLevel = 1 }) {
     const AREA = area;
     // as dense as the homepage's crowd (its area is about 34 x 9.4 m), on a bigger floor up to three times as many
     const count = Math.round((PEOPLE[quality] ?? PEOPLE.low) * Math.min(quality === 'high' ? 3 : 2, (2 * AREA.x * (AREA.z1 - AREA.z0)) / (34 * 9.4)));
@@ -191,7 +191,7 @@ export default function StageCrowd({ look, area, quality = 'low', blinders = 8 }
         const quiet = playing && house < 0.2 ? Math.min(1, Math.max(0, (0.62 - level) / 0.2)) * master : 0;
         st.hands += ((playing ? loud : 0) - st.hands) * k;
         st.torch += (quiet - st.torch) * Math.min(1, delta * 1.2);
-        st.bands += ((1 - Math.min(1, house * 1.5)) * master - st.bands) * k;
+        st.bands += ((1 - Math.min(1, house * 1.5)) * master * bandLevel - st.bands) * k;
         st.energy += ((playing ? (crowd ?? Math.min(1, level / 1.2)) : 0.1) - st.energy) * Math.min(1, delta * 2.5);
         // with no song the crowd sways slowly on its own
         st.beat = playing ? target.beatPos : st.beat + delta * 0.8;

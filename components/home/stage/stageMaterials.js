@@ -290,7 +290,15 @@ export function createScreenContent(content = { kind: 'brand' }, { events = [], 
         small.ctx.fillText(text, W / 2, y);
     };
 
-    if (content.kind === 'role') {
+    if (content.kind === 'title') {
+        // the song playing: NOW PLAYING, its title as the headline (shrunk to fit), the artist under it
+        line('NOW PLAYING', 230, 54, 700, 0.5);
+        let size = 260;
+        head.ctx.font = `900 ${size}px ${family}`;
+        while (head.ctx.measureText(content.key.toUpperCase()).width > W * 0.86 && size > 90) { size -= 10; head.ctx.font = `900 ${size}px ${family}`; }
+        headline(content.key.toUpperCase(), 420, size);
+        if (content.line) line(content.line, 610, 56, 500, 0.06);
+    } else if (content.kind === 'role') {
         line('FOR THE', 230, 54, 700, 0.5);
         headline(content.key.toUpperCase(), 410, 300);
         // Wrap the role's line onto at most two lines

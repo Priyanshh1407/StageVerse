@@ -52,7 +52,7 @@ function SiteStage({ siteKey, look, control, count, quality }) {
         const c = control.current;
         if (!c) return;
         (c.stageLooks ??= {})[siteKey] = own.current;
-        (c.stageBlinders ??= {})[siteKey] = 16; // (as many as the stage's own scene counts: it caps them at 16)
+        (c.stageBlinders ??= {})[siteKey] = 8; // (the live stage's reference: the room flashes as brightly as it does there)
     });
     // its persona on the LED wall during the walk through the personas; the StageVerse wordmark in the playground
     // and during a song played here

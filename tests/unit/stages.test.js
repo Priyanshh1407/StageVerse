@@ -290,9 +290,29 @@ describe('the mainstage screen visuals', async () => {
         expect(name({ crowd: 1, screenVisual: 'horizon' })).toBe('horizon');
     });
 
-    it('is the mainstage\'s alone', () => {
-        expect(STAGES.mainstage.visuals).toBeTruthy();
-        for (const key of ['desert', 'warehouse']) expect(STAGES[key].visuals, key).toBeUndefined();
+    it('plays on the mainstage and the desert, each with its own set (the warehouse has none)', () => {
+        expect(STAGES.mainstage.visuals.set).toBe('mainstage');
+        expect(STAGES.desert.visuals.set).toBe('desert');
+        expect(STAGES.desert.visuals.titles).toBe(true);
+        expect(STAGES.warehouse.visuals).toBeUndefined();
+    });
+
+    it('picks by stage and genre, any song (an upload too) getting the set of its genre', async () => {
+        const { visualFor } = await import('@/components/home/stage/festival/mainstageVisuals');
+        const on = (set, look) => MAINSTAGE_VISUALS[visualFor(look, set).index];
+        const desertOnly = new Set(['sunset', 'palms', 'paint', 'mandala', 'rays', 'livefeed']);
+        // every visual a set can pick exists, and over a song's beats the desert plays desert visuals
+        const peaks = (set, genre) => new Set(Array.from({ length: 12 }, (_, i) => on(set, { crowd: 1, beatPos: i * 16, songGenre: genre })));
+        expect([...peaks('desert', 'bollywood')]).toContain('mandala');
+        expect([...peaks('desert', 'pop')].some((v) => desertOnly.has(v))).toBe(true);
+        expect([...peaks('mainstage', 'edm')]).toContain('fire');
+        expect([...peaks('mainstage', 'bollywood')]).toContain('mandala');
+        // a genre with no set of its own (or none at all, an upload before analysis) falls back: pop on the desert, EDM on the mainstage
+        expect(on('desert', { crowd: 1, beatPos: 0, songGenre: 'rap' })).toBe(on('desert', { crowd: 1, beatPos: 0, songGenre: 'pop' }));
+        expect(on('mainstage', { crowd: 1, beatPos: 0 })).toBe(on('mainstage', { crowd: 1, beatPos: 0, songGenre: 'edm' }));
+        // the drop: the glitch on the mainstage, the paint wash on the desert
+        expect(on('desert', { crowd: 1, beatPos: 0, dropFx: 1 })).toBe('paint');
+        expect(on('mainstage', { crowd: 1, beatPos: 0, dropFx: 1 })).toBe('glitch');
     });
 });
 
@@ -486,6 +506,38 @@ describe('the audience and artist views', () => {
                 expect(half[0], `${stage.key} ${aspect}`).toBeLessThanOrEqual(d * tan * aspect); // side to side
                 expect(half[1], `${stage.key} ${aspect}`).toBeLessThanOrEqual(d * tan); // top to bottom
             }
+        }
+    });
+
+    it('film the mainstage like the live stage: close song shots at head height, the whole stage only in the wide ones', async () => {
+        const { stageCamera } = await import('@/lib/show/stages/camera');
+        const ms = STAGES.mainstage;
+        for (const shot of ['dolly', 'drop', 'left', 'right']) {
+            const cam = stageCamera(ms, { look: {}, shot, aspect: 1.78 });
+            expect(cam.pos, shot).toEqual(ms.shots[shot].pos); // not fitted to the whole stage
+            expect(cam.pos[1], shot).toBeLessThan(3); // head height
+            expect(cam.pos[2], shot).toBeGreaterThan(ms.crowd.z1); // just behind the crowd
+        }
+        const wide = stageCamera(ms, { look: {}, shot: 'wide', aspect: 1.78 });
+        expect(wide.target).toEqual(ms.frame.centre); // fitted
+        // the tower lasers alone: the side laser shot, left and right in turn
+        const lasers = { laser: 1, laserFloor: 0, laserTower: 1 };
+        expect(stageCamera(ms, { look: lasers, shot: 'dolly', t: 2, duration: 200 }).pos).toEqual(ms.shots.laserLeft.pos);
+        expect(stageCamera(ms, { look: lasers, shot: 'dolly', t: 18, duration: 200 }).pos).toEqual(ms.shots.laserRight.pos);
+        // not with the floor lasers on, and never on the other stages
+        expect(stageCamera(ms, { look: { ...lasers, laserFloor: 1 }, shot: 'dolly', t: 2, duration: 200 }).pos).toEqual(ms.shots.dolly.pos);
+        expect(STAGES.desert.laserShots).toBeUndefined();
+    });
+
+    it('keep the warehouse camera just over the crowd, never through its heads, and no higher than 3.4 m', async () => {
+        const { orbitShot } = await import('@/lib/show/stages/orbit');
+        const { orbit, crowd } = STAGES.warehouse;
+        for (let t = 0; t <= 200; t += 2) {
+            const { pos } = orbitShot(orbit, t, 200);
+            // (the room is too narrow for the circle to clear the crowd's corners: there it passes over raised hands)
+            const overCrowd = Math.abs(pos[0]) < crowd.x && pos[2] > crowd.z0 && pos[2] < crowd.z1;
+            if (overCrowd) expect(pos[1], `t ${t}: ${pos}`).toBeGreaterThanOrEqual(2.9);
+            expect(pos[1]).toBeLessThanOrEqual(3.4);
         }
     });
 

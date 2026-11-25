@@ -2,7 +2,7 @@
 
 // A copy of ../LedWall.jsx for the festival stages (the homepage keeps the original, unchanged): the screens (`screens`: position, rotation, size, grid, text, seed) come from the stage.
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { createLedMaterial, createScreenContent } from '../stageMaterials';
@@ -46,12 +46,18 @@ export default function StageLedWall({ screens: SCREENS, look, events = [], scre
     useEffect(() => () => materials.forEach((m) => m.dispose()), [materials]);
     const slots = useRef({ current: null, prev: null });
 
+    // (a stage whose visuals show titles, the desert: during a song its title and artist take the wordmark's turns on
+    // the wall; between songs the wordmark, or the persona, as given)
+    const [song, setSong] = useState(null);
+    const songNow = useRef(null);
+    const shown = song && visuals?.titles && screen.kind === 'brand' ? { kind: 'title', key: song.title, line: song.artist ?? '' } : screen;
+
     // Redraw the content when it changes (once the display font and the logo's faces have loaded)
-    const key = JSON.stringify({ screen, events, font, logoFonts });
+    const key = JSON.stringify({ shown, events, font, logoFonts });
     useEffect(() => {
         let cancelled = false;
         const draw = () => {
-            if (!cancelled) showContent(materials[0], createScreenContent(screen, { events, font, logoFonts }), slots.current);
+            if (!cancelled) showContent(materials[0], createScreenContent(shown, { events, font, logoFonts }), slots.current);
         };
         const faces = [font && `900 100px ${font}`, logoFonts?.tag && `400 100px ${logoFonts.tag}`, logoFonts?.script && `400 100px ${logoFonts.script}`].filter(Boolean);
         if (faces.length && document.fonts?.load) Promise.all(faces.map((f) => document.fonts.load(f))).then(draw, draw);
@@ -70,6 +76,9 @@ export default function StageLedWall({ screens: SCREENS, look, events = [], scre
     useFrame((_, delta) => {
         if (!group.current) return;
         const target = look.current;
+        // (the song playing here, if any: a state change only when it changes)
+        const title = visuals?.titles && target.beatPos !== undefined ? target.songTitle ?? null : null;
+        if (title !== songNow.current) { songNow.current = title; setSong(title ? { title, artist: target.songArtist } : null); }
         const ease = 1 - Math.exp(-Math.min(delta, 0.1) * 3);
         if (target.colorA !== colors.current.a) { colors.current.a = target.colorA; colors.current.ta.set(target.colorA); }
         if (target.colorB !== colors.current.b) { colors.current.b = target.colorB; colors.current.tb.set(target.colorB); }
@@ -84,7 +93,7 @@ export default function StageLedWall({ screens: SCREENS, look, events = [], scre
             u.uStars.value += ((target.stars ?? 0.2) - u.uStars.value) * ease;
             u.uTextMix.value = Math.min(1, u.uTextMix.value + delta * 1.6); // ~0.6 s crossfade
             if (visuals) {
-                driveVisuals(u, target, u.uTime.value);
+                driveVisuals(u, target, u.uTime.value, visuals.set);
                 u.uLocal?.value.copy(mesh.matrix);
             }
         }
