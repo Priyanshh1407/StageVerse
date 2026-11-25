@@ -65,8 +65,20 @@ function createGlowGeometry(fixtures) {
 // started each change at full speed (from standing still in one frame), which read as jerky
 // whenever a cue snapped (a solo, a slam, a new phrase's look).
 const MOVE_TIME = 0.3; // seconds
-// the multi-colour focus's colours, when a look names none: red, amber, green, cyan, blue, magenta
-const MULTI_COLORS = ['#ff2a2a', '#ffb000', '#39ff14', '#19d9ff', '#3b5bff', '#ff3df2'];
+// the multi-colour focus's colours: a family of six shades around a colour (hue -50 to +50 degrees, 20 apart), as
+// saturated and as bright as each other; remembered per colour
+const FAMILY_STEPS = [-50, -30, -10, 10, 30, 50];
+const families = new Map();
+function familyOf(hex) {
+    if (families.has(hex)) return families.get(hex);
+    const hsl = { h: 0, s: 0, l: 0 };
+    new THREE.Color(hex).getHSL(hsl);
+    const s = Math.max(0.75, hsl.s);
+    const l = Math.min(0.6, Math.max(0.45, hsl.l));
+    const out = FAMILY_STEPS.map((d) => `#${new THREE.Color().setHSL((hsl.h + d / 360 + 1) % 1, s, l).getHexString()}`);
+    families.set(hex, out);
+    return out;
+}
 // The floor beams' limits in every cue, around 'Peak · hook' (fan 0.9, tilt shift -0.3): how far a cue may fan
 // them (never mirrored: a crossing fan threw them outwards), raise or lower them, and swing them side to side
 const FLOOR = { fan: [0.8, 1.0], tiltShift: [-0.4, -0.2], sweep: 0.25 };
@@ -113,9 +125,12 @@ function driveRole(u, role, target, state, delta) {
     const multi = (target.focusMulti ?? 0) > 0.5 && !role.onPerformer && role !== ROLES.wash;
     u.uMulti.value = multi ? 1 : 0;
     if (multi) {
-        const palette = target.focusColors ?? MULTI_COLORS;
+        // (one colour family: six shades either side of the show's first colour, at the same saturation and lightness,
+        // so every colour reads as its own beam yet they belong together; a look may name its own: focusColors)
+        const palette = target.focusColors ?? familyOf(target.colorA ?? '#ff3df2');
         u.uMultiN.value = Math.min(6, palette.length);
-        if (state.palette !== palette) { state.palette = palette; palette.slice(0, 6).forEach((hex, i) => u.uMultiColors.value[i].set(hex)); }
+        const key = palette.join();
+        if (state.palette !== key) { state.palette = key; palette.slice(0, 6).forEach((hex, i) => u.uMultiColors.value[i].set(hex)); }
         glide(u.uMultiGap, target.focusGap ?? 2.6, dt);
     }
     // The drop focuses every beam on the stage centre at once (no easing: it hits on the beat)

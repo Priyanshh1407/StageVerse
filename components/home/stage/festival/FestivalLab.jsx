@@ -58,7 +58,6 @@ const PRESETS = {
     Drop: { sweep: 0.1, converge: 1, intensity: 1.4, speed: 2.2, haze: 0.3, crowd: 1, dropFx: 1, strobe: 1, laser: 1 },
     'House lights': STAGE_HOUSE_LIGHTS, // (shared with the homepage's grounds: lib/show/stages/houseLights.js)
 };
-const COUNTS = [64, 96, 160, 400];
 
 /**
  * One frame: the song's look when one is playing; otherwise the chosen preset or cue (`source`) on a
@@ -183,7 +182,7 @@ export default function FestivalLab({ stageKey }) {
         const target = read('target');
         return cam?.length === 3 && cam.every(Number.isFinite) ? { pos: cam, target: target?.length === 3 && target.every(Number.isFinite) ? target : stage.shots.wide.target } : null;
     });
-    const [count, setCount] = useState(Number(params?.get('lights')) || null);
+    // (every moving head in the layout, always: no light-count choice, so nothing is ever left out)
     const [perf, setPerf] = useState(params?.get('perf') !== '0');
     const [panel, setPanel] = useState(params?.get('panel') !== '0');
     const [follow, setFollow] = useState(params?.get('follow') === '1');
@@ -253,7 +252,7 @@ export default function FestivalLab({ stageKey }) {
 
     if (tier === null) return <div className="grid h-screen place-items-center bg-[#02030a] font-mono text-amber-300">Loading stage…</div>;
     const settings = TIER_SETTINGS[tier === 0 ? 1 : tier];
-    const lights = count ?? (tier >= 2 ? 160 : 96);
+    const lights = Infinity;
     const button = (on) => `rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${on ? 'bg-[#ff6a00] text-black' : 'bg-white/10 text-white hover:bg-white/20'}`;
     const shot = custom ?? stage.shots[shotName];
 
@@ -312,10 +311,6 @@ export default function FestivalLab({ stageKey }) {
                         <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Camera</p>
                         <div className="mt-1 flex flex-wrap gap-1.5">
                             {Object.keys(stage.shots).map((name) => <button key={name} type="button" className={button(shotName === name)} onClick={() => { setCustom(null); setShotName(name); }}>{name}</button>)}
-                        </div>
-                        <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Moving heads ({stage.heads.length} in the layout)</p>
-                        <div className="mt-1 flex flex-wrap gap-1.5">
-                            {COUNTS.map((n) => <button key={n} type="button" className={button(lights === n || (n === 400 && lights >= stage.heads.length))} onClick={() => setCount(n)}>{n === 400 ? 'All' : n}</button>)}
                         </div>
                         <div className="mt-3 flex flex-wrap gap-1.5">
                             <button type="button" className={button(follow)} onClick={() => setFollow((f) => !f)}>Camera follows the show</button>
