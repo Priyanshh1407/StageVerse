@@ -186,7 +186,10 @@ function driveRole(u, role, target, state, delta) {
     // the beat pulse, per role: a look can make the aerial beams pulse harder (pulseBeams) or hold the
     // washes steady (pulseWash 0)
     const pulseGain = role === ROLES.wash ? target.pulseWash ?? 1 : role === ROLES.aerial ? target.pulseBeams ?? 1 : 1;
-    u.uIntensity.value = state.level * (1 + (target.pulse ?? 0) * 0.7 * pulseGain) * (1 + (flash - 1) * strobe * 0.12);
+    // (a strobe cue: the beams dip a little and flicker with the strobes, so the strobe flash reads over them, as on
+    // the live stage; on a big festival rig full beams drowned it)
+    const dip = 1 - Math.min(1, strobe) * 0.35;
+    u.uIntensity.value = state.level * dip * (1 + (target.pulse ?? 0) * 0.7 * pulseGain) * (1 + (flash - 1) * strobe * 0.2);
 }
 
 function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false, extraLevel = null, tune = {}, shared }) {

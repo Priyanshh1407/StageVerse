@@ -27,7 +27,7 @@ import { FEATURES } from '@/lib/features';
 import { createTrussGeometry, DECK_DEPTH, DECK_HEIGHT, SCREEN_Z } from './trussGeometry';
 import { createBackdropMaterial, createFloorMaterial } from './stageMaterials';
 import { markReady } from '@/components/home/show/stageReady';
-import { roomFlash } from './flash';
+import { roomFlash, sceneFlash } from './flash';
 
 /**
  * Everything on stage, for use inside a <Canvas>: backdrop, floor, deck, truss, the moving heads
@@ -46,7 +46,7 @@ import { roomFlash } from './flash';
  * The only real lights: a dim front fill so the steel has detail, a coloured "bounce" from below
  * (beams hitting the floor) that tints the undersides the camera looks up at, and warm house light.
  */
-function StageLights({ look, blinders }) {
+function StageLights({ look, blinders, control }) {
     const bounce = useRef();
     const hemi = useRef();
     const colors = useRef({ a: new THREE.Color(), b: new THREE.Color(), cool: new THREE.Color('#5a6688'), warm: new THREE.Color(HOUSE_COLOR), white: new THREE.Color('#ffffff') });
@@ -54,7 +54,8 @@ function StageLights({ look, blinders }) {
         if (!bounce.current) return;
         const target = look.current;
         const { a, b, cool, warm, white } = colors.current;
-        const flash = roomFlash(target, clock.elapsedTime, blinders).total;
+        // (the stage that is playing: on the festival grounds a strobe there lights the room too)
+        const flash = sceneFlash(target, control, clock.elapsedTime, blinders).total;
         // fireworks bursting overhead tint the rig in their colours (a tint: stronger lit the backdrop
         // grey and the night sky looked washed out)
         const fw = Math.min(0.6, fireworkLight.level);
@@ -138,11 +139,11 @@ function Deck({ look }) {
  * The camera's exposure blowing out on a strobe or blinder hit: a white veil over the whole view,
  * like a phone filming a strobe. Rides in front of the camera; drawn last, no depth test.
  */
-function CameraFlash({ look, blinders }) {
+function CameraFlash({ look, blinders, control }) {
     const mesh = useRef();
     useFrame(({ camera, clock }) => {
         if (!mesh.current) return;
-        const level = roomFlash(look.current, clock.elapsedTime, blinders).total;
+        const level = sceneFlash(look.current, control, clock.elapsedTime, blinders).total;
         mesh.current.visible = level > 0.01;
         if (!mesh.current.visible) return;
         mesh.current.material.opacity = Math.min(0.9, level * 0.5);
@@ -248,7 +249,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                 <sphereGeometry args={[1200, 24, 12]} />
                 <shaderMaterial side={THREE.BackSide} depthWrite={false} vertexShader={SKY_VERTEX} fragmentShader={SKY_FRAGMENT} />
             </mesh>
-            <StageLights look={look} blinders={blinders} />
+            <StageLights look={look} blinders={blinders} control={control} />
             {/* the festival grounds' field outside the gate, under the road (the gate scene keeps its own ground) */}
             {control && FEATURES.festival && (
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 300]}>
@@ -299,7 +300,7 @@ export default function StageScene({ beams, bloom, look, events = [], lasers = 4
                     {control && FEATURES.festival && <HomeFestival look={look} control={control} count={effects === 'high' ? 160 : 96} quality={effects} />}
                 </Warm>
             )}
-            <CameraFlash look={look} blinders={blinders} />
+            <CameraFlash look={look} blinders={blinders} control={control} />
 
             {bloom && (
                 <EffectComposer multisampling={0}>

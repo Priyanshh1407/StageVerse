@@ -23,3 +23,18 @@ export function roomFlash(look, t, blinderCount = REFERENCE_BLINDERS) {
     const blinder = (look.blinder ?? 0) * master * Math.min(2.5, blinderCount / REFERENCE_BLINDERS) * FLASH_BRIGHTNESS;
     return { strobe, blinder, total: Math.min(2.2, strobe + blinder * 0.8) };
 }
+
+/**
+ * The flash in the homepage's whole scene: its own stage's, or (on the festival grounds) the flash of the stage
+ * the playground is at, whose look the grounds keep in control.stageLooks. The scene's room light and the
+ * camera's white-out follow whichever stage is flashing, so a strobe on the warehouse, the desert or the
+ * mainstage lights the room as it does on the live stage.
+ */
+export function sceneFlash(look, control, t, blinderCount = REFERENCE_BLINDERS) {
+    const own = roomFlash(look, t, blinderCount);
+    const c = control?.current;
+    const site = c?.siteKey && c.stageLooks?.[c.siteKey];
+    if (!site) return own;
+    const there = roomFlash(site, t, c.stageBlinders?.[c.siteKey] ?? REFERENCE_BLINDERS);
+    return there.total > own.total ? there : own;
+}

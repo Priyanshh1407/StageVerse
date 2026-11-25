@@ -46,7 +46,14 @@ function SiteStage({ siteKey, look, control, count, quality }) {
     const place = SITE[siteKey];
     const stage = STAGES[place.stage];
     const own = useRef(look.current);
-    useFrame(() => dim(own, look, control, siteKey));
+    useFrame(() => {
+        dim(own, look, control, siteKey);
+        // the homepage's scene reads it: its room light and camera white-out follow this stage's strobes
+        const c = control.current;
+        if (!c) return;
+        (c.stageLooks ??= {})[siteKey] = own.current;
+        (c.stageBlinders ??= {})[siteKey] = 16; // (as many as the stage's own scene counts: it caps them at 16)
+    });
     // its persona on the LED wall during the walk through the personas; the StageVerse wordmark in the playground
     // and during a song played here
     const [playing, setPlaying] = useState(false);
