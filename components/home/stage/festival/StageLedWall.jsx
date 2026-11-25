@@ -12,6 +12,8 @@ import { createVisualsWallMaterial, driveVisuals } from './mainstageVisuals';
 // gives it: from the stage floor (deck top) up to just under the lowest truss row (y = 13),
 // and 26 m wide; the side screens fill the rest of the width, up to the towers. LED pixels stay the
 // same size as before (about 11 cm), so the grids grow with the screens.
+// How long a song's title stays on the wall when it starts (the desert), before the wordmark comes back
+const TITLE_MS = 10000;
 // A 1x1 blank texture so the main screen's samplers are valid before the first content is drawn
 function blankTexture() {
     const t = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1);
@@ -46,10 +48,12 @@ export default function StageLedWall({ screens: SCREENS, look, events = [], scre
     useEffect(() => () => materials.forEach((m) => m.dispose()), [materials]);
     const slots = useRef({ current: null, prev: null });
 
-    // (a stage whose visuals show titles, the desert: during a song its title and artist take the wordmark's turns on
-    // the wall; between songs the wordmark, or the persona, as given)
+    // (a stage whose visuals show titles, the desert: when a song starts, its title and artist on the wall for the first
+    // TITLE_MS; then, and between songs, the StageVerse wordmark as on every stage (or the persona, as given))
     const [song, setSong] = useState(null);
     const songNow = useRef(null);
+    const titleAt = useRef(0);
+    const titleShown = useRef(null);
     const shown = song && visuals?.titles && screen.kind === 'brand' ? { kind: 'title', key: song.title, line: song.artist ?? '' } : screen;
 
     // Redraw the content when it changes (once the display font and the logo's faces have loaded)
@@ -78,7 +82,9 @@ export default function StageLedWall({ screens: SCREENS, look, events = [], scre
         const target = look.current;
         // (the song playing here, if any: a state change only when it changes)
         const title = visuals?.titles && target.beatPos !== undefined ? target.songTitle ?? null : null;
-        if (title !== songNow.current) { songNow.current = title; setSong(title ? { title, artist: target.songArtist } : null); }
+        if (title !== songNow.current) { songNow.current = title; titleAt.current = performance.now(); }
+        const wanted = title && performance.now() - titleAt.current < TITLE_MS ? title : null;
+        if (wanted !== titleShown.current) { titleShown.current = wanted; setSong(wanted ? { title, artist: target.songArtist } : null); }
         const ease = 1 - Math.exp(-Math.min(delta, 0.1) * 3);
         if (target.colorA !== colors.current.a) { colors.current.a = target.colorA; colors.current.ta.set(target.colorA); }
         if (target.colorB !== colors.current.b) { colors.current.b = target.colorB; colors.current.tb.set(target.colorB); }
@@ -94,6 +100,8 @@ export default function StageLedWall({ screens: SCREENS, look, events = [], scre
             u.uTextMix.value = Math.min(1, u.uTextMix.value + delta * 1.6); // ~0.6 s crossfade
             if (visuals) {
                 driveVisuals(u, target, u.uTime.value, visuals.set);
+                // (while the title is up it stays in front of the visuals, whatever the wordmark's turns)
+                if (titleShown.current && u.uLogo) u.uLogo.value += (1 - u.uLogo.value) * 0.1;
                 u.uLocal?.value.copy(mesh.matrix);
             }
         }

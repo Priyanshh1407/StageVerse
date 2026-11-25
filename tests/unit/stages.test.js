@@ -529,6 +529,15 @@ describe('the audience and artist views', () => {
         expect(STAGES.desert.laserShots).toBeUndefined();
     });
 
+    it('glide calmly between shots on the mainstage and in the warehouse only (a speed limit), the desert unchanged', async () => {
+        const { stageCamera } = await import('@/lib/show/stages/camera');
+        expect(stageCamera(STAGES.mainstage, { look: {}, shot: 'dolly' })).toMatchObject({ ease: 1.8 * 1.7, maxSpeed: 9 });
+        expect(stageCamera(STAGES.warehouse, { look: {}, shot: 'wide', t: 10, duration: 200 }).maxSpeed).toBe(3.5);
+        const desert = stageCamera(STAGES.desert, { look: {}, shot: 'dolly' });
+        expect(desert.ease).toBe(1.8);
+        expect(desert.maxSpeed).toBeUndefined();
+    });
+
     it('keep the warehouse camera just over the crowd, never through its heads, and no higher than 3.4 m', async () => {
         const { orbitShot } = await import('@/lib/show/stages/orbit');
         const { orbit, crowd } = STAGES.warehouse;

@@ -110,8 +110,9 @@ function directFrame(control, look, camera, aim, delta) {
         if (!aim.placed) { camera.position.set(...goal.pos); aim.target.set(...goal.target); aim.placed = true; }
         // (a light smoothing on the walk, which keeps its own pace; a song's shots glide as on this stage)
         const glide = song ? goal.ease : 0.25;
-        easing.damp3(camera.position, goal.pos, glide, delta);
-        easing.damp3(aim.target, goal.target, glide, delta);
+        const maxSpeed = song ? goal.maxSpeed : undefined; // (a calm stage's speed limit: lib/show/stages/camera.js)
+        easing.damp3(camera.position, goal.pos, glide, delta, maxSpeed);
+        easing.damp3(aim.target, goal.target, glide, delta, maxSpeed);
         camera.lookAt(aim.target);
         return;
     }

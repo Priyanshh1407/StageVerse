@@ -26,7 +26,7 @@ export const ROLES = {
     // (the floor fixtures' bodies are smaller, so the performers stand out; the light is the same)
     // (steady: every cue keeps the floor beams close to the direction of 'Peak · hook', out at the crowd and a
     // little down: see FLOOR below; they take no part in the focus or the drop's sideways throw)
-    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.5, speed: 1, converge: 0, spread: 0.9, opacity: 1.6, scale: 1.6, noWave: true, steady: true },
+    floor: { level: 'floor', colors: ['colorA', 'colorB'], sweep: 0.6, speed: 1.3, converge: 0, spread: 0.9, opacity: 1.6, scale: 1.6, noWave: true, steady: true },
     // Washes colour the stage: wide, soft, barely moving, never part of the drop's convergence
     wash: { level: 'wash', colors: ['washColor', 'washColor'], sweep: 0.15, speed: 0.35, converge: 0, spread: 4.5, opacity: 0.3 },
     // spots: hard, medium-width beams on the performers, in the show's colours, barely moving
@@ -129,10 +129,12 @@ function driveRole(u, role, target, state, delta) {
     state.phase += delta * u.uSpeed.value;
     // (look.floorWave: the floor beams ride the aerials' whole wave in step with them, one ripple through the rig)
     const rippling = role.steady && (target.floorWave ?? 0) > 0.5;
-    // The aerial and floor beams are one rig: the floor row always moves on the aerials' clock (it ran its own, at
-    // 1.3x, so the two rows drifted apart within a few bars)
+    // On the mainstage (tune.oneRig) the aerial and floor beams are one rig: the floor row always moves on the
+    // aerials' clock (on its own, at 1.3x, the two rows drifted apart within a few bars). The other stages keep
+    // each row on its own clock, riding the aerials' only with look.floorWave.
+    const oneRig = role.steady && state.tune.oneRig;
     if (role === ROLES.aerial) { state.shared.phase = state.phase; state.shared.on = true; }
-    u.uPhase.value = role.steady && state.shared.on ? state.shared.phase : state.phase;
+    u.uPhase.value = (rippling || oneRig) && state.shared.on ? state.shared.phase : state.phase;
     // Side towers: their pan is their crossing angle times (1 + sidesAim): 0 = crossing (rest),
     // -1 = straight at the audience, -2 = flared outside, +0.6 = further across
     const fan = role === ROLES.wash || role === ROLES.spot ? 1 : role.ownAim ? 1 + (target.sidesAim ?? 0)
@@ -166,7 +168,7 @@ function driveRole(u, role, target, state, delta) {
         : rippling ? target.tiltWave ?? 0
         : role === ROLES.wash && state.tune.washOnStage ? 0
         // (the floor row rides half the aerials' wave, in step: the same ripple, kept low over the crowd)
-        : role.steady ? aerialWave * 0.5
+        : oneRig ? aerialWave * 0.5
         : role.ownAim || role.noWave || role.onPerformer ? 0 : role === ROLES.aerial ? aerialWave : (target.tiltWave ?? 0) * (role === ROLES.wash ? 0.3 : 1);
     glide(u.uTiltWave, tiltWave, dt);
     glide(u.uPhaseSpread, circle ? 1 : target.phaseSpread ?? 0.25, dt);
@@ -183,7 +185,7 @@ function driveRole(u, role, target, state, delta) {
     const keepBright = role.steady && !target.dimRig;
     // (with the aerials on too, the floor beams sit in a similar range to them, 80-115% of their level, so the two
     // rows read as one rig and are only rarely told apart; on their own they keep their never-dim rule)
-    const aerialsOn = (target.beams ?? 0) > 0.05;
+    const aerialsOn = state.tune.oneRig && (target.beams ?? 0) > 0.05;
     const level = keepBright && groupLevel > 0.05
         ? (aerialsOn ? Math.min(target.beams * 1.15, Math.max(target.beams * 0.8, groupLevel)) : Math.max(0.85, groupLevel))
         : groupLevel;
@@ -198,7 +200,7 @@ function driveRole(u, role, target, state, delta) {
     // (a strobe cue: the beams dip a little and flicker with the strobes, so the strobe flash reads over them, as on
     // the live stage; on a big festival rig full beams drowned it)
     const dip = 1 - Math.min(1, strobe) * 0.35;
-    u.uIntensity.value = state.level * dip * (1 + (target.pulse ?? 0) * 0.7 * pulseGain) * (1 + (flash - 1) * strobe * 0.2);
+    u.uIntensity.value = state.level * dip * (1 + (target.pulse ?? 0) * 0.7 * pulseGain) * (1 + (flash - 1) * strobe * 0.12);
 }
 
 function RoleGroup({ roleName, fixtures, parts, map, look, focus, mirror = false, extraLevel = null, tune = {}, shared }) {

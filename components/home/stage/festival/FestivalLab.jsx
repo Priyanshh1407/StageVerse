@@ -122,9 +122,9 @@ function followShow(stage, look, camera, controls, aim, delta) {
     aim.pos.set(...shot.pos);
     aim.look.set(...shot.target);
     const ease = shot.ease;
-    easing.damp3(camera.position, aim.pos, ease, delta);
+    easing.damp3(camera.position, aim.pos, ease, delta, shot.maxSpeed);
     if (controls.current) {
-        easing.damp3(controls.current.target, aim.look, ease, delta);
+        easing.damp3(controls.current.target, aim.look, ease, delta, shot.maxSpeed);
         controls.current.update();
     }
 }
