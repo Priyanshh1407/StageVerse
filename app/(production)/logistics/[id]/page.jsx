@@ -23,6 +23,15 @@ export default function LogisticsPage(props) {
     const [isReportOpen, setIsReportOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState('all'); // 'all', 'user', 'urgent'
+    // the signed-in crew member: "My tasks" are the cards assigned to them, and new cards default to them
+    const [me, setMe] = useState(null);
+    useEffect(() => {
+        let alive = true;
+        fetch('/api/auth/me').then((r) => (r.ok ? r.json() : null)).then((j) => { if (alive && j?.user) setMe(j.user); }).catch(() => {});
+        return () => { alive = false; };
+    }, []);
+    const myNames = [me?.name, me?.name?.split(' ')[0]].filter(Boolean).map((n) => n.toLowerCase());
+    const isMine = (assignee) => Boolean(assignee) && myNames.some((n) => String(assignee).toLowerCase() === n || String(assignee).toLowerCase().startsWith(`${n} `));
 
     useEffect(() => {
         const fetchData = async () => {
@@ -126,7 +135,7 @@ export default function LogisticsPage(props) {
                 ...taskData,
                 eventId: showId,
                 id: editingTask ? editingTask.id : undefined,
-                assignee: taskData.assignee || 'Alex M.'
+                assignee: taskData.assignee || me?.name || 'Unassigned'
             };
 
             const res = await fetch('/api/production/logistics', {
@@ -217,8 +226,7 @@ export default function LogisticsPage(props) {
         const keep = (c) =>
             (!q || c.title.toLowerCase().includes(q) || c.tag.toLowerCase().includes(q)) &&
             (filterType !== 'urgent' || c.urgent) &&
-            // TODO(BUG-10): "My tasks" is hardcoded to one crew name; should use the logged-in user
-            (filterType !== 'user' || c.assignee === 'Alex M.' || c.assignee === 'Alex Morrison');
+            (filterType !== 'user' || isMine(c.assignee));
         // Build new column objects instead of mutating copies, so the memo stays pure
         return showData.kanban.map(col => ({ ...col, cards: col.cards.filter(keep) }));
     })();
