@@ -21,7 +21,8 @@ const firing = (kind) => fired.solo === kind || performance.now() / 1000 < fired
 const SOLO_LOOK = { master: 1, intensity: 1, floor: 1, beams: 1, wash: 1, pixel: 1, crowd: 1 };
 
 // ---- beams: a cone per beam, its direction worked out in the shader (laser-hybrid rods, uplight washes) ---------------
-const BEAM_VERTEX = (dirCode) => /* glsl */ `
+const BEAM_VERTEX = (dirCode, head = '') => /* glsl */ `
+    ${head}
     attribute vec3 aOrigin;
     attribute vec3 aDir;           // the fixture's own aim (the uplight washes: up the face of their fin)
     attribute vec4 aInfo;          // x: the fixture's number, y: its place in its fan (-1..1), z: its side (-1, 1), w: spare
@@ -39,6 +40,7 @@ const BEAM_VERTEX = (dirCode) => /* glsl */ `
         float k = aInfo.y;
         float side = aInfo.z;
         float gate = 1.0;          // (the direction code may switch a beam off: the bars' chase along their cells)
+        float parity = mod(id + floor(uBeat), 2.0);   // (and pick its colour: odd and even swapping on the beat)
         vec3 d;
         ${dirCode}
         vGate = gate;
@@ -51,7 +53,7 @@ const BEAM_VERTEX = (dirCode) => /* glsl */ `
         vAlong = position.y;
         vWorld = (modelMatrix * vec4(world, 1.0)).xyz;
         vNormalW = normalize(mat3(modelMatrix) * (t * normal.x + d * normal.y + b * normal.z));
-        vParity = mod(id + floor(uBeat), 2.0);
+        vParity = parity;
         gl_Position = projectionMatrix * viewMatrix * vec4(vWorld, 1.0);
     }
 `;
@@ -74,7 +76,7 @@ const BEAM_FRAGMENT = /* glsl */ `
     }
 `;
 
-function beamMesh(points, { length, r0, r1, dirCode, fan = 1, span = 0 }) {
+function beamMesh(points, { length, r0, r1, dirCode, fan = 1, span = 0, head = '' }) {
     const cone = new THREE.CylinderGeometry(r0, r1, 1, 12, 1, true).translate(0, 0.5, 0);
     const geometry = new THREE.InstancedBufferGeometry().copy(cone);
     const origins = [];
@@ -94,7 +96,7 @@ function beamMesh(points, { length, r0, r1, dirCode, fan = 1, span = 0 }) {
     geometry.setAttribute('aDir', new THREE.InstancedBufferAttribute(new Float32Array(dirs), 3));
     geometry.instanceCount = origins.length / 3;
     const material = new THREE.ShaderMaterial({
-        vertexShader: BEAM_VERTEX(dirCode), fragmentShader: BEAM_FRAGMENT, ...ADDITIVE,
+        vertexShader: BEAM_VERTEX(dirCode, head), fragmentShader: BEAM_FRAGMENT, ...ADDITIVE,
         uniforms: { uTime: { value: 0 }, uBeat: { value: 0 }, uLength: { value: length }, uLevel: { value: 0 }, uWhite: { value: 0 }, uChase: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
     });
     return { geometry, material };
@@ -114,22 +116,53 @@ function useBeams(points, opts, drive) {
     return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
 }
 
-/** Tilting beam bars along the warehouse's stage front, like the real thing (a batten of LED cells side by side, each
- *  firing its own very narrow beam: together a flat sheet of parallel beams, the whole bar tilting). Twelve cells along a
- *  2 m bar; the bars tilt on the beat, each a little behind the next, so the sheets roll across the stage in a wave;
- *  odd and even bars in the show's two colours, swapping on the beat. In quieter parts a chase runs along the cells
- *  across the whole stage; in a peak every cell is on (full sheets). At the floor's level (the stage has no other floor
- *  beams). One draw call for the beams, one for the bars' housings. */
-const BAR = { cells: 12, length: 2, tilt: (beat, id) => 0.3 + Math.sin(beat * 1.5708 + id * 0.55) * 0.42 };
+/** Pixel beam bars along the warehouse's stage front, like the real thing: a fixed bar of seven heads 25 cm apart, each
+ *  head moving on its own and firing its own narrow beam, apart from the others right from the source. The bars stand
+ *  end to end across the whole stage (no gaps). Their move changes every 8 bars of the song:
+ *    sheet    every head parallel, the bars tilting in a wave across the stage
+ *    fan      each bar's heads spread out into a fan that opens and closes on the beat
+ *    arches   neighbouring bars fan the opposite ways, so their beams cross into arches over the stage
+ *    ripple   a wave running along the heads of each bar, the beams curling like a ribbon
+ *    tornado  every head spinning its beam round in a circle, each a little behind the next (a vortex)
+ *    split    odd and even bars tilting opposite ways
+ *  Colours: odd and even bars in the show's two colours, or (fan, ripple, tornado) head by head along the bar; in
+ *  quieter parts a chase runs along the heads across the stage, in a peak every head is on. At the floor's level (the
+ *  stage has no other floor beams). One draw call for the beams, one for the bars. */
+export const TILT_BAR = { cells: 7, pitch: 0.25, length: 1.75 };
+const TILT_GLSL = /* glsl */ `
+    float barHash(float id, float s) { return fract((id * 7.0 + s * 13.0) * 0.6180339); }
+    // the move: 0 sheet, 1 fan, 2 arches, 3 ripple, 4 tornado, 5 split
+    float barMove(float beat) { return mod(floor(beat / 32.0), 6.0); }
+    vec3 headAim(float id, float k, float beat) {
+        float move = barMove(beat);
+        float b = beat * 1.5708;                                     // a quarter turn a beat
+        float pitch = 0.3;                                           // from straight up towards the audience
+        float yaw = 0.0;                                             // across the stage
+        if (move < 0.5) pitch += sin(b + id * 0.35) * 0.42;
+        else if (move < 1.5) { yaw = k * (0.25 + 0.45 * (0.5 + 0.5 * sin(b))); pitch += sin(b * 0.5 + id * 0.2) * 0.2; }
+        else if (move < 2.5) { yaw = (mod(id, 2.0) * 2.0 - 1.0) * (0.35 + 0.25 * k) + k * 0.25; pitch += 0.1 * sin(b * 0.5); }
+        else if (move < 3.5) { pitch += sin(b + k * 2.2 + id * 0.3) * 0.38; yaw = k * 0.08; }
+        else if (move < 4.5) { float a = b * 0.75 + (k + 1.0) * 0.9 + id * 0.25; yaw = cos(a) * 0.38; pitch += sin(a) * 0.32; }
+        else pitch += (mod(id, 2.0) * 2.0 - 1.0) * sin(b) * 0.42;
+        return vec3(sin(yaw), cos(yaw) * cos(pitch), cos(yaw) * sin(pitch));
+    }
+    // colour by head along the bar (in the fan, the ripple and the tornado) rather than by bar
+    float headColour(float id, float k, float beat) {
+        float move = barMove(beat);
+        float cell = floor((k + 1.0) * 3.0 + 0.5);
+        bool byHead = (move > 0.5 && move < 1.5) || (move > 2.5 && move < 4.5);
+        return mod((byHead ? cell : id) + floor(beat), 2.0);
+    }`;
 function TiltBars({ bars, look }) {
     const opts = useMemo(() => ({
-        length: 30, r0: 0.03, r1: 0.32, fan: BAR.cells, span: BAR.length * 0.92,
+        length: 30, r0: 0.035, r1: 0.2, fan: TILT_BAR.cells, span: (TILT_BAR.cells - 1) * TILT_BAR.pitch,
         dirCode: /* glsl */ `
-            float pitch = 0.3 + sin(uBeat * 1.5708 + id * 0.55) * 0.42;  // the bar tilts, a little behind the next
-            d = vec3(k * 0.015, cos(pitch), sin(pitch));                  // parallel beams (a hair of spread)
-            // the chase: a run of light along the cells, across the whole stage, twice a bar
+            d = headAim(id, k, uBeat);
+            parity = headColour(id, k, uBeat);
+            // the chase: a run of light along the heads, across the whole stage, twice a bar
             float run = fract(aOrigin.x / 12.0 - uBeat * 0.5);
             gate = mix(1.0, smoothstep(0.3, 0.0, abs(run - 0.5) - 0.1) * 0.9 + 0.1, uChase);`,
+        head: TILT_GLSL,
     }), []);
     const beams = useBeams(bars, opts, (u, clock) => {
         const l = look.current;
@@ -140,27 +173,17 @@ function TiltBars({ bars, look }) {
         u.uWhite.value = 0.15;
         return (l.floor ?? 0) * masterOf(l) * 0.9;
     });
-    // the housings: a dark bar per fixture on the deck, tilting with its beams
-    const housings = useRef();
-    const geometry = useMemo(() => new THREE.BoxGeometry(BAR.length, 0.2, 0.26).translate(0, 0.1, 0), []);
+    // the bars themselves: fixed, end to end (the heads move, the bar doesn't)
+    const geometry = useMemo(() => {
+        const one = new THREE.BoxGeometry(TILT_BAR.length - 0.03, 0.2, 0.3).translate(0, -0.1, 0);
+        return mergeGeometries(bars.map((b) => one.clone().translate(...b.pos)));
+    }, [bars]);
     const material = useMemo(() => new THREE.MeshStandardMaterial({ color: '#15171c', roughness: 0.6, metalness: 0.4 }), []);
     useEffect(() => () => { geometry.dispose(); material.dispose(); }, [geometry, material]);
-    const m = useMemo(() => new THREE.Matrix4(), []);
-    const q = useMemo(() => new THREE.Quaternion(), []);
-    useFrame(({ clock }) => {
-        const mesh = housings.current;
-        if (!mesh) return;
-        const beat = beatOf(look.current, clock.elapsedTime);
-        bars.forEach((b, i) => {
-            q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), BAR.tilt(beat, i));
-            mesh.setMatrixAt(i, m.compose(new THREE.Vector3(...b.pos), q, new THREE.Vector3(1, 1, 1)));
-        });
-        mesh.instanceMatrix.needsUpdate = true;
-    });
     return (
         <>
             {beams}
-            <instancedMesh ref={housings} args={[geometry, material, bars.length]} frustumCulled={false} />
+            <mesh geometry={geometry} material={material} />
         </>
     );
 }
@@ -326,7 +349,9 @@ function Cryo({ points, look }) {
 //   finale (the fireworks)                   a chessboard: alternate tiles up and down on the beat
 // A groove and a peak don't keep one move: every 8 bars they take the next of (SKY_TURNS) the wave or rings, the ceiling
 // still and level, one line of tiles coming down and travelling to the back like a wave, random tiles dropping straight
-// down, a wave widening from the middle out to both walls.
+// down, a wave widening from the middle out to both walls; and from the indoor arena's photos: one picture of fire
+// across every tile, the tiles sloping into a valley; a mosaic of a colour per tile, the ceiling in steps; the tiles dark
+// and in steps while the beams below do the work.
 // and its picture with it, one picture across the whole ceiling: a starfield and a slow nebula in quiet parts and
 // breakdowns (the closed hall opening onto a night sky), the show's two colours in bands in a groove, streaks of light
 // rushing over the crowd towards the stage in a build, a white flash on the drop, rings on the beat in a peak, a
@@ -338,7 +363,7 @@ const SKY_SHAPE = /* glsl */ `
     uniform float uBeat; uniform float uBase; uniform float uTop; uniform vec2 uCentre;
     uniform float uAmp; uniform float uOffset; uniform vec2 uSpan;
     uniform float uWave; uniform float uRipple; uniform float uFunnel; uniform float uDome; uniform float uChess;
-    uniform float uLine; uniform float uWiden; uniform float uDrops;
+    uniform float uLine; uniform float uWiden; uniform float uDrops; uniform float uStairs;
     float hashT(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     float shapeAt(vec2 q) {
         float wave = sin((q.y - uCentre.y) * 0.32 - uBeat * 0.785);                 // rolls from the stage back, 8 beats
@@ -351,7 +376,9 @@ const SKY_SHAPE = /* glsl */ `
         // a wave across the room that starts in the middle and widens out to both walls (4 bars), then starts again
         float reach = fract(uBeat / 16.0) * 30.0;
         float widen = sin(abs(q.x) * 0.55 - uBeat * 1.571) * smoothstep(reach, reach - 4.0, abs(q.x));
-        return uAmp * (uWave * wave + uRipple * ripple + uFunnel * funnel + uDome * dome + uWiden * widen) + uLine * line + uOffset;
+        // steps: the columns of tiles at stepped heights, rising from the middle out to the walls (each tile level)
+        float stairs = floor(abs(q.x) / 4.9 + 0.5) / 5.0 * 2.0 - 1.0;
+        return uAmp * (uWave * wave + uRipple * ripple + uFunnel * funnel + uDome * dome + uWiden * widen + uStairs * stairs) + uLine * line + uOffset;
     }
     // moves of each tile as a whole (the tile stays flat): the chessboard, and random tiles dropping straight down
     float chess() {
@@ -382,11 +409,19 @@ const SKY_MODES = {
     widen: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, widen: 1, amp: 1, offset: 0, ring: 0.5, mono: 0, stars: 0, tunnel: 0, checks: 0 },
     // the whole ceiling still, level, high: the picture does the work
     still: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0, offset: 0.4, ring: 0.6, mono: 0, stars: 0, tunnel: 0, checks: 0 },
+    // (from the indoor arena's photos) one picture of fire across every tile, the tiles sloping down into a valley
+    fire: { wave: 0, ripple: 0, funnel: 0.6, dome: 0, chess: 0, amp: 0.7, offset: 0, ring: 0, mono: 0, stars: 0, tunnel: 0, checks: 0, fire: 1 },
+    // every tile its own colour, the ceiling in steps rising out to the walls
+    mosaic: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, stairs: 1, amp: 0.8, offset: 0, ring: 0, mono: 0, stars: 0, tunnel: 0, checks: 0, mosaic: 1 },
+    // the tiles dark and in steps, the beams in the haze below them doing the work
+    dark: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, stairs: 1, amp: 0.9, offset: 0.2, ring: 0, mono: 0, stars: 0, tunnel: 0, checks: 0, dark: 1 },
+    // steps, in the show's colours
+    stairs: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, stairs: 1, amp: 0.9, offset: 0, ring: 0.6, mono: 0, stars: 0, tunnel: 0, checks: 0 },
 };
 // the moves a groove and a peak take turns with, one every 8 bars (32 beats)
 const SKY_TURNS = {
-    groove: ['groove', 'still', 'line', 'drops', 'widen'],
-    peak: ['peak', 'widen', 'drops', 'line', 'still'],
+    groove: ['groove', 'mosaic', 'line', 'dark', 'drops', 'stairs', 'widen'],
+    peak: ['peak', 'fire', 'widen', 'drops', 'dark', 'line', 'still'],
 };
 /** Which of SKY_MODES the look asks for: by the song's part, or (the test page's looks) by the crowd's energy. */
 export function skyModeOf(l) {
@@ -415,7 +450,7 @@ function KineticSky({ sky, look }) {
             uBeat: { value: 0 }, uBase: { value: sky.base }, uTop: { value: sky.top }, uCentre: { value: new THREE.Vector2(...sky.centre) },
             uAmp: { value: 0.3 }, uOffset: { value: 0.5 },
             uWave: { value: 0.3 }, uRipple: { value: 0 }, uFunnel: { value: 0 }, uDome: { value: 0 }, uChess: { value: 0 },
-            uLine: { value: 0 }, uWiden: { value: 0 }, uDrops: { value: 0 },
+            uLine: { value: 0 }, uWiden: { value: 0 }, uDrops: { value: 0 }, uStairs: { value: 0 }, uFire: { value: 0 }, uMosaic: { value: 0 }, uDark: { value: 0 },
             uSpan: { value: new THREE.Vector2(Math.min(...sky.cells.map((c) => c[1])), Math.max(...sky.cells.map((c) => c[1]))) },
             uLevel: { value: 0 }, uRing: { value: 0 }, uMono: { value: 0 }, uFlash: { value: 0 }, uStars: { value: 1 }, uTunnel: { value: 0 }, uChecks: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() },
         };
@@ -438,7 +473,7 @@ function KineticSky({ sky, look }) {
                 }`,
             fragmentShader: /* glsl */ `
                 uniform float uBeat; uniform float uLevel; uniform float uRing; uniform float uMono; uniform float uFlash;
-                uniform float uStars; uniform float uTunnel; uniform float uChecks;
+                uniform float uStars; uniform float uTunnel; uniform float uChecks; uniform float uFire; uniform float uMosaic; uniform float uDark;
                 uniform vec3 uColorA; uniform vec3 uColorB; uniform vec2 uCentre;
                 varying vec2 vUv; varying vec3 vW; varying vec2 vIdx;
                 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
@@ -473,6 +508,15 @@ function KineticSky({ sky, look }) {
                     // the chessboard: alternate tiles in the two colours, swapping on the beat
                     float sq = mod(vIdx.x + vIdx.y + floor(uBeat), 2.0);
                     lamp = mix(lamp, mix(uColorA, uColorB, sq) * (0.4 + 1.2 * beat) * uLevel * 1.8, uChecks);
+                    // fire: one picture of flames across the whole ceiling, in the show's first colour
+                    float flame = noise(vec2(vW.x * 0.18, vW.z * 0.12 + uBeat * 0.35)) * noise(vec2(vW.x * 0.45 - uBeat * 0.2, vW.z * 0.3 + uBeat * 0.6));
+                    vec3 fire = mix(uColorA * 0.6, mix(uColorA, vec3(1.0, 0.85, 0.5), 0.5), smoothstep(0.25, 0.7, flame)) * (0.2 + 1.8 * flame);
+                    lamp = mix(lamp, fire * uLevel * 1.6, uFire);
+                    // mosaic: every tile its own colour, a new set each bar
+                    vec3 tint = 0.55 + 0.45 * cos(6.2832 * (hash(vIdx + floor(uBeat / 4.0)) + vec3(0.0, 0.33, 0.67)));
+                    lamp = mix(lamp, tint * (0.6 + 0.6 * beat) * uLevel * 1.4, uMosaic);
+                    // dark: the tiles off, the beams in the haze below doing the work
+                    lamp *= 1.0 - 0.95 * uDark;
                     lamp = mix(lamp, vec3(1.0), uFlash);
                     gl_FragColor = vec4(lamp * dotMask * 2.4, 1.0);
                 }`,
@@ -518,7 +562,8 @@ function KineticSky({ sky, look }) {
         const ease = (key, to) => { u[key].value += (to - u[key].value) * k; };
         u.uBeat.value = beatOf(l, clock.elapsedTime);
         ease('uWave', mode.wave); ease('uRipple', mode.ripple); ease('uFunnel', mode.funnel); ease('uDome', mode.dome); ease('uChess', mode.chess);
-        ease('uLine', mode.line ?? 0); ease('uWiden', mode.widen ?? 0); ease('uDrops', mode.drops ?? 0);
+        ease('uLine', mode.line ?? 0); ease('uWiden', mode.widen ?? 0); ease('uDrops', mode.drops ?? 0); ease('uStairs', mode.stairs ?? 0);
+        ease('uFire', mode.fire ?? 0); ease('uMosaic', mode.mosaic ?? 0); ease('uDark', mode.dark ?? 0);
         ease('uAmp', mode.amp); ease('uOffset', mode.offset); ease('uRing', mode.ring); ease('uMono', mode.mono);
         ease('uStars', mode.stars); ease('uTunnel', mode.tunnel); ease('uChecks', mode.checks);
         u.uLevel.value = masterOf(l) * Math.max(0.3, l.pixel ?? 0.6) * (mode === SKY_MODES.breakdown ? 0.5 : 1);

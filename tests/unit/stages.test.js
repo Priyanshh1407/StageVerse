@@ -835,7 +835,10 @@ describe('the warehouse, attached', () => {
         expect(st.heads.filter((h) => h.role === 'floor')).toHaveLength(0);
         expect(st.blinders.filter((b) => b.pos[1] < 5)).toHaveLength(0);
         expect(st.heads.filter((h) => h.type === 'beam' && h.pos[2] < -6 && h.pos[1] > 10).length).toBe(24);
-        expect(st.extras.tiltBars.length).toBe(13);
+        // one unbroken row of beam bars across the stage: 1.75 m bars end to end, no gaps
+        const xs = st.extras.tiltBars.map((b) => b.pos[0]);
+        for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1]).toBeCloseTo(1.75);
+        expect(xs.at(-1) - xs[0] + 1.75).toBeGreaterThan(st.meta.stageWidth - 2);
     });
 });
 
