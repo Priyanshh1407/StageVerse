@@ -725,7 +725,7 @@ and the on/off switches: `lib/show/stages/extras.js`). They play in every song, 
 |---|---|---|
 | Uplight washes | Mainstage, the 12 fin feet | a soft cone up each fin to its tip; alternate fins in the two colours, swapping every bar |
 | Laser-hybrid beams | Mainstage crown | five thin, very long white rods sweeping slowly over the sky in the peaks |
-| Cryo jets | Every stage's deck front | white plumes on their own cue (`lib/show/cryo.js`): bursts on the last two downbeats of a build, a blast spreading out from the centre on the drop, one burst a phrase later, left and right in turn in the finale |
+| Cryo jets | Every stage's deck front | white plumes on their own cue (`lib/show/cryo.js`), worked out from every song, uploads too: bursts on the last four downbeats of a build, a blast spreading out from the centre on the drop, a burst every 8 bars of a peak (all, left, right in turn; a peak without a drop opens with a blast), a short burst as each groove starts, left and right in turn in the finale then a last blast; never in quiet parts, breakdowns, the intro or the outro (8-30 firings in each demo song) |
 | Continuous LED lines | Desert roof edge, warehouse walls | see "LED lines" below |
 | Kinetic LED sky | Warehouse ceiling | see "The warehouse" below |
 | Pixel beam bars | Warehouse stage front | see "The warehouse" below |

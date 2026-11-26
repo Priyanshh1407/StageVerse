@@ -781,13 +781,26 @@ describe('the cryo cue (lib/show/cryo.js)', async () => {
         hits: [{ t: 48, kind: 'drop', dur: 2 }, { t: 30, kind: 'blinder', dur: 1 }, ...[180, 181, 182, 183].map((t) => ({ t, kind: 'firework', dur: 4 }))],
     };
     const plan = planCryo(show);
-    it('fires on the last two downbeats of the build, the drop, a phrase later and the finale only', () => {
-        expect(plan.filter((f) => f.kind === 'burst' && f.t < 48).map((f) => f.t)).toEqual([44, 46]);
-        expect(plan.find((f) => f.kind === 'blast').t).toBe(48);
-        expect(plan.some((f) => f.kind === 'burst' && f.t === 64)).toBe(true);           // 8 bars after the drop
+    it('fires on the last four downbeats of a build, the drop, every 8 bars of a peak, as a groove starts and in the finale', () => {
+        const at = (kind) => plan.filter((f) => f.kind === kind).map((f) => f.t);
+        expect(plan.filter((f) => f.kind === 'burst' && f.t >= 32 && f.t < 48).map((f) => f.t)).toEqual([40, 42, 44, 46]);
+        const build = plan.filter((f) => f.t >= 32 && f.t < 48).map((f) => f.dur);
+        expect(build).toEqual([...build].sort((x, y) => x - y));                           // each a little longer
+        expect(at('blast')).toEqual([48, 120, 196]);                                        // the drop, a peak without one, the finale's end
+        expect(at('burst').filter((t) => t > 48 && t < 96)).toEqual([64, 80]);               // every 8 bars after the drop
+        expect(plan.find((f) => f.t === 0)?.kind).toBe('burst');                            // a groove starting
         expect(plan.filter((f) => f.kind === 'alt').map((f) => f.side)).toEqual([-1, 1, -1, 1, -1, 1, -1, 1]);
-        expect(plan.every((f) => f.t < 32 || f.t >= 44)).toBe(true);                     // nothing in the groove or on the blinder
-        expect(plan.some((f) => f.t >= 96 && f.t < 120)).toBe(false);                    // nothing in the breakdown
+        expect(plan.some((f) => f.t > 0 && f.t < 32)).toBe(false);                          // nothing else in the groove, nor on the blinder
+        expect(plan.some((f) => f.t >= 96 && f.t < 120)).toBe(false);                       // nothing in the breakdown
+        expect(new Set(plan.filter((f) => f.kind === 'burst' && f.t > 120).map((f) => f.side)).size).toBe(3);   // all, left, right in turn
+    });
+    it('plays in every demo song, many times over', async () => {
+        const fs = await import('node:fs');
+        const index = JSON.parse(fs.readFileSync('public/shows/index.json', 'utf8'));
+        for (const demo of index.demos) {
+            const song = JSON.parse(fs.readFileSync(`public${demo.show}`, 'utf8'));
+            expect(planCryo(song).length, demo.slug).toBeGreaterThanOrEqual(8);
+        }
     });
     it('a blast spreads out from the centre, then fades', () => {
         expect(cryoAt(plan, 48.1).reveal).toBeLessThan(0.5);

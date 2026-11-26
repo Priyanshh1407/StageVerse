@@ -379,7 +379,7 @@ least one EDM, one rap and one Bollywood demo song through, and once press the s
 | 10f.2 | Switches | Turn a fixture off on the test page, open the homepage | It stays off there too; on again, it's back |
 | 10f.3 | Mainstage fin washes | `/lab/mainstage`, a groove | A soft cone up each fin, neighbouring fins in the two colours, swapping every bar |
 | 10f.4 | Laser-hybrid beams | Mainstage, a peak | Five thin white rods from the crown sweeping slowly over the sky; gone outside the peaks |
-| 10f.5 | Cryo cue | Any stage, a song with a build and a drop | Two short bursts on the last two downbeats of the build, a blast spreading out from the centre on the drop, one burst 8 bars later, left and right in turn in the finale; nothing in calm parts or breakdowns |
+| 10f.5 | Cryo cue | Any stage, a demo song and one of your own | Bursts on the last four downbeats of a build (each a little longer), a blast spreading out from the centre on the drop, a burst every 8 bars of a peak (all, left, right in turn), a short burst as each groove starts, left and right in turn in the finale then a last blast; nothing in calm parts, breakdowns, the intro or the outro |
 | 10f.6 | Continuous LED lines | Every festival stage, a song | Every row of LED bars is one unbroken line; the motion changes every 8 bars and follows the cue's colours, chase and sparkle |
 | 10f.7 | Mainstage odd/even | Mainstage → Mainstage · odd-even chop | Neighbouring beams always opposite; the left half the mirror image of the right, in the aerials, the floor row and the towers |
 | 10f.8 | Every cue plays | Each stage → open "Every cue in the shows", press every cue | Each one looks right; no frozen frame (the automated sweep found no errors on all 172 cues) |
