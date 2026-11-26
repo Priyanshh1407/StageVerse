@@ -715,6 +715,27 @@ feel real, and what each festival stage now does the same way:
   feed of the singer on the side screens, plus NOW PLAYING with the title and artist on its wall during a song.
   `visualFor(look, stage)` picks by the song's genre (`look.songGenre`, so uploads too) and the section's energy.
 
+## Trial fixtures (Nov 26, 2026): on trial, each with its own switch
+
+New kinds of fixture and effect, added so each can be judged on the real stages (looks and frame rate) and then kept or
+removed. All live in `components/home/stage/festival/StageExtras.jsx`, their positions in each stage's `extras`
+(`lib/show/stages/index.js`), the list and the switches in `lib/show/stages/extras.js`.
+
+| Trial fixture | Stage | How it works |
+|---|---|---|
+| Tilting beam bars | Mainstage, the 12 fin feet (the fin-foot beams were removed) | 7 tight beams a bar, one instanced cone mesh; the bar tilts on the beat (each a little behind the next) and the fan opens and closes; odd and even bars swap the show's two colours; level = the floor row's |
+| Laser-hybrid beams | Mainstage crown, 5 points | very thin, 170 m rods sweeping slowly over the sky, mostly white; only in the peaks (crowd jumping, beams on) |
+| Flame jets | Mainstage fin tips | a flickering column (noise in the fragment shader, soft edges); fires on every drop and on the beat in the fireworks finale |
+| Cryo jets | Every stage's deck front | a white plume swept side to side, on drops and blinder hits |
+| Drone show | Desert, over the roof | 196 points (one draw call) moving between shapes every 4 s (grid, ring, heart, star, the "SV" initials) in the finale |
+| Continuous LED lines | Desert roof edge, warehouse walls | one unbroken line of pixels with a chase running along it on the beat |
+| Kinetic spheres | Warehouse, under the grid | 25 spheres on cables rising and falling in a wave on the beat; lower and further in the peaks (never below 4 m) |
+
+Each is one or two draw calls and hidden while idle. **Switches:** on `/lab/<stage>` under "Trial fixtures"; saved in
+the browser (`localStorage 'sv:extras'`) and used by the homepage too, so a fixture can be compared on and off with
+the FPS counter; "Fire" buttons preview the ones that only run at moments. `NEXT_PUBLIC_FEATURE_EXTRAS=off` removes them
+all. To remove one for good: delete its entry in `EXTRAS`, its positions in the stage's `extras`, and its component.
+
 ## The rest of the site (Nov 19, 2026)
 
 A UX pass so a first-time visitor (often coming from a social media link) gets through with the least work:

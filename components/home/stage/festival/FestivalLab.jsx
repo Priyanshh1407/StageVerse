@@ -19,6 +19,7 @@ import { STAGES } from '@/lib/show/stages';
 import { HITS, collectCues } from '@/lib/show/stages/cues';
 import { useQualityTier, TIER_SETTINGS } from '../useQualityTier';
 import FestivalScene from './FestivalScene';
+import { EXTRAS, extrasAllowed, fireExtra, readExtras, writeExtras } from '@/lib/show/stages/extras';
 import { GENRES, GENRE_KEYS } from '@/lib/show/genres';
 
 /**
@@ -317,10 +318,33 @@ export default function FestivalLab({ stageKey }) {
                             <button type="button" className={button(perf)} onClick={() => setPerf((p) => !p)}>FPS</button>
                             <Link href={`/lab/${stageKey}?layout=1`} className={button(false)}>Layout view</Link>
                         </div>
+                        <TrialFixtures stageKey={stageKey} button={button} />
                         <p className="mt-3 text-[11px] text-white/50">Tier {tier}: {settings.bloom ? 'bloom on' : 'bloom off'}. Drag to orbit, scroll to zoom.</p>
                     </>
                 )}
             </div>
         </div>
+    );
+}
+
+/** The trial fixtures on this stage (lib/show/stages/extras.js): a switch each (saved in this browser, also used on the
+ *  homepage) and a button to fire the ones that only run at moments (drops, the finale). */
+function TrialFixtures({ stageKey, button }) {
+    const [on, setOn] = useState(readExtras);
+    const here = EXTRAS.filter((e) => e.stages.includes(stageKey));
+    if (!extrasAllowed() || here.length === 0) return null;
+    const toggle = (key) => { const next = { ...on, [key]: !on[key] }; setOn(next); writeExtras(next); };
+    return (
+        <>
+            <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Trial fixtures (on trial: switch off to compare)</p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+                {here.map((e) => <button key={e.key} type="button" aria-pressed={!!on[e.key]} className={button(!!on[e.key])} onClick={() => toggle(e.key)}>{e.label}</button>)}
+            </div>
+            {here.some((e) => e.fire && on[e.key]) && (
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {here.filter((e) => e.fire && on[e.key]).map((e) => <button key={e.key} type="button" className={button(false)} onClick={() => fireExtra(e.key)}>Fire: {e.label.split(' (')[0]}</button>)}
+                </div>
+            )}
+        </>
     );
 }

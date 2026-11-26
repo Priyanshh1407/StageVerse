@@ -17,6 +17,7 @@ import { StagePixelBars, StageScreens, StageStructure } from './StageBuild';
 import StageHeads from './StageHeads';
 import StageStrobes from './StageStrobes';
 import StageLasers from './StageLasers';
+import StageExtras from './StageExtras';
 import StageCo2 from './StageCo2';
 import StageConfetti from './StageConfetti';
 import StageStreamers from './StageStreamers';
@@ -304,6 +305,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
             <StageStructure stage={stage} />
             <StageScreens stage={stage} look={look} />
+            {stage.extras && <StageExtras stage={stage} look={look} />}
             {walls.length > 0 && <StageLedWall screens={walls} look={look} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} visuals={stage.visuals ?? null} {...(screen ? { screen } : {})} />}
             {!embedded && stage.glossFloor !== false && <Floor look={look} blinders={blinding} width={Math.max(120, width * 2.6)} z={stage.crowd.z0 + 30} />}
             {stage.pa && <StagePa settings={stage.pa} />}

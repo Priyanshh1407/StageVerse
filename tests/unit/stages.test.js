@@ -728,3 +728,31 @@ describe('the mainstage, attached and symmetric', () => {
         expect(planMainstageCues([{ name: 'Focus' }, { name: 'Peak · all in' }])[0]).toBe(multi);
     });
 });
+
+describe('trial fixtures (stage.extras)', () => {
+    const mirrored = (points) => {
+        const xs = points.map((p) => Math.round(p[0] * 100) / 100).sort((a, b) => a - b);
+        return xs.every((x, i) => Math.abs(x + xs[xs.length - 1 - i]) < 0.01);
+    };
+    it('each stage has only the trial fixtures listed for it, every one mirrored left and right', async () => {
+        const { EXTRAS } = await import('@/lib/show/stages/extras');
+        for (const [key, stage] of Object.entries(STAGES)) {
+            const x = stage.extras ?? {};
+            for (const name of Object.keys(x)) expect(EXTRAS.find((e) => e.key === name)?.stages).toContain(key);
+            for (const list of [x.tiltBars?.map((b) => b.pos), x.hybridBeams, x.flames, x.cryo, x.kinetic?.cells.map(([cx]) => [cx])]) {
+                if (list) expect(mirrored(list)).toBe(true);
+            }
+        }
+    });
+    it('the mainstage tilt bars stand on the deck at the fin feet (where the fin-foot beams were), the flames on the fin tips', () => {
+        const m = STAGES.mainstage;
+        expect(m.heads.some((h) => h.type === 'beam' && m.extras.tiltBars.some((b) => Math.hypot(h.pos[0] - b.pos[0], h.pos[2] - b.pos[2]) < 0.5))).toBe(false);
+        expect(m.extras.tiltBars).toHaveLength(12);
+        for (const b of m.extras.tiltBars) expect(b.pos[1]).toBeCloseTo(1.8);
+        for (const f of m.extras.flames) expect(f[1]).toBeGreaterThan(10);
+    });
+    it('the warehouse spheres hang under the grid, never lower than 4 m (over raised hands)', () => {
+        const k = STAGES.warehouse.extras.kinetic;
+        expect(k.top - 1 - (0.8 + 2.0)).toBeGreaterThanOrEqual(4.2);
+    });
+});
