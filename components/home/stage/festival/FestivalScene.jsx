@@ -184,6 +184,32 @@ function IndoorPyro({ look }) {
     return null;
 }
 
+/** A stage's colour grade (stage.colorGrade: { saturation }): the show's colours a little less saturated, as real
+ *  fixtures look in haze, not pure screen colours. */
+const gradeHex = (hex, saturation) => {
+    const c = new THREE.Color(hex);
+    const grey = c.r * 0.299 + c.g * 0.587 + c.b * 0.114;
+    return `#${c.setRGB(grey + (c.r - grey) * saturation, grey + (c.g - grey) * saturation, grey + (c.b - grey) * saturation).getHexString()}`;
+};
+const GRADED = new Map();
+function gradeLook(look, grade) {
+    const l = look.current;
+    if (l.graded) return;                    // (a look held over from the last frame is graded once)
+    const next = { graded: true };
+    for (const key of ['colorA', 'colorB', 'washColor']) {
+        const hex = l[key];
+        if (typeof hex !== 'string') continue;
+        const id = `${hex}:${grade.saturation}`;
+        if (!GRADED.has(id)) { if (GRADED.size > 512) GRADED.clear(); GRADED.set(id, gradeHex(hex, grade.saturation ?? 1)); }
+        next[key] = GRADED.get(id);
+    }
+    look.current = { ...l, ...next };
+}
+function ColorGrade({ look, grade }) {
+    useFrame(() => gradeLook(look, grade));
+    return null;
+}
+
 /**
  * Compile every shader before it is needed. three.js compiles a material the first time its object is drawn,
  * and its warm-up (renderer.compile) skips hidden objects: the lasers, the strobes' glows and shafts and the
@@ -289,6 +315,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
     return (
         <>
             {stage.indoor && <IndoorPyro look={look} />}
+            {stage.colorGrade && <ColorGrade look={look} grade={stage.colorGrade} />}
             {!embedded && <Prewarm />}
             {stage.club && <ClubLooks look={look} />}
             {stage.fireworks && stage.fireworkFocus && <FireworkFocus look={look} focus={stage.fireworkFocus} />}

@@ -265,6 +265,9 @@ function Cryo({ points, look }) {
 //   peak                                     rings spreading from the middle of the room on the beat
 //   breakdown                                low, still and dim, in one colour
 //   finale (the fireworks)                   a chessboard: alternate tiles up and down on the beat
+// A groove and a peak don't keep one move: every 8 bars they take the next of (SKY_TURNS) the wave or rings, the ceiling
+// still and level, one line of tiles coming down and travelling to the back like a wave, random tiles dropping straight
+// down, a wave widening from the middle out to both walls.
 // and its picture with it, one picture across the whole ceiling: a starfield and a slow nebula in quiet parts and
 // breakdowns (the closed hall opening onto a night sky), the show's two colours in bands in a groove, streaks of light
 // rushing over the crowd towards the stage in a build, a white flash on the drop, rings on the beat in a peak, a
@@ -274,18 +277,34 @@ const SKY_SHAPE = /* glsl */ `
     attribute vec2 aCell;
     attribute vec2 aIdx;
     uniform float uBeat; uniform float uBase; uniform float uTop; uniform vec2 uCentre;
-    uniform float uAmp; uniform float uOffset;
+    uniform float uAmp; uniform float uOffset; uniform vec2 uSpan;
     uniform float uWave; uniform float uRipple; uniform float uFunnel; uniform float uDome; uniform float uChess;
+    uniform float uLine; uniform float uWiden; uniform float uDrops;
+    float hashT(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     float shapeAt(vec2 q) {
         float wave = sin((q.y - uCentre.y) * 0.32 - uBeat * 0.785);                 // rolls from the stage back, 8 beats
         float ripple = sin(length(q - uCentre) * 0.45 - uBeat * 1.571);             // rings from the middle, 4 beats
         float funnel = clamp(abs(q.x) / 15.0, 0.0, 1.0) * 2.0 - 1.0;                  // a valley down the middle of the room
         float dome = 1.0 - 2.0 * pow(clamp(length(q - uCentre) / 19.0, 0.0, 1.0), 2.0);
-        return uAmp * (uWave * wave + uRipple * ripple + uFunnel * funnel + uDome * dome) + uOffset;
+        // one line of tiles comes down, the line travelling from the stage to the back of the room like a wave (2 bars)
+        float lineZ = mix(uSpan.x - 3.0, uSpan.y + 3.0, fract(uBeat / 8.0));
+        float line = -2.2 * exp(-pow((q.y - lineZ) / 2.0, 2.0));
+        // a wave across the room that starts in the middle and widens out to both walls (4 bars), then starts again
+        float reach = fract(uBeat / 16.0) * 30.0;
+        float widen = sin(abs(q.x) * 0.55 - uBeat * 1.571) * smoothstep(reach, reach - 4.0, abs(q.x));
+        return uAmp * (uWave * wave + uRipple * ripple + uFunnel * funnel + uDome * dome + uWiden * widen) + uLine * line + uOffset;
     }
-    // (the chessboard moves each tile as a whole, so it leaves the tiles flat)
-    float chess() { return uChess * 0.9 * (mod(aIdx.x + aIdx.y, 2.0) * 2.0 - 1.0) * cos(uBeat * 3.14159); }`;
+    // moves of each tile as a whole (the tile stays flat): the chessboard, and random tiles dropping straight down
+    float chess() {
+        float board = uChess * 0.9 * (mod(aIdx.x + aIdx.y, 2.0) * 2.0 - 1.0) * cos(uBeat * 3.14159);
+        // a new random set of tiles each 2 beats drops 2.4 m and comes back up
+        float f = fract(uBeat / 2.0);
+        float picked = step(0.8, hashT(aIdx + floor(uBeat / 2.0) * 1.37));
+        float drop = -2.4 * picked * smoothstep(0.0, 0.25, f) * (1.0 - smoothstep(0.65, 1.0, f));
+        return board + uDrops * drop;
+    }`;
 // what each part of a song asks of the ceiling: the shape's weights, how deep, how far up or down, and the picture
+// (a groove and a peak change their move every 8 bars, so the ceiling isn't always waving: see SKY_TURNS)
 // (stars: a starfield and a slow nebula, the ceiling opening onto a night sky; tunnel: streaks of light rushing over the
 // crowd towards the stage; checks: the chessboard's tiles in the two colours)
 const SKY_MODES = {
@@ -296,15 +315,31 @@ const SKY_MODES = {
     peak: { wave: 0, ripple: 1, funnel: 0, dome: 0, chess: 0, amp: 0.95, offset: 0, ring: 1, mono: 0, stars: 0, tunnel: 0, checks: 0 },
     breakdown: { wave: 0.1, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0.2, offset: -0.85, ring: 0, mono: 1, stars: 1, tunnel: 0, checks: 0 },
     finale: { wave: 0, ripple: 0.3, funnel: 0, dome: 0, chess: 1, amp: 0.5, offset: 0, ring: 0.6, mono: 0, stars: 0, tunnel: 0, checks: 1 },
+    // random tiles dropping straight down on every other beat, the rest still and flat
+    drops: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, drops: 1, amp: 0, offset: 0.4, ring: 0.3, mono: 0, stars: 0.15, tunnel: 0, checks: 0 },
+    // one line of tiles coming down and travelling from the stage to the back like a wave
+    line: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, line: 1, amp: 0, offset: 0.5, ring: 0.4, mono: 0, stars: 0, tunnel: 0, checks: 0 },
+    // a wave across the room, starting narrow in the middle and widening out to both walls
+    widen: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, widen: 1, amp: 1, offset: 0, ring: 0.5, mono: 0, stars: 0, tunnel: 0, checks: 0 },
+    // the whole ceiling still, level, high: the picture does the work
+    still: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0, offset: 0.4, ring: 0.6, mono: 0, stars: 0, tunnel: 0, checks: 0 },
+};
+// the moves a groove and a peak take turns with, one every 8 bars (32 beats)
+const SKY_TURNS = {
+    groove: ['groove', 'still', 'line', 'drops', 'widen'],
+    peak: ['peak', 'widen', 'drops', 'line', 'still'],
 };
 /** Which of SKY_MODES the look asks for: by the song's part, or (the test page's looks) by the crowd's energy. */
 export function skyModeOf(l) {
     if ((l.dropFx ?? 0) > 0.3) return 'drop';
     if (l.finale || (l.fireworks?.length ?? 0) >= 4) return 'finale';
     const kind = l.sectionKind;
-    if (kind) return { peak: 'peak', build: 'build', groove: 'groove', breakdown: 'breakdown' }[kind] ?? 'quiet';
     const e = l.crowd ?? 0.3;
-    return e >= 0.9 ? 'peak' : e >= 0.45 ? 'build' : e >= 0.3 ? 'groove' : 'quiet';
+    const part = kind
+        ? ({ peak: 'peak', build: 'build', groove: 'groove', breakdown: 'breakdown' }[kind] ?? 'quiet')
+        : e >= 0.9 ? 'peak' : e >= 0.45 ? 'build' : e >= 0.3 ? 'groove' : 'quiet';
+    const turns = SKY_TURNS[part];
+    return turns ? turns[Math.floor((l.beatPos ?? 0) / 32) % turns.length] : part;
 }
 function KineticSky({ sky, look }) {
     const { tiles, frames, cables } = useMemo(() => {
@@ -321,6 +356,8 @@ function KineticSky({ sky, look }) {
             uBeat: { value: 0 }, uBase: { value: sky.base }, uTop: { value: sky.top }, uCentre: { value: new THREE.Vector2(...sky.centre) },
             uAmp: { value: 0.3 }, uOffset: { value: 0.5 },
             uWave: { value: 0.3 }, uRipple: { value: 0 }, uFunnel: { value: 0 }, uDome: { value: 0 }, uChess: { value: 0 },
+            uLine: { value: 0 }, uWiden: { value: 0 }, uDrops: { value: 0 },
+            uSpan: { value: new THREE.Vector2(Math.min(...sky.cells.map((c) => c[1])), Math.max(...sky.cells.map((c) => c[1]))) },
             uLevel: { value: 0 }, uRing: { value: 0 }, uMono: { value: 0 }, uFlash: { value: 0 }, uStars: { value: 1 }, uTunnel: { value: 0 }, uChecks: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() },
         };
         const tile = new THREE.ShaderMaterial({
@@ -422,6 +459,7 @@ function KineticSky({ sky, look }) {
         const ease = (key, to) => { u[key].value += (to - u[key].value) * k; };
         u.uBeat.value = beatOf(l, clock.elapsedTime);
         ease('uWave', mode.wave); ease('uRipple', mode.ripple); ease('uFunnel', mode.funnel); ease('uDome', mode.dome); ease('uChess', mode.chess);
+        ease('uLine', mode.line ?? 0); ease('uWiden', mode.widen ?? 0); ease('uDrops', mode.drops ?? 0);
         ease('uAmp', mode.amp); ease('uOffset', mode.offset); ease('uRing', mode.ring); ease('uMono', mode.mono);
         ease('uStars', mode.stars); ease('uTunnel', mode.tunnel); ease('uChecks', mode.checks);
         u.uLevel.value = masterOf(l) * Math.max(0.3, l.pixel ?? 0.6) * (mode === SKY_MODES.breakdown ? 0.5 : 1);

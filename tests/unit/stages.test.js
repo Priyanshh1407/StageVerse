@@ -273,7 +273,10 @@ describe('the mainstage changes', async () => {
     });
 
     it('changes nothing on the other stages (the desert has more confetti and CO2 of its own, below)', () => {
-        for (const k of ['frame', 'headTune', 'laserStrength']) expect(STAGES.warehouse[k], `warehouse.${k}`).toBeUndefined();
+        expect(STAGES.warehouse.frame).toBeUndefined();
+        // (the warehouse's own realism pass: thinner beams, stronger lasers)
+        expect(STAGES.warehouse.headTune.aerial.spread).toBeLessThan(1);
+        expect(STAGES.warehouse.laserStrength.boost).toBeGreaterThan(1);
         expect(STAGES.desert.frame).toBeUndefined();
         expect(STAGES.warehouse.moreEffects).toBeUndefined();
         expect(stageMounts(STAGES.warehouse).moreCannons).toEqual([]);
@@ -806,5 +809,21 @@ describe('continuous LED lines from the pixel bars', async () => {
     it('leaves a lone bar, and bars side by side (not in line), as they were', () => {
         const out = continuousBars([{ pos: [0, 0, 0] }, { pos: [1, 0, 0] }]);
         for (const b of out) expect(b.length).toBeCloseTo(1.6);
+    });
+});
+
+describe('the warehouse, attached', () => {
+    it('attaches every fixture to a truss, a wall or the deck (a bracket where one stands off), no mirror ball', async () => {
+        const { nearestStructure } = await import('@/lib/show/stages/brackets');
+        const st = STAGES.warehouse;
+        const all = [...st.heads, ...st.strobes, ...st.blinders, ...st.lasers, ...st.pixelBars, ...Object.entries(st.effects).filter(([k]) => k !== 'shell' && k !== 'haze').flatMap(([, l]) => l)];
+        for (const f of all) expect(nearestStructure(f.pos, st.structure).distance, `${f.type ?? ''} ${f.pos}`).toBeLessThanOrEqual(0.31);
+        expect(st.structure.some((p) => p.kind === 'sphere')).toBe(false);
+    });
+    it('has a PA for its size: main hangs and two rows of delays each side, two stacks each side, subs across the stage', () => {
+        const pa = STAGES.warehouse.pa;
+        expect(pa.HANGS.length).toBe(3);
+        expect(pa.STACKS.length).toBe(2);
+        expect(pa.SUB_COUNT * pa.SUB_PITCH).toBeGreaterThan(STAGES.warehouse.meta.stageWidth - 2);
     });
 });
