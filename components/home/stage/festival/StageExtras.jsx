@@ -135,6 +135,7 @@ function HybridBeams({ points, look }) {
 const JET_VERTEX = /* glsl */ `
     attribute vec3 aOrigin;
     attribute float aSeed;
+    attribute float aSpread;       // the nozzle's place across the stage: -1 the far left, 0 the centre, 1 the far right
     uniform float uTime;
     uniform float uHeight;
     uniform float uWidth;
@@ -142,6 +143,7 @@ const JET_VERTEX = /* glsl */ `
     uniform float uSweep;
     varying float vY;
     varying float vSeed;
+    varying float vSpread;
     varying vec3 vWorld;
     varying float vFacing;
     void main() {
@@ -154,6 +156,7 @@ const JET_VERTEX = /* glsl */ `
         vec3 world = aOrigin + d * y * uHeight + t * (position.x * w + wobble) + b * position.z * w;
         vY = y;
         vSeed = aSeed;
+        vSpread = aSpread;
         vWorld = (modelMatrix * vec4(world, 1.0)).xyz;
         // soft edges: the column fades where its side turns away from the camera, so it reads as a plume, not a tube
         vec3 n = normalize(t * position.x + b * position.z);
@@ -164,17 +167,22 @@ const JET_VERTEX = /* glsl */ `
 const JET_FRAGMENT = (colorCode) => /* glsl */ `
     uniform float uTime;
     uniform float uLevel;
+    uniform float uSide;           // -1 only the left nozzles, 1 only the right, 0 all
+    uniform float uReveal;         // a blast spreading out from the centre: nozzles out to this far are firing
     varying float vY;
     varying float vSeed;
+    varying float vSpread;
     varying vec3 vWorld;
     varying float vFacing;
     float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     float n(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
         return mix(mix(h(i), h(i + vec2(1.0, 0.0)), f.x), mix(h(i + vec2(0.0, 1.0)), h(i + vec2(1.0, 1.0)), f.x), f.y); }
     void main() {
+        float side = uSide == 0.0 ? 1.0 : step(0.0, vSpread * uSide);
+        float reveal = smoothstep(0.0, 0.2, uReveal - abs(vSpread));
         float flicker = n(vec2(vWorld.x * 1.5 + vSeed * 7.0, vWorld.y * 1.2 - uTime * 6.0));
         float billow = n(vec2(vWorld.x * 0.6 - vSeed * 3.0, vWorld.y * 0.5 - uTime * 2.5));
-        float a = pow(1.0 - vY, 1.2) * (0.35 + 0.6 * flicker + 0.4 * billow) * pow(vFacing, 1.3) * smoothstep(0.0, 0.08, vY + 0.02) * uLevel;
+        float a = pow(1.0 - vY, 1.2) * (0.35 + 0.6 * flicker + 0.4 * billow) * pow(vFacing, 1.3) * smoothstep(0.0, 0.08, vY + 0.02) * uLevel * side * reveal;
         vec3 c;
         ${colorCode}
         gl_FragColor = vec4(c, a);
@@ -185,12 +193,17 @@ function useJets(points, { colorCode, height, width, dir, sweep = 0 }, drive) {
     const { geometry, material } = useMemo(() => {
         const col = new THREE.CylinderGeometry(0.5, 0.5, 1, 10, 8, true).translate(0, 0.5, 0);
         const g = new THREE.InstancedBufferGeometry().copy(col);
+        const far = Math.max(...points.map((pt) => Math.abs(pt[0])), 1);
         g.setAttribute('aOrigin', new THREE.InstancedBufferAttribute(new Float32Array(points.flat()), 3));
         g.setAttribute('aSeed', new THREE.InstancedBufferAttribute(new Float32Array(points.map((_, i) => (i * 0.618) % 1)), 1));
+        g.setAttribute('aSpread', new THREE.InstancedBufferAttribute(new Float32Array(points.map((pt) => pt[0] / far)), 1));
         g.instanceCount = points.length;
         const m = new THREE.ShaderMaterial({
             vertexShader: JET_VERTEX, fragmentShader: JET_FRAGMENT(colorCode), ...ADDITIVE,
-            uniforms: { uTime: { value: 0 }, uHeight: { value: height }, uWidth: { value: width }, uDir: { value: new THREE.Vector3(...dir) }, uSweep: { value: sweep }, uLevel: { value: 0 } },
+            uniforms: {
+                uTime: { value: 0 }, uHeight: { value: height }, uWidth: { value: width }, uDir: { value: new THREE.Vector3(...dir) }, uSweep: { value: sweep },
+                uLevel: { value: 0 }, uSide: { value: 0 }, uReveal: { value: 2 },
+            },
         });
         return { geometry: g, material: m };
     }, [points, colorCode, height, width, dir, sweep]);
@@ -200,7 +213,7 @@ function useJets(points, { colorCode, height, width, dir, sweep = 0 }, drive) {
         if (!mesh.current) return;
         const u = mesh.current.material.uniforms;
         u.uTime.value = clock.elapsedTime;
-        const level = drive(clock.elapsedTime, Math.min(delta, 0.1));
+        const level = drive(clock.elapsedTime, Math.min(delta, 0.1), u);
         u.uLevel.value = level;
         u.uHeight.value = height * (0.35 + 0.65 * Math.min(1, level));
         mesh.current.visible = level > 0.01;
@@ -208,16 +221,33 @@ function useJets(points, { colorCode, height, width, dir, sweep = 0 }, drive) {
     return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
 }
 
-/** Cryo jets along the deck front: a fast white plume on drops and blinder hits, swept side to side. */
+/** Cryo jets along the deck front, swept side to side. In a song they follow the cryo cue (lib/show/cryo.js: bursts on
+ *  the last two downbeats of a build, a blast spreading out from the centre on the drop, one burst a phrase later, left
+ *  and right in turn in the finale); on the test page's looks (no song), on a drop. */
 function Cryo({ points, look }) {
     const opts = useMemo(() => ({
         height: 11, width: 4, dir: [0, 1, 0.4], sweep: 0.35,
         colorCode: 'c = vec3(0.85, 0.92, 1.0) * 2.4;',
     }), []);
     const level = useRef(0);
-    return useJets(points, opts, (clock, dt) => {
+    return useJets(points, opts, (clock, dt, u) => {
         const l = look.current;
-        const want = Math.max((l.dropFx ?? 0) > 0.3 ? 1 : 0, (l.blinder ?? 0) > 0.6 ? 0.8 : 0, firing('cryo') ? 1 : 0);
+        if (firing('cryo')) {
+            u.uSide.value = 0;
+            u.uReveal.value = 2;
+            level.current = 1;
+            return 1;
+        }
+        if (l.cryoCue) {
+            // the song's cue: the jets snap on, and fade with the firing
+            u.uSide.value = l.cryoSide ?? 0;
+            u.uReveal.value = l.cryoReveal ?? 2;
+            level.current = (l.cryo ?? 0) * (l.master ?? 1);
+            return level.current;
+        }
+        u.uSide.value = 0;
+        u.uReveal.value = 2;
+        const want = (l.dropFx ?? 0) > 0.3 ? 1 : 0;
         level.current = want > level.current ? want : Math.max(0, level.current - dt * 0.9);
         return level.current;
     });
@@ -225,98 +255,176 @@ function Cryo({ points, look }) {
 
 // ---- the kinetic LED sky (warehouse): see-through LED tiles on winches over the crowd, moving into shapes -----------
 // (in the spirit of the kinetic LED ceilings of big indoor festival stages: an original StageVerse design.) Every tile
-// hangs on a cable under the grid; its height is one shape across the whole ceiling (a wave rolling front to back in a
-// groove, rings spreading from the centre in a peak, flat and high in quiet parts), and it tilts with the slope of that
-// shape, so the ceiling reads as one moving surface. The tiles play one picture across the whole ceiling: the show's
-// two colours in bands, rings on the beat, a white flash on the drop. LED dots with gaps between them (the gaps are cut
-// out), so the rig's beams still pass through. One draw call for the tiles, one for the cables.
+// hangs on a cable under the grid, in the gaps between the grid's fixtures (so the beams fire between the tiles); its
+// height is one shape across the whole ceiling and it tilts with the slope of that shape, so the ceiling moves as one
+// surface. The shape is the ceiling's own cue, by the part of the song:
+//   quiet parts (intro, calm, verse, outro)  high and nearly flat, drifting slowly
+//   groove                                   a wave rolling from the stage to the back of the room
+//   build                                    the ceiling comes down over the crowd into a valley pointing at the DJ
+//   the drop                                 it springs up into a dome, flashing white
+//   peak                                     rings spreading from the middle of the room on the beat
+//   breakdown                                low, still and dim, in one colour
+//   finale (the fireworks)                   a chessboard: alternate tiles up and down on the beat
+// and its picture with it, one picture across the whole ceiling: a starfield and a slow nebula in quiet parts and
+// breakdowns (the closed hall opening onto a night sky), the show's two colours in bands in a groove, streaks of light
+// rushing over the crowd towards the stage in a build, a white flash on the drop, rings on the beat in a peak, a
+// chessboard in the two colours in the finale. LED dots
+// with gaps between them (cut out), so the beams still pass through. One draw call for the tiles, one for the cables.
 const SKY_SHAPE = /* glsl */ `
     attribute vec2 aCell;
-    uniform float uBeat; uniform float uBase; uniform float uAmp; uniform float uRipple; uniform float uTop;
+    attribute vec2 aIdx;
+    uniform float uBeat; uniform float uBase; uniform float uTop; uniform vec2 uCentre;
+    uniform float uAmp; uniform float uOffset;
+    uniform float uWave; uniform float uRipple; uniform float uFunnel; uniform float uDome; uniform float uChess;
     float shapeAt(vec2 q) {
-        float wave = sin(q.y * 0.32 - uBeat * 0.785);                                   // rolls front to back, 8 beats
-        float ripple = sin(length(q - vec2(0.0, 16.6)) * 0.45 - uBeat * 1.571);        // rings from the centre, 4 beats
-        return uAmp * mix(wave, ripple, uRipple);
-    }`;
+        float wave = sin((q.y - uCentre.y) * 0.32 - uBeat * 0.785);                 // rolls from the stage back, 8 beats
+        float ripple = sin(length(q - uCentre) * 0.45 - uBeat * 1.571);             // rings from the middle, 4 beats
+        float funnel = clamp(abs(q.x) / 15.0, 0.0, 1.0) * 2.0 - 1.0;                  // a valley down the middle of the room
+        float dome = 1.0 - 2.0 * pow(clamp(length(q - uCentre) / 19.0, 0.0, 1.0), 2.0);
+        return uAmp * (uWave * wave + uRipple * ripple + uFunnel * funnel + uDome * dome) + uOffset;
+    }
+    // (the chessboard moves each tile as a whole, so it leaves the tiles flat)
+    float chess() { return uChess * 0.9 * (mod(aIdx.x + aIdx.y, 2.0) * 2.0 - 1.0) * cos(uBeat * 3.14159); }`;
+// what each part of a song asks of the ceiling: the shape's weights, how deep, how far up or down, and the picture
+// (stars: a starfield and a slow nebula, the ceiling opening onto a night sky; tunnel: streaks of light rushing over the
+// crowd towards the stage; checks: the chessboard's tiles in the two colours)
+const SKY_MODES = {
+    quiet: { wave: 0.3, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0.25, offset: 0.7, ring: 0, mono: 0, stars: 1, tunnel: 0, checks: 0 },
+    groove: { wave: 1, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0.8, offset: 0, ring: 0.2, mono: 0, stars: 0.25, tunnel: 0, checks: 0 },
+    build: { wave: 0.15, ripple: 0, funnel: 1, dome: 0, chess: 0, amp: 0.9, offset: -0.6, ring: 0, mono: 0, stars: 0, tunnel: 1, checks: 0 },
+    drop: { wave: 0, ripple: 0, funnel: 0, dome: 1, chess: 0, amp: 1, offset: 0.2, ring: 1, mono: 0, stars: 0, tunnel: 0, checks: 0 },
+    peak: { wave: 0, ripple: 1, funnel: 0, dome: 0, chess: 0, amp: 0.95, offset: 0, ring: 1, mono: 0, stars: 0, tunnel: 0, checks: 0 },
+    breakdown: { wave: 0.1, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0.2, offset: -0.85, ring: 0, mono: 1, stars: 1, tunnel: 0, checks: 0 },
+    finale: { wave: 0, ripple: 0.3, funnel: 0, dome: 0, chess: 1, amp: 0.5, offset: 0, ring: 0.6, mono: 0, stars: 0, tunnel: 0, checks: 1 },
+};
+/** Which of SKY_MODES the look asks for: by the song's part, or (the test page's looks) by the crowd's energy. */
+export function skyModeOf(l) {
+    if ((l.dropFx ?? 0) > 0.3) return 'drop';
+    if (l.finale || (l.fireworks?.length ?? 0) >= 4) return 'finale';
+    const kind = l.sectionKind;
+    if (kind) return { peak: 'peak', build: 'build', groove: 'groove', breakdown: 'breakdown' }[kind] ?? 'quiet';
+    const e = l.crowd ?? 0.3;
+    return e >= 0.9 ? 'peak' : e >= 0.45 ? 'build' : e >= 0.3 ? 'groove' : 'quiet';
+}
 function KineticSky({ sky, look }) {
-    const { tiles, cables } = useMemo(() => {
+    const { tiles, frames, cables } = useMemo(() => {
         const cells = new Float32Array(sky.cells.flat());
+        const idx = new Float32Array(sky.index.flat());
         const make = (geo, material) => {
             const g = new THREE.InstancedBufferGeometry().copy(geo);
             g.setAttribute('aCell', new THREE.InstancedBufferAttribute(cells, 2));
+            g.setAttribute('aIdx', new THREE.InstancedBufferAttribute(idx, 2));
             g.instanceCount = sky.cells.length;
             return { g, material };
         };
         const uniforms = {
-            uBeat: { value: 0 }, uBase: { value: sky.base }, uTop: { value: sky.top }, uAmp: { value: 0.3 }, uRipple: { value: 0 },
-            uLevel: { value: 0 }, uRing: { value: 0 }, uFlash: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() },
+            uBeat: { value: 0 }, uBase: { value: sky.base }, uTop: { value: sky.top }, uCentre: { value: new THREE.Vector2(...sky.centre) },
+            uAmp: { value: 0.3 }, uOffset: { value: 0.5 },
+            uWave: { value: 0.3 }, uRipple: { value: 0 }, uFunnel: { value: 0 }, uDome: { value: 0 }, uChess: { value: 0 },
+            uLevel: { value: 0 }, uRing: { value: 0 }, uMono: { value: 0 }, uFlash: { value: 0 }, uStars: { value: 1 }, uTunnel: { value: 0 }, uChecks: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() },
         };
         const tile = new THREE.ShaderMaterial({
-            uniforms, toneMapped: false, side: THREE.DoubleSide,
+            uniforms, ...ADDITIVE,
             vertexShader: `${SKY_SHAPE}
-                varying vec2 vUv; varying vec3 vW;
+                varying vec2 vUv; varying vec3 vW; varying vec2 vIdx;
                 void main() {
+                    vIdx = aIdx;
                     float h = shapeAt(aCell);
                     float dx = shapeAt(aCell + vec2(0.5, 0.0)) - h;
                     float dz = shapeAt(aCell + vec2(0.0, 0.5)) - h;
                     vec3 t = normalize(vec3(0.5, dx, 0.0));                    // the tile tilts with the slope of the shape
                     vec3 b = normalize(vec3(0.0, dz, 0.5));
                     vec3 n = normalize(cross(b, t));
-                    vec3 w = vec3(aCell.x, uBase + h, aCell.y) + t * position.x + n * position.y + b * position.z;
+                    vec3 w = vec3(aCell.x, uBase + h + chess(), aCell.y) + t * position.x + n * position.y + b * position.z;
                     vUv = position.xz / ${sky.size.toFixed(2)} + 0.5;
                     vW = w;
                     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(w, 1.0);
                 }`,
             fragmentShader: /* glsl */ `
-                uniform float uBeat; uniform float uLevel; uniform float uRing; uniform float uFlash;
-                uniform vec3 uColorA; uniform vec3 uColorB;
-                varying vec2 vUv; varying vec3 vW;
+                uniform float uBeat; uniform float uLevel; uniform float uRing; uniform float uMono; uniform float uFlash;
+                uniform float uStars; uniform float uTunnel; uniform float uChecks;
+                uniform vec3 uColorA; uniform vec3 uColorB; uniform vec2 uCentre;
+                varying vec2 vUv; varying vec3 vW; varying vec2 vIdx;
+                float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+                float noise(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+                    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
                 void main() {
                     vec2 edge = min(vUv, 1.0 - vUv);
-                    bool frame = min(edge.x, edge.y) < 0.025;
-                    vec2 cell = fract(vUv * 14.0) - 0.5;
-                    float dotMask = smoothstep(0.36, 0.22, length(cell));
-                    if (!frame && dotMask < 0.08) discard;                       // see-through between the LED dots
-                    if (frame) { gl_FragColor = vec4(0.03, 0.03, 0.035, 1.0); return; }
+                    if (min(edge.x, edge.y) < 0.02) discard;                     // (the frame: drawn dark by its own mesh)
+                    // fine LEDs (24 a row, about 6 cm apart) on a see-through panel: light only, the room shows through
+                    // between them; far away, where the LEDs are smaller than a screen pixel, their average glow (no
+                    // shimmering patterns)
+                    vec2 g = vUv * 24.0;
+                    float fw = fwidth(g.x) + fwidth(g.y);
+                    float dotMask = 1.0 - smoothstep(0.16, 0.16 + max(fw, 0.04) * 0.9, length(fract(g) - 0.5));
+                    dotMask = mix(dotMask, 0.1, smoothstep(0.35, 1.0, fw));
                     // one picture across the whole ceiling
                     float band = 0.5 + 0.5 * sin(vW.z * 0.22 + vW.x * 0.08 - uBeat * 0.4);
-                    vec3 c = mix(uColorA, uColorB, band);
-                    float dist = length(vW.xz - vec2(0.0, 16.6));
+                    vec3 c = mix(mix(uColorA, uColorB, band), uColorA, uMono);
+                    float dist = length(vW.xz - uCentre);
                     float ring = exp(-abs(dist - fract(uBeat) * 22.0) * 0.7);
                     float beat = exp(-fract(uBeat) * 5.0);
                     vec3 lamp = c * (0.35 + 0.35 * beat + 1.4 * ring * uRing) * uLevel * 1.8;
+                    // the starfield and the nebula: a night sky over the hall
+                    vec2 dotId = floor(vW.xz * 8.0);
+                    float star = step(0.985, hash(dotId)) * (0.5 + 0.5 * sin(uBeat * 1.3 + hash(dotId + 7.0) * 40.0));
+                    float cloud = noise(vW.xz * 0.06 + vec2(uBeat * 0.01, 0.0)) * noise(vW.xz * 0.13 - vec2(0.0, uBeat * 0.015));
+                    vec3 night = mix(uColorA, uColorB, noise(vW.xz * 0.04)) * cloud * 0.9 + vec3(0.9, 0.95, 1.0) * star * 2.2;
+                    lamp = mix(lamp, night * uLevel * 1.6, uStars);
+                    // the tunnel: streaks rushing over the crowd towards the stage, faster as the build goes on
+                    float streak = smoothstep(0.85, 1.0, fract((vW.z - uCentre.y) * 0.07 + uBeat * 0.5 + hash(vec2(floor(vW.x * 1.2), 3.0)) * 0.6));
+                    lamp = mix(lamp, mix(uColorA, vec3(1.0), streak * 0.6) * (0.1 + 2.4 * streak) * uLevel, uTunnel);
+                    // the chessboard: alternate tiles in the two colours, swapping on the beat
+                    float sq = mod(vIdx.x + vIdx.y + floor(uBeat), 2.0);
+                    lamp = mix(lamp, mix(uColorA, uColorB, sq) * (0.4 + 1.2 * beat) * uLevel * 1.8, uChecks);
                     lamp = mix(lamp, vec3(1.0), uFlash);
-                    gl_FragColor = vec4(lamp * dotMask + vec3(0.015), 1.0);
+                    gl_FragColor = vec4(lamp * dotMask * 2.4, 1.0);
+                }`,
+        });
+        // the tiles' thin dark frames (the panels' only solid part)
+        const frame = new THREE.ShaderMaterial({
+            uniforms, toneMapped: false, side: THREE.DoubleSide,
+            vertexShader: tile.vertexShader,
+            fragmentShader: /* glsl */ `
+                varying vec2 vUv;
+                void main() {
+                    vec2 edge = min(vUv, 1.0 - vUv);
+                    if (min(edge.x, edge.y) >= 0.02) discard;
+                    gl_FragColor = vec4(0.02, 0.02, 0.025, 1.0);
                 }`,
         });
         const cable = new THREE.ShaderMaterial({
             uniforms, toneMapped: false,
             vertexShader: `${SKY_SHAPE}
                 void main() {
-                    float y = mix(uBase + shapeAt(aCell) + 0.05, uTop, position.y + 0.5);
+                    float y = mix(uBase + shapeAt(aCell) + chess() + 0.05, uTop, position.y + 0.5);
                     vec3 w = vec3(aCell.x + position.x, y, aCell.y + position.z);
                     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(w, 1.0);
                 }`,
             fragmentShader: 'void main() { gl_FragColor = vec4(0.05, 0.05, 0.06, 1.0); }',
         });
+        const panel = new THREE.BoxGeometry(sky.size, 0.05, sky.size);
         return {
-            tiles: make(new THREE.BoxGeometry(sky.size, 0.05, sky.size), tile),
+            tiles: make(panel, tile),
+            frames: make(panel, frame),
             cables: make(new THREE.CylinderGeometry(0.015, 0.015, 1, 4), cable),
         };
     }, [sky]);
     const group = useRef();
-    useEffect(() => () => { tiles.g.dispose(); cables.g.dispose(); tiles.material.dispose(); cables.material.dispose(); }, [tiles, cables]);
+    useEffect(() => () => { for (const p of [tiles, frames, cables]) { p.g.dispose(); p.material.dispose(); } }, [tiles, frames, cables]);
     useFrame(({ clock }, delta) => {
         if (!group.current) return;
         const l = look.current;
         const u = group.current.children[0].material.uniforms;
-        const k = 1 - Math.exp(-Math.min(delta, 0.1) * 1.5);              // the winches move slowly
-        const energy = Math.min(1, l.crowd ?? 0.3);
+        const mode = SKY_MODES[skyModeOf(l)];
+        // the winches move slowly; the drop is the one fast move (the ceiling springs up)
+        const k = 1 - Math.exp(-Math.min(delta, 0.1) * (mode === SKY_MODES.drop ? 5 : 1.2));
+        const ease = (key, to) => { u[key].value += (to - u[key].value) * k; };
         u.uBeat.value = beatOf(l, clock.elapsedTime);
-        u.uAmp.value += ((0.15 + 0.85 * energy) - u.uAmp.value) * k;          // flat when quiet, a deep shape in a peak
-        u.uRipple.value += ((energy >= 0.9 ? 1 : 0) - u.uRipple.value) * k;   // a wave in a groove, rings in a peak
-        u.uRing.value += ((energy >= 0.9 ? 1 : 0.2) - u.uRing.value) * k;
-        u.uLevel.value = masterOf(l) * Math.max(0.3, l.pixel ?? 0.6);
+        ease('uWave', mode.wave); ease('uRipple', mode.ripple); ease('uFunnel', mode.funnel); ease('uDome', mode.dome); ease('uChess', mode.chess);
+        ease('uAmp', mode.amp); ease('uOffset', mode.offset); ease('uRing', mode.ring); ease('uMono', mode.mono);
+        ease('uStars', mode.stars); ease('uTunnel', mode.tunnel); ease('uChecks', mode.checks);
+        u.uLevel.value = masterOf(l) * Math.max(0.3, l.pixel ?? 0.6) * (mode === SKY_MODES.breakdown ? 0.5 : 1);
         u.uFlash.value = Math.min(1, Math.max((l.dropFx ?? 0) > 0.3 ? l.dropFx : 0, (l.blinder ?? 0) * 0.6)) * (l.master ?? 1);
         u.uColorA.value.set(l.colorA ?? '#19d9ff');
         u.uColorB.value.set(l.colorB ?? '#ff3df2');
@@ -324,6 +432,7 @@ function KineticSky({ sky, look }) {
     return (
         <group ref={group}>
             <mesh geometry={tiles.g} material={tiles.material} frustumCulled={false} />
+            <mesh geometry={frames.g} material={frames.material} frustumCulled={false} />
             <mesh geometry={cables.g} material={cables.material} frustumCulled={false} />
         </group>
     );

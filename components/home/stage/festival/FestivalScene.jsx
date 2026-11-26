@@ -170,16 +170,17 @@ function CameraFlash({ look, blinders }) {
     );
 }
 
-/** Indoors there are no fireworks: while one would be in the air, the strobes and blinders fire instead. */
-function indoorPyro(look, time) {
+/** Indoors there are no fireworks (and nothing fires in their place): the finale only shapes the kinetic LED sky. */
+function indoorPyro(look) {
     const fw = look.current.fireworks;
     if (!fw?.length) return;
-    const burst = fw.some((f) => (f.age ?? 0) < 1.2);
-    look.current = { ...look.current, fireworks: undefined, strobe: Math.max(look.current.strobe ?? 0, burst ? 1 : 0.4), blinder: Math.max(look.current.blinder ?? 0, burst && Math.floor(time * 4) % 2 ? 0.8 : 0) };
+    // (no fireworks indoors, and no strobe and blinder flashes in their place either: the developer removed the
+    // warehouse's finale fireworks. The finale is kept as a flag for the kinetic LED sky's chessboard.)
+    look.current = { ...look.current, fireworks: undefined, finale: fw.length >= 4 };
 }
 
 function IndoorPyro({ look }) {
-    useFrame(({ clock }) => indoorPyro(look, clock.elapsedTime));
+    useFrame(() => indoorPyro(look));
     return null;
 }
 

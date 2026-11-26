@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { driveVisuals, visualsUniforms, VISUALS_SCREEN_FRAGMENT } from './mainstageVisuals';
 import { COLORS } from '@/lib/show/stages/blockoutKit';
 import { screenFxFor } from '@/lib/show/stages/screenFx';
+import { continuousBars } from '@/lib/show/stages/pixelLines';
 
 // A festival stage's structure, LED screens and pixel bars, from its definition (lib/show/stages).
 // Draw calls: one per structure colour (about six), one for every LED surface together, one for
@@ -248,10 +249,11 @@ const BAR_VERTEX = /* glsl */ `
     varying float vBar;
     varying vec3 vWorld;
     void main() {
-        vAlong = position.y / 1.6 + 0.5;    // 0..1 along the bar
         vBar = aBar;
         vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
         vWorld = world.xyz;
+        // metres along the line (the bars are stretched to meet their neighbours: one continuous line of pixels)
+        vAlong = dot(world.xyz, normalize((modelMatrix * instanceMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz));
         gl_Position = projectionMatrix * viewMatrix * world;
     }
 `;
@@ -271,8 +273,8 @@ const BAR_FRAGMENT = /* glsl */ `
     varying vec3 vWorld;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     void main() {
-        float pixel = floor(vAlong * 10.0);
-        float led = smoothstep(0.5, 0.15, abs(fract(vAlong * 10.0) - 0.5));
+        float pixel = floor(vAlong / 0.16);
+        float led = smoothstep(0.5, 0.15, abs(fract(vAlong / 0.16) - 0.5));
         // colour: one, the other, or bands of both running round the stage
         float band = step(0.5, fract((vWorld.x + vWorld.y) * 0.08 + uTime * 0.1));
         float which = uColorMix < 0.33 ? 0.0 : uColorMix > 0.66 ? 1.0 : band;
@@ -287,9 +289,10 @@ const BAR_FRAGMENT = /* glsl */ `
     }
 `;
 
-/** Every pixel bar on the stage, each at its own angle: one draw call. */
+/** Every pixel bar on the stage, each at its own angle, stretched to meet the next bar in line with it, so each row
+ *  of bars is one continuous LED line: one draw call. */
 export function StagePixelBars({ stage, look }) {
-    const bars = stage.pixelBars;
+    const bars = useMemo(() => continuousBars(stage.pixelBars), [stage.pixelBars]);
     const geometry = useMemo(() => {
         const g = new THREE.BoxGeometry(0.16, 1.6, 0.12);
         g.setAttribute('aBar', new THREE.InstancedBufferAttribute(new Float32Array(bars.map((_, i) => i)), 1));
@@ -315,7 +318,7 @@ export function StagePixelBars({ stage, look }) {
             const q = new THREE.Quaternion();
             bars.forEach((b, i) => {
                 q.setFromEuler(new THREE.Euler(...(b.rot ?? [0, 0, 0])));
-                m.setMatrixAt(i, matrix.compose(new THREE.Vector3(...b.pos), q, new THREE.Vector3(1, 1, 1)));
+                m.setMatrixAt(i, matrix.compose(new THREE.Vector3(...b.pos), q, new THREE.Vector3(1, b.length / 1.6, 1)));
             });
             m.instanceMatrix.needsUpdate = true;
             placed.current = bars;

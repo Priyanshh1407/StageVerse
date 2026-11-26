@@ -306,11 +306,11 @@ describe('the mainstage screen visuals', async () => {
         expect(name({ crowd: 1, screenVisual: 'horizon' })).toBe('horizon');
     });
 
-    it('plays on the mainstage and the desert, each with its own set (the warehouse has none)', () => {
+    it('plays on every festival stage: the mainstage and the warehouse the mainstage set, the desert its own', () => {
         expect(STAGES.mainstage.visuals.set).toBe('mainstage');
         expect(STAGES.desert.visuals.set).toBe('desert');
         expect(STAGES.desert.visuals.titles).toBe(true);
-        expect(STAGES.warehouse.visuals).toBeUndefined();
+        expect(STAGES.warehouse.visuals.set).toBe('mainstage');
     });
 
     it('picks by stage and genre, any song (an upload too) getting the set of its genre', async () => {
@@ -757,8 +757,54 @@ describe('trial fixtures (stage.extras)', () => {
         const sky = STAGES.warehouse.extras.kineticSky;
         expect(sky.base - 1 - 0.05).toBeGreaterThanOrEqual(4.5);
         expect(sky.base + 1).toBeLessThan(sky.top - 0.5);
-        for (const [x, z] of sky.cells) { expect(Math.abs(x) + sky.size / 2).toBeLessThan(20); expect(z - sky.size / 2).toBeGreaterThan(0); }
-        // the grid's fixtures hang over the sky's highest tiles
-        for (const h of STAGES.warehouse.heads.filter((f) => f.pos[1] > 9)) expect(h.pos[1] - 0.6).toBeGreaterThan(sky.base + 1.05);
+        for (const [x, z] of sky.cells) { expect(Math.abs(x) + sky.size / 2).toBeLessThan(STAGES.warehouse.meta.room.width / 2 - 2); expect(z - sky.size / 2).toBeGreaterThan(-6); }   // (over the crowd and the stage front, in front of the LED walls)
+        // the grid's fixtures hang over the sky's highest tiles, each over a gap between tiles (its beam fires between them)
+        for (const h of STAGES.warehouse.heads.filter((f) => f.pos[1] > sky.top - 1)) {
+            expect(h.pos[1] - 0.6).toBeGreaterThan(sky.base + 1.3);
+            for (const [x, z] of sky.cells) expect(Math.abs(h.pos[0] - x) < sky.size / 2 && Math.abs(h.pos[2] - z) < sky.size / 2, `${h.pos} over the tile at ${x}, ${z}`).toBe(false);
+        }
+    });
+});
+
+describe('the cryo cue (lib/show/cryo.js)', async () => {
+    const { planCryo, cryoAt } = await import('@/lib/show/cryo');
+    const beats = Array.from({ length: 400 }, (_, i) => i * 0.5);
+    const downbeats = beats.map((_, i) => i).filter((i) => i % 4 === 0);
+    const show = {
+        beats, downbeats,
+        sections: [{ start: 0, end: 32, kind: 'groove' }, { start: 32, end: 48, kind: 'build' }, { start: 48, end: 96, kind: 'peak' }, { start: 96, end: 120, kind: 'breakdown' }, { start: 120, end: 200, kind: 'peak' }],
+        hits: [{ t: 48, kind: 'drop', dur: 2 }, { t: 30, kind: 'blinder', dur: 1 }, ...[180, 181, 182, 183].map((t) => ({ t, kind: 'firework', dur: 4 }))],
+    };
+    const plan = planCryo(show);
+    it('fires on the last two downbeats of the build, the drop, a phrase later and the finale only', () => {
+        expect(plan.filter((f) => f.kind === 'burst' && f.t < 48).map((f) => f.t)).toEqual([44, 46]);
+        expect(plan.find((f) => f.kind === 'blast').t).toBe(48);
+        expect(plan.some((f) => f.kind === 'burst' && f.t === 64)).toBe(true);           // 8 bars after the drop
+        expect(plan.filter((f) => f.kind === 'alt').map((f) => f.side)).toEqual([-1, 1, -1, 1, -1, 1, -1, 1]);
+        expect(plan.every((f) => f.t < 32 || f.t >= 44)).toBe(true);                     // nothing in the groove or on the blinder
+        expect(plan.some((f) => f.t >= 96 && f.t < 120)).toBe(false);                    // nothing in the breakdown
+    });
+    it('a blast spreads out from the centre, then fades', () => {
+        expect(cryoAt(plan, 48.1).reveal).toBeLessThan(0.5);
+        expect(cryoAt(plan, 48.6).reveal).toBeGreaterThan(1);
+        expect(cryoAt(plan, 48.5).level).toBe(1);
+        expect(cryoAt(plan, 20)).toBeNull();
+    });
+});
+
+describe('continuous LED lines from the pixel bars', async () => {
+    const { continuousBars } = await import('@/lib/show/stages/pixelLines');
+    it('stretches each bar to meet the next one in line, so a row is one unbroken line', () => {
+        const row = [0, 3, 6].map((x) => ({ pos: [x, 5, 0], rot: [0, 0, Math.PI / 2] }));
+        const out = continuousBars(row);
+        // the row runs from -0.8 to 6.8 with no gaps
+        const ends = out.map((b) => [b.pos[0] - b.length / 2, b.pos[0] + b.length / 2]).sort((a, b) => a[0] - b[0]);
+        expect(ends[0][0]).toBeCloseTo(-0.8);
+        expect(ends.at(-1)[1]).toBeCloseTo(6.8);
+        for (let i = 1; i < ends.length; i++) expect(ends[i][0]).toBeCloseTo(ends[i - 1][1]);
+    });
+    it('leaves a lone bar, and bars side by side (not in line), as they were', () => {
+        const out = continuousBars([{ pos: [0, 0, 0] }, { pos: [1, 0, 0] }]);
+        for (const b of out) expect(b.length).toBeCloseTo(1.6);
     });
 });
