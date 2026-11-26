@@ -739,17 +739,19 @@ describe('trial fixtures (stage.extras)', () => {
         for (const [key, stage] of Object.entries(STAGES)) {
             const x = stage.extras ?? {};
             for (const name of Object.keys(x)) expect(EXTRAS.find((e) => e.key === name)?.stages).toContain(key);
-            for (const list of [x.tiltBars?.map((b) => b.pos), x.hybridBeams, x.flames, x.cryo, x.kinetic?.cells.map(([cx]) => [cx])]) {
+            for (const list of [x.tiltBars?.map((b) => b.pos), x.finBlinders?.map((b) => b.pos), x.finWashes?.map((b) => b.pos), x.hybridBeams, x.cryo, x.kinetic?.cells.map(([cx]) => [cx])]) {
                 if (list) expect(mirrored(list)).toBe(true);
             }
         }
     });
-    it('the mainstage tilt bars stand on the deck at the fin feet (where the fin-foot beams were), the flames on the fin tips', () => {
+    it('the fin-foot options stand at the fin feet (where the fin-foot beams were), the washes aimed up their fins', () => {
         const m = STAGES.mainstage;
         expect(m.heads.some((h) => h.type === 'beam' && m.extras.tiltBars.some((b) => Math.hypot(h.pos[0] - b.pos[0], h.pos[2] - b.pos[2]) < 0.5))).toBe(false);
         expect(m.extras.tiltBars).toHaveLength(12);
         for (const b of m.extras.tiltBars) expect(b.pos[1]).toBeCloseTo(1.8);
-        for (const f of m.extras.flames) expect(f[1]).toBeGreaterThan(10);
+        expect(m.extras.finBlinders).toHaveLength(12);
+        for (const w of m.extras.finWashes) { expect(w.dir[1]).toBeGreaterThan(0.7); expect(Math.sign(w.dir[0])).toBe(w.s); }
+        expect(m.extras.flames).toBeUndefined();
     });
     it('the warehouse spheres hang under the grid, never lower than 4 m (over raised hands)', () => {
         const k = STAGES.warehouse.extras.kinetic;

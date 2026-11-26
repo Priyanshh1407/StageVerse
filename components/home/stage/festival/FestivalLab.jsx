@@ -64,7 +64,7 @@ const PRESETS = {
  * One frame: the song's look when one is playing; otherwise the chosen preset or cue (`source`) on a
  * 120 BPM beat, with any hit fired from the panel on top while it runs.
  */
-function driveLook(look, source, song, clock, delta, stage) {
+function driveLook(look, source, song, clock, delta, stage, solo = null) {
     clock.t += delta;
     const s = song.current;
     if (s?.audio && !s.audio.paused) {
@@ -90,12 +90,16 @@ function driveLook(look, source, song, clock, delta, stage) {
     }
     if (source.current.visual) next = { ...next, screenVisual: source.current.visual };
     look.current = onlyGroup(next, source.current.only);
+    // a trial fixture on its own: the whole rig dark (the fixture reads the look at full itself)
+    if (solo) look.current = { ...look.current, master: 0, blinder: 0, strobe: 0, dropFx: 0 };
     look.shot = shot ?? null;
 }
 
 
-function Driver({ look, source, song, clock, stage }) {
-    useFrame((_, delta) => driveLook(look, source, song, clock.current, delta, stage));
+function Driver({ look, source, song, clock, stage, solo }) {
+    useFrame((_, delta) => {
+        driveLook(look, source, song, clock.current, delta, stage, solo);
+    });
     return null;
 }
 
@@ -185,6 +189,7 @@ export default function FestivalLab({ stageKey }) {
     });
     // (every moving head in the layout, always: no light-count choice, so nothing is ever left out)
     const [perf, setPerf] = useState(params?.get('perf') !== '0');
+    const [solo, setSolo] = useState(null);   // a trial fixture shown on its own
     const [panel, setPanel] = useState(params?.get('panel') !== '0');
     const [follow, setFollow] = useState(params?.get('follow') === '1');
     const [demos, setDemos] = useState([]);
@@ -261,8 +266,8 @@ export default function FestivalLab({ stageKey }) {
         <div className="relative h-screen w-full bg-[#010208]">
             <Canvas camera={{ position: shot.pos, fov: 55, near: 0.5, far: 1200 }} dpr={settings.dpr} gl={{ antialias: !settings.bloom, powerPreference: 'high-performance' }}
                 onCreated={({ gl }) => { gl.debug.checkShaderErrors = true; }}>
-                <Driver look={look} source={source} song={song} clock={clock} stage={stage} />
-                <FestivalScene stage={stage} look={look} count={lights} bloom={settings.bloom} quality={tier >= 2 ? 'high' : 'low'} control={control} />
+                <Driver look={look} source={source} song={song} clock={clock} stage={stage} solo={solo} />
+                <FestivalScene stage={stage} look={look} count={lights} bloom={settings.bloom} quality={tier >= 2 ? 'high' : 'low'} control={control} extrasSolo={solo} />
                 <OrbitControls ref={controls} makeDefault target={shot.target} />
                 <ViewRig shot={shot} controls={controls} frame={custom || FIXED_VIEWS.has(shotName) ? null : stage.frame ?? null} />
                 {follow && <AutoCamera stage={stage} look={look} controls={controls} />}
@@ -318,7 +323,7 @@ export default function FestivalLab({ stageKey }) {
                             <button type="button" className={button(perf)} onClick={() => setPerf((p) => !p)}>FPS</button>
                             <Link href={`/lab/${stageKey}?layout=1`} className={button(false)}>Layout view</Link>
                         </div>
-                        <TrialFixtures stageKey={stageKey} button={button} />
+                        <TrialFixtures stageKey={stageKey} button={button} solo={solo} setSolo={setSolo} />
                         <p className="mt-3 text-[11px] text-white/50">Tier {tier}: {settings.bloom ? 'bloom on' : 'bloom off'}. Drag to orbit, scroll to zoom.</p>
                     </>
                 )}
@@ -329,18 +334,47 @@ export default function FestivalLab({ stageKey }) {
 
 /** The trial fixtures on this stage (lib/show/stages/extras.js): a switch each (saved in this browser, also used on the
  *  homepage) and a button to fire the ones that only run at moments (drops, the finale). */
-function TrialFixtures({ stageKey, button }) {
+function TrialFixtures({ stageKey, button, solo, setSolo }) {
     const [on, setOn] = useState(readExtras);
     const here = EXTRAS.filter((e) => e.stages.includes(stageKey));
     if (!extrasAllowed() || here.length === 0) return null;
-    const toggle = (key) => { const next = { ...on, [key]: !on[key] }; setOn(next); writeExtras(next); };
+    const save = (next) => { setOn(next); writeExtras(next); };
+    const toggle = (key) => save({ ...on, [key]: !on[key] });
+    // the fin feet: one option at a time (or none)
+    const finFeet = here.filter((e) => e.group === 'finFeet');
+    const pickFinFeet = (key) => {
+        save({ ...on, ...Object.fromEntries(finFeet.map((e) => [e.key, e.key === key])) });
+        if (solo && finFeet.some((e) => e.key === solo)) setSolo(key);
+    };
+    const others = here.filter((e) => !e.group);
+    const label = (key) => here.find((e) => e.key === key)?.label;
+    const heading = 'mt-3 text-[11px] uppercase tracking-wider text-white/50';
     return (
         <>
-            <p className="mt-3 text-[11px] uppercase tracking-wider text-white/50">Trial fixtures (on trial: switch off to compare)</p>
+            <p className={heading}>Trial fixtures: on its own (the rest of the rig dark)</p>
             <div className="mt-1 flex flex-wrap gap-1.5">
-                {here.map((e) => <button key={e.key} type="button" aria-pressed={!!on[e.key]} className={button(!!on[e.key])} onClick={() => toggle(e.key)}>{e.label}</button>)}
+                <button type="button" aria-pressed={!solo} className={button(!solo)} onClick={() => setSolo(null)}>Whole rig</button>
+                {here.map((e) => <button key={e.key} type="button" aria-pressed={solo === e.key} className={button(solo === e.key)} onClick={() => setSolo(solo === e.key ? null : e.key)}>{e.label}</button>)}
             </div>
-            {here.some((e) => e.fire && on[e.key]) && (
+            {solo && <p className="mt-1 text-[11px] text-amber-300/90">Showing only: {label(solo)}, at full. Press Whole rig to bring everything back.</p>}
+            {finFeet.length > 0 && (
+                <>
+                    <p className={heading}>Fin feet (pick one)</p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                        <button type="button" aria-pressed={finFeet.every((e) => !on[e.key])} className={button(finFeet.every((e) => !on[e.key]))} onClick={() => pickFinFeet(null)}>Off</button>
+                        {finFeet.map((e) => <button key={e.key} type="button" aria-pressed={!!on[e.key]} className={button(!!on[e.key])} onClick={() => pickFinFeet(e.key)}>{e.label}</button>)}
+                    </div>
+                </>
+            )}
+            {others.length > 0 && (
+                <>
+                    <p className={heading}>Other trial fixtures (on / off)</p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                        {others.map((e) => <button key={e.key} type="button" aria-pressed={!!on[e.key]} className={button(!!on[e.key])} onClick={() => toggle(e.key)}>{e.label}: {on[e.key] ? 'on' : 'off'}</button>)}
+                    </div>
+                </>
+            )}
+            {!solo && here.some((e) => e.fire && on[e.key]) && (
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {here.filter((e) => e.fire && on[e.key]).map((e) => <button key={e.key} type="button" className={button(false)} onClick={() => fireExtra(e.key)}>Fire: {e.label.split(' (')[0]}</button>)}
                 </div>

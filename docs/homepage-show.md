@@ -723,15 +723,18 @@ removed. All live in `components/home/stage/festival/StageExtras.jsx`, their pos
 
 | Trial fixture | Stage | How it works |
 |---|---|---|
-| Tilting beam bars | Mainstage, the 12 fin feet (the fin-foot beams were removed) | 7 tight beams a bar, one instanced cone mesh; the bar tilts on the beat (each a little behind the next) and the fan opens and closes; odd and even bars swap the show's two colours; level = the floor row's |
+| Fin feet, option 1: tilting beam bars (default) | Mainstage, the 12 fin feet (the fin-foot beams were removed) | 7 tight beams a bar, one instanced cone mesh; the bar tilts on the beat (each a little behind the next) and the fan opens and closes; odd and even bars swap the show's two colours; level = the floor row's |
+| Fin feet, option 2: pixel blinders | the same 12 places | a 2.2 m hexagon of 7 cells on a dark housing (one draw call); a pattern on the beat (centre, ring, one cell running round) in the show's colours; warm white on blinder hits, drops and strobes |
+| Fin feet, option 3: uplight washes | the same 12 places | a wide soft cone grazing up each fin to its tip; alternate fins in the two colours, swapping every bar; at the washes' level |
 | Laser-hybrid beams | Mainstage crown, 5 points | very thin, 170 m rods sweeping slowly over the sky, mostly white; only in the peaks (crowd jumping, beams on) |
-| Flame jets | Mainstage fin tips | a flickering column (noise in the fragment shader, soft edges); fires on every drop and on the beat in the fireworks finale |
 | Cryo jets | Every stage's deck front | a white plume swept side to side, on drops and blinder hits |
 | Drone show | Desert, over the roof | 196 points (one draw call) moving between shapes every 4 s (grid, ring, heart, star, the "SV" initials) in the finale |
 | Continuous LED lines | Desert roof edge, warehouse walls | one unbroken line of pixels with a chase running along it on the beat |
 | Kinetic spheres | Warehouse, under the grid | 25 spheres on cables rising and falling in a wave on the beat; lower and further in the peaks (never below 4 m) |
 
-Each is one or two draw calls and hidden while idle. **Switches:** on `/lab/<stage>` under "Trial fixtures"; saved in
+(Flame jets on the fin tips were tried and removed at the developer's request.)
+
+Each is one or two draw calls and hidden while idle. **On its own:** on `/lab/<stage>`, a button per fixture shows only that fixture, at full, with the whole rig dark ("Whole rig" brings everything back); the moment effects then run nonstop. **Fin feet:** pick one of the three options, or Off. **Switches:** on/off for the rest; saved in
 the browser (`localStorage 'sv:extras'`) and used by the homepage too, so a fixture can be compared on and off with
 the FPS counter; "Fire" buttons preview the ones that only run at moments. `NEXT_PUBLIC_FEATURE_EXTRAS=off` removes them
 all. To remove one for good: delete its entry in `EXTRAS`, its positions in the stage's `extras`, and its component.

@@ -266,7 +266,7 @@ function ClubLooks({ look }) {
 // (an extra CO2 nozzle's own direction, made unit length)
 const norm3 = ([x, y, z]) => { const l = Math.hypot(x, y, z) || 1; return [x / l, y / l, z / l]; };
 
-export default function FestivalScene({ stage, look, count = 96, bloom = true, quality = 'low', control, embedded = false, focusWorld = null, screen = null }) {
+export default function FestivalScene({ stage, look, count = 96, bloom = true, quality = 'low', control, embedded = false, focusWorld = null, screen = null, extrasSolo = null }) {
     const heads = useMemo(() => rigHeads(stage, count), [stage, count]);
     const mounts = useMemo(() => stageMounts(stage), [stage]);
     const place = useMemo(() => (f) => placeFirework(stage, f), [stage]);
@@ -305,7 +305,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
 
             <StageStructure stage={stage} />
             <StageScreens stage={stage} look={look} />
-            {stage.extras && <StageExtras stage={stage} look={look} />}
+            {stage.extras && <StageExtras stage={stage} look={look} solo={extrasSolo} />}
             {walls.length > 0 && <StageLedWall screens={walls} look={look} font={orbitron.style.fontFamily} logoFonts={LOGO_FONTS} visuals={stage.visuals ?? null} {...(screen ? { screen } : {})} />}
             {!embedded && stage.glossFloor !== false && <Floor look={look} blinders={blinding} width={Math.max(120, width * 2.6)} z={stage.crowd.z0 + 30} />}
             {stage.pa && <StagePa settings={stage.pa} />}

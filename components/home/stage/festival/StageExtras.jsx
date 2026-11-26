@@ -13,12 +13,16 @@ const ADDITIVE = { transparent: true, depthWrite: false, blending: THREE.Additiv
 const beatOf = (look, clock) => look.beatPos ?? clock * 2;
 const masterOf = (look) => (look.master ?? 1) * Math.min(1.4, look.intensity ?? 1);
 // a manual firing from the test page's preview buttons: until when it runs (seconds of the R3F clock)
-const fired = { flames: 0, cryo: 0, drones: 0 };
-const firing = (kind) => performance.now() / 1000 < fired[kind];
+// (`solo`: the fixture the test page is showing on its own, the rest of the rig dark; a moment effect then runs nonstop)
+const fired = { cryo: 0, drones: 0, solo: null };
+const firing = (kind) => fired.solo === kind || performance.now() / 1000 < fired[kind];
+// what a fixture shown on its own reads: the look at full, whatever the rig is doing
+const SOLO_LOOK = { master: 1, intensity: 1, floor: 1, beams: 1, wash: 1, pixel: 1, crowd: 1 };
 
 // ---- beams: a cone per beam, its direction worked out in the shader (tilting bars, laser-hybrid rods) ----------------
 const BEAM_VERTEX = (dirCode) => /* glsl */ `
     attribute vec3 aOrigin;
+    attribute vec3 aDir;           // the fixture's own aim (the uplight washes: up the face of their fin)
     attribute vec4 aInfo;          // x: the fixture's number, y: its place in its fan (-1..1), z: its side (-1, 1), w: spare
     uniform float uTime;
     uniform float uBeat;
@@ -69,14 +73,17 @@ function beamMesh(points, { length, r0, r1, dirCode, fan = 1 }) {
     const geometry = new THREE.InstancedBufferGeometry().copy(cone);
     const origins = [];
     const info = [];
+    const dirs = [];
     points.forEach((pt, id) => {
         for (let j = 0; j < fan; j++) {
             origins.push(...pt.pos);
+            dirs.push(...(pt.dir ?? [0, 1, 0]));
             info.push(id, fan > 1 ? (j / (fan - 1)) * 2 - 1 : 0, pt.s ?? Math.sign(pt.pos[0]) ?? 1, 0);
         }
     });
     geometry.setAttribute('aOrigin', new THREE.InstancedBufferAttribute(new Float32Array(origins), 3));
     geometry.setAttribute('aInfo', new THREE.InstancedBufferAttribute(new Float32Array(info), 4));
+    geometry.setAttribute('aDir', new THREE.InstancedBufferAttribute(new Float32Array(dirs), 3));
     geometry.instanceCount = origins.length / 3;
     const material = new THREE.ShaderMaterial({
         vertexShader: BEAM_VERTEX(dirCode), fragmentShader: BEAM_FRAGMENT, ...ADDITIVE,
@@ -144,7 +151,7 @@ function HybridBeams({ points, look }) {
     });
 }
 
-// ---- jets: flames and cryo, a soft column per jet that grows with its firing -------------------------------------
+// ---- jets: cryo, a soft column per jet that grows with its firing -------------------------------------
 const JET_VERTEX = /* glsl */ `
     attribute vec3 aOrigin;
     attribute float aSeed;
@@ -219,23 +226,6 @@ function useJets(points, { colorCode, height, width, dir, sweep = 0 }, drive) {
         mesh.current.visible = level > 0.01;
     });
     return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
-}
-
-/** Flame jets on the fin tips: a burst on every drop; in the finale, alternate fins on the beat. */
-function Flames({ points, look }) {
-    const opts = useMemo(() => ({
-        height: 10, width: 1.7, dir: [0, 1, 0],
-        colorCode: 'c = mix(vec3(1.0, 0.92, 0.55), vec3(1.0, 0.32, 0.04), smoothstep(0.0, 0.7, vY)) * 2.2;',
-    }), []);
-    const level = useRef(0);
-    return useJets(points, opts, (clock, dt) => {
-        const l = look.current;
-        const finale = (l.fireworks?.filter((f) => f.type !== 'mines').length ?? 0) >= 6;
-        const beat = beatOf(l, clock);
-        const want = Math.max((l.dropFx ?? 0) > 0.3 ? 1 : 0, finale && beat % 1 < 0.35 ? 1 : 0, firing('flames') ? (clock * 2.5) % 1 < 0.6 ? 1 : 0 : 0);
-        level.current = want > level.current ? want : Math.max(0, level.current - dt * 2.4);
-        return level.current * (l.master ?? 1);
-    });
 }
 
 /** Cryo jets along the deck front: a fast white plume on drops and blinder hits, swept side to side. */
@@ -461,13 +451,102 @@ function Drones({ show, look }) {
     return <points ref={points} geometry={geometry} material={material} frustumCulled={false} />;
 }
 
-/** Every trial fixture the stage has (stage.extras) whose switch is on. */
-export default function StageExtras({ stage, look }) {
+/** Fin feet, option 3: uplight washes, one wide soft cone per fin grazing up its face to the tip; alternate fins in the
+ *  show's two colours, swapping every bar; at the washes' level. */
+function FinWashes({ points, look }) {
+    const opts = useMemo(() => ({ length: 24, r0: 0.25, r1: 3.2, dirCode: 'd = aDir;' }), []);
+    return useBeams(points, opts, (u, clock) => {
+        const l = look.current;
+        u.uBeat.value = beatOf(l, clock) / 4;
+        u.uColorA.value.set(l.colorA ?? '#19d9ff');
+        u.uColorB.value.set(l.colorB ?? '#ff3df2');
+        return (l.wash ?? 0.8) * masterOf(l) * 1.2;
+    });
+}
+
+/** Fin feet, option 2: pixel-matrix blinders (a hexagon of seven cells on a dark housing, facing the crowd). Between
+ *  hits the cells play a pattern on the beat in the show's colours (the centre, then the ring, then one cell running
+ *  round it); on a blinder hit, a drop or a strobe every cell flashes warm white. One draw call. */
+const HEX_CELLS = [[0, 0], ...Array.from({ length: 6 }, (_, i) => [Math.cos((i / 6) * Math.PI * 2 + Math.PI / 6) * 0.5, Math.sin((i / 6) * Math.PI * 2 + Math.PI / 6) * 0.5])].map(([x, y]) => [x * 2.2, y * 2.2]);   // a 2.2 m cluster: readable from the crowd
+function FinBlinders({ points, look }) {
+    const { geometry, material } = useMemo(() => {
+        const g = new THREE.InstancedBufferGeometry().copy(new THREE.CircleGeometry(0.55, 6));
+        const origin = [];
+        const cell = [];
+        const info = [];
+        points.forEach((pt, id) => {
+            // the housing (cell -1, 3.3x a cell, just behind), then the seven cells
+            origin.push(...pt.pos); cell.push(0, 0); info.push(id, -1, 3.3, 0);
+            HEX_CELLS.forEach(([cx, cy], k) => { origin.push(...pt.pos); cell.push(cx, cy); info.push(id, k, 0.92, 0); });
+        });
+        g.setAttribute('aOrigin', new THREE.InstancedBufferAttribute(new Float32Array(origin), 3));
+        g.setAttribute('aCell', new THREE.InstancedBufferAttribute(new Float32Array(cell), 2));
+        g.setAttribute('aInfo', new THREE.InstancedBufferAttribute(new Float32Array(info), 4));
+        g.instanceCount = origin.length / 3;
+        const m = new THREE.ShaderMaterial({
+            toneMapped: false, side: THREE.DoubleSide,
+            uniforms: { uBeat: { value: 0 }, uLevel: { value: 0 }, uFlash: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
+            vertexShader: /* glsl */ `
+                attribute vec3 aOrigin; attribute vec2 aCell; attribute vec4 aInfo;
+                varying float vCell; varying float vId; varying float vEdge;
+                void main() {
+                    vec3 n = normalize(vec3(0.0, 0.34, 1.0));            // facing the crowd, tipped up a little
+                    vec3 r = vec3(1.0, 0.0, 0.0);
+                    vec3 up = normalize(cross(n, r));
+                    vec2 p = position.xy * aInfo.z + aCell;
+                    vec3 w = aOrigin + r * p.x - up * p.y + n * (aInfo.y < 0.0 ? -0.03 : 0.0);
+                    vCell = aInfo.y; vId = aInfo.x; vEdge = length(position.xy) / 0.55;
+                    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(w, 1.0);
+                }`,
+            fragmentShader: /* glsl */ `
+                uniform float uBeat; uniform float uLevel; uniform float uFlash; uniform vec3 uColorA; uniform vec3 uColorB;
+                varying float vCell; varying float vId; varying float vEdge;
+                void main() {
+                    if (vCell < 0.0) { gl_FragColor = vec4(0.025, 0.025, 0.03, 1.0); return; }
+                    float b = fract(uBeat);
+                    float step4 = mod(floor(uBeat), 4.0);
+                    float ring = abs(mod(vCell - 1.0 - floor(uBeat * 3.0), 6.0)) < 0.5 ? 1.0 : 0.1;
+                    float on = vCell < 0.5 ? (step4 < 0.5 ? 1.0 : 0.15) : (step4 < 1.5 ? (step4 > 0.5 ? 1.0 : 0.15) : ring);
+                    float hit = exp(-b * 4.0);
+                    vec3 c = mix(uColorA, uColorB, mod(vId + floor(uBeat / 4.0), 2.0));
+                    vec3 lamp = c * on * (0.5 + 0.8 * hit) * uLevel * 2.2;
+                    lamp = mix(lamp, vec3(1.0, 0.82, 0.55) * 3.5, uFlash);
+                    float lens = 1.0 - 0.35 * smoothstep(0.55, 1.0, vEdge);
+                    gl_FragColor = vec4(lamp * lens + vec3(0.02), 1.0);
+                }`,
+        });
+        return { geometry: g, material: m };
+    }, [points]);
+    const mesh = useRef();
+    useEffect(() => () => { geometry.dispose(); material.dispose(); }, [geometry, material]);
+    useFrame(({ clock }) => {
+        if (!mesh.current) return;
+        const l = look.current;
+        const u = mesh.current.material.uniforms;
+        const beat = beatOf(l, clock.elapsedTime);
+        u.uBeat.value = beat;
+        u.uLevel.value = (l.floor ?? 0) * masterOf(l);
+        const strobe = (l.strobe ?? 0) * ((clock.elapsedTime * 12.5) % 1 < 0.3 ? 1 : 0);
+        const solo = fired.solo === 'finBlinders' && beat % 8 < 0.3 ? 1 : 0;      // on its own: a hit every two bars
+        u.uFlash.value = Math.min(1, Math.max(l.blinder ?? 0, (l.dropFx ?? 0) > 0.3 ? 1 : 0, strobe, solo) * (l.master ?? 1));
+        u.uColorA.value.set(l.colorA ?? '#19d9ff');
+        u.uColorB.value.set(l.colorB ?? '#ff3df2');
+    });
+    return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
+}
+
+/** Every trial fixture the stage has (stage.extras) whose switch is on; with `solo`, only that one, at full. */
+export default function StageExtras({ stage, look, solo = null }) {
     const [on, setOn] = useState(readExtras);
+    const soloLook = useMemo(() => ({ get current() { return { ...look.current, ...SOLO_LOOK }; } }), [look]);
+    useEffect(() => {
+        fired.solo = solo;
+        return () => { fired.solo = null; };
+    }, [solo]);
     useEffect(() => {
         const update = () => setOn(readExtras());
         const fire = (e) => {
-            const seconds = { flames: 6, cryo: 3, drones: 24 }[e.detail];
+            const seconds = { cryo: 3, drones: 24 }[e.detail];
             if (seconds) fired[e.detail] = performance.now() / 1000 + seconds;
         };
         window.addEventListener(EXTRAS_KEY, update);
@@ -476,15 +555,19 @@ export default function StageExtras({ stage, look }) {
     }, []);
     const x = stage.extras;
     if (!x) return null;
+    // shown: its switch is on (or it's the one shown on its own); a fixture on its own reads the look at full
+    const show = (key) => Boolean(x[key]) && (solo ? solo === key : on[key]);
+    const lk = solo ? soloLook : look;
     return (
         <>
-            {on.tiltBars && x.tiltBars && <TiltBars bars={x.tiltBars} look={look} />}
-            {on.hybridBeams && x.hybridBeams && <HybridBeams points={x.hybridBeams} look={look} />}
-            {on.flames && x.flames && <Flames points={x.flames} look={look} />}
-            {on.cryo && x.cryo && <Cryo points={x.cryo} look={look} />}
-            {on.kinetic && x.kinetic && <Kinetic rig={x.kinetic} look={look} />}
-            {on.ledLines && x.ledLines && <LedLines lines={x.ledLines} look={look} />}
-            {on.drones && x.drones && <Drones show={x.drones} look={look} />}
+            {show('tiltBars') && <TiltBars bars={x.tiltBars} look={lk} />}
+            {show('finBlinders') && <FinBlinders points={x.finBlinders} look={lk} />}
+            {show('finWashes') && <FinWashes points={x.finWashes} look={lk} />}
+            {show('hybridBeams') && <HybridBeams points={x.hybridBeams} look={lk} />}
+            {show('cryo') && <Cryo points={x.cryo} look={lk} />}
+            {show('kinetic') && <Kinetic rig={x.kinetic} look={lk} />}
+            {show('ledLines') && <LedLines lines={x.ledLines} look={lk} />}
+            {show('drones') && <Drones show={x.drones} look={lk} />}
         </>
     );
 }
