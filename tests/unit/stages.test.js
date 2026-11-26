@@ -851,3 +851,32 @@ describe('the warehouse side chasers cue', async () => {
         expect(planWarehouseCues([{ name: 'Build 3' }])[0].look.pixelSweep).toBe(1);
     });
 });
+
+describe('the warehouse beam bars: only in the peaks', async () => {
+    const { barsPlay } = await import('@/lib/show/stages/extras');
+    it('play in a peak with the floor up, never in a build, a groove or on a drop outside a peak', () => {
+        expect(barsPlay({ sectionKind: 'peak', floor: 1 })).toBe(true);
+        expect(barsPlay({ sectionKind: 'peak', floor: 0 })).toBe(false);
+        for (const kind of ['build', 'groove', 'breakdown', 'intro', 'outro']) expect(barsPlay({ sectionKind: kind, floor: 1, dropFx: 1 }), kind).toBe(false);
+        expect(STAGES.warehouse.barsFocus).toBe(1);   // (the other beams off while they play)
+    });
+});
+
+describe('the mainstage odd/even', async () => {
+    const { rigHeads } = await import('@/lib/show/stages/rig');
+    it('alternates neighbours in every row, counted from the middle out, the left half the mirror of the right', () => {
+        const heads = rigHeads(STAGES.mainstage, Infinity);
+        for (const role of ['aerial', 'floor', 'sides']) {
+            const row = heads.filter((h) => h.role === role);
+            for (const h of row) {
+                const twin = row.find((o) => Math.abs(o.position[0] + h.position[0]) < 0.05 && Math.abs(o.position[1] - h.position[1]) < 0.05 && Math.abs(o.position[2] - h.position[2]) < 0.05);
+                expect(twin, `${role} ${h.position}`).toBeTruthy();
+                expect(twin.beatIndex % 2, `${role} ${h.position}`).toBe(h.beatIndex % 2);
+            }
+            for (const side of [-1, 1]) {
+                const half = row.filter((h) => Math.sign(h.position[0] || 1) === side).sort((a, b) => a.beatIndex - b.beatIndex);
+                half.forEach((h, i) => expect(h.beatIndex).toBe(i));
+            }
+        }
+    });
+});

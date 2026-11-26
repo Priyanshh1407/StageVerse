@@ -18,6 +18,7 @@ import StageHeads from './StageHeads';
 import StageStrobes from './StageStrobes';
 import StageLasers from './StageLasers';
 import StageExtras from './StageExtras';
+import { barsPlay } from '@/lib/show/stages/extras';
 import StageCo2 from './StageCo2';
 import StageConfetti from './StageConfetti';
 import StageStreamers from './StageStreamers';
@@ -205,18 +206,18 @@ function gradeLook(look, grade) {
     }
     look.current = { ...l, ...next };
 }
-/** While the stage's floor bars play (look.floor), the rig's other beams mostly off so all the attention is on the
- *  bars (stage.barsFocus: how far down, 0..1); one 8-bar stretch in four and the drop keep everything on. */
-function focusBars(look, focus) {
+/** While the stage's beam bars play (lib/show/stages/extras.js barsPlay: the peaks), the rig's other beams are off so
+ *  all the attention is on the bars (stage.barsFocus: how far down, 1 = off); they fade over a second or so. */
+function focusBars(look, focus, state, delta) {
     const l = look.current;
     if (l.barsFocused) return;
-    const on = Math.min(1, Math.max(0, ((l.floor ?? 0) - 0.2) / 0.4));
-    const keep = (l.dropFx ?? 0) > 0.3 || Math.floor((l.beatPos ?? 0) / 32) % 4 === 3;
-    const k = keep ? 1 : 1 - focus * on;
+    state.on += ((barsPlay(l) ? 1 : 0) - state.on) * Math.min(1, delta * 2);
+    const k = 1 - focus * state.on;
     look.current = { ...l, barsFocused: true, beams: (l.beams ?? 1) * k, sides: (l.sides ?? 1) * k };
 }
 function BarsFocus({ look, focus }) {
-    useFrame(() => focusBars(look, focus));
+    const state = useRef({ on: 0 });
+    useFrame((_, delta) => focusBars(look, focus, state.current, delta));
     return null;
 }
 

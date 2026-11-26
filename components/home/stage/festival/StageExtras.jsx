@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { EXTRAS_FIRE, EXTRAS_KEY, readExtras } from '@/lib/show/stages/extras';
+import { EXTRAS_FIRE, EXTRAS_KEY, barsPlay, readExtras } from '@/lib/show/stages/extras';
 import { LED_SHOW, driveLedShow, ledShowUniforms } from './ledShow';
 
 const ADDITIVE = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false };
@@ -186,6 +186,7 @@ const TILT_GLSL = /* glsl */ `
         return mod((byHead ? cell : abs(id - uMid)) + floor(beat), 2.0);
     }`;
 function TiltBars({ bars, look }) {
+    const barLevel = useRef(0);
     const opts = useMemo(() => ({
         length: 38, r0: 0.08, r1: 0.16, fan: TILT_BAR.cells, span: (TILT_BAR.cells - 1) * TILT_BAR.pitch,
         dirCode: /* glsl */ `
@@ -206,7 +207,9 @@ function TiltBars({ bars, look }) {
         u.uWhite.value = 0;
         u.uHot.value = 0;
         u.uMid.value = (bars.length - 1) / 2;
-        return (l.floor ?? 0) * masterOf(l) * 1.15;
+        // only in the peaks (not on every drop, not all the time); they fade in and out over a second or two
+        barLevel.current += ((barsPlay(l) ? (l.floor ?? 0) * masterOf(l) * 1.15 : 0) - barLevel.current) * 0.04;
+        return barLevel.current;
     });
     // the bars themselves: fixed, end to end (the heads move, the bar doesn't)
     const geometry = useMemo(() => {
@@ -401,26 +404,26 @@ const SKY_SHAPE = /* glsl */ `
     uniform float uLine; uniform float uWiden; uniform float uDrops; uniform float uStairs;
     float hashT(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     float shapeAt(vec2 q) {
-        float wave = sin((q.y - uCentre.y) * 0.32 - uBeat * 0.785);                 // rolls from the stage back, 8 beats
-        float ripple = sin(length(q - uCentre) * 0.45 - uBeat * 1.571);             // rings from the middle, 4 beats
+        float wave = sin((q.y - uCentre.y) * 0.32 - uBeat * 0.39);                  // rolls from the stage back, 16 beats
+        float ripple = sin(length(q - uCentre) * 0.45 - uBeat * 0.785);             // rings from the middle, 8 beats
         float funnel = clamp(abs(q.x) / 15.0, 0.0, 1.0) * 2.0 - 1.0;                  // a valley down the middle of the room
         float dome = 1.0 - 2.0 * pow(clamp(length(q - uCentre) / 19.0, 0.0, 1.0), 2.0);
         // one line of tiles comes down, the line travelling from the stage to the back of the room like a wave (2 bars)
-        float lineZ = mix(uSpan.x - 3.0, uSpan.y + 3.0, fract(uBeat / 8.0));
+        float lineZ = mix(uSpan.x - 3.0, uSpan.y + 3.0, fract(uBeat / 16.0));
         float line = -2.2 * exp(-pow((q.y - lineZ) / 2.0, 2.0));
         // a wave across the room that starts in the middle and widens out to both walls (4 bars), then starts again
-        float reach = fract(uBeat / 16.0) * 30.0;
-        float widen = sin(abs(q.x) * 0.55 - uBeat * 1.571) * smoothstep(reach, reach - 4.0, abs(q.x));
+        float reach = fract(uBeat / 32.0) * 30.0;
+        float widen = sin(abs(q.x) * 0.55 - uBeat * 0.785) * smoothstep(reach, reach - 4.0, abs(q.x));
         // steps: the columns of tiles at stepped heights, rising from the middle out to the walls (each tile level)
         float stairs = floor(abs(q.x) / 4.9 + 0.5) / 5.0 * 2.0 - 1.0;
         return uAmp * (uWave * wave + uRipple * ripple + uFunnel * funnel + uDome * dome + uWiden * widen + uStairs * stairs) + uLine * line + uOffset;
     }
     // moves of each tile as a whole (the tile stays flat): the chessboard, and random tiles dropping straight down
     float chess() {
-        float board = uChess * 0.9 * (mod(aIdx.x + aIdx.y, 2.0) * 2.0 - 1.0) * cos(uBeat * 3.14159);
+        float board = uChess * 0.9 * (mod(aIdx.x + aIdx.y, 2.0) * 2.0 - 1.0) * cos(uBeat * 0.785);
         // a new random set of tiles each 2 beats drops 2.4 m and comes back up
-        float f = fract(uBeat / 2.0);
-        float picked = step(0.8, hashT(aIdx + floor(uBeat / 2.0) * 1.37));
+        float f = fract(uBeat / 8.0);
+        float picked = step(0.8, hashT(aIdx + floor(uBeat / 8.0) * 1.37));
         float drop = -2.4 * picked * smoothstep(0.0, 0.25, f) * (1.0 - smoothstep(0.65, 1.0, f));
         return board + uDrops * drop;
     }`;
@@ -455,12 +458,13 @@ const SKY_MODES = {
 };
 // the moves a groove and a peak take turns with, one every 8 bars (32 beats)
 const SKY_TURNS = {
-    groove: ['groove', 'mosaic', 'line', 'dark', 'drops', 'stairs', 'widen'],
-    peak: ['peak', 'fire', 'widen', 'drops', 'dark', 'line', 'still'],
+    // (still between moves: the ceiling moving is a moment, not all the time)
+    groove: ['still', 'groove', 'still', 'mosaic', 'still', 'line', 'still', 'stairs'],
+    peak: ['still', 'peak', 'still', 'fire', 'still', 'widen', 'still', 'drops'],
 };
 /** Which of SKY_MODES the look asks for: by the song's part, or (the test page's looks) by the crowd's energy. */
 export function skyModeOf(l) {
-    if ((l.dropFx ?? 0) > 0.3) return 'drop';
+    // (the drop only flashes the tiles white: the ceiling doesn't jump into a new shape on every drop)
     if (l.finale || (l.fireworks?.length ?? 0) >= 4) return 'finale';
     const kind = l.sectionKind;
     const e = l.crowd ?? 0.3;
@@ -586,21 +590,29 @@ function KineticSky({ sky, look }) {
         };
     }, [sky]);
     const group = useRef();
+    const sched = useRef({ name: null, since: 0, settled: true });
     useEffect(() => () => { for (const p of [tiles, frames, cables]) { p.g.dispose(); p.material.dispose(); } }, [tiles, frames, cables]);
     useFrame(({ clock }, delta) => {
         if (!group.current) return;
         const l = look.current;
         const u = group.current.children[0].material.uniforms;
-        const mode = SKY_MODES[skyModeOf(l)];
-        // the winches move slowly; the drop is the one fast move (the ceiling springs up)
-        const k = 1 - Math.exp(-Math.min(delta, 0.1) * (mode === SKY_MODES.drop ? 5 : 1.2));
-        const ease = (key, to) => { u[key].value += (to - u[key].value) * k; };
+        // a move holds until it is done: a new one starts only after the last has settled and played at least 24 s
+        const now = clock.elapsedTime;
+        const st = sched.current;
+        const wanted = skyModeOf(l);
+        if (st.name === null || (wanted !== st.name && st.settled && now - st.since >= 24)) { st.name = wanted; st.since = now; st.settled = false; }
+        const mode = SKY_MODES[st.name];
+        // the winches move slowly: about 7 s to reach a new shape
+        const k = 1 - Math.exp(-Math.min(delta, 0.1) * 0.45);
+        let gap = 0;
+        const ease = (key, to) => { gap = Math.max(gap, Math.abs(to - u[key].value)); u[key].value += (to - u[key].value) * k; };
         u.uBeat.value = beatOf(l, clock.elapsedTime);
         ease('uWave', mode.wave); ease('uRipple', mode.ripple); ease('uFunnel', mode.funnel); ease('uDome', mode.dome); ease('uChess', mode.chess);
         ease('uLine', mode.line ?? 0); ease('uWiden', mode.widen ?? 0); ease('uDrops', mode.drops ?? 0); ease('uStairs', mode.stairs ?? 0);
         ease('uFire', mode.fire ?? 0); ease('uMosaic', mode.mosaic ?? 0); ease('uDark', mode.dark ?? 0);
         ease('uAmp', mode.amp); ease('uOffset', mode.offset); ease('uRing', mode.ring); ease('uMono', mode.mono);
         ease('uStars', mode.stars); ease('uTunnel', mode.tunnel); ease('uChecks', mode.checks);
+        if (gap < 0.03) st.settled = true;
         u.uLevel.value = masterOf(l) * Math.max(0.3, l.pixel ?? 0.6) * (mode === SKY_MODES.breakdown ? 0.5 : 1);
         u.uFlash.value = Math.min(1, Math.max((l.dropFx ?? 0) > 0.3 ? l.dropFx : 0, (l.blinder ?? 0) * 0.6)) * (l.master ?? 1);
         u.uColorA.value.set(l.colorA ?? '#19d9ff');

@@ -750,7 +750,9 @@ original design, no festival's name or logo): 56 m wide, 68 m long, 16 m high.
   Every fixture rests on a truss, a wall or the deck (brackets where one stands off: `lib/show/stages/brackets.js`).
 - The look: the colours a little less saturated (`colorGrade`), dark concrete floor, the lasers a little stronger.
 - **The kinetic LED sky**: 360 see-through LED tiles (1.5 m, 24 LEDs a row, thin dark frames) on cables, 2 across and 3
-  along each cell of the grid, so every grid fixture fires through a gap. Its shape and picture follow the song: night sky
+  along each cell of the grid, so every grid fixture fires through a gap, 8 m up. It moves slowly (about 7 s to form a
+  shape), and a new move starts only after the last has settled and played at least 24 s; in grooves and peaks it is
+  still between moves (the drop only flashes it white). Its shape and picture follow the song: night sky
   when quiet; a build brings it down into a valley with light rushing to the stage; the drop springs it into a dome with a
   white flash; a breakdown holds it low and dim; the finale is a chessboard. A groove and a peak change move every 8 bars:
   the wave or rings, still, one line coming down and travelling to the back, random tiles dropping, a wave widening from
@@ -758,8 +760,8 @@ original design, no festival's name or logo): 56 m wide, 68 m long, 16 m high.
 - **Pixel beam bars**: 23 bars of 2.4 m end to end across the stage front, 5 heads each 48 cm apart, each head moving on
   its own with a thin rod of light (no white: only the show's colours), aimed out over the audience. Ten moves, one every
   8 bars, all mirrored about the middle of the stage: sheets in a wave, fans, a symmetric criss-cross, a ripple, a tornado,
-  split, sweep, mirror sweep, odd/even heads, odd/even bars. While they play, the other beams drop to about 15%
-  (`barsFocus`), except one 8-bar stretch in four and the drops.
+  split, sweep, mirror sweep, odd/even heads, odd/even bars. They play only in the peaks (`barsPlay`), and while they
+  play the other moving-head beams are off (`barsFocus: 1`).
 - **Its own cue, the side chasers** (`planWarehouseCues`): the LED lines along both side walls light up in a band running
   from the stage to the back and back again, the rest dimmed (first phrase of a build, third of a groove, second of a peak).
 

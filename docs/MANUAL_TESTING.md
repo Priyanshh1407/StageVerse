@@ -368,6 +368,33 @@ broken effect simply doesn't show.
 | 10e.9 | Readability | Any page, on a phone | No text under 12 px, big tap areas, tooltips on icon buttons |
 | 10e.10 | Analytics | Deployed site → Vercel project → Analytics | Visitors and page views; events Try demo, Sign up, Play song, Light up own song, Open lighting desk, Get tickets (custom events depend on the plan; nothing is counted on localhost) |
 
+## 10f. New fixtures, the warehouse arena and the cues (Nov 26, 2026) — still to test
+
+Use a production build (`npm run build` then `npm start`) and the FPS button on the test pages. On each stage, play at
+least one EDM, one rap and one Bollywood demo song through, and once press the stage's own cues in "Every cue in the shows".
+
+| # | Check | Steps | Expected |
+|---|---|---|---|
+| 10f.1 | On their own | `/lab/<stage>` → Trial fixtures: press each fixture's button | The rig goes dark, only that fixture plays at full; Whole rig brings everything back |
+| 10f.2 | Switches | Turn a fixture off on the test page, open the homepage | It stays off there too; on again, it's back |
+| 10f.3 | Mainstage fin washes | `/lab/mainstage`, a groove | A soft cone up each fin, neighbouring fins in the two colours, swapping every bar |
+| 10f.4 | Laser-hybrid beams | Mainstage, a peak | Five thin white rods from the crown sweeping slowly over the sky; gone outside the peaks |
+| 10f.5 | Cryo cue | Any stage, a song with a build and a drop | Two short bursts on the last two downbeats of the build, a blast spreading out from the centre on the drop, one burst 8 bars later, left and right in turn in the finale; nothing in calm parts or breakdowns |
+| 10f.6 | Continuous LED lines | Every festival stage, a song | Every row of LED bars is one unbroken line; the motion changes every 8 bars and follows the cue's colours, chase and sparkle |
+| 10f.7 | Mainstage odd/even | Mainstage → Mainstage · odd-even chop | Neighbouring beams always opposite; the left half the mirror image of the right, in the aerials, the floor row and the towers |
+| 10f.8 | Every cue plays | Each stage → open "Every cue in the shows", press every cue | Each one looks right; no frozen frame (the automated sweep found no errors on all 172 cues) |
+| 10f.9 | Warehouse room | `/lab/warehouse`, Layout view and the camera buttons | A big hall: one full-width stage, one large screen, a truss on it and one over the DJ, line arrays either side, no mirror ball, nothing floating |
+| 10f.10 | Beam bars only in peaks | Warehouse, a song through | The beam bars along the stage front light only in the peaks; never in a groove, a build or on a drop outside a peak |
+| 10f.11 | Nothing else with the bars | Warehouse, a peak | While the bars play, the moving-head beams (aerials, towers) are off; they come back when the peak ends |
+| 10f.12 | Beam bars' look | Warehouse → Tilting beam bars (on its own); wait 8 bars at a time | Thin rods of colour, no white anywhere, separate from the source, low out over the crowd (never at the sky); 10 moves, each mirrored about the middle, the criss-cross crossing the same beams on both sides |
+| 10f.13 | Ceiling: calm | Warehouse, a song through | The LED panels mostly still; a move happens now and then, slowly (several seconds to form), and the next only after it has finished |
+| 10f.14 | Ceiling: height | Warehouse, from the crowd camera | The panels hang low over the crowd, under the lights, with the beams passing between them |
+| 10f.15 | Ceiling looks | Warehouse, a song through | Night sky in quiet parts; in grooves and peaks now and then: fire across the panels, a colour per panel, panels in steps, panels dark |
+| 10f.16 | Side chasers | Warehouse → Warehouse · side chasers | The LED lines along both side walls light up in a band running from the stage to the back and back; the rest dimmed |
+| 10f.17 | Aerials never up | Warehouse, any cue | No moving-head beam points at the ceiling or the roof |
+| 10f.18 | Homepage | Homepage, play a rap song in the playground (the warehouse) | Everything above on the homepage's warehouse too; the other two stages unchanged |
+| 10f.19 | Frame rate | Each stage, a peak, FPS on | Note the number on the Iris Xe (target 56-60); turn fixtures off one by one to see what each costs |
+
 ## 11. Automated tests (Git Bash)
 
 Run from the project folder (`cd /d/Projects/stageverse`). None of these touch your real database: the tests start an in-memory MongoDB (the first run downloads a ~100 MB `mongod` binary and caches it) and mock every AI provider.
