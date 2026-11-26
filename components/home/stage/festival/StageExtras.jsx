@@ -62,6 +62,7 @@ const BEAM_FRAGMENT = /* glsl */ `
     uniform vec3 uColorB;
     uniform float uLevel;
     uniform float uWhite;
+    uniform float uHot;            // how white the beam is at its source (0: its colour all the way)
     varying float vAlong;
     varying vec3 vWorld;
     varying vec3 vNormalW;
@@ -71,7 +72,7 @@ const BEAM_FRAGMENT = /* glsl */ `
         float facing = abs(dot(normalize(vNormalW), normalize(cameraPosition - vWorld)));
         float core = pow(facing, 1.6);
         float fade = pow(clamp(1.0 - vAlong, 0.0, 1.0), 1.4);
-        vec3 c = mix(mix(uColorA, uColorB, vParity), vec3(1.0), uWhite + 0.25 * pow(1.0 - vAlong, 16.0));
+        vec3 c = mix(mix(uColorA, uColorB, vParity), vec3(1.0), uWhite + uHot * pow(1.0 - vAlong, 16.0));
         gl_FragColor = vec4(c, core * fade * uLevel * vGate);
     }
 `;
@@ -97,7 +98,7 @@ function beamMesh(points, { length, r0, r1, dirCode, fan = 1, span = 0, head = '
     geometry.instanceCount = origins.length / 3;
     const material = new THREE.ShaderMaterial({
         vertexShader: BEAM_VERTEX(dirCode, head), fragmentShader: BEAM_FRAGMENT, ...ADDITIVE,
-        uniforms: { uTime: { value: 0 }, uBeat: { value: 0 }, uLength: { value: length }, uLevel: { value: 0 }, uWhite: { value: 0 }, uChase: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
+        uniforms: { uTime: { value: 0 }, uBeat: { value: 0 }, uLength: { value: length }, uLevel: { value: 0 }, uWhite: { value: 0 }, uHot: { value: 0.25 }, uChase: { value: 0 }, uMid: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
     });
     return { geometry, material };
 }
@@ -116,8 +117,9 @@ function useBeams(points, opts, drive) {
     return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
 }
 
-/** Pixel beam bars along the warehouse's stage front, like the real thing: a fixed bar of seven heads 25 cm apart, each
- *  head moving on its own and firing its own narrow beam, apart from the others right from the source. The bars stand
+/** Pixel beam bars along the warehouse's stage front, like the real thing: a fixed bar of five heads 48 cm apart, each
+ *  head moving on its own and firing its own beam, a thin rod of light like the mainstage's laser-hybrid beams (no
+ *  widening cone, no white at the source: only its colour), apart from the others right from the source. The bars stand
  *  end to end across the whole stage (no gaps). Their move changes every 8 bars of the song:
  *    sheet    every head parallel, the bars tilting in a wave across the stage
  *    fan      each bar's heads spread out into a fan that opens and closes on the beat
@@ -125,43 +127,73 @@ function useBeams(points, opts, drive) {
  *    ripple   a wave running along the heads of each bar, the beams curling like a ribbon
  *    tornado  every head spinning its beam round in a circle, each a little behind the next (a vortex)
  *    split    odd and even bars tilting opposite ways
+ *    sweep    every head swinging left and right together; mirror sweep: out from the middle and back
+ *    odd/even the odd and even heads, or the odd and even bars, switching on the beat
+ *  Every move is mirrored about the middle of the stage (the criss-cross crosses the same beams on both sides).
  *  Colours: odd and even bars in the show's two colours, or (fan, ripple, tornado) head by head along the bar; in
  *  quieter parts a chase runs along the heads across the stage, in a peak every head is on. At the floor's level (the
  *  stage has no other floor beams). One draw call for the beams, one for the bars. */
-export const TILT_BAR = { cells: 7, pitch: 0.25, length: 1.75 };
+export const TILT_BAR = { cells: 5, pitch: 0.48, length: 2.4 };
 const TILT_GLSL = /* glsl */ `
+    uniform float uMid;            // the middle bar's number: every move is mirrored about the middle of the stage
     float barHash(float id, float s) { return fract((id * 7.0 + s * 13.0) * 0.6180339); }
-    // the move: 0 sheet, 1 fan, 2 arches, 3 ripple, 4 tornado, 5 split
-    float barMove(float beat) { return mod(floor(beat / 32.0), 6.0); }
+    // the move, a new one every 8 bars:
+    //  0 sheet  1 fan  2 criss-cross  3 ripple  4 tornado  5 split  6 sweep  7 mirror sweep  8 odd/even heads  9 odd/even bars
+    float barMove(float beat) { return mod(floor(beat / 32.0), 10.0); }
     vec3 headAim(float id, float k, float beat) {
         float move = barMove(beat);
         float b = beat * 1.5708;                                     // a quarter turn a beat
-        float pitch = 0.3;                                           // from straight up towards the audience
-        float yaw = 0.0;                                             // across the stage
-        if (move < 0.5) pitch += sin(b + id * 0.35) * 0.42;
-        else if (move < 1.5) { yaw = k * (0.25 + 0.45 * (0.5 + 0.5 * sin(b))); pitch += sin(b * 0.5 + id * 0.2) * 0.2; }
-        else if (move < 2.5) { yaw = (mod(id, 2.0) * 2.0 - 1.0) * (0.35 + 0.25 * k) + k * 0.25; pitch += 0.1 * sin(b * 0.5); }
-        else if (move < 3.5) { pitch += sin(b + k * 2.2 + id * 0.3) * 0.38; yaw = k * 0.08; }
-        else if (move < 4.5) { float a = b * 0.75 + (k + 1.0) * 0.9 + id * 0.25; yaw = cos(a) * 0.38; pitch += sin(a) * 0.32; }
-        else pitch += (mod(id, 2.0) * 2.0 - 1.0) * sin(b) * 0.42;
+        float c = id - uMid;                                         // the bar's place from the middle (mirrored moves)
+        float side = sign(c);
+        float far = abs(c);
+        float km = side == 0.0 ? k : k * side;                      // the head's place, mirrored on the left half
+        float pitch = 1.32;                                          // low, out over the audience (from straight up)
+        float yaw = 0.0;                                             // across the stage (+ to the right)
+        if (move < 0.5) pitch += sin(b - far * 0.35) * 0.18;                                  // sheets: a wave out from the middle
+        else if (move < 1.5) { yaw = k * (0.25 + 0.45 * (0.5 + 0.5 * sin(b))); pitch += sin(b * 0.5 - far * 0.2) * 0.1; }
+        else if (move < 2.5) {
+            // criss-cross: neighbouring bars lean towards each other so their beams cross, mirrored about the middle (the
+            // middle bar fans out both ways): the same number of beams cross on each side
+            float lean = mod(far, 2.0) * 2.0 - 1.0;
+            yaw = side == 0.0 ? k * 0.45 : side * lean * (0.42 + 0.18 * km) * (0.75 + 0.25 * sin(b * 0.5));
+            pitch += 0.06 * sin(b * 0.5);
+        }
+        else if (move < 3.5) { pitch += sin(b + km * 2.2 - far * 0.3) * 0.18; yaw = k * 0.08; }   // ripple along each bar
+        else if (move < 4.5) { float a = b * 0.75 + (km + 1.0) * 0.9 + far * 0.25; yaw = side * cos(a) * 0.38 + (side == 0.0 ? cos(a) * 0.38 : 0.0); pitch += sin(a) * 0.16; }
+        else if (move < 5.5) pitch += (mod(far, 2.0) * 2.0 - 1.0) * sin(b) * 0.18;               // split
+        else if (move < 6.5) yaw = sin(b * 0.5 - far * 0.08 * side) * 0.6;                       // sweep: all left and right together
+        else if (move < 7.5) yaw = side * (0.5 + 0.5 * sin(b * 0.5)) * 0.65;                     // mirror sweep: out from the middle and back
+        else if (move < 8.5) { pitch += sin(b * 0.5) * 0.1; }                                     // odd/even heads (see headGate)
+        else { yaw = side * 0.15; }                                                               // odd/even bars (see headGate)
+        // (between about 15 degrees above level and just under it: always out over the crowd, never at the sky)
+        pitch = clamp(pitch, 1.15, 1.62);
         return vec3(sin(yaw), cos(yaw) * cos(pitch), cos(yaw) * sin(pitch));
+    }
+    // odd and even heads (move 8), or odd and even bars (move 9), switching on the beat
+    float headGate(float id, float k, float beat) {
+        float move = barMove(beat);
+        float cell = floor((k + 1.0) * 2.0 + 0.5);
+        float on = 1.0;
+        if (move > 7.5 && move < 8.5) on = mod(cell + floor(beat), 2.0);
+        else if (move > 8.5) on = mod(abs(id - uMid) + floor(beat), 2.0);
+        return on;
     }
     // colour by head along the bar (in the fan, the ripple and the tornado) rather than by bar
     float headColour(float id, float k, float beat) {
         float move = barMove(beat);
-        float cell = floor((k + 1.0) * 3.0 + 0.5);
-        bool byHead = (move > 0.5 && move < 1.5) || (move > 2.5 && move < 4.5);
-        return mod((byHead ? cell : id) + floor(beat), 2.0);
+        float cell = floor((k + 1.0) * 2.0 + 0.5);
+        bool byHead = (move > 0.5 && move < 1.5) || (move > 2.5 && move < 4.5) || (move > 7.5 && move < 8.5);
+        return mod((byHead ? cell : abs(id - uMid)) + floor(beat), 2.0);
     }`;
 function TiltBars({ bars, look }) {
     const opts = useMemo(() => ({
-        length: 30, r0: 0.035, r1: 0.2, fan: TILT_BAR.cells, span: (TILT_BAR.cells - 1) * TILT_BAR.pitch,
+        length: 38, r0: 0.08, r1: 0.16, fan: TILT_BAR.cells, span: (TILT_BAR.cells - 1) * TILT_BAR.pitch,
         dirCode: /* glsl */ `
             d = headAim(id, k, uBeat);
             parity = headColour(id, k, uBeat);
-            // the chase: a run of light along the heads, across the whole stage, twice a bar
-            float run = fract(aOrigin.x / 12.0 - uBeat * 0.5);
-            gate = mix(1.0, smoothstep(0.3, 0.0, abs(run - 0.5) - 0.1) * 0.9 + 0.1, uChase);`,
+            // the chase: a run of light out from the middle of the stage to both ends, twice a bar
+            float run = fract(abs(aOrigin.x) / 12.0 - uBeat * 0.5);
+            gate = mix(1.0, smoothstep(0.3, 0.0, abs(run - 0.5) - 0.1) * 0.9 + 0.1, uChase) * headGate(id, k, uBeat);`,
         head: TILT_GLSL,
     }), []);
     const beams = useBeams(bars, opts, (u, clock) => {
@@ -170,8 +202,11 @@ function TiltBars({ bars, look }) {
         u.uChase.value += (((l.crowd ?? 0) >= 0.9 ? 0 : 0.8) - u.uChase.value) * 0.05;
         u.uColorA.value.set(l.colorA ?? '#19d9ff');
         u.uColorB.value.set(l.colorB ?? '#ff3df2');
-        u.uWhite.value = 0.15;
-        return (l.floor ?? 0) * masterOf(l) * 0.9;
+        // only the colour: no white anywhere, and each rod faint enough that where rods cross they stay their colour
+        u.uWhite.value = 0;
+        u.uHot.value = 0;
+        u.uMid.value = (bars.length - 1) / 2;
+        return (l.floor ?? 0) * masterOf(l) * 1.15;
     });
     // the bars themselves: fixed, end to end (the heads move, the bar doesn't)
     const geometry = useMemo(() => {

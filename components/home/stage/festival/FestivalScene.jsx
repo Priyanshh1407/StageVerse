@@ -205,6 +205,21 @@ function gradeLook(look, grade) {
     }
     look.current = { ...l, ...next };
 }
+/** While the stage's floor bars play (look.floor), the rig's other beams mostly off so all the attention is on the
+ *  bars (stage.barsFocus: how far down, 0..1); one 8-bar stretch in four and the drop keep everything on. */
+function focusBars(look, focus) {
+    const l = look.current;
+    if (l.barsFocused) return;
+    const on = Math.min(1, Math.max(0, ((l.floor ?? 0) - 0.2) / 0.4));
+    const keep = (l.dropFx ?? 0) > 0.3 || Math.floor((l.beatPos ?? 0) / 32) % 4 === 3;
+    const k = keep ? 1 : 1 - focus * on;
+    look.current = { ...l, barsFocused: true, beams: (l.beams ?? 1) * k, sides: (l.sides ?? 1) * k };
+}
+function BarsFocus({ look, focus }) {
+    useFrame(() => focusBars(look, focus));
+    return null;
+}
+
 function ColorGrade({ look, grade }) {
     useFrame(() => gradeLook(look, grade));
     return null;
@@ -316,6 +331,7 @@ export default function FestivalScene({ stage, look, count = 96, bloom = true, q
         <>
             {stage.indoor && <IndoorPyro look={look} />}
             {stage.colorGrade && <ColorGrade look={look} grade={stage.colorGrade} />}
+            {stage.barsFocus && <BarsFocus look={look} focus={stage.barsFocus} />}
             {!embedded && <Prewarm />}
             {stage.club && <ClubLooks look={look} />}
             {stage.fireworks && stage.fireworkFocus && <FireworkFocus look={look} focus={stage.fireworkFocus} />}

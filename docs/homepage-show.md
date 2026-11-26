@@ -715,31 +715,57 @@ feel real, and what each festival stage now does the same way:
   feed of the singer on the side screens, plus NOW PLAYING with the title and artist on its wall during a song.
   `visualFor(look, stage)` picks by the song's genre (`look.songGenre`, so uploads too) and the section's energy.
 
-## Trial fixtures (Nov 26, 2026): kept after a trial, each with its own switch
+## New fixtures, the indoor arena and its cues (Nov 26, 2026)
 
-New kinds of fixture and effect, tried on the real stages (looks and frame rate) and kept or removed by the developer.
-All live in `components/home/stage/festival/StageExtras.jsx`, their positions in each stage's `extras`
-(`lib/show/stages/index.js`), the list and the switches in `lib/show/stages/extras.js`.
+New kinds of fixture and effect, tried on the real stages and kept by the developer. They live in
+`components/home/stage/festival/StageExtras.jsx` (positions: each stage's `extras` in `lib/show/stages/index.js`; the list
+and the on/off switches: `lib/show/stages/extras.js`). They play in every song, on the test pages and on the homepage.
 
 | Fixture | Stage | How it works |
 |---|---|---|
-| Uplight washes | Mainstage, the 12 fin feet (the fin-foot beams were removed) | a wide soft cone grazing up each fin to its tip (one instanced mesh, each cone aimed by its own `aDir`); alternate fins in the show's two colours, swapping every bar; at the washes' level |
-| Laser-hybrid beams | Mainstage crown, 5 points | very thin, 170 m rods sweeping slowly over the sky, mostly white; only in the peaks (crowd jumping, beams on) |
-| Cryo jets | Every stage's deck front | a white plume (noise and soft edges in the shader) swept side to side, on drops and blinder hits |
-| Continuous LED lines | Desert roof edge, warehouse walls | one unbroken line of pixels with a chase running along it on the beat |
-| Kinetic LED sky | Warehouse, 18 x 15 tiles under the grid | see-through LED tiles (1.7 m) on cables, 7-9 m up. Their height is one shape across the ceiling (a wave rolling front to back in a groove, rings from the centre in a peak, nearly flat when quiet) and each tile tilts with its slope; the tiles play one picture (the two colours in bands, rings on the beat, white on the drop). The gaps between the LED dots are cut out, so beams pass through. In the spirit of the kinetic LED ceilings of big indoor festival stages, an original design. Two draw calls |
+| Uplight washes | Mainstage, the 12 fin feet | a soft cone up each fin to its tip; alternate fins in the two colours, swapping every bar |
+| Laser-hybrid beams | Mainstage crown | five thin, very long white rods sweeping slowly over the sky in the peaks |
+| Cryo jets | Every stage's deck front | white plumes on their own cue (`lib/show/cryo.js`): bursts on the last two downbeats of a build, a blast spreading out from the centre on the drop, one burst a phrase later, left and right in turn in the finale |
+| Continuous LED lines | Desert roof edge, warehouse walls | see "LED lines" below |
+| Kinetic LED sky | Warehouse ceiling | see "The warehouse" below |
+| Pixel beam bars | Warehouse stage front | see "The warehouse" below |
 
-Tried and removed: tilting beam bars and pixel blinders at the fin feet, flame jets on the fin tips, a drone show over
-the desert, kinetic spheres in the warehouse.
+Tried and removed: tilting beam bars and pixel blinders at the mainstage's fin feet, flame jets, a drone show over the
+desert, kinetic spheres in the warehouse.
 
-**The warehouse was made bigger for the LED sky:** 44 m wide (38), 13.5 m high (9.5), the truss grid at 11.5 m (8);
-the wall fixtures, the trusses, the crowd (20 m each side), the circling camera (20.8 m out) and the audience view
-follow the new walls. The cameras stay under the sky.
+**LED lines.** Every row of pixel bars on the festival stages is drawn as one continuous line
+(`lib/show/stages/pixelLines.js`: each bar stretched to meet the next in line). The lines play the show
+(`components/home/stage/festival/ledShow.js`): the cue's colours, chase and sparkle, and a move that changes every 8 bars
+(a run round the outline, pulses along the lines, breathing in quiet parts, segments swapping, pulses in from both ends),
+its direction too.
 
-**Testing them:** on `/lab/<stage>`, a button per fixture shows only that fixture, at full, with the whole rig dark
-("Whole rig" brings everything back; cryo then runs nonstop); on/off switches, saved in the browser and used by the
-homepage too, to compare with the FPS counter; a "Fire" button for the cryo. `NEXT_PUBLIC_FEATURE_EXTRAS=off` removes
-them all.
+**The warehouse: an indoor arena** in the style of the big indoor festival stages with a kinetic LED ceiling (an
+original design, no festival's name or logo): 56 m wide, 68 m long, 16 m high.
+- One stage the full width of the hall, one 46 x 9.5 m LED screen (video), a truss on top of the screen and one flown
+  over the DJ (12 beams each, the lasers on the DJ truss), washes behind the booth backlighting the DJ, strobes along the
+  stage lip; no floor beams, no strobes on the booth, no LED lines round the screen, no mirror ball, no fireworks.
+- The truss grid at 13.5 m: 7 trusses of 11 fixtures. The aerial beams never rise above level and always point out over
+  the audience (`headTune.aerial.aimDown`, a clamp in the beam shader).
+- PA as in an arena: a line array flown either side of the screen, 20 subs along the stage front, two rows of delays.
+  Every fixture rests on a truss, a wall or the deck (brackets where one stands off: `lib/show/stages/brackets.js`).
+- The look: the colours a little less saturated (`colorGrade`), dark concrete floor, the lasers a little stronger.
+- **The kinetic LED sky**: 360 see-through LED tiles (1.5 m, 24 LEDs a row, thin dark frames) on cables, 2 across and 3
+  along each cell of the grid, so every grid fixture fires through a gap. Its shape and picture follow the song: night sky
+  when quiet; a build brings it down into a valley with light rushing to the stage; the drop springs it into a dome with a
+  white flash; a breakdown holds it low and dim; the finale is a chessboard. A groove and a peak change move every 8 bars:
+  the wave or rings, still, one line coming down and travelling to the back, random tiles dropping, a wave widening from
+  the middle, fire across every tile, a mosaic of a colour per tile in steps, the tiles dark in steps, steps in colour.
+- **Pixel beam bars**: 23 bars of 2.4 m end to end across the stage front, 5 heads each 48 cm apart, each head moving on
+  its own with a thin rod of light (no white: only the show's colours), aimed out over the audience. Ten moves, one every
+  8 bars, all mirrored about the middle of the stage: sheets in a wave, fans, a symmetric criss-cross, a ripple, a tornado,
+  split, sweep, mirror sweep, odd/even heads, odd/even bars. While they play, the other beams drop to about 15%
+  (`barsFocus`), except one 8-bar stretch in four and the drops.
+- **Its own cue, the side chasers** (`planWarehouseCues`): the LED lines along both side walls light up in a band running
+  from the stage to the back and back again, the rest dimmed (first phrase of a build, third of a groove, second of a peak).
+
+**Testing them**: on `/lab/<stage>`, a button per fixture shows only that fixture at full with the rig dark ("Whole rig"
+brings everything back), on/off switches (saved in the browser, `sv:extras:v2`, used by the homepage too), a "Fire" button
+for the cryo. `NEXT_PUBLIC_FEATURE_EXTRAS=off` removes them all.
 
 ## The rest of the site (Nov 19, 2026)
 
