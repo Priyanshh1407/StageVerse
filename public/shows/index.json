@@ -1,5 +1,5 @@
 {
-  "maxPerGenre": 3,
+  "maxPerGenre": 4,
   "demos": [
     {
       "slug": "a-sky-full-of-stars",
@@ -42,6 +42,20 @@
       "artist": "Central Cee & Lil Baby",
       "genre": "rap",
       "show": "/shows/band4band.show.json"
+    },
+    {
+      "slug": "karan-aujla-mxrci-ashke",
+      "title": "Ashke",
+      "artist": "Karan Aujla & Mxrci",
+      "genre": "rap",
+      "show": "/shows/karan-aujla-mxrci-ashke.show.json"
+    },
+    {
+      "slug": "love-dose",
+      "title": "Love Dose",
+      "artist": "Yo Yo Honey Singh",
+      "genre": "rap",
+      "show": "/shows/love-dose.show.json"
     },
     {
       "slug": "goosebumps",

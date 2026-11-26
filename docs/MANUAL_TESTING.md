@@ -393,6 +393,13 @@ least one EDM, one rap and one Bollywood demo song through, and once press the s
 | 10f.16 | Side chasers | Warehouse → Warehouse · side chasers | The LED lines along both side walls light up in a band running from the stage to the back and back; the rest dimmed |
 | 10f.17 | Aerials never up | Warehouse, any cue | No moving-head beam points at the ceiling or the roof |
 | 10f.18 | Homepage | Homepage, play a rap song in the playground (the warehouse) | Everything above on the homepage's warehouse too; the other two stages unchanged |
+| 10f.20 | Ceiling drama | Warehouse, a song through | The ceiling moves most of the time; in its big moves (one line coming down, random panels dropping, the build's valley, a breakdown) the panels come down to just over the crowd's raised hands |
+| 10f.21 | Desert odd/even | Desert, a cue with odd/even (alternate) | Only the front and back aerial trusses, their beams interleaved (a criss-cross); the middle truss off; the left half the mirror of the right |
+| 10f.22 | Every cue once | Mainstage and desert, a full song | Every one of the stage's own cues plays at least once (the mainstage's 16, the beam wipe, the four side-tower cues); fewer repeats |
+| 10f.23 | Circles | Mainstage and desert, a song's circle | Every beam traces a circle for about 16 s (it used to last one cue); on the desert the floor circles stay up over the crowd |
+| 10f.24 | No countdown | Every stage, builds | No 4-3-2-1 countdown on any screen |
+| 10f.25 | Laser top shot | Mainstage, a moment with every laser on (floor and towers) | The camera goes up to the top of the stage, a little high (under the crown), looking at the lasers sweeping up and down |
+| 10f.26 | New rap songs | Play Ashke and Love Dose (rap, the warehouse) | Titles and artists right; the lights pulse on every beat (Love Dose on every kick: 140 BPM); Love Dose's verses lit as grooves, not breakdowns |
 | 10f.19 | Frame rate | Each stage, a peak, FPS on | Note the number on the Iris Xe (target 56-60); turn fixtures off one by one to see what each costs |
 
 ## 11. Automated tests (Git Bash)

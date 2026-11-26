@@ -410,7 +410,7 @@ const SKY_SHAPE = /* glsl */ `
         float dome = 1.0 - 2.0 * pow(clamp(length(q - uCentre) / 19.0, 0.0, 1.0), 2.0);
         // one line of tiles comes down, the line travelling from the stage to the back of the room like a wave (2 bars)
         float lineZ = mix(uSpan.x - 3.0, uSpan.y + 3.0, fract(uBeat / 16.0));
-        float line = -2.2 * exp(-pow((q.y - lineZ) / 2.0, 2.0));
+        float line = -4.6 * exp(-pow((q.y - lineZ) / 2.4, 2.0));
         // a wave across the room that starts in the middle and widens out to both walls (4 bars), then starts again
         float reach = fract(uBeat / 32.0) * 30.0;
         float widen = sin(abs(q.x) * 0.55 - uBeat * 0.785) * smoothstep(reach, reach - 4.0, abs(q.x));
@@ -424,7 +424,7 @@ const SKY_SHAPE = /* glsl */ `
         // a new random set of tiles each 2 beats drops 2.4 m and comes back up
         float f = fract(uBeat / 8.0);
         float picked = step(0.8, hashT(aIdx + floor(uBeat / 8.0) * 1.37));
-        float drop = -2.4 * picked * smoothstep(0.0, 0.25, f) * (1.0 - smoothstep(0.65, 1.0, f));
+        float drop = -4.4 * picked * smoothstep(0.0, 0.3, f) * (1.0 - smoothstep(0.7, 1.0, f));
         return board + uDrops * drop;
     }`;
 // what each part of a song asks of the ceiling: the shape's weights, how deep, how far up or down, and the picture
@@ -433,22 +433,22 @@ const SKY_SHAPE = /* glsl */ `
 // crowd towards the stage; checks: the chessboard's tiles in the two colours)
 const SKY_MODES = {
     quiet: { wave: 0.3, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0.25, offset: 0.7, ring: 0, mono: 0, stars: 1, tunnel: 0, checks: 0 },
-    groove: { wave: 1, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0.8, offset: 0, ring: 0.2, mono: 0, stars: 0.25, tunnel: 0, checks: 0 },
-    build: { wave: 0.15, ripple: 0, funnel: 1, dome: 0, chess: 0, amp: 0.9, offset: -0.6, ring: 0, mono: 0, stars: 0, tunnel: 1, checks: 0 },
+    groove: { wave: 1, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 1.6, offset: -0.6, ring: 0.2, mono: 0, stars: 0.25, tunnel: 0, checks: 0 },
+    build: { wave: 0.15, ripple: 0, funnel: 1, dome: 0, chess: 0, amp: 2.1, offset: -1.9, ring: 0, mono: 0, stars: 0, tunnel: 1, checks: 0 },
     drop: { wave: 0, ripple: 0, funnel: 0, dome: 1, chess: 0, amp: 1, offset: 0.2, ring: 1, mono: 0, stars: 0, tunnel: 0, checks: 0 },
-    peak: { wave: 0, ripple: 1, funnel: 0, dome: 0, chess: 0, amp: 0.95, offset: 0, ring: 1, mono: 0, stars: 0, tunnel: 0, checks: 0 },
-    breakdown: { wave: 0.1, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0.2, offset: -0.85, ring: 0, mono: 1, stars: 1, tunnel: 0, checks: 0 },
-    finale: { wave: 0, ripple: 0.3, funnel: 0, dome: 0, chess: 1, amp: 0.5, offset: 0, ring: 0.6, mono: 0, stars: 0, tunnel: 0, checks: 1 },
+    peak: { wave: 0, ripple: 1, funnel: 0, dome: 0, chess: 0, amp: 1.8, offset: -0.7, ring: 1, mono: 0, stars: 0, tunnel: 0, checks: 0 },
+    breakdown: { wave: 0.1, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0.3, offset: -3.6, ring: 0, mono: 1, stars: 1, tunnel: 0, checks: 0 },
+    finale: { wave: 0, ripple: 0.3, funnel: 0, dome: 0, chess: 1.8, amp: 0.8, offset: -1.2, ring: 0.6, mono: 0, stars: 0, tunnel: 0, checks: 1 },
     // random tiles dropping straight down on every other beat, the rest still and flat
     drops: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, drops: 1, amp: 0, offset: 0.4, ring: 0.3, mono: 0, stars: 0.15, tunnel: 0, checks: 0 },
     // one line of tiles coming down and travelling from the stage to the back like a wave
     line: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, line: 1, amp: 0, offset: 0.5, ring: 0.4, mono: 0, stars: 0, tunnel: 0, checks: 0 },
     // a wave across the room, starting narrow in the middle and widening out to both walls
-    widen: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, widen: 1, amp: 1, offset: 0, ring: 0.5, mono: 0, stars: 0, tunnel: 0, checks: 0 },
+    widen: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, widen: 1, amp: 2, offset: -0.8, ring: 0.5, mono: 0, stars: 0, tunnel: 0, checks: 0 },
     // the whole ceiling still, level, high: the picture does the work
     still: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, amp: 0, offset: 0.4, ring: 0.6, mono: 0, stars: 0, tunnel: 0, checks: 0 },
     // (from the indoor arena's photos) one picture of fire across every tile, the tiles sloping down into a valley
-    fire: { wave: 0, ripple: 0, funnel: 0.6, dome: 0, chess: 0, amp: 0.7, offset: 0, ring: 0, mono: 0, stars: 0, tunnel: 0, checks: 0, fire: 1 },
+    fire: { wave: 0, ripple: 0, funnel: 0.6, dome: 0, chess: 0, amp: 1.8, offset: -1.4, ring: 0, mono: 0, stars: 0, tunnel: 0, checks: 0, fire: 1 },
     // every tile its own colour, the ceiling in steps rising out to the walls
     mosaic: { wave: 0, ripple: 0, funnel: 0, dome: 0, chess: 0, stairs: 1, amp: 0.8, offset: 0, ring: 0, mono: 0, stars: 0, tunnel: 0, checks: 0, mosaic: 1 },
     // the tiles dark and in steps, the beams in the haze below them doing the work
@@ -458,9 +458,9 @@ const SKY_MODES = {
 };
 // the moves a groove and a peak take turns with, one every 8 bars (32 beats)
 const SKY_TURNS = {
-    // (still between moves: the ceiling moving is a moment, not all the time)
-    groove: ['still', 'groove', 'still', 'mosaic', 'still', 'line', 'still', 'stairs'],
-    peak: ['still', 'peak', 'still', 'fire', 'still', 'widen', 'still', 'drops'],
+    // (now and then still between moves, but the ceiling moves most of the time)
+    groove: ['groove', 'line', 'mosaic', 'drops', 'still', 'stairs', 'widen'],
+    peak: ['peak', 'drops', 'fire', 'line', 'widen', 'still', 'dark'],
 };
 /** Which of SKY_MODES the look asks for: by the song's part, or (the test page's looks) by the crowd's energy. */
 export function skyModeOf(l) {
@@ -600,7 +600,7 @@ function KineticSky({ sky, look }) {
         const now = clock.elapsedTime;
         const st = sched.current;
         const wanted = skyModeOf(l);
-        if (st.name === null || (wanted !== st.name && st.settled && now - st.since >= 24)) { st.name = wanted; st.since = now; st.settled = false; }
+        if (st.name === null || (wanted !== st.name && st.settled && now - st.since >= 16)) { st.name = wanted; st.since = now; st.settled = false; }
         const mode = SKY_MODES[st.name];
         // the winches move slowly: about 7 s to reach a new shape
         const k = 1 - Math.exp(-Math.min(delta, 0.1) * 0.45);

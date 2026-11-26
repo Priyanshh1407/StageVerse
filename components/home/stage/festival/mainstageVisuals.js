@@ -20,7 +20,7 @@ import * as THREE from 'three';
 //  12 rain        streaks of light falling down the fins (breakdowns, quiet parts)
 //  13 lasergrid   thin moving lines crossing like a laser grid
 //  14 heartbeat   a double pulse spreading from the crown on every beat (builds)
-//  15 countdown   4, 3, 2, 1 on the beats of each bar with a ring filling round it (builds, into the drop)
+//  15 countdown   4, 3, 2, 1 on the beats of each bar with a ring filling round it (not played: the developer removed it)
 //  16 liquid      a liquid-metal ripple in the show's colours
 //  17 finswap     the fins (columns 4.6 m apart) swapping the show's two colours on every beat
 // The desert stage's own (pop and Bollywood; the song title is drawn on its wall as text, StageLedWall):
@@ -46,14 +46,14 @@ const SETS = {
         edm: {
             // (the fin swap every other turn in a peak, and in grooves: it was too rare to be seen)
             peak: set(['tunnel', 'finswap', 'shockwave', 'fire', 'finswap', 'kaleido', 'spectrum', 'finswap', 'warp', 'lasergrid'], 16),
-            build: set(['chevrons', 'countdown', 'warp', 'heartbeat'], 16),
+            build: set(['chevrons', 'warp', 'heartbeat'], 16),
             groove: set(['horizon', 'finswap', 'hexes', 'lasergrid', 'spectrum', 'finswap', 'liquid', 'kaleido'], 32),
             breakdown: set(['plasma', 'liquid', 'kaleido', 'rain'], 32),
             quiet: set(['starfield', 'rain', 'plasma'], 64),
         },
         rap: {
             peak: set(['shockwave', 'finswap', 'fire', 'spectrum', 'finswap', 'lasergrid'], 16),
-            build: set(['countdown', 'chevrons', 'heartbeat'], 16),
+            build: set(['chevrons', 'heartbeat', 'warp'], 16),
             groove: set(['hexes', 'lasergrid', 'liquid', 'spectrum'], 32),
             breakdown: set(['rain', 'liquid'], 32),
             quiet: set(['starfield', 'rain'], 64),

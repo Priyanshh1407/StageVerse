@@ -1,0 +1,6 @@
+{
+  "title": "Love Dose",
+  "artist": "Yo Yo Honey Singh",
+  "doubleTime": true,
+  "_note": "Title and artist only: the structure is the analysis's own (checked 26 Nov 2026: a steady beat, found at half time (70.1 BPM): its kick lands halfway between those beats nearly as hard as on them, so doubleTime adds a beat there and the lights hit every kick (140.2 BPM); the parts after a peak as loud as it are grooves, not breakdowns). Re-run npm run demos after editing."
+}

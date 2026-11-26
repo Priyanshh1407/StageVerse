@@ -189,8 +189,10 @@ describe('the mainstage cues', async () => {
         expect([null, 'Beam wipe']).toContain(kindAt('Build 4 · phrase 2'));
         expect(kindAt('Breakdown 6')).toBe('Mainstage · lone sweeper');
         expect(kindAt('Peak 5 · lasers')).toBe('Mainstage · laser cathedral');
-        expect(kindAt('Peak 7 · lasers')).toBe('Mainstage · laser cathedral');
-        for (const peak of ['Peak 5 · all in', 'Peak 5 · phrase 2', 'Peak 7 · hook', 'Peak 7 · phrase 3']) expect(plan[names.indexOf(peak)].fits, peak).toBe('peak');
+        // (a second laser moment may give its slot to a cue the song hasn't played yet: every cue at least once)
+        expect(plan[names.indexOf('Peak 7 · lasers')]?.fits).toMatch(/^(lasers|peak)$/);
+        // (or the circle, held over the cues after it so it can be seen)
+        for (const peak of ['Peak 5 · all in', 'Peak 5 · phrase 2', 'Peak 7 · hook', 'Peak 7 · phrase 3']) expect(plan[names.indexOf(peak)].fits ?? plan[names.indexOf(peak)].kind, peak).toMatch(/^(peak|Circle · all beams \(held\))$/);
         // (a groove phrase is the mainstage's own groove cue, or the song's one side-tower cue when it has no free slot for it)
         for (const groove of ['Groove 3', 'Groove 3 · phrase 2']) {
             const c = plan[names.indexOf(groove)];
@@ -202,7 +204,8 @@ describe('the mainstage cues', async () => {
     it('gives a song without a circle one at its biggest peak, on the mainstage and the desert', () => {
         const without = cues.map((c) => ({ ...c, look: {} }));
         for (const p of [planMainstageCues(without), planDesertCues(without)]) {
-            const circles = p.map((c, i) => (c?.look?.circle ? names[i] : null)).filter(Boolean);
+            // (one circle, held over the next cues of its peak so it can be seen: count where it starts)
+            const circles = p.map((c, i) => (c?.look?.circle && !p[i - 1]?.look?.circle ? names[i] : null)).filter(Boolean);
             expect(circles).toHaveLength(1);
             expect(circles[0]).toMatch(/^Peak \d+ · all in$/);
         }
@@ -542,8 +545,11 @@ describe('the audience and artist views', () => {
         const lasers = { laser: 1, laserFloor: 0, laserTower: 1 };
         expect(stageCamera(ms, { look: lasers, shot: 'dolly', t: 2, duration: 200 }).pos).toEqual(ms.shots.laserLeft.pos);
         expect(stageCamera(ms, { look: lasers, shot: 'dolly', t: 18, duration: 200 }).pos).toEqual(ms.shots.laserRight.pos);
-        // not with the floor lasers on, and never on the other stages
-        expect(stageCamera(ms, { look: { ...lasers, laserFloor: 1 }, shot: 'dolly', t: 2, duration: 200 }).pos).toEqual(ms.shots.dolly.pos);
+        // every laser on (the floor's too): the shot up at the top of the stage, a little high; never on the other stages
+        expect(stageCamera(ms, { look: { ...lasers, laserFloor: 1 }, shot: 'dolly', t: 2, duration: 200 }).pos).toEqual(ms.shots.laserTop.pos);
+        expect(ms.shots.laserTop.pos[1]).toBeGreaterThan(10);
+        expect(ms.shots.laserTop.pos[1]).toBeLessThan(26);   // (not the very top: under the crown)
+        expect(STAGES.desert.allLaserShot).toBeUndefined();
         expect(STAGES.desert.laserShots).toBeUndefined();
     });
 
@@ -655,7 +661,8 @@ describe('the desert stage, mounted and tuned', () => {
         const { planDesertCues, BEAM_WIPE } = await import('@/lib/show/stages/mainstageCues');
         const cues = ['Intro', 'Groove', 'Groove · phrase 2', 'Verse', 'Verse · phrase 2', 'Peak · all in'].map((name) => ({ name }));
         const plan = planDesertCues(cues);
-        expect(plan.filter((p) => p === BEAM_WIPE).length).toBeGreaterThanOrEqual(2);
+        // (at least once; a second wipe gives its slot to a side-tower cue the song hasn't played: every cue once)
+        expect(plan.filter((p) => p === BEAM_WIPE).length).toBeGreaterThanOrEqual(1);
         expect(BEAM_WIPE.look).toMatchObject({ beams: 1, floor: 1, sides: 0, laser: 0, spots: 0 });
         // a song with a single groove still gets one
         expect(planDesertCues([{ name: 'Groove' }, { name: 'Peak · all in' }]).includes(BEAM_WIPE)).toBe(true);
@@ -889,6 +896,72 @@ describe('the mainstage odd/even', async () => {
             for (const side of [-1, 1]) {
                 const half = row.filter((h) => Math.sign(h.position[0] || 1) === side).sort((a, b) => a.beatIndex - b.beatIndex);
                 half.forEach((h, i) => expect(h.beatIndex).toBe(i));
+            }
+        }
+    });
+});
+
+describe('every stage cue at least once a song', async () => {
+    const fs = await import('node:fs');
+    const { MAINSTAGE_CUES, DESERT_SIDE_CUES, BEAM_WIPE } = await import('@/lib/show/stages/mainstageCues');
+    const index = JSON.parse(fs.readFileSync('public/shows/index.json', 'utf8'));
+    const songs = index.demos.map((d) => ({ slug: d.slug, show: JSON.parse(fs.readFileSync(`public${d.show}`, 'utf8')) }));
+    it('the desert: the beam wipe and every side-tower cue in every demo song', () => {
+        for (const { slug, show } of songs) {
+            const kinds = new Set(STAGES.desert.cuePlan(show.cues).filter(Boolean).map((p) => p.kind));
+            for (const k of [BEAM_WIPE.kind, ...DESERT_SIDE_CUES.map((c) => c.kind)]) expect(kinds.has(k), `${slug}: ${k}`).toBe(true);
+        }
+    });
+    it('the mainstage: every one of its cues in every song with room for them all', () => {
+        const all = [...MAINSTAGE_CUES, BEAM_WIPE, ...DESERT_SIDE_CUES];
+        // (room: the song's cues a stage cue can take, besides its solos, risers, landings and its ending)
+        const room = (show) => show.cues.filter((c) => !/^(Solo|Riser|Fade|Intro \d+$|Outro|Focus)/.test(c.name ?? '')).length;
+        for (const { slug, show } of songs.filter((x) => room(x.show) >= all.length + 4)) {
+            const kinds = new Set(STAGES.mainstage.cuePlan(show.cues).filter(Boolean).map((p) => p.kind));
+            for (const k of [...MAINSTAGE_CUES.map((c) => c.kind), BEAM_WIPE.kind, ...DESERT_SIDE_CUES.map((c) => c.kind)]) expect(kinds.has(k), `${slug}: ${k}`).toBe(true);
+        }
+    });
+    it('holds the circle long enough to be seen (about 16 s)', () => {
+        for (const { slug, show } of songs) {
+            for (const key of ['mainstage', 'desert']) {
+                const plan = STAGES[key].cuePlan(show.cues);
+                const on = show.cues.map((c, i) => (c.look?.circle ?? 0) > 0.5 || /^Circle/.test(plan[i]?.kind ?? ''));
+                // (the longest circle in the song)
+                let best = 0;
+                on.forEach((x, i) => {
+                    if (!x || on[i - 1]) return;
+                    let end = i;
+                    while (on[end + 1]) end += 1;
+                    best = Math.max(best, (show.cues[end + 1]?.t ?? show.duration) - show.cues[i].t);
+                });
+                expect(best, `${key} ${slug}`).toBeGreaterThan(8);
+            }
+        }
+    });
+});
+
+describe('the desert odd/even', async () => {
+    const { rigHeads } = await import('@/lib/show/stages/rig');
+    it('uses the front and back aerial trusses (interleaved), the middle one out of it; every row mirrored', () => {
+        const heads = rigHeads(STAGES.desert, Infinity);
+        const aerial = heads.filter((h) => h.role === 'aerial');
+        expect(aerial.filter((h) => Math.abs(h.position[2] + 12) < 0.3).every((h) => h.beatIndex === -1)).toBe(true);
+        for (const h of heads.filter((x) => ['aerial', 'floor', 'sides'].includes(x.role) && x.beatIndex >= 0)) {
+            const twin = heads.find((o) => o.role === h.role && Math.abs(o.position[0] + h.position[0]) < 0.05 && Math.abs(o.position[1] - h.position[1]) < 0.05 && Math.abs(o.position[2] - h.position[2]) < 0.05);
+            expect(twin?.beatIndex % 2, `${h.role} ${h.position}`).toBe(h.beatIndex % 2);
+        }
+    });
+});
+
+describe('no countdown visual on any stage', async () => {
+    const { visualFor, MAINSTAGE_VISUALS } = await import('@/components/home/stage/festival/mainstageVisuals');
+    it('never picks it, on any stage set, genre or part of a song', () => {
+        const countdown = MAINSTAGE_VISUALS.indexOf('countdown');
+        for (const set of ['mainstage', 'desert']) {
+            for (const songGenre of ['edm', 'pop', 'rap', 'bollywood']) {
+                for (const crowd of [0.12, 0.25, 0.4, 0.5, 1]) {
+                    for (let beatPos = 0; beatPos < 512; beatPos += 4) expect(visualFor({ songGenre, crowd, beatPos, pulse: 0 }, set).index).not.toBe(countdown);
+                }
             }
         }
     });

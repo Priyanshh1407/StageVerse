@@ -765,6 +765,23 @@ original design, no festival's name or logo): 56 m wide, 68 m long, 16 m high.
 - **Its own cue, the side chasers** (`planWarehouseCues`): the LED lines along both side walls light up in a band running
   from the stage to the back and back again, the rest dimmed (first phrase of a build, third of a groove, second of a peak).
 
+**Cues and songs (26 Nov 2026, later):**
+- Every one of a stage's own cues plays at least once a song (`ensureEach` in `lib/show/stages/mainstageCues.js`): a cue
+  that never came up takes a repeated cue's slot, or a free one where the moment fits; a song with too few moments
+  (BAND4BAND, Love Dose: their grooves are solos) still misses some on the mainstage.
+- The circle is held for about 16 s (`holdCircle`), a second one added where a song's only circle sits before a solo;
+  the desert's floor circles are lifted like the mainstage's.
+- Odd/even is counted from the middle of the stage outwards in every row, on every stage (the mainstage's columns and
+  the other stages' left-to-right counts gave neighbours the same number and the halves different ones). On the desert
+  only the front and back aerial trusses play it (interleaved); the middle one is off (`stage.oddEven`).
+- The countdown visual is played on no stage. The mainstage has a shot at the top of its stage, a little high, for when
+  every laser is on (`laserTop`, `allLaserShot`).
+- The warehouse's ceiling moves most of the time again (a move at least 16 s, still only now and then), and its big
+  moves bring the panels to just over the crowd's raised hands.
+- New rap songs: Ashke (Karan Aujla & Mxrci) and Love Dose (Yo Yo Honey Singh), four rap songs listed. Love Dose was
+  found at half its pulse; `doubleTime` in its extras adds a beat halfway (`scripts/build-demos.mjs`), so the lights hit
+  every kick. Uploaded songs: a section after a peak is a breakdown only when clearly quieter than the peak.
+
 **Testing them**: on `/lab/<stage>`, a button per fixture shows only that fixture at full with the rig dark ("Whole rig"
 brings everything back), on/off switches (saved in the browser, `sv:extras:v2`, used by the homepage too), a "Fire" button
 for the cryo. `NEXT_PUBLIC_FEATURE_EXTRAS=off` removes them all.

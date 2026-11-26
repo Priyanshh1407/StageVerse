@@ -153,7 +153,8 @@ const RIG_GLSL = /* glsl */ `
     float fixtureGate() {
         float f = fract(uBeat * 0.5 + mod(aIndex, 2.0) * 0.5);
         float altOn = smoothstep(0.42, 0.5, f) * (1.0 - smoothstep(0.92, 1.0, f));
-        float g = mix(1.0, altOn, uAlternate);
+        // (index -1: a row kept out of the odd/even cue, off while it plays: the desert's middle aerial truss)
+        float g = aIndex < -0.5 ? 1.0 - uAlternate : mix(1.0, altOn, uAlternate);
         float slot = floor(uBeat * 2.0);
         float k = smoothstep(0.75, 1.0, fract(uBeat * 2.0));
         float sparkleOn = mix(step(0.4, fixtureHash(aIndex, slot, 1.7)), step(0.4, fixtureHash(aIndex, slot + 1.0, 1.7)), k);
