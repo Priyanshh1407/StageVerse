@@ -44,28 +44,29 @@ const set = (list, every) => ({ list: list.map((n) => V[n]), every });
 const SETS = {
     mainstage: {
         edm: {
-            peak: set(['tunnel', 'shockwave', 'fire', 'kaleido', 'finswap', 'spectrum', 'warp', 'lasergrid'], 16),
+            // (the fin swap every other turn in a peak, and in grooves: it was too rare to be seen)
+            peak: set(['tunnel', 'finswap', 'shockwave', 'fire', 'finswap', 'kaleido', 'spectrum', 'finswap', 'warp', 'lasergrid'], 16),
             build: set(['chevrons', 'countdown', 'warp', 'heartbeat'], 16),
-            groove: set(['horizon', 'hexes', 'lasergrid', 'spectrum', 'liquid', 'kaleido'], 32),
+            groove: set(['horizon', 'finswap', 'hexes', 'lasergrid', 'spectrum', 'finswap', 'liquid', 'kaleido'], 32),
             breakdown: set(['plasma', 'liquid', 'kaleido', 'rain'], 32),
             quiet: set(['starfield', 'rain', 'plasma'], 64),
         },
         rap: {
-            peak: set(['shockwave', 'fire', 'finswap', 'spectrum', 'lasergrid'], 16),
+            peak: set(['shockwave', 'finswap', 'fire', 'spectrum', 'finswap', 'lasergrid'], 16),
             build: set(['countdown', 'chevrons', 'heartbeat'], 16),
             groove: set(['hexes', 'lasergrid', 'liquid', 'spectrum'], 32),
             breakdown: set(['rain', 'liquid'], 32),
             quiet: set(['starfield', 'rain'], 64),
         },
         pop: {
-            peak: set(['kaleido', 'tunnel', 'shockwave', 'finswap', 'spectrum'], 16),
+            peak: set(['kaleido', 'finswap', 'tunnel', 'shockwave', 'finswap', 'spectrum'], 16),
             build: set(['heartbeat', 'chevrons', 'warp'], 16),
             groove: set(['horizon', 'liquid', 'kaleido', 'hexes'], 32),
             breakdown: set(['plasma', 'rain'], 32),
             quiet: set(['starfield', 'plasma'], 64),
         },
         bollywood: {
-            peak: set(['mandala', 'kaleido', 'shockwave', 'fire', 'finswap'], 16),
+            peak: set(['mandala', 'finswap', 'kaleido', 'shockwave', 'finswap', 'fire'], 16),
             build: set(['heartbeat', 'chevrons', 'mandala'], 16),
             groove: set(['mandala', 'kaleido', 'liquid', 'horizon'], 32),
             breakdown: set(['mandala', 'plasma'], 32),
