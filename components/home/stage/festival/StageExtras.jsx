@@ -14,12 +14,12 @@ const beatOf = (look, clock) => look.beatPos ?? clock * 2;
 const masterOf = (look) => (look.master ?? 1) * Math.min(1.4, look.intensity ?? 1);
 // a manual firing from the test page's preview buttons: until when it runs (seconds of the R3F clock)
 // (`solo`: the fixture the test page is showing on its own, the rest of the rig dark; a moment effect then runs nonstop)
-const fired = { cryo: 0, drones: 0, solo: null };
+const fired = { cryo: 0, solo: null };
 const firing = (kind) => fired.solo === kind || performance.now() / 1000 < fired[kind];
 // what a fixture shown on its own reads: the look at full, whatever the rig is doing
 const SOLO_LOOK = { master: 1, intensity: 1, floor: 1, beams: 1, wash: 1, pixel: 1, crowd: 1 };
 
-// ---- beams: a cone per beam, its direction worked out in the shader (tilting bars, laser-hybrid rods) ----------------
+// ---- beams: a cone per beam, its direction worked out in the shader (laser-hybrid rods, uplight washes) ---------------
 const BEAM_VERTEX = (dirCode) => /* glsl */ `
     attribute vec3 aOrigin;
     attribute vec3 aDir;           // the fixture's own aim (the uplight washes: up the face of their fin)
@@ -104,26 +104,6 @@ function useBeams(points, opts, drive) {
         mesh.current.visible = level > 0.01;
     });
     return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
-}
-
-/** Tilting beam bars at the fin feet: seven beams a bar, tilting together on the beat and fanning out; odd and even bars
- *  swapping the show's two colours (with the fin swap), at the floor beams' level. */
-function TiltBars({ bars, look }) {
-    const opts = useMemo(() => ({
-        length: 34, r0: 0.04, r1: 0.42, fan: 7,
-        dirCode: /* glsl */ `
-            float swing = sin(uBeat * 1.5708 + id * 0.55) * 0.32;       // the bar tilts, a little behind the next
-            float pitch = 0.32 + swing;                                  // from straight up towards the audience
-            float yaw = k * (0.3 + 0.16 * sin(uBeat * 0.785)) + side * 0.06;   // the fan opens and closes
-            d = vec3(sin(yaw), cos(pitch), sin(pitch));`,
-    }), []);
-    return useBeams(bars, opts, (u, clock) => {
-        const l = look.current;
-        u.uBeat.value = beatOf(l, clock);
-        u.uColorA.value.set(l.colorA ?? '#19d9ff');
-        u.uColorB.value.set(l.colorB ?? '#ff3df2');
-        return (l.floor ?? 0) * masterOf(l) * 0.55;
-    });
 }
 
 /** Laser-hybrid beams on the crown: five very tight, very long rods sweeping slowly over the sky in the peaks. */
@@ -243,71 +223,107 @@ function Cryo({ points, look }) {
     });
 }
 
-// ---- kinetic spheres: winched over the crowd, rising and falling in waves --------------------------------------------
-function Kinetic({ rig, look }) {
-    const { spheres, cables } = useMemo(() => {
-        const cells = new Float32Array(rig.cells.flat());
+// ---- the kinetic LED sky (warehouse): see-through LED tiles on winches over the crowd, moving into shapes -----------
+// (in the spirit of the kinetic LED ceilings of big indoor festival stages: an original StageVerse design.) Every tile
+// hangs on a cable under the grid; its height is one shape across the whole ceiling (a wave rolling front to back in a
+// groove, rings spreading from the centre in a peak, flat and high in quiet parts), and it tilts with the slope of that
+// shape, so the ceiling reads as one moving surface. The tiles play one picture across the whole ceiling: the show's
+// two colours in bands, rings on the beat, a white flash on the drop. LED dots with gaps between them (the gaps are cut
+// out), so the rig's beams still pass through. One draw call for the tiles, one for the cables.
+const SKY_SHAPE = /* glsl */ `
+    attribute vec2 aCell;
+    uniform float uBeat; uniform float uBase; uniform float uAmp; uniform float uRipple; uniform float uTop;
+    float shapeAt(vec2 q) {
+        float wave = sin(q.y * 0.32 - uBeat * 0.785);                                   // rolls front to back, 8 beats
+        float ripple = sin(length(q - vec2(0.0, 16.6)) * 0.45 - uBeat * 1.571);        // rings from the centre, 4 beats
+        return uAmp * mix(wave, ripple, uRipple);
+    }`;
+function KineticSky({ sky, look }) {
+    const { tiles, cables } = useMemo(() => {
+        const cells = new Float32Array(sky.cells.flat());
         const make = (geo, material) => {
             const g = new THREE.InstancedBufferGeometry().copy(geo);
             g.setAttribute('aCell', new THREE.InstancedBufferAttribute(cells, 2));
-            g.instanceCount = rig.cells.length;
+            g.instanceCount = sky.cells.length;
             return { g, material };
         };
-        const uniforms = { uTop: { value: rig.top }, uBeat: { value: 0 }, uDrop: { value: 3 }, uLevel: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } };
-        const height = /* glsl */ `
-            attribute vec2 aCell;
-            uniform float uTop;
-            uniform float uBeat;
-            uniform float uDrop;
-            float wave() { return 0.5 + 0.5 * sin(uBeat * 0.7854 + aCell.x * 0.22 + aCell.y * 0.17); }
-            float sphereY() { return uTop - 1.0 - wave() * uDrop; }`;
-        const sphere = new THREE.ShaderMaterial({
-            uniforms, toneMapped: false,
-            vertexShader: `${height}
-                varying float vWave; varying vec3 vN; varying vec3 vW;
+        const uniforms = {
+            uBeat: { value: 0 }, uBase: { value: sky.base }, uTop: { value: sky.top }, uAmp: { value: 0.3 }, uRipple: { value: 0 },
+            uLevel: { value: 0 }, uRing: { value: 0 }, uFlash: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() },
+        };
+        const tile = new THREE.ShaderMaterial({
+            uniforms, toneMapped: false, side: THREE.DoubleSide,
+            vertexShader: `${SKY_SHAPE}
+                varying vec2 vUv; varying vec3 vW;
                 void main() {
-                    vWave = wave();
-                    vec3 w = vec3(aCell.x, sphereY(), aCell.y) + position;
-                    vN = normal; vW = w;
+                    float h = shapeAt(aCell);
+                    float dx = shapeAt(aCell + vec2(0.5, 0.0)) - h;
+                    float dz = shapeAt(aCell + vec2(0.0, 0.5)) - h;
+                    vec3 t = normalize(vec3(0.5, dx, 0.0));                    // the tile tilts with the slope of the shape
+                    vec3 b = normalize(vec3(0.0, dz, 0.5));
+                    vec3 n = normalize(cross(b, t));
+                    vec3 w = vec3(aCell.x, uBase + h, aCell.y) + t * position.x + n * position.y + b * position.z;
+                    vUv = position.xz / ${sky.size.toFixed(2)} + 0.5;
+                    vW = w;
                     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(w, 1.0);
                 }`,
             fragmentShader: /* glsl */ `
-                uniform vec3 uColorA; uniform vec3 uColorB; uniform float uLevel;
-                varying float vWave; varying vec3 vN; varying vec3 vW;
+                uniform float uBeat; uniform float uLevel; uniform float uRing; uniform float uFlash;
+                uniform vec3 uColorA; uniform vec3 uColorB;
+                varying vec2 vUv; varying vec3 vW;
                 void main() {
-                    vec3 c = mix(uColorA, uColorB, vWave);
-                    float rim = 0.55 + 0.45 * pow(1.0 - abs(dot(normalize(vN), normalize(cameraPosition - vW))), 2.0);
-                    gl_FragColor = vec4(c * (0.06 + 1.15 * uLevel) * rim, 1.0);
+                    vec2 edge = min(vUv, 1.0 - vUv);
+                    bool frame = min(edge.x, edge.y) < 0.025;
+                    vec2 cell = fract(vUv * 14.0) - 0.5;
+                    float dotMask = smoothstep(0.36, 0.22, length(cell));
+                    if (!frame && dotMask < 0.08) discard;                       // see-through between the LED dots
+                    if (frame) { gl_FragColor = vec4(0.03, 0.03, 0.035, 1.0); return; }
+                    // one picture across the whole ceiling
+                    float band = 0.5 + 0.5 * sin(vW.z * 0.22 + vW.x * 0.08 - uBeat * 0.4);
+                    vec3 c = mix(uColorA, uColorB, band);
+                    float dist = length(vW.xz - vec2(0.0, 16.6));
+                    float ring = exp(-abs(dist - fract(uBeat) * 22.0) * 0.7);
+                    float beat = exp(-fract(uBeat) * 5.0);
+                    vec3 lamp = c * (0.35 + 0.35 * beat + 1.4 * ring * uRing) * uLevel * 1.8;
+                    lamp = mix(lamp, vec3(1.0), uFlash);
+                    gl_FragColor = vec4(lamp * dotMask + vec3(0.015), 1.0);
                 }`,
         });
         const cable = new THREE.ShaderMaterial({
             uniforms, toneMapped: false,
-            vertexShader: `${height}
+            vertexShader: `${SKY_SHAPE}
                 void main() {
-                    float y = mix(sphereY() + 0.3, uTop, position.y + 0.5);
+                    float y = mix(uBase + shapeAt(aCell) + 0.05, uTop, position.y + 0.5);
                     vec3 w = vec3(aCell.x + position.x, y, aCell.y + position.z);
                     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(w, 1.0);
                 }`,
             fragmentShader: 'void main() { gl_FragColor = vec4(0.05, 0.05, 0.06, 1.0); }',
         });
-        return { spheres: make(new THREE.IcosahedronGeometry(0.3, 3), sphere), cables: make(new THREE.CylinderGeometry(0.02, 0.02, 1, 4), cable) };
-    }, [rig]);
+        return {
+            tiles: make(new THREE.BoxGeometry(sky.size, 0.05, sky.size), tile),
+            cables: make(new THREE.CylinderGeometry(0.015, 0.015, 1, 4), cable),
+        };
+    }, [sky]);
     const group = useRef();
-    useEffect(() => () => { spheres.g.dispose(); cables.g.dispose(); spheres.material.dispose(); cables.material.dispose(); }, [spheres, cables]);
-    useFrame(({ clock }) => {
+    useEffect(() => () => { tiles.g.dispose(); cables.g.dispose(); tiles.material.dispose(); cables.material.dispose(); }, [tiles, cables]);
+    useFrame(({ clock }, delta) => {
         if (!group.current) return;
         const l = look.current;
         const u = group.current.children[0].material.uniforms;
+        const k = 1 - Math.exp(-Math.min(delta, 0.1) * 1.5);              // the winches move slowly
+        const energy = Math.min(1, l.crowd ?? 0.3);
         u.uBeat.value = beatOf(l, clock.elapsedTime);
-        const energy = l.crowd ?? 0.3;
-        u.uDrop.value += ((0.8 + 2.0 * energy) - u.uDrop.value) * 0.03;   // never below 4 m: over the crowd's raised hands
-        u.uLevel.value = masterOf(l) * (0.35 + 0.65 * energy);
+        u.uAmp.value += ((0.15 + 0.85 * energy) - u.uAmp.value) * k;          // flat when quiet, a deep shape in a peak
+        u.uRipple.value += ((energy >= 0.9 ? 1 : 0) - u.uRipple.value) * k;   // a wave in a groove, rings in a peak
+        u.uRing.value += ((energy >= 0.9 ? 1 : 0.2) - u.uRing.value) * k;
+        u.uLevel.value = masterOf(l) * Math.max(0.3, l.pixel ?? 0.6);
+        u.uFlash.value = Math.min(1, Math.max((l.dropFx ?? 0) > 0.3 ? l.dropFx : 0, (l.blinder ?? 0) * 0.6)) * (l.master ?? 1);
         u.uColorA.value.set(l.colorA ?? '#19d9ff');
         u.uColorB.value.set(l.colorB ?? '#ff3df2');
     });
     return (
         <group ref={group}>
-            <mesh geometry={spheres.g} material={spheres.material} frustumCulled={false} />
+            <mesh geometry={tiles.g} material={tiles.material} frustumCulled={false} />
             <mesh geometry={cables.g} material={cables.material} frustumCulled={false} />
         </group>
     );
@@ -362,96 +378,7 @@ function LedLines({ lines, look }) {
     return <mesh ref={mesh} geometry={geometry} material={material} />;
 }
 
-// ---- the drone show: lit points forming shapes in the sky over the stage, in the finale -----------------------------
-const DRONES = 196;
-function shapes(width, height) {
-    const ring = Array.from({ length: DRONES }, (_, i) => { const a = (i / DRONES) * Math.PI * 2; return [Math.cos(a) * height * 0.48, Math.sin(a) * height * 0.48]; });
-    const heart = Array.from({ length: DRONES }, (_, i) => {
-        const t = (i / DRONES) * Math.PI * 2;
-        return [16 * Math.sin(t) ** 3 * (height / 34), (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * (height / 34)];
-    });
-    const star = Array.from({ length: DRONES }, (_, i) => {
-        const t = i / DRONES; const k = Math.floor(t * 10); const f = t * 10 - k;
-        const r = (j) => (j % 2 ? 0.22 : 0.5) * height; const a = (j) => (j / 10) * Math.PI * 2 + Math.PI / 2;
-        const p = [Math.cos(a(k)) * r(k), Math.sin(a(k)) * r(k)]; const q = [Math.cos(a(k + 1)) * r(k + 1), Math.sin(a(k + 1)) * r(k + 1)];
-        return [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f];
-    });
-    const grid = Array.from({ length: DRONES }, (_, i) => [((i % 14) / 13 - 0.5) * width, (Math.floor(i / 14) / 13 - 0.5) * height]);
-    // the wordmark's initials, sampled from text drawn into a canvas (browser only; the grid without it)
-    let letters = grid;
-    if (typeof document !== 'undefined') {
-        const c = document.createElement('canvas');
-        c.width = 160; c.height = 60;
-        const x = c.getContext('2d');
-        x.fillStyle = '#fff'; x.font = '900 54px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-        x.fillText('SV', 80, 32);
-        const data = x.getImageData(0, 0, 160, 60).data;
-        const on = [];
-        for (let yy = 0; yy < 60; yy += 2) for (let xx = 0; xx < 160; xx += 2) if (data[(yy * 160 + xx) * 4 + 3] > 128) on.push([xx, yy]);
-        if (on.length >= DRONES) letters = Array.from({ length: DRONES }, (_, i) => { const [xx, yy] = on[Math.floor((i * on.length) / DRONES)]; return [(xx / 160 - 0.5) * width * 0.8, (0.5 - yy / 60) * height]; });
-    }
-    return [grid, ring, heart, star, letters];
-}
-function Drones({ show, look }) {
-    const { geometry, material, list } = useMemo(() => {
-        const g = new THREE.BufferGeometry();
-        g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(DRONES * 3), 3));
-        g.setAttribute('aSeed', new THREE.BufferAttribute(Float32Array.from({ length: DRONES }, (_, i) => (i * 0.618) % 1), 1));
-        const m = new THREE.ShaderMaterial({
-            ...ADDITIVE,
-            uniforms: { uLevel: { value: 0 }, uTime: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
-            vertexShader: /* glsl */ `
-                attribute float aSeed; uniform float uTime; varying float vSeed;
-                void main() { vSeed = aSeed; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = 900.0 / -mv.z; gl_Position = projectionMatrix * mv; }`,
-            fragmentShader: /* glsl */ `
-                uniform float uLevel; uniform float uTime; uniform vec3 uColorA; uniform vec3 uColorB; varying float vSeed;
-                void main() {
-                    float r = length(gl_PointCoord - 0.5);
-                    float dot = smoothstep(0.5, 0.0, r);
-                    float twinkle = 0.75 + 0.25 * sin(uTime * 3.0 + vSeed * 40.0);
-                    gl_FragColor = vec4(mix(uColorA, uColorB, vSeed) * 1.6 + vec3(0.3), dot * uLevel * twinkle);
-                }`,
-        });
-        return { geometry: g, material: m, list: shapes(show.width, show.height) };
-    }, [show]);
-    useEffect(() => () => { geometry.dispose(); material.dispose(); }, [geometry, material]);
-    const points = useRef();
-    const state = useRef({ level: 0 });
-    useFrame(({ clock }, delta) => {
-        if (!points.current) return;
-        const l = look.current;
-        const t = clock.elapsedTime;
-        const st = state.current;
-        const finale = (l.fireworks?.filter((f) => f.type !== 'mines').length ?? 0) >= 4;
-        const want = finale || firing('drones') ? 1 : 0;
-        st.level += (want - st.level) * Math.min(1, delta * 0.8);
-        points.current.visible = st.level > 0.01;
-        if (!points.current.visible) return;
-        // a new shape every 4 s, moving between them over the first 1.5 s
-        const n = Math.floor(t / 4);
-        const k = Math.min(1, (t % 4) / 1.5);
-        const e = k * k * (3 - 2 * k);
-        const from = list[n % list.length];
-        const to = list[(n + 1) % list.length];
-        const attr = points.current.geometry.attributes.position;
-        const pos = attr.array;
-        const [cx, cy, cz] = show.centre;
-        for (let i = 0; i < DRONES; i++) {
-            pos[i * 3] = cx + from[i][0] + (to[i][0] - from[i][0]) * e;
-            pos[i * 3 + 1] = cy + from[i][1] + (to[i][1] - from[i][1]) * e + Math.sin(t * 0.8 + i) * 0.15;
-            pos[i * 3 + 2] = cz;
-        }
-        attr.needsUpdate = true;
-        const u = points.current.material.uniforms;
-        u.uLevel.value = st.level;
-        u.uTime.value = t;
-        u.uColorA.value.set(l.colorA ?? '#19d9ff');
-        u.uColorB.value.set(l.colorB ?? '#ff3df2');
-    });
-    return <points ref={points} geometry={geometry} material={material} frustumCulled={false} />;
-}
-
-/** Fin feet, option 3: uplight washes, one wide soft cone per fin grazing up its face to the tip; alternate fins in the
+/** Uplight washes at the fin feet: one wide soft cone per fin grazing up its face to the tip; alternate fins in the
  *  show's two colours, swapping every bar; at the washes' level. */
 function FinWashes({ points, look }) {
     const opts = useMemo(() => ({ length: 24, r0: 0.25, r1: 3.2, dirCode: 'd = aDir;' }), []);
@@ -462,77 +389,6 @@ function FinWashes({ points, look }) {
         u.uColorB.value.set(l.colorB ?? '#ff3df2');
         return (l.wash ?? 0.8) * masterOf(l) * 1.2;
     });
-}
-
-/** Fin feet, option 2: pixel-matrix blinders (a hexagon of seven cells on a dark housing, facing the crowd). Between
- *  hits the cells play a pattern on the beat in the show's colours (the centre, then the ring, then one cell running
- *  round it); on a blinder hit, a drop or a strobe every cell flashes warm white. One draw call. */
-const HEX_CELLS = [[0, 0], ...Array.from({ length: 6 }, (_, i) => [Math.cos((i / 6) * Math.PI * 2 + Math.PI / 6) * 0.5, Math.sin((i / 6) * Math.PI * 2 + Math.PI / 6) * 0.5])].map(([x, y]) => [x * 2.2, y * 2.2]);   // a 2.2 m cluster: readable from the crowd
-function FinBlinders({ points, look }) {
-    const { geometry, material } = useMemo(() => {
-        const g = new THREE.InstancedBufferGeometry().copy(new THREE.CircleGeometry(0.55, 6));
-        const origin = [];
-        const cell = [];
-        const info = [];
-        points.forEach((pt, id) => {
-            // the housing (cell -1, 3.3x a cell, just behind), then the seven cells
-            origin.push(...pt.pos); cell.push(0, 0); info.push(id, -1, 3.3, 0);
-            HEX_CELLS.forEach(([cx, cy], k) => { origin.push(...pt.pos); cell.push(cx, cy); info.push(id, k, 0.92, 0); });
-        });
-        g.setAttribute('aOrigin', new THREE.InstancedBufferAttribute(new Float32Array(origin), 3));
-        g.setAttribute('aCell', new THREE.InstancedBufferAttribute(new Float32Array(cell), 2));
-        g.setAttribute('aInfo', new THREE.InstancedBufferAttribute(new Float32Array(info), 4));
-        g.instanceCount = origin.length / 3;
-        const m = new THREE.ShaderMaterial({
-            toneMapped: false, side: THREE.DoubleSide,
-            uniforms: { uBeat: { value: 0 }, uLevel: { value: 0 }, uFlash: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
-            vertexShader: /* glsl */ `
-                attribute vec3 aOrigin; attribute vec2 aCell; attribute vec4 aInfo;
-                varying float vCell; varying float vId; varying float vEdge;
-                void main() {
-                    vec3 n = normalize(vec3(0.0, 0.34, 1.0));            // facing the crowd, tipped up a little
-                    vec3 r = vec3(1.0, 0.0, 0.0);
-                    vec3 up = normalize(cross(n, r));
-                    vec2 p = position.xy * aInfo.z + aCell;
-                    vec3 w = aOrigin + r * p.x - up * p.y + n * (aInfo.y < 0.0 ? -0.03 : 0.0);
-                    vCell = aInfo.y; vId = aInfo.x; vEdge = length(position.xy) / 0.55;
-                    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(w, 1.0);
-                }`,
-            fragmentShader: /* glsl */ `
-                uniform float uBeat; uniform float uLevel; uniform float uFlash; uniform vec3 uColorA; uniform vec3 uColorB;
-                varying float vCell; varying float vId; varying float vEdge;
-                void main() {
-                    if (vCell < 0.0) { gl_FragColor = vec4(0.025, 0.025, 0.03, 1.0); return; }
-                    float b = fract(uBeat);
-                    float step4 = mod(floor(uBeat), 4.0);
-                    float ring = abs(mod(vCell - 1.0 - floor(uBeat * 3.0), 6.0)) < 0.5 ? 1.0 : 0.1;
-                    float on = vCell < 0.5 ? (step4 < 0.5 ? 1.0 : 0.15) : (step4 < 1.5 ? (step4 > 0.5 ? 1.0 : 0.15) : ring);
-                    float hit = exp(-b * 4.0);
-                    vec3 c = mix(uColorA, uColorB, mod(vId + floor(uBeat / 4.0), 2.0));
-                    vec3 lamp = c * on * (0.5 + 0.8 * hit) * uLevel * 2.2;
-                    lamp = mix(lamp, vec3(1.0, 0.82, 0.55) * 3.5, uFlash);
-                    float lens = 1.0 - 0.35 * smoothstep(0.55, 1.0, vEdge);
-                    gl_FragColor = vec4(lamp * lens + vec3(0.02), 1.0);
-                }`,
-        });
-        return { geometry: g, material: m };
-    }, [points]);
-    const mesh = useRef();
-    useEffect(() => () => { geometry.dispose(); material.dispose(); }, [geometry, material]);
-    useFrame(({ clock }) => {
-        if (!mesh.current) return;
-        const l = look.current;
-        const u = mesh.current.material.uniforms;
-        const beat = beatOf(l, clock.elapsedTime);
-        u.uBeat.value = beat;
-        u.uLevel.value = (l.floor ?? 0) * masterOf(l);
-        const strobe = (l.strobe ?? 0) * ((clock.elapsedTime * 12.5) % 1 < 0.3 ? 1 : 0);
-        const solo = fired.solo === 'finBlinders' && beat % 8 < 0.3 ? 1 : 0;      // on its own: a hit every two bars
-        u.uFlash.value = Math.min(1, Math.max(l.blinder ?? 0, (l.dropFx ?? 0) > 0.3 ? 1 : 0, strobe, solo) * (l.master ?? 1));
-        u.uColorA.value.set(l.colorA ?? '#19d9ff');
-        u.uColorB.value.set(l.colorB ?? '#ff3df2');
-    });
-    return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
 }
 
 /** Every trial fixture the stage has (stage.extras) whose switch is on; with `solo`, only that one, at full. */
@@ -546,7 +402,7 @@ export default function StageExtras({ stage, look, solo = null }) {
     useEffect(() => {
         const update = () => setOn(readExtras());
         const fire = (e) => {
-            const seconds = { cryo: 3, drones: 24 }[e.detail];
+            const seconds = { cryo: 3 }[e.detail];
             if (seconds) fired[e.detail] = performance.now() / 1000 + seconds;
         };
         window.addEventListener(EXTRAS_KEY, update);
@@ -560,14 +416,11 @@ export default function StageExtras({ stage, look, solo = null }) {
     const lk = solo ? soloLook : look;
     return (
         <>
-            {show('tiltBars') && <TiltBars bars={x.tiltBars} look={lk} />}
-            {show('finBlinders') && <FinBlinders points={x.finBlinders} look={lk} />}
             {show('finWashes') && <FinWashes points={x.finWashes} look={lk} />}
             {show('hybridBeams') && <HybridBeams points={x.hybridBeams} look={lk} />}
             {show('cryo') && <Cryo points={x.cryo} look={lk} />}
-            {show('kinetic') && <Kinetic rig={x.kinetic} look={lk} />}
+            {show('kineticSky') && <KineticSky sky={x.kineticSky} look={lk} />}
             {show('ledLines') && <LedLines lines={x.ledLines} look={lk} />}
-            {show('drones') && <Drones show={x.drones} look={lk} />}
         </>
     );
 }

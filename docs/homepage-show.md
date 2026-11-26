@@ -715,29 +715,31 @@ feel real, and what each festival stage now does the same way:
   feed of the singer on the side screens, plus NOW PLAYING with the title and artist on its wall during a song.
   `visualFor(look, stage)` picks by the song's genre (`look.songGenre`, so uploads too) and the section's energy.
 
-## Trial fixtures (Nov 26, 2026): on trial, each with its own switch
+## Trial fixtures (Nov 26, 2026): kept after a trial, each with its own switch
 
-New kinds of fixture and effect, added so each can be judged on the real stages (looks and frame rate) and then kept or
-removed. All live in `components/home/stage/festival/StageExtras.jsx`, their positions in each stage's `extras`
+New kinds of fixture and effect, tried on the real stages (looks and frame rate) and kept or removed by the developer.
+All live in `components/home/stage/festival/StageExtras.jsx`, their positions in each stage's `extras`
 (`lib/show/stages/index.js`), the list and the switches in `lib/show/stages/extras.js`.
 
-| Trial fixture | Stage | How it works |
+| Fixture | Stage | How it works |
 |---|---|---|
-| Fin feet, option 1: tilting beam bars (default) | Mainstage, the 12 fin feet (the fin-foot beams were removed) | 7 tight beams a bar, one instanced cone mesh; the bar tilts on the beat (each a little behind the next) and the fan opens and closes; odd and even bars swap the show's two colours; level = the floor row's |
-| Fin feet, option 2: pixel blinders | the same 12 places | a 2.2 m hexagon of 7 cells on a dark housing (one draw call); a pattern on the beat (centre, ring, one cell running round) in the show's colours; warm white on blinder hits, drops and strobes |
-| Fin feet, option 3: uplight washes | the same 12 places | a wide soft cone grazing up each fin to its tip; alternate fins in the two colours, swapping every bar; at the washes' level |
+| Uplight washes | Mainstage, the 12 fin feet (the fin-foot beams were removed) | a wide soft cone grazing up each fin to its tip (one instanced mesh, each cone aimed by its own `aDir`); alternate fins in the show's two colours, swapping every bar; at the washes' level |
 | Laser-hybrid beams | Mainstage crown, 5 points | very thin, 170 m rods sweeping slowly over the sky, mostly white; only in the peaks (crowd jumping, beams on) |
-| Cryo jets | Every stage's deck front | a white plume swept side to side, on drops and blinder hits |
-| Drone show | Desert, over the roof | 196 points (one draw call) moving between shapes every 4 s (grid, ring, heart, star, the "SV" initials) in the finale |
+| Cryo jets | Every stage's deck front | a white plume (noise and soft edges in the shader) swept side to side, on drops and blinder hits |
 | Continuous LED lines | Desert roof edge, warehouse walls | one unbroken line of pixels with a chase running along it on the beat |
-| Kinetic spheres | Warehouse, under the grid | 25 spheres on cables rising and falling in a wave on the beat; lower and further in the peaks (never below 4 m) |
+| Kinetic LED sky | Warehouse, 18 x 15 tiles under the grid | see-through LED tiles (1.7 m) on cables, 7-9 m up. Their height is one shape across the ceiling (a wave rolling front to back in a groove, rings from the centre in a peak, nearly flat when quiet) and each tile tilts with its slope; the tiles play one picture (the two colours in bands, rings on the beat, white on the drop). The gaps between the LED dots are cut out, so beams pass through. In the spirit of the kinetic LED ceilings of big indoor festival stages, an original design. Two draw calls |
 
-(Flame jets on the fin tips were tried and removed at the developer's request.)
+Tried and removed: tilting beam bars and pixel blinders at the fin feet, flame jets on the fin tips, a drone show over
+the desert, kinetic spheres in the warehouse.
 
-Each is one or two draw calls and hidden while idle. **On its own:** on `/lab/<stage>`, a button per fixture shows only that fixture, at full, with the whole rig dark ("Whole rig" brings everything back); the moment effects then run nonstop. **Fin feet:** pick one of the three options, or Off. **Switches:** on/off for the rest; saved in
-the browser (`localStorage 'sv:extras'`) and used by the homepage too, so a fixture can be compared on and off with
-the FPS counter; "Fire" buttons preview the ones that only run at moments. `NEXT_PUBLIC_FEATURE_EXTRAS=off` removes them
-all. To remove one for good: delete its entry in `EXTRAS`, its positions in the stage's `extras`, and its component.
+**The warehouse was made bigger for the LED sky:** 44 m wide (38), 13.5 m high (9.5), the truss grid at 11.5 m (8);
+the wall fixtures, the trusses, the crowd (20 m each side), the circling camera (20.8 m out) and the audience view
+follow the new walls. The cameras stay under the sky.
+
+**Testing them:** on `/lab/<stage>`, a button per fixture shows only that fixture, at full, with the whole rig dark
+("Whole rig" brings everything back; cryo then runs nonstop); on/off switches, saved in the browser and used by the
+homepage too, to compare with the FPS counter; a "Fire" button for the cryo. `NEXT_PUBLIC_FEATURE_EXTRAS=off` removes
+them all.
 
 ## The rest of the site (Nov 19, 2026)
 

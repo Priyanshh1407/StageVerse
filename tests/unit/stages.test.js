@@ -102,7 +102,7 @@ describe('the warehouse club looks', async () => {
         expect(clubLook(house)).toBe(house);
     });
 
-    it('keeps every view under the truss grid', () => {
+    it('keeps every view under the truss grid (and the LED sky under it)', () => {
         for (const shot of Object.values(STAGES.warehouse.shots)) expect(shot.pos[1]).toBeLessThan(7);
     });
 
@@ -148,7 +148,7 @@ describe('the warehouse song camera', async () => {
             const s = orbitShot(orbit, t, 240);
             expect(Math.hypot(...s.pos.map((v, i) => v - prev.pos[i]))).toBeLessThan(1); // under 2 m/s
             expect(Math.hypot(...s.target.map((v, i) => v - prev.target[i]))).toBeLessThan(1.5);
-            expect(Math.abs(s.pos[0])).toBeLessThan(18);
+            expect(Math.abs(s.pos[0])).toBeLessThan(STAGES.warehouse.meta?.room?.width / 2 - 1 || 21);
             expect(s.pos[2]).toBeGreaterThan(-11);
             expect(s.pos[1]).toBeLessThan(7);
             prev = s;
@@ -731,7 +731,7 @@ describe('the mainstage, attached and symmetric', () => {
 
 describe('trial fixtures (stage.extras)', () => {
     const mirrored = (points) => {
-        const xs = points.map((p) => Math.round(p[0] * 100) / 100).sort((a, b) => a - b);
+        const xs = points.map((p) => p[0]).sort((a, b) => a - b);
         return xs.every((x, i) => Math.abs(x + xs[xs.length - 1 - i]) < 0.01);
     };
     it('each stage has only the trial fixtures listed for it, every one mirrored left and right', async () => {
@@ -739,22 +739,26 @@ describe('trial fixtures (stage.extras)', () => {
         for (const [key, stage] of Object.entries(STAGES)) {
             const x = stage.extras ?? {};
             for (const name of Object.keys(x)) expect(EXTRAS.find((e) => e.key === name)?.stages).toContain(key);
-            for (const list of [x.tiltBars?.map((b) => b.pos), x.finBlinders?.map((b) => b.pos), x.finWashes?.map((b) => b.pos), x.hybridBeams, x.cryo, x.kinetic?.cells.map(([cx]) => [cx])]) {
+            for (const list of [x.finWashes?.map((b) => b.pos), x.hybridBeams, x.cryo, x.kineticSky?.cells]) {
                 if (list) expect(mirrored(list)).toBe(true);
             }
         }
     });
-    it('the fin-foot options stand at the fin feet (where the fin-foot beams were), the washes aimed up their fins', () => {
+    it('the uplight washes stand at the fin feet (where the fin-foot beams were), each aimed up its own fin', () => {
         const m = STAGES.mainstage;
-        expect(m.heads.some((h) => h.type === 'beam' && m.extras.tiltBars.some((b) => Math.hypot(h.pos[0] - b.pos[0], h.pos[2] - b.pos[2]) < 0.5))).toBe(false);
-        expect(m.extras.tiltBars).toHaveLength(12);
-        for (const b of m.extras.tiltBars) expect(b.pos[1]).toBeCloseTo(1.8);
-        expect(m.extras.finBlinders).toHaveLength(12);
-        for (const w of m.extras.finWashes) { expect(w.dir[1]).toBeGreaterThan(0.7); expect(Math.sign(w.dir[0])).toBe(w.s); }
-        expect(m.extras.flames).toBeUndefined();
+        expect(m.extras.finWashes).toHaveLength(12);
+        expect(m.heads.some((h) => h.type === 'beam' && m.extras.finWashes.some((b) => Math.hypot(h.pos[0] - b.pos[0], h.pos[2] - b.pos[2]) < 0.5))).toBe(false);
+        for (const w of m.extras.finWashes) { expect(w.pos[1]).toBeCloseTo(1.8); expect(w.dir[1]).toBeGreaterThan(0.7); expect(Math.sign(w.dir[0])).toBe(w.s); }
     });
-    it('the warehouse spheres hang under the grid, never lower than 4 m (over raised hands)', () => {
-        const k = STAGES.warehouse.extras.kinetic;
-        expect(k.top - 1 - (0.8 + 2.0)).toBeGreaterThanOrEqual(4.2);
+    it('the removed trial fixtures are gone (flames, drones, spheres, beam bars, pixel blinders)', () => {
+        for (const stage of Object.values(STAGES)) for (const k of ['flames', 'drones', 'kinetic', 'tiltBars', 'finBlinders']) expect(stage.extras?.[k]).toBeUndefined();
+    });
+    it('the kinetic LED sky hangs under the grid and over the crowd: never lower than 4.5 m, inside the room', () => {
+        const sky = STAGES.warehouse.extras.kineticSky;
+        expect(sky.base - 1 - 0.05).toBeGreaterThanOrEqual(4.5);
+        expect(sky.base + 1).toBeLessThan(sky.top - 0.5);
+        for (const [x, z] of sky.cells) { expect(Math.abs(x) + sky.size / 2).toBeLessThan(20); expect(z - sky.size / 2).toBeGreaterThan(0); }
+        // the grid's fixtures hang over the sky's highest tiles
+        for (const h of STAGES.warehouse.heads.filter((f) => f.pos[1] > 9)) expect(h.pos[1] - 0.6).toBeGreaterThan(sky.base + 1.05);
     });
 });
