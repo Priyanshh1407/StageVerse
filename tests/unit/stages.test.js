@@ -13,7 +13,8 @@ const count = (stage, type) => ({
 
 describe.each(Object.values(STAGES))('the $key stage', (stage) => {
     it('has every role the shows drive', () => {
-        for (const role of ROLES) expect(stage.heads.filter((h) => h.role === role).length, role).toBeGreaterThan(0);
+        // (the warehouse has no floor beams: its tilting beam bars along the stage front play the floor row's part)
+        for (const role of ROLES) if (!(role === 'floor' && stage.extras?.tiltBars)) expect(stage.heads.filter((h) => h.role === role).length, role).toBeGreaterThan(0);
     });
 
     it('carries every type of light', () => {
@@ -274,8 +275,8 @@ describe('the mainstage changes', async () => {
 
     it('changes nothing on the other stages (the desert has more confetti and CO2 of its own, below)', () => {
         expect(STAGES.warehouse.frame).toBeUndefined();
-        // (the warehouse's own realism pass: thinner beams, stronger lasers)
-        expect(STAGES.warehouse.headTune.aerial.spread).toBeLessThan(1);
+        // (the warehouse's own realism pass: the beams as before, stronger lasers)
+        expect(STAGES.warehouse.headTune).toBeUndefined();
         expect(STAGES.warehouse.laserStrength.boost).toBeGreaterThan(1);
         expect(STAGES.desert.frame).toBeUndefined();
         expect(STAGES.warehouse.moreEffects).toBeUndefined();
@@ -754,7 +755,8 @@ describe('trial fixtures (stage.extras)', () => {
         for (const w of m.extras.finWashes) { expect(w.pos[1]).toBeCloseTo(1.8); expect(w.dir[1]).toBeGreaterThan(0.7); expect(Math.sign(w.dir[0])).toBe(w.s); }
     });
     it('the removed trial fixtures are gone (flames, drones, spheres, beam bars, pixel blinders)', () => {
-        for (const stage of Object.values(STAGES)) for (const k of ['flames', 'drones', 'kinetic', 'tiltBars', 'finBlinders']) expect(stage.extras?.[k]).toBeUndefined();
+        for (const stage of Object.values(STAGES)) for (const k of ['flames', 'drones', 'kinetic', 'finBlinders']) expect(stage.extras?.[k]).toBeUndefined();
+        expect(STAGES.mainstage.extras.tiltBars).toBeUndefined();   // (the beam bars now stand on the warehouse's stage front)
     });
     it('the kinetic LED sky hangs under the grid and over the crowd: never lower than 4.5 m, inside the room', () => {
         const sky = STAGES.warehouse.extras.kineticSky;
@@ -820,10 +822,19 @@ describe('the warehouse, attached', () => {
         for (const f of all) expect(nearestStructure(f.pos, st.structure).distance, `${f.type ?? ''} ${f.pos}`).toBeLessThanOrEqual(0.31);
         expect(st.structure.some((p) => p.kind === 'sphere')).toBe(false);
     });
-    it('has a PA for its size: main hangs and two rows of delays each side, two stacks each side, subs across the stage', () => {
+    it('has a PA for its size: a line array flown each side of the screen, subs along the stage front, two rows of delays', () => {
         const pa = STAGES.warehouse.pa;
-        expect(pa.HANGS.length).toBe(3);
-        expect(pa.STACKS.length).toBe(2);
-        expect(pa.SUB_COUNT * pa.SUB_PITCH).toBeGreaterThan(STAGES.warehouse.meta.stageWidth - 2);
+        expect(pa.ARRAY_X).toBeGreaterThan(STAGES.warehouse.meta.wall.width / 2);
+        expect(pa.HANGS.length).toBe(2);
+        expect(pa.SUB_COUNT * pa.SUB_PITCH).toBeGreaterThan(44);
+    });
+    it('has one stage the full width of the hall, one screen with a truss on it and one over the DJ; no floor beams, no booth strobes', () => {
+        const st = STAGES.warehouse;
+        expect(st.meta.stageWidth).toBeGreaterThan(st.meta.room.width - 1);
+        expect(st.screens.filter((p) => p.ledWall)).toHaveLength(1);
+        expect(st.heads.filter((h) => h.role === 'floor')).toHaveLength(0);
+        expect(st.blinders.filter((b) => b.pos[1] < 5)).toHaveLength(0);
+        expect(st.heads.filter((h) => h.type === 'beam' && h.pos[2] < -6 && h.pos[1] > 10).length).toBe(24);
+        expect(st.extras.tiltBars.length).toBe(13);
     });
 });

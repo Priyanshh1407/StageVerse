@@ -106,6 +106,26 @@ function useBeams(points, opts, drive) {
     return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
 }
 
+/** Tilting beam bars along the warehouse's stage front: seven beams a bar, tilting together on the beat and fanning out;
+ *  odd and even bars swapping the show's two colours, at the floor's level (the stage has no other floor beams). */
+function TiltBars({ bars, look }) {
+    const opts = useMemo(() => ({
+        length: 34, r0: 0.05, r1: 0.5, fan: 7,
+        dirCode: /* glsl */ `
+            float swing = sin(uBeat * 1.5708 + id * 0.55) * 0.32;       // the bar tilts, a little behind the next
+            float pitch = 0.32 + swing;                                  // from straight up towards the audience
+            float yaw = k * (0.3 + 0.16 * sin(uBeat * 0.785)) + side * 0.06;   // the fan opens and closes
+            d = vec3(sin(yaw), cos(pitch), sin(pitch));`,
+    }), []);
+    return useBeams(bars, opts, (u, clock) => {
+        const l = look.current;
+        u.uBeat.value = beatOf(l, clock);
+        u.uColorA.value.set(l.colorA ?? '#19d9ff');
+        u.uColorB.value.set(l.colorB ?? '#ff3df2');
+        return (l.floor ?? 0) * masterOf(l) * 0.8;
+    });
+}
+
 /** Laser-hybrid beams on the crown: five very tight, very long rods sweeping slowly over the sky in the peaks. */
 function HybridBeams({ points, look }) {
     const pts = useMemo(() => points.map((pos) => ({ pos })), [points]);
@@ -563,6 +583,7 @@ export default function StageExtras({ stage, look, solo = null }) {
     const lk = solo ? soloLook : look;
     return (
         <>
+            {show('tiltBars') && <TiltBars bars={x.tiltBars} look={lk} />}
             {show('finWashes') && <FinWashes points={x.finWashes} look={lk} />}
             {show('hybridBeams') && <HybridBeams points={x.hybridBeams} look={lk} />}
             {show('cryo') && <Cryo points={x.cryo} look={lk} />}
