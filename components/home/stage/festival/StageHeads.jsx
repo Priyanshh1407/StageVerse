@@ -272,6 +272,7 @@ function RoleGroup({ roleName, tuneKey = null, fixtures, parts, map, look, focus
         const u = createRoleUniforms({ spread: role.spread * (own.spread ?? 1), opacity: role.opacity * (own.opacity ?? 1), scale: role.scale ?? 2.3 });
         u.uMap.value = map;
         u.uLength.value = own.length ?? 1;
+        u.uAimDown.value = own.aimDown ? 1 : 0;
         // (the beam wipe sweeps across the width this group spans; the side wipes up its height and through its depth)
         u.uWipeHalf.value = Math.max(4, ...fixtures.map((f) => Math.abs(f.position[0]))) + 1;
         const ys = fixtures.map((f) => f.position[1]);
@@ -279,7 +280,7 @@ function RoleGroup({ roleName, tuneKey = null, fixtures, parts, map, look, focus
         u.uWipeY.value.set(Math.min(...ys) - 0.5, Math.max(...ys) + 0.5);
         u.uWipeZ.value.set(Math.min(...zs) - 0.5, Math.max(...zs) + 0.5);
         return u;
-    }, [role, map, own.spread, own.opacity, own.length, fixtures]);
+    }, [role, map, own.spread, own.opacity, own.length, own.aimDown, fixtures]);
     const materials = useMemo(() => ({
         base: createPartMaterial(uniforms, 'base'),
         yoke: createPartMaterial(uniforms, 'yoke'),

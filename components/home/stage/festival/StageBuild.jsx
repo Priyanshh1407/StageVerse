@@ -8,6 +8,7 @@ import { driveVisuals, visualsUniforms, VISUALS_SCREEN_FRAGMENT } from './mainst
 import { COLORS } from '@/lib/show/stages/blockoutKit';
 import { screenFxFor } from '@/lib/show/stages/screenFx';
 import { continuousBars } from '@/lib/show/stages/pixelLines';
+import { LED_SHOW, driveLedShow, ledShowUniforms } from './ledShow';
 
 // A festival stage's structure, LED screens and pixel bars, from its definition (lib/show/stages).
 // Draw calls: one per structure colour (about six), one for every LED surface together, one for
@@ -259,6 +260,7 @@ const BAR_VERTEX = /* glsl */ `
 `;
 
 const BAR_FRAGMENT = /* glsl */ `
+    ${LED_SHOW}
     uniform vec3 uColorA;
     uniform vec3 uColorB;
     uniform float uLevel;
@@ -280,11 +282,8 @@ const BAR_FRAGMENT = /* glsl */ `
         float which = uColorMix < 0.33 ? 0.0 : uColorMix > 0.66 ? 1.0 : band;
         which = mix(which, mod(vBar, 2.0), uAlt);
         vec3 c = mix(uColorA, uColorB, which);
-        // a chase running along the stage's outline: bright heads travelling with the beat
-        float run = fract((vWorld.x * 0.05 + vWorld.y * 0.08) - uBeat * 0.25);
-        float chase = mix(1.0, 0.25 + 1.6 * smoothstep(0.25, 0.0, abs(run - 0.5) - 0.2), uChase);
-        float spark = step(1.0 - 0.25 * uSparkle, hash(vec2(vBar, pixel) + floor(uBeat * 2.0)));
-        float level = uLevel * (chase + spark * 2.0) * (0.35 + 0.65 * led);
+        // what the line plays: the show's chase, sparkle and move (lib: ./ledShow.js), the side chasers
+        float level = uLevel * ledShow(vWorld, vAlong, vBar, uChase, uSparkle, uBeat) * (0.35 + 0.65 * led);
         gl_FragColor = vec4(c * level * 2.0, 1.0);
     }
 `;
@@ -305,6 +304,7 @@ export function StagePixelBars({ stage, look }) {
         uniforms: {
             uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() }, uLevel: { value: 0 }, uColorMix: { value: 0.5 },
             uChase: { value: 1 }, uSparkle: { value: 0 }, uAlt: { value: 0 }, uBeat: { value: 0 }, uTime: { value: 0 },
+            ...ledShowUniforms(),
         },
     }), []);
     const mesh = useRef();
@@ -333,6 +333,14 @@ export function StagePixelBars({ stage, look }) {
         u.uChase.value = target.pixelChase ?? 1;
         u.uSparkle.value = target.pixelSparkle ?? 0;
         u.uAlt.value = target.pixelAlt ?? 0;
+        driveLedShow(u, target, u.uBeat.value);
+        if (u.uSideX.value === 1e6) {
+            // the side chasers' bars: those along the sides (beyond 85% of the widest), from the front to the back
+            const far = Math.max(...bars.map((b) => Math.abs(b.pos[0])));
+            const side = bars.filter((b) => Math.abs(b.pos[0]) >= far * 0.85);
+            u.uSideX.value = far * 0.85;
+            u.uZRange.value = { x: Math.min(...side.map((b) => b.pos[2])), y: Math.max(...side.map((b) => b.pos[2])) };
+        }
         u.uColorA.value.set(target.colorA);
         u.uColorB.value.set(target.colorB);
     });

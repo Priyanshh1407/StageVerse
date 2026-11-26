@@ -175,7 +175,7 @@ describe('the mainstage cues', async () => {
         expect(new Set(MAINSTAGE_CUES.map((c) => c.kind)).size).toBe(MAINSTAGE_CUES.length);
         expect(STAGES.mainstage.cuePlan).toBe(planMainstageCues);
         expect(STAGES.desert.cuePlan).toBe(planDesertCues);
-        expect(STAGES.warehouse.cuePlan).toBeUndefined();
+        expect(STAGES.warehouse.cuePlan([{ name: "Groove 3 · phrase 3" }, { name: "Groove 3" }]).map((c) => c?.kind ?? null)).toEqual(["Warehouse · side chasers", null]);   // (only its side chasers)
     });
 
     it('plays them often: every groove, build, all-in, hook and laser moment; the landings, solos, outro and circle stay', () => {
@@ -276,7 +276,7 @@ describe('the mainstage changes', async () => {
     it('changes nothing on the other stages (the desert has more confetti and CO2 of its own, below)', () => {
         expect(STAGES.warehouse.frame).toBeUndefined();
         // (the warehouse's own realism pass: the beams as before, stronger lasers)
-        expect(STAGES.warehouse.headTune).toBeUndefined();
+        expect(STAGES.warehouse.headTune).toEqual({ aerial: { aimDown: true } });
         expect(STAGES.warehouse.laserStrength.boost).toBeGreaterThan(1);
         expect(STAGES.desert.frame).toBeUndefined();
         expect(STAGES.warehouse.moreEffects).toBeUndefined();
@@ -690,7 +690,7 @@ describe('the desert stage, mounted and tuned', () => {
                 for (const p of plan.filter((x) => DESERT_SIDE_CUES.some((c) => c.kind === x?.kind))) expect([p.look.beams, p.look.floor, p.look.wash, p.look.laser]).toEqual([0, 0, 0, 0]);
             }
         }
-        expect(STAGES.warehouse.cuePlan).toBeUndefined();
+        expect(STAGES.warehouse.cuePlan([{ name: "Build 3" }, { name: "Peak 4" }]).every((c) => c === null || c.kind === "Warehouse · side chasers")).toBe(true);   // (the warehouse: only its side chasers)
     });
 });
 
@@ -836,5 +836,15 @@ describe('the warehouse, attached', () => {
         expect(st.blinders.filter((b) => b.pos[1] < 5)).toHaveLength(0);
         expect(st.heads.filter((h) => h.type === 'beam' && h.pos[2] < -6 && h.pos[1] > 10).length).toBe(24);
         expect(st.extras.tiltBars.length).toBe(13);
+    });
+});
+
+describe('the warehouse side chasers cue', async () => {
+    const { planWarehouseCues } = await import('@/lib/show/stages/mainstageCues');
+    it('plays on the first phrase of a build, the third of a groove and the second of a peak', () => {
+        const names = ['Intro 1', 'Groove 2', 'Groove 2 · phrase 2', 'Groove 2 · phrase 3', 'Build 3', 'Build 3 · phrase 2', 'Peak 4', 'Peak 4 · phrase 2', 'Breakdown 5'];
+        const on = planWarehouseCues(names.map((name) => ({ name }))).map((c, i) => (c ? names[i] : null)).filter(Boolean);
+        expect(on).toEqual(['Groove 2 · phrase 3', 'Build 3', 'Peak 4 · phrase 2']);
+        expect(planWarehouseCues([{ name: 'Build 3' }])[0].look.pixelSweep).toBe(1);
     });
 });

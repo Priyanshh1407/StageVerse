@@ -35,6 +35,7 @@ export function createRoleUniforms({ scale = 2.3, spread = 1, opacity = 1 } = {}
         uHaze: { value: 0.5 },
         uTarget: { value: new THREE.Vector3(0, 4.5, -6.5) }, // the centre of the stage (where the drop focuses)
         uSideways: { value: 0 },        // 1 = floor fixtures thrown out toward the audience (the drop)
+        uAimDown: { value: 0 },         // 1 = never above level, always out towards the audience (a stage's tune: the warehouse's aerials)
         uDown: { value: 0 },            // 1 = pointing straight down (washes, with the house lights)
         uBeat: { value: 0 },            // beat position, for beat-locked effects
         uAlternate: { value: 0 },       // odd/even beams swap on the beat
@@ -84,6 +85,7 @@ const RIG_GLSL = /* glsl */ `
     uniform float uConverge;
     uniform vec3 uTarget;
     uniform float uSideways;
+    uniform float uAimDown;
     uniform float uDown;
     uniform float uBeat;
     uniform float uAlternate;
@@ -132,7 +134,16 @@ const RIG_GLSL = /* glsl */ `
         float side = fromL.x >= 0.0 ? 1.0 : -1.0;
         dir = normalize(mix(dir, normalize(R * vec3(side * 0.45, 0.75, 1.0)), uSideways));
         // Straight down onto the stage (washes, when the house lights light the venue)
-        return normalize(mix(dir, vec3(0.0, -1.0, 0.0), uDown));
+        dir = normalize(mix(dir, vec3(0.0, -1.0, 0.0), uDown));
+        // (uAimDown: the beam never rises above level, so it never lights the ceiling or the roof, and always points out
+        // over the audience, never back at the stage or the walls behind it)
+        if (uAimDown > 0.5) {
+            vec3 l = transpose(R) * dir;
+            l.y = min(l.y, -0.12);
+            l.z = max(l.z, 0.3);
+            dir = R * normalize(l);
+        }
+        return dir;
     }
 
     // Per-fixture on/off: alternate swaps odd and even beams every beat; sparkle switches random

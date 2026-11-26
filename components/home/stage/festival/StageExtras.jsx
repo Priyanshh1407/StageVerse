@@ -8,6 +8,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { EXTRAS_FIRE, EXTRAS_KEY, readExtras } from '@/lib/show/stages/extras';
+import { LED_SHOW, driveLedShow, ledShowUniforms } from './ledShow';
 
 const ADDITIVE = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false };
 const beatOf = (look, clock) => look.beatPos ?? clock * 2;
@@ -27,16 +28,20 @@ const BEAM_VERTEX = (dirCode) => /* glsl */ `
     uniform float uTime;
     uniform float uBeat;
     uniform float uLength;
+    uniform float uChase;          // (the beam bars: a chase along their cells)
     varying float vAlong;
     varying vec3 vWorld;
     varying vec3 vNormalW;
     varying float vParity;
+    varying float vGate;
     void main() {
         float id = aInfo.x;
         float k = aInfo.y;
         float side = aInfo.z;
+        float gate = 1.0;          // (the direction code may switch a beam off: the bars' chase along their cells)
         vec3 d;
         ${dirCode}
+        vGate = gate;
         d = normalize(d);
         vec3 t = normalize(abs(d.z) < 0.95 ? cross(d, vec3(0.0, 0.0, 1.0)) : cross(d, vec3(1.0, 0.0, 0.0)));
         vec3 b = cross(t, d);
@@ -59,16 +64,17 @@ const BEAM_FRAGMENT = /* glsl */ `
     varying vec3 vWorld;
     varying vec3 vNormalW;
     varying float vParity;
+    varying float vGate;
     void main() {
         float facing = abs(dot(normalize(vNormalW), normalize(cameraPosition - vWorld)));
         float core = pow(facing, 1.6);
         float fade = pow(clamp(1.0 - vAlong, 0.0, 1.0), 1.4);
         vec3 c = mix(mix(uColorA, uColorB, vParity), vec3(1.0), uWhite + 0.25 * pow(1.0 - vAlong, 16.0));
-        gl_FragColor = vec4(c, core * fade * uLevel);
+        gl_FragColor = vec4(c, core * fade * uLevel * vGate);
     }
 `;
 
-function beamMesh(points, { length, r0, r1, dirCode, fan = 1 }) {
+function beamMesh(points, { length, r0, r1, dirCode, fan = 1, span = 0 }) {
     const cone = new THREE.CylinderGeometry(r0, r1, 1, 12, 1, true).translate(0, 0.5, 0);
     const geometry = new THREE.InstancedBufferGeometry().copy(cone);
     const origins = [];
@@ -76,7 +82,9 @@ function beamMesh(points, { length, r0, r1, dirCode, fan = 1 }) {
     const dirs = [];
     points.forEach((pt, id) => {
         for (let j = 0; j < fan; j++) {
-            origins.push(...pt.pos);
+            // (span: the beams of one fixture side by side along x, a batten's cells; otherwise all from one point)
+            const k = fan > 1 ? (j / (fan - 1)) * 2 - 1 : 0;
+            origins.push(pt.pos[0] + (k * span) / 2, pt.pos[1], pt.pos[2]);
             dirs.push(...(pt.dir ?? [0, 1, 0]));
             info.push(id, fan > 1 ? (j / (fan - 1)) * 2 - 1 : 0, pt.s ?? Math.sign(pt.pos[0]) ?? 1, 0);
         }
@@ -87,7 +95,7 @@ function beamMesh(points, { length, r0, r1, dirCode, fan = 1 }) {
     geometry.instanceCount = origins.length / 3;
     const material = new THREE.ShaderMaterial({
         vertexShader: BEAM_VERTEX(dirCode), fragmentShader: BEAM_FRAGMENT, ...ADDITIVE,
-        uniforms: { uTime: { value: 0 }, uBeat: { value: 0 }, uLength: { value: length }, uLevel: { value: 0 }, uWhite: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
+        uniforms: { uTime: { value: 0 }, uBeat: { value: 0 }, uLength: { value: length }, uLevel: { value: 0 }, uWhite: { value: 0 }, uChase: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
     });
     return { geometry, material };
 }
@@ -106,24 +114,55 @@ function useBeams(points, opts, drive) {
     return <mesh ref={mesh} geometry={geometry} material={material} frustumCulled={false} />;
 }
 
-/** Tilting beam bars along the warehouse's stage front: seven beams a bar, tilting together on the beat and fanning out;
- *  odd and even bars swapping the show's two colours, at the floor's level (the stage has no other floor beams). */
+/** Tilting beam bars along the warehouse's stage front, like the real thing (a batten of LED cells side by side, each
+ *  firing its own very narrow beam: together a flat sheet of parallel beams, the whole bar tilting). Twelve cells along a
+ *  2 m bar; the bars tilt on the beat, each a little behind the next, so the sheets roll across the stage in a wave;
+ *  odd and even bars in the show's two colours, swapping on the beat. In quieter parts a chase runs along the cells
+ *  across the whole stage; in a peak every cell is on (full sheets). At the floor's level (the stage has no other floor
+ *  beams). One draw call for the beams, one for the bars' housings. */
+const BAR = { cells: 12, length: 2, tilt: (beat, id) => 0.3 + Math.sin(beat * 1.5708 + id * 0.55) * 0.42 };
 function TiltBars({ bars, look }) {
     const opts = useMemo(() => ({
-        length: 34, r0: 0.05, r1: 0.5, fan: 7,
+        length: 30, r0: 0.03, r1: 0.32, fan: BAR.cells, span: BAR.length * 0.92,
         dirCode: /* glsl */ `
-            float swing = sin(uBeat * 1.5708 + id * 0.55) * 0.32;       // the bar tilts, a little behind the next
-            float pitch = 0.32 + swing;                                  // from straight up towards the audience
-            float yaw = k * (0.3 + 0.16 * sin(uBeat * 0.785)) + side * 0.06;   // the fan opens and closes
-            d = vec3(sin(yaw), cos(pitch), sin(pitch));`,
+            float pitch = 0.3 + sin(uBeat * 1.5708 + id * 0.55) * 0.42;  // the bar tilts, a little behind the next
+            d = vec3(k * 0.015, cos(pitch), sin(pitch));                  // parallel beams (a hair of spread)
+            // the chase: a run of light along the cells, across the whole stage, twice a bar
+            float run = fract(aOrigin.x / 12.0 - uBeat * 0.5);
+            gate = mix(1.0, smoothstep(0.3, 0.0, abs(run - 0.5) - 0.1) * 0.9 + 0.1, uChase);`,
     }), []);
-    return useBeams(bars, opts, (u, clock) => {
+    const beams = useBeams(bars, opts, (u, clock) => {
         const l = look.current;
         u.uBeat.value = beatOf(l, clock);
+        u.uChase.value += (((l.crowd ?? 0) >= 0.9 ? 0 : 0.8) - u.uChase.value) * 0.05;
         u.uColorA.value.set(l.colorA ?? '#19d9ff');
         u.uColorB.value.set(l.colorB ?? '#ff3df2');
-        return (l.floor ?? 0) * masterOf(l) * 0.8;
+        u.uWhite.value = 0.15;
+        return (l.floor ?? 0) * masterOf(l) * 0.9;
     });
+    // the housings: a dark bar per fixture on the deck, tilting with its beams
+    const housings = useRef();
+    const geometry = useMemo(() => new THREE.BoxGeometry(BAR.length, 0.2, 0.26).translate(0, 0.1, 0), []);
+    const material = useMemo(() => new THREE.MeshStandardMaterial({ color: '#15171c', roughness: 0.6, metalness: 0.4 }), []);
+    useEffect(() => () => { geometry.dispose(); material.dispose(); }, [geometry, material]);
+    const m = useMemo(() => new THREE.Matrix4(), []);
+    const q = useMemo(() => new THREE.Quaternion(), []);
+    useFrame(({ clock }) => {
+        const mesh = housings.current;
+        if (!mesh) return;
+        const beat = beatOf(look.current, clock.elapsedTime);
+        bars.forEach((b, i) => {
+            q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), BAR.tilt(beat, i));
+            mesh.setMatrixAt(i, m.compose(new THREE.Vector3(...b.pos), q, new THREE.Vector3(1, 1, 1)));
+        });
+        mesh.instanceMatrix.needsUpdate = true;
+    });
+    return (
+        <>
+            {beams}
+            <instancedMesh ref={housings} args={[geometry, material, bars.length]} frustumCulled={false} />
+        </>
+    );
 }
 
 /** Laser-hybrid beams on the crown: five very tight, very long rods sweeping slowly over the sky in the peaks. */
@@ -496,7 +535,7 @@ function KineticSky({ sky, look }) {
     );
 }
 
-// ---- continuous LED lines: one unbroken line of pixels, a chase running along it on the beat ------------------------
+// ---- continuous LED lines: one unbroken line of pixels, playing the show like the stage's own LED lines (./ledShow.js) --
 function LedLines({ lines, look }) {
     const { geometry, material } = useMemo(() => {
         const parts = lines.map(({ from, to }) => {
@@ -513,20 +552,25 @@ function LedLines({ lines, look }) {
         });
         const mat = new THREE.ShaderMaterial({
             toneMapped: false,
-            uniforms: { uBeat: { value: 0 }, uLevel: { value: 0 }, uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() } },
+            uniforms: {
+                uBeat: { value: 0 }, uLevel: { value: 0 }, uChase: { value: 1 }, uSparkle: { value: 0 }, uColorMix: { value: 0.5 },
+                uColorA: { value: new THREE.Color() }, uColorB: { value: new THREE.Color() }, ...ledShowUniforms(),
+            },
             vertexShader: /* glsl */ `
-                attribute float aU; attribute float aLen; varying float vU; varying float vLen;
-                void main() { vU = aU; vLen = aLen; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                attribute float aU; attribute float aLen; varying float vU; varying float vLen; varying vec3 vW;
+                void main() { vU = aU; vLen = aLen; vW = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
             fragmentShader: /* glsl */ `
-                uniform float uBeat; uniform float uLevel; uniform vec3 uColorA; uniform vec3 uColorB;
-                varying float vU; varying float vLen;
+                ${LED_SHOW}
+                uniform float uBeat; uniform float uLevel; uniform float uChase; uniform float uSparkle; uniform float uColorMix;
+                uniform vec3 uColorA; uniform vec3 uColorB;
+                varying float vU; varying float vLen; varying vec3 vW;
                 void main() {
                     float m = vU * vLen;                                   // metres along the line
                     float pixel = smoothstep(0.5, 0.35, abs(fract(m / 0.1) - 0.5));
-                    float chase = fract(m / 8.0 - uBeat * 0.5);            // a pulse every 8 m, half a period a beat
-                    float on = smoothstep(0.0, 0.08, chase) * smoothstep(0.55, 0.2, chase);
-                    vec3 c = mix(uColorA, uColorB, step(0.5, fract(m / 16.0 - uBeat * 0.25)));
-                    gl_FragColor = vec4(c * (0.12 + 1.8 * on) * (0.6 + 0.4 * pixel) * uLevel, 1.0);
+                    float band = step(0.5, fract(m / 16.0 - uBeat * 0.25));
+                    vec3 c = mix(uColorA, uColorB, uColorMix < 0.33 ? 0.0 : uColorMix > 0.66 ? 1.0 : band);
+                    float level = ledShow(vW, m, floor(m / 2.0), uChase, uSparkle, uBeat);
+                    gl_FragColor = vec4(c * level * (0.6 + 0.4 * pixel) * uLevel, 1.0);
                 }`,
         });
         return { geometry: mergeGeometries(parts), material: mat };
@@ -539,6 +583,14 @@ function LedLines({ lines, look }) {
         const u = mesh.current.material.uniforms;
         u.uBeat.value = beatOf(l, clock.elapsedTime);
         u.uLevel.value = masterOf(l) * Math.max(0.25, l.pixel ?? 0.6);
+        u.uChase.value = l.pixelChase ?? 1;
+        u.uSparkle.value = l.pixelSparkle ?? 0;
+        u.uColorMix.value = l.pixelColor ?? 0.5;
+        driveLedShow(u, l, u.uBeat.value);
+        // (the side chasers: the lines along the walls are the side lines)
+        const far = Math.max(...lines.flatMap((ln) => [Math.abs(ln.from[0]), Math.abs(ln.to[0])]));
+        u.uSideX.value = far * 0.85;
+        u.uZRange.value = { x: Math.min(...lines.map((ln) => Math.min(ln.from[2], ln.to[2]))), y: Math.max(...lines.map((ln) => Math.max(ln.from[2], ln.to[2]))) };
         u.uColorA.value.set(l.colorA ?? '#19d9ff');
         u.uColorB.value.set(l.colorB ?? '#ff3df2');
     });
